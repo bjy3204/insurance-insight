@@ -13,8 +13,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://insurance-insight.vercel.app"),
   title: "보험인사이트",
   description: "보험설계사 업무 통합 플랫폼",
+
+  openGraph: {
+    title: "보험인사이트",
+    description: "보험사전산, 상품공시실, 고객센터",
+    url: "https://insurance-insight.vercel.app",
+    siteName: "보험인사이트",
+
+    images: [
+      {
+        url: "https://insurance-insight.vercel.app/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "보험인사이트",
+      },
+    ],
+
+    type: "website",
+  },
 };
 
 export default function RootLayout({
