@@ -13,6 +13,7 @@ import {
   MessageCircle,
   X,
   Megaphone,
+  CircleDollarSign,
 } from "lucide-react";
 
 import { FaInstagram } from "react-icons/fa";
@@ -50,6 +51,12 @@ const menus = [
     icon: Calculator,
     link: "/calculator",
   },
+  {
+  title: "화폐가치계산기",
+  desc: "시간의 경과에 따른 화폐가치 계산",
+  icon: CircleDollarSign,
+  link: "/money-value",
+},
   {
     title: "보험인사이트 폴더",
     desc: "보험 자료 모음",

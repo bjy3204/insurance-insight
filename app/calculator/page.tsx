@@ -654,7 +654,7 @@ const calculateSimple = () => {
               <div className="flex items-center justify-center gap-2">
                 <Calculator className="w-7 h-7 text-blue-600" />
 
-                <h1 className="text-2xl font-black text-blue-600">
+                <h1 className="text-2xl font-black text-gray-900">
                   실비계산기
                 </h1>
               </div>
