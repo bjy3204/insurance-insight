@@ -214,11 +214,11 @@ const lifeCompanies = [
     name: "KDB생명",
     logo: "/logos/customer-life/kdblife.png",
     claim: "https://www.kdblife.co.kr/ajax.do?scrId=HCSCT006M01P",
-    phone: "1588-3374",
-    fax: "02-6220-9912",
-    zipcode: "06253",
+    phone: "1588-4040",
+    fax: "02-2669-7939",
+    zipcode: "07261",
     address:
-      "서울시 강남구 강남대로 298 KB라이프생명 고객플라자 보험금접수 담당자 앞",
+      "서울시 영등포구 양산로 91, 리드원지식산업센터 210호 파란손해사정 KDB생명 우편청구 담당자(앞)",
   },
 
   {
