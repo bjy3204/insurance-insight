@@ -1,0 +1,416 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+import {
+  FileText,
+  Calculator,
+  Monitor,
+  Phone,
+  Building2,
+  FolderOpen,
+  Newspaper,
+  MessageCircle,
+  X,
+  Megaphone,
+} from "lucide-react";
+
+import { FaInstagram } from "react-icons/fa";
+import emailjs from "@emailjs/browser";
+
+const menus = [
+  
+  {
+    title: "보험사전산",
+    desc: "보험사별 전산 바로가기",
+    icon: Monitor,
+    link: "/insurance-system",
+  },
+  {
+    title: "고객센터",
+    desc: "고객센터 · 팩스번호 · 등기주소 안내",
+    icon: Phone,
+    link: "/customer-center",
+  },
+  {
+    title: "상품공시실",
+    desc: "보험사별 상품공시실 바로가기",
+    icon: Building2,
+    link: "/product-public",
+  },
+  {
+    title: "청구서류",
+    desc: "보험금 청구서류 안내",
+    icon: FileText,
+    link: "/claim-docs",
+  },
+  {
+    title: "실비계산기",
+    desc: "세대별 실손보험금 계산기",
+    icon: Calculator,
+    link: "/calculator",
+  },
+  {
+    title: "보험인사이트 폴더",
+    desc: "보험 자료 모음",
+    icon: FolderOpen,
+    link: "https://naver.me/FWTmVFQz",
+  },
+];
+
+export default function Home() {
+  const [today, setToday] = useState(0);
+  const [total, setTotal] = useState(0);
+
+  const [open, setOpen] = useState(false);
+  const [fixMessage, setFixMessage] = useState("");
+  const [addMessage, setAddMessage] = useState("");
+  const [contact, setContact] = useState("");
+  const noticeVersion = 1;
+
+const [hasUpdate, setHasUpdate] = useState(false);
+
+  useEffect(() => {
+    const fetchVisitor = async () => {
+      try {
+        const totalRes = await fetch(
+          "https://api.countapi.xyz/hit/boheom-insight/total"
+        );
+
+        const totalData = await totalRes.json();
+        setTotal(totalData.value || 0);
+
+        const todayKey = new Date().toISOString().slice(0, 10);
+
+        const todayRes = await fetch(
+          `https://api.countapi.xyz/hit/boheom-insight/${todayKey}`
+        );
+
+        const todayData = await todayRes.json();
+        setToday(todayData.value || 0);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchVisitor();
+    const savedVersion = localStorage.getItem("noticeRead");
+
+if (savedVersion != noticeVersion.toString()) {
+  setHasUpdate(true);
+}
+  }, []);
+
+  const sendMessage = async () => {
+  if (!fixMessage.trim() && !addMessage.trim()) {
+    alert("수정할 내용 또는 추가하고 싶은 내용을 입력해주세요.");
+    return;
+  }
+
+  try {
+    await emailjs.send(
+      "service_qowldus",
+      "template_7hs4byh",
+      {
+        fixMessage,
+        addMessage,
+        contact,
+      },
+      "1aQRC4TK_8wwBgPgw"
+    );
+
+    alert("메세지가 전송되었습니다.");
+
+    setFixMessage("");
+    setAddMessage("");
+    setContact("");
+    setOpen(false);
+
+  } catch (error) {
+  console.log(error);
+
+  alert("메세지 전송에 실패했습니다.");
+}
+};
+
+  return (
+    <main className="min-h-screen bg-gray-100 pb-28">
+      {/* 헤더 */}
+      <header className="bg-white border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="relative flex items-center justify-center">
+            <div className="text-center">
+              <h1 className="text-2xl font-black text-blue-600">
+                보험인사이트
+              </h1>
+
+              <p className="text-sm text-gray-500 mt-1">
+                보험설계사 업무 통합 플랫폼
+              </p>
+            </div>
+
+            {/* 방문자 카운터 */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2">
+              <div className="flex items-center gap-5 text-center">
+                <div>
+                  <p className="text-[10px] leading-none text-gray-400 font-bold">
+                    TODAY
+                  </p>
+
+                  <p className="text-base font-black text-blue-600 mt-1">
+                    {today.toLocaleString()}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] leading-none text-gray-400 font-bold">
+                    TOTAL
+                  </p>
+
+                  <p className="text-base font-black text-gray-900 mt-1">
+                    {total.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* 메인 */}
+      <div className="max-w-6xl mx-auto p-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          {menus.map((menu) => {
+            const Icon = menu.icon;
+
+            return (
+              <a
+                key={menu.title}
+                href={menu.link}
+                className="
+                  bg-white
+                  p-8
+                  rounded-3xl
+                  shadow
+                  hover:shadow-xl
+                  hover:-translate-y-1
+                  transition
+                "
+              >
+                <Icon className="w-10 h-10 text-blue-600 mb-4" />
+
+                <h2 className="text-lg font-bold">{menu.title}</h2>
+
+                <p className="text-sm text-gray-500 mt-2">{menu.desc}</p>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+<a
+  href="https://www.notion.so/35ea0c2669598033ae91d1c27e5c7264?source=copy_link"
+  onClick={() => {
+    localStorage.setItem(
+      "noticeRead",
+      noticeVersion.toString()
+    );
+
+    setHasUpdate(false);
+  }}
+  className="
+    fixed
+    left-6
+    bottom-24
+    z-40
+    w-14
+    h-14
+    rounded-full
+    bg-gray-800
+    shadow-lg
+    flex
+    items-center
+    justify-center
+  "
+>
+  <Megaphone className="w-6 h-6 text-white" />
+
+  {hasUpdate && (
+    <span
+      className="
+        absolute
+        top-1
+        right-1
+        w-3
+        h-3
+        bg-red-500
+        rounded-full
+      "
+    />
+  )}
+</a>
+      {/* 메세지 버튼 */}
+      <button
+        onClick={() => setOpen(true)}
+        className="
+          fixed
+          right-6
+          bottom-24
+          z-40
+          bg-blue-600
+          text-white
+          px-5
+          py-4
+          rounded-2xl
+          shadow-lg
+          font-bold
+        "
+      >
+        보험나무에게 메세지 보내기
+      </button>
+
+      {/* 하단 고정 */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+        <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
+          <a
+            href="https://naver.me/xsZ8mk7H"
+            className="py-3 flex flex-col items-center gap-1"
+          >
+            <Newspaper className="w-5 h-5" />
+            <span className="text-sm">보험사별 소식지</span>
+          </a>
+
+          <a
+            href="https://open.kakao.com/o/gD7ej63h"
+            className="py-3 flex flex-col items-center gap-1"
+          >
+            <MessageCircle className="w-5 h-5" />
+            <span className="text-sm">보험인사이트 카카오톡</span>
+          </a>
+
+          <a
+            href="https://www.instagram.com/g__tree_/"
+            className="py-3 flex flex-col items-center gap-1"
+          >
+            <FaInstagram className="w-5 h-5" />
+            <span className="text-sm">보험나무 인스타그램</span>
+          </a>
+        </div>
+      </div>
+
+      {/* 메세지 모달 */}
+      {open && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-5">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-md relative">
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute right-5 top-5 text-gray-400"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="mb-6">
+              <h2 className="text-2xl font-black text-gray-900">
+                보험나무에게 메세지 보내기
+              </h2>
+
+              <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+                수정이 필요한 부분이나
+                <br />
+                추가하고 싶은 기능이 있다면 편하게 남겨주세요.
+              </p>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-sm font-bold text-gray-700 mb-2">
+                수정할 내용
+              </p>
+
+              <textarea
+                value={fixMessage}
+                onChange={(e) => setFixMessage(e.target.value)}
+                placeholder="예) 고객센터 팩스번호 수정 부탁드립니다"
+                className="
+                  w-full
+                  h-28
+                  border
+                  border-gray-200
+                  rounded-2xl
+                  p-4
+                  outline-none
+                  resize-none
+                "
+              />
+            </div>
+
+            <div className="mb-5">
+              <p className="text-sm font-bold text-gray-700 mb-2">
+                추가하고 싶은 내용
+              </p>
+
+              <textarea
+                value={addMessage}
+                onChange={(e) => setAddMessage(e.target.value)}
+                placeholder="예) 새로운 기능이 추가되면 좋겠습니다"
+                className="
+                  w-full
+                  h-28
+                  border
+                  border-gray-200
+                  rounded-2xl
+                  p-4
+                  outline-none
+                  resize-none
+                "
+              />
+            </div>
+
+            <input
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+              placeholder="연락처 또는 이름 (선택사항)"
+              className="
+                w-full
+                border
+                border-gray-200
+                rounded-2xl
+                p-4
+                outline-none
+                mb-6
+              "
+            />
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setOpen(false)}
+                className="
+                  flex-1
+                  py-4
+                  rounded-2xl
+                  bg-gray-100
+                  font-bold
+                  text-gray-700
+                "
+              >
+                취소
+              </button>
+
+              <button
+                onClick={sendMessage}
+                className="
+                  flex-1
+                  py-4
+                  rounded-2xl
+                  bg-blue-600
+                  text-white
+                  font-bold
+                "
+              >
+                보내기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
