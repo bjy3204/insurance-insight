@@ -86,7 +86,13 @@ setTotal(data.total || 0);
       }
     };
 
-    fetchVisitor();
+    const todayKey = new Date().toISOString().slice(0, 10);
+const visited = localStorage.getItem("visitedDate");
+
+if (visited !== todayKey) {
+  fetchVisitor();
+  localStorage.setItem("visitedDate", todayKey);
+}
     const savedVersion = localStorage.getItem("noticeRead");
 
 if (savedVersion != noticeVersion.toString()) {
