@@ -73,21 +73,14 @@ const [hasUpdate, setHasUpdate] = useState(false);
   useEffect(() => {
     const fetchVisitor = async () => {
       try {
-        const totalRes = await fetch(
-          "https://api.countapi.xyz/hit/boheom-insight/total"
-        );
+        const res = await fetch("/api/visitor", {
+  cache: "no-store",
+});
 
-        const totalData = await totalRes.json();
-        setTotal(totalData.value || 0);
+const data = await res.json();
 
-        const todayKey = new Date().toISOString().slice(0, 10);
-
-        const todayRes = await fetch(
-          `https://api.countapi.xyz/hit/boheom-insight/${todayKey}`
-        );
-
-        const todayData = await todayRes.json();
-        setToday(todayData.value || 0);
+setToday(data.today || 0);
+setTotal(data.total || 0);
       } catch (error) {
         console.log(error);
       }
