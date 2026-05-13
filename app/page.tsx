@@ -71,27 +71,29 @@ export default function Home() {
 const [hasUpdate, setHasUpdate] = useState(false);
 
   useEffect(() => {
-    const fetchVisitor = async () => {
-      try {
-        const res = await fetch("/api/visitor", {
-  cache: "no-store",
-});
+    const fetchVisitor = async (hit = false) => {
+  try {
+    const res = await fetch(`/api/visitor${hit ? "?hit=1" : ""}`, {
+      cache: "no-store",
+    });
 
-const data = await res.json();
+    const data = await res.json();
 
-setToday(data.today || 0);
-setTotal(data.total || 0);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+    setToday(data.today || 0);
+    setTotal(data.total || 0);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
     const todayKey = new Date().toISOString().slice(0, 10);
 const visited = localStorage.getItem("visitedDate");
 
 if (visited !== todayKey) {
-  fetchVisitor();
+  fetchVisitor(true);
   localStorage.setItem("visitedDate", todayKey);
+} else {
+  fetchVisitor(false);
 }
     const savedVersion = localStorage.getItem("noticeRead");
 

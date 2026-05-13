@@ -3,11 +3,25 @@ import { NextResponse } from "next/server";
 
 const redis = Redis.fromEnv();
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const hit = searchParams.get("hit");
+
   const today = new Date().toISOString().slice(0, 10);
 
-  const total = await redis.incr("visitor:total");
-  const todayCount = await redis.incr(`visitor:today:${today}`);
+  const todayKey = `visitor:today:${today}`;
+  const totalKey = "visitor:total";
+
+  let todayCount;
+  let total;
+
+  if (hit === "1") {
+    total = await redis.incr(totalKey);
+    todayCount = await redis.incr(todayKey);
+  } else {
+    total = (await redis.get<number>(totalKey)) || 0;
+    todayCount = (await redis.get<number>(todayKey)) || 0;
+  }
 
   return NextResponse.json({
     today: todayCount,
