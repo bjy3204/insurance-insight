@@ -25,7 +25,9 @@ const tabs = [
   "배상/누수",
   "펫",
   "기타",
-];
+] as const;
+
+type Tab = (typeof tabs)[number];
 
 const claimDocs = {
   공통: [
@@ -301,7 +303,7 @@ const claimDocs = {
 
 
 export default function ClaimDocsPage() {
-  const [tab, setTab] = useState<"공통" | "손해보험" | "생명보험">("공통");
+  const [tab, setTab] = useState<Tab>("공통");
 
   return (
     <main className="min-h-screen bg-gray-100 pb-24">
