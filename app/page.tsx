@@ -15,6 +15,7 @@ import {
   Megaphone,
   CircleDollarSign,
   Landmark,
+  PiggyBank,
 } from "lucide-react";
 
 import { FaInstagram } from "react-icons/fa";
@@ -52,12 +53,7 @@ const menus = [
     icon: Calculator,
     link: "/calculator",
   },
-  {
-    title: "보험인사이트 폴더",
-    desc: "보험 자료 모음",
-    icon: FolderOpen,
-    link: "https://naver.me/FWTmVFQz",
-  },
+
   {
   title: "화폐가치계산기",
   desc: "시간의 경과에 따른 화폐가치 계산",
@@ -70,6 +66,18 @@ const menus = [
   icon: Landmark,
   link: "/saving-calculator",
 },
+{
+  title: "연금계산기",
+  desc: "노후 연금 · 은퇴자금 계산",
+  icon: PiggyBank,
+  link: "/pension-calculator",
+},
+{
+    title: "보험인사이트 폴더",
+    desc: "보험 자료 모음",
+    icon: FolderOpen,
+    link: "https://naver.me/FWTmVFQz",
+  },
 ];
 
 export default function Home() {
@@ -153,48 +161,77 @@ if (savedVersion != noticeVersion.toString()) {
       {/* 헤더 */}
       <header className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="relative flex items-center justify-center">
-            <div className="text-center">
-              <h1 className="text-2xl font-black text-blue-600">
-                보험인사이트
-              </h1>
+          <div className="relative flex items-center justify-center md:justify-center">
 
-              <p className="text-sm text-gray-500 mt-1">
-                보험설계사 업무 통합 플랫폼
-              </p>
-            </div>
+  {/* 모바일 TODAY */}
+  <div className="absolute left-0 top-1/2 -translate-y-1/2 md:hidden">
+    <div className="text-center">
+      <p className="text-[10px] leading-none text-gray-400 font-bold">
+        TODAY
+      </p>
 
-            {/* 방문자 카운터 */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2">
-              <div className="flex items-center gap-5 text-center">
-                <div>
-                  <p className="text-[10px] leading-none text-gray-400 font-bold">
-                    TODAY
-                  </p>
+      <p className="text-sm font-black text-blue-600 mt-1">
+        {today.toLocaleString()}
+      </p>
+    </div>
+  </div>
 
-                  <p className="text-base font-black text-blue-600 mt-1">
-                    {today.toLocaleString()}
-                  </p>
-                </div>
+  {/* 로고 */}
+  <div className="text-center">
+    <h1 className="text-2xl font-black text-blue-600">
+      보험인사이트
+    </h1>
 
-                <div>
-                  <p className="text-[10px] leading-none text-gray-400 font-bold">
-                    TOTAL
-                  </p>
+    <p className="text-sm text-gray-500 mt-1">
+      보험설계사 업무 통합 플랫폼
+    </p>
+  </div>
 
-                  <p className="text-base font-black text-gray-900 mt-1">
-                    {total.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </div>
+  {/* 모바일 TOTAL */}
+  <div className="absolute right-0 top-1/2 -translate-y-1/2 md:hidden">
+    <div className="text-center">
+      <p className="text-[10px] leading-none text-gray-400 font-bold">
+        TOTAL
+      </p>
+
+      <p className="text-sm font-black text-gray-900 mt-1">
+        {total.toLocaleString()}
+      </p>
+    </div>
+  </div>
+
+  {/* PC 방문자 카운터 */}
+  <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2">
+    <div className="flex items-center gap-5 text-center">
+      <div>
+        <p className="text-[10px] leading-none text-gray-400 font-bold">
+          TODAY
+        </p>
+
+        <p className="text-base font-black text-blue-600 mt-1">
+          {today.toLocaleString()}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-[10px] leading-none text-gray-400 font-bold">
+          TOTAL
+        </p>
+
+        <p className="text-base font-black text-gray-900 mt-1">
+          {total.toLocaleString()}
+        </p>
+      </div>
+    </div>
+  </div>
+
           </div>
         </div>
       </header>
 
       {/* 메인 */}
-      <div className="max-w-6xl mx-auto px-5 py-8 sm:p-10">
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6">
+      <div className="max-w-[1500px] mx-auto px-5 py-8 sm:p-10">
+  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
           {menus.map((menu) => {
             const Icon = menu.icon;
 
