@@ -198,7 +198,7 @@ if (savedVersion != noticeVersion.toString()) {
 };
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-36 md:pb-28">
+    <main className="min-h-screen bg-gray-100 pb-20 md:pb-26">
       {/* 헤더 */}
       <header className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
@@ -357,7 +357,7 @@ if (savedVersion != noticeVersion.toString()) {
       {/* 앱처럼 사용하기 */}
 {showInstall &&
   /iPhone|iPad|iPod|Android/i.test(window.navigator.userAgent) && (
-        <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-20 md:mb-8">
+        <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-16 md:mb-8">
           <button
             onClick={async () => {
   if (deferredPrompt) {
