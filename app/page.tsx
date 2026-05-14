@@ -711,18 +711,18 @@ rel="noopener noreferrer"
                   {selectedNotice.title}
                 </h2>
 
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-xs md:text-sm text-gray-500 mt-2">
                   작성일: {selectedNotice.date}
                 </p>
 
-                <div className="border-t mt-5 pt-5 whitespace-pre-line leading-relaxed text-gray-800">
+                <div className="border-t mt-5 pt-5 whitespace-pre-line text-[15px] leading-7 text-gray-800 break-keep">
                   {selectedNotice.content}
                 </div>
 
                 <div className="border-t mt-6 pt-4 text-center">
                   <button
                     onClick={() => setSelectedNotice(null)}
-                    className="px-5 py-2 rounded-lg bg-gray-700 text-white font-bold"
+                    className="px-5 py-3 rounded-xl bg-gray-700 text-white font-bold text-sm"
                   >
                     목록으로
                   </button>
