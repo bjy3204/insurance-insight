@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+
 import {
   ArrowLeft,
   Phone,
@@ -170,6 +171,7 @@ const lifeCompanies = [
     name: "교보생명",
     logo: "/logos/customer-life/kyobolife.png",
     claim: "https://www.kyobo.com/dgt/web/customer/support/need-papers/list",
+    claimPdf: "/claims/life/kyobolife.pdf",
     phone: "1588-1001",
     fax: "고객센터 문의",
     zipcode: "07291",
@@ -181,6 +183,7 @@ const lifeCompanies = [
     name: "신한라이프",
     logo: "/logos/customer-life/shinhanlife.png",
     claim: "https://www.shinhanlife.co.kr/hp/cdhf0020t02.do",
+    claimPdf: "/claims/life/shinhanlife.pdf",
     phone: "1588-5580",
     fax: "고객센터 문의",
     zipcode: "04535",
@@ -192,6 +195,7 @@ const lifeCompanies = [
     name: "메트라이프",
     logo: "/logos/customer-life/metlifelife.png",
     claim: "https://cyber.metlife.co.kr/claim/requiredDocumentNotice",
+    claimPdf: "/claims/life/metlifelife.pdf",
     phone: "1588-9600",
     fax: "02-3469-9428",
     zipcode: "06211",
@@ -203,17 +207,18 @@ const lifeCompanies = [
     name: "삼성생명",
     logo: "/logos/customer-life/samsunglife.png",
     claim: "https://www.samsunglife.com/individual/mysamsunglife/insurance/internet/MDP-MYINT020110M",
+    claimPdf: "/claims/life/samsunglife.pdf",
     phone: "1588-3114",
     fax: "고객센터 문의",
     zipcode: "",
-    address:
-      "부산우체국 사서함 189 삼성생명 사고보험금 접수 담당",
+    address: "부산우체국 사서함 189 삼성생명 사고보험금 접수 담당",
   },
 
   {
     name: "KDB생명",
     logo: "/logos/customer-life/kdblife.png",
     claim: "https://www.kdblife.co.kr/ajax.do?scrId=HCSCT006M01P",
+    claimPdf: "/claims/life/kdblife.pdf",
     phone: "1588-4040",
     fax: "02-2669-7939",
     zipcode: "07261",
@@ -225,6 +230,7 @@ const lifeCompanies = [
     name: "KB라이프",
     logo: "/logos/customer-life/kblife.png",
     claim: "https://www.kblife.co.kr/customer-center/informRequiredDocument.do",
+    claimPdf: "/claims/life/kblife.pdf",
     phone: "1588-3374",
     fax: "02-6220-9912",
     zipcode: "06253",
@@ -236,6 +242,7 @@ const lifeCompanies = [
     name: "흥국생명",
     logo: "/logos/customer-life/heungkuklife.png",
     claim: "https://www.heungkuklife.co.kr/jsps/front/help/customer_require_tab.jsp",
+    claimPdf: "/claims/life/heungkuklife.pdf",
     phone: "1588-2288",
     fax: "고객센터 문의",
     zipcode: "07254",
@@ -247,6 +254,7 @@ const lifeCompanies = [
     name: "DB생명",
     logo: "/logos/customer-life/dblife.png",
     claim: "https://www.idblife.com/support/guide/acbf_clm",
+    claimPdf: "/claims/life/dblife.pdf",
     phone: "1588-3131",
     fax: "0505-129-3134",
     zipcode: "04799",
@@ -258,6 +266,7 @@ const lifeCompanies = [
     name: "동양생명",
     logo: "/logos/customer-life/dongyanglife.png",
     claim: "https://www.myangel.co.kr/indvins/acctClapdClmNtc",
+    claimPdf: "/claims/life/dongyanglife.pdf",
     phone: "1577-1004",
     fax: "02-3289-4517",
     zipcode: "28510",
@@ -269,6 +278,7 @@ const lifeCompanies = [
     name: "ABL생명",
     logo: "/logos/customer-life/abllife.png",
     claim: "https://www.abllife.co.kr/st/custDesk/insSrvcGudn/acdtInsmClamGudn/acdtInsmClamGudn3?page=index",
+    claimPdf: "/claims/life/abllife.pdf",
     phone: "1588-6500",
     fax: "02-3299-5544",
     zipcode: "03116",
@@ -280,6 +290,7 @@ const lifeCompanies = [
     name: "IBK연금보험",
     logo: "/logos/customer-life/ibklife.png",
     claim: "https://www.ibki.co.kr/process/HP_CSCETR_POSN_DOC_INS_LIST?bltb_cod=SC000014&sctn=in&TAB=in",
+    claimPdf: "/claims/life/ibklife.pdf",
     phone: "1577-4117",
     fax: "02-2270-1577",
     zipcode: "04511",
@@ -291,6 +302,7 @@ const lifeCompanies = [
     name: "라이나생명",
     logo: "/logos/customer-life/linalife.png",
     claim: "https://www.lina.co.kr/cyber/accident-insurance/document-zero",
+    claimPdf: "/claims/life/linalife.pdf",
     phone: "1588-0058",
     fax: "02-6944-1200",
     zipcode: "03156",
@@ -302,6 +314,7 @@ const lifeCompanies = [
     name: "한화생명",
     logo: "/logos/customer-life/hanhwalife.png",
     claim: "https://www.hanwhalife.com/static/main/myPage/insurance/accident/document/MY_INAPADC_T10000.jsp",
+    claimPdf: "/claims/life/hanhwalife.pdf",
     phone: "1588-6363",
     fax: "고객센터 문의",
     zipcode: "04513",
@@ -313,6 +326,7 @@ const lifeCompanies = [
     name: "하나생명",
     logo: "/logos/customer-life/hanalife.png",
     claim: "https://www.hanalife.co.kr/csc/accidentGuideRenew/accidentPaymentDocument.do",
+    claimPdf: "/claims/life/hanalife.pdf",
     phone: "1577-1112",
     fax: "고객센터 문의",
     zipcode: "04538",
@@ -324,6 +338,7 @@ const lifeCompanies = [
     name: "미래에셋생명",
     logo: "/logos/customer-life/miraeassetlife.png",
     claim: "https://life.miraeasset.com/home/index.do#MO-HO-030501-010000",
+    claimPdf: "/claims/life/miraeassetlife.pdf",
     phone: "1588-0220",
     fax: "고객센터 문의",
     zipcode: "07208",
@@ -335,6 +350,7 @@ const lifeCompanies = [
     name: "NH농협생명",
     logo: "/logos/customer-life/nhlife.png",
     claim: "https://www.nhlife.co.kr/ho/cc/HOCC0010M00.nhl",
+    claimPdf: "/claims/life/nhlife.pdf",
     phone: "1544-4000",
     fax: "02-6971-6040",
     zipcode: "04156",
@@ -346,6 +362,7 @@ const lifeCompanies = [
     name: "AIA생명",
     logo: "/logos/customer-life/aialife.png",
     claim: "https://www.aia.co.kr/ko/customer-support/customer-guide/forms/claims.html",
+    claimPdf: "/claims/life/aialife.pdf",
     phone: "1588-9898",
     fax: "02-2021-4540",
     zipcode: "04511",
@@ -357,6 +374,7 @@ const lifeCompanies = [
     name: "처브라이프",
     logo: "/logos/customer-life/chubblife.png",
     claim: "https://www.chubblife.co.kr/front/ctmcenter/insurance/listDocu.do",
+    claimPdf: "/claims/life/chubblife.pdf",
     phone: "1599-4600",
     fax: "02-3480-7801",
     zipcode: "06162",
@@ -368,6 +386,7 @@ const lifeCompanies = [
     name: "BNP파리바 카디프생명",
     logo: "/logos/customer-life/cardiflife.png",
     claim: "https://www.cardif.co.kr/mycardif/ch/agt/chagt001.do",
+    claimPdf: "/claims/life/cardiflife.pdf",
     phone: "1688-1118",
     fax: "02-3788-8939",
     zipcode: "04637",
@@ -379,6 +398,7 @@ const lifeCompanies = [
     name: "푸본현대생명",
     logo: "/logos/customer-life/fubonlife.png",
     claim: "https://www.fubonhyundai.com/#CUSI070100000000",
+    claimPdf: "/claims/life/fubonlife.pdf",
     phone: "1577-3311",
     fax: "0505-106-0311",
     zipcode: "07327",
@@ -390,6 +410,7 @@ const lifeCompanies = [
     name: "iM라이프",
     logo: "/logos/customer-life/imlife.png",
     claim: "https://www.imlifeins.co.kr/BB/BB_D010.do",
+    claimPdf: "/claims/life/imlife.pdf",
     phone: "1588-4770",
     fax: "0505-083-5420",
     zipcode: "07261",
@@ -495,6 +516,7 @@ address: "",
 export default function CustomerCenterPage() {
   const [search, setSearch] = useState("");
 const [tab, setTab] = useState("nonlife");
+const [selectedCompany, setSelectedCompany] = useState<any>(null);
 
 const currentCompanies =
   tab === "nonlife"
@@ -655,23 +677,29 @@ const filteredCompanies =
                   className="w-32 h-12 object-contain"
                 />
 
-                {/* 청구사이트 */}
-                <a
-                  href={company.claim}
-                  target="_blank"
-                  title="청구서류 사이트"
-                 className="
-  w-11
-  h-11
-  text-black
-  flex
-  items-center
-  justify-center
-  shrink-0
-"
-                >
-                  <Home className="w-5 h-5" />
-                </a>
+                <div className="flex items-center gap-2">
+
+  {/* 청구사이트 */}
+  <a
+    href={company.claim}
+    target="_blank"
+    title="청구서류 사이트"
+    className="
+      w-11
+      h-11
+      text-black
+      flex
+      items-center
+      justify-center
+      shrink-0
+    "
+  >
+    <Home className="w-5 h-5" />
+  </a>
+
+  
+
+</div>
 
               </div>
 
@@ -732,6 +760,7 @@ const filteredCompanies =
   )}
 
   {company.address && (
+  <>
     <div className="flex gap-3">
       <MapPin className="w-5 h-5 text-gray-400 mt-1 shrink-0" />
 
@@ -740,12 +769,36 @@ const filteredCompanies =
           주소
         </p>
 
-        <p className="text-base font-semibold text-gray-800 leading-relaxed">
+        <p className="text-base font-semibold text-gray-800 leading-relaxed min-h-[96px]">
           ({company.zipcode}) {company.address}
         </p>
       </div>
     </div>
-  )}
+
+    <button
+      onClick={() => setSelectedCompany(company)}
+      className="
+        w-full
+        h-12
+        rounded-xl
+        bg-gray-50
+        text-gray-700
+        text-sm
+        font-bold
+        flex
+        items-center
+        justify-center
+        transition-all
+        duration-200
+        hover:bg-gray-100
+        hover:shadow-md
+        hover:-translate-y-0.5
+      "
+    >
+      청구서
+    </button>
+  </>
+)}
 
 </div>
 
@@ -755,7 +808,45 @@ const filteredCompanies =
         </div>
 
       </section>
+{/* 청구서 팝업 */}
+{selectedCompany && (
+  <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
 
+    <div className="bg-white w-full max-w-5xl h-[92vh] rounded-xl overflow-hidden shadow-2xl">
+
+      {/* 상단 */}
+      <div className="h-14 border-b flex items-center justify-between px-5">
+
+        <p className="text-sm font-semibold text-gray-900">
+          {selectedCompany.name}
+        </p>
+
+        <button
+          onClick={() => setSelectedCompany(null)}
+          className="text-3xl font-light text-gray-400 hover:text-gray-700"
+        >
+          ×
+        </button>
+
+      </div>
+
+      {/* 내용 */}
+      <div className="h-[calc(92vh-56px)] overflow-y-auto px-6 py-7">
+
+        
+
+        {/* PDF */}
+        <iframe
+          src={selectedCompany.claimPdf}
+          className="w-full h-[1200px] rounded-lg border-0"
+        />
+
+      </div>
+
+    </div>
+
+  </div>
+)}
     </main>
   );
 }
