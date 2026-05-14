@@ -14,6 +14,7 @@ import {
   X,
   Megaphone,
   CircleDollarSign,
+  Landmark,
 } from "lucide-react";
 
 import { FaInstagram } from "react-icons/fa";
@@ -52,17 +53,23 @@ const menus = [
     link: "/calculator",
   },
   {
-  title: "화폐가치계산기",
-  desc: "시간의 경과에 따른 화폐가치 계산",
-  icon: CircleDollarSign,
-  link: "/money-value",
-},
-  {
     title: "보험인사이트 폴더",
     desc: "보험 자료 모음",
     icon: FolderOpen,
     link: "https://naver.me/FWTmVFQz",
   },
+  {
+  title: "화폐가치계산기",
+  desc: "시간의 경과에 따른 화폐가치 계산",
+  icon: CircleDollarSign,
+  link: "/money-value",
+},
+{
+  title: "예금·적금 계산기",
+  desc: "단리 · 복리 만기금액 계산",
+  icon: Landmark,
+  link: "/saving-calculator",
+},
 ];
 
 export default function Home() {

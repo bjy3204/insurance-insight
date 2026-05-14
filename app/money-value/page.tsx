@@ -5,7 +5,11 @@ import Link from "next/link";
 import {
   ArrowLeft,
   CircleDollarSign,
+  Newspaper,
+  MessageCircle,
 } from "lucide-react";
+
+import { FaInstagram } from "react-icons/fa";
 
 export default function MoneyValuePage() {
   const [type, setType] = useState<"future" | "present">("future");
@@ -70,7 +74,7 @@ export default function MoneyValuePage() {
         </div>
 
         <p className="text-sm text-gray-500 mt-1">
-          물가상승률 기준 현재·미래 화폐가치를 계산합니다
+          물가상승률 기준 현재·미래 화폐가치 계산
         </p>
 
       </div>
@@ -283,6 +287,38 @@ export default function MoneyValuePage() {
           </div>
         </div>
       </div>
+      {/* 하단 고정 메뉴 */}
+<div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+
+  <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
+
+    <a
+      href="https://naver.me/xsZ8mk7H"
+      className="py-3 flex flex-col items-center gap-1"
+    >
+      <Newspaper className="w-5 h-5" />
+      <span className="text-sm">보험사별 소식지</span>
+    </a>
+
+    <a
+      href="https://open.kakao.com/o/gD7ej63h"
+      className="py-3 flex flex-col items-center gap-1"
+    >
+      <MessageCircle className="w-5 h-5" />
+      <span className="text-sm">보험인사이트 카카오톡</span>
+    </a>
+
+    <a
+      href="https://www.instagram.com/g__tree_/"
+      className="py-3 flex flex-col items-center gap-1"
+    >
+      <FaInstagram className="w-5 h-5" />
+      <span className="text-sm">보험나무 인스타그램</span>
+    </a>
+
+  </div>
+
+</div>
     </main>
   );
 }
