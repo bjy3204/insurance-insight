@@ -1,8 +1,8 @@
-export const noticeVersion = 3;
+export const noticeVersion = 4;
 export const notices = [
     {
   id: 6,
-  title: "홈화면 바로가기 기능이 추가되었습니다",
+  title: "홈화면 바로가기 기능 추가",
   date: "2026년 5월 15일 05:39",
   category: "업데이트",
   content: `보험인사이트를 더 편하게 이용하실 수 있도록
@@ -38,7 +38,7 @@ PC
     id: 5,
     date: "2026년 5월 14일 23:38",
     category: "업데이트",
-    title: "연금계산기가 추가되었습니다",
+    title: "연금계산기 추가",
     content: `
 연금계산기가 추가되었습니다.
 
@@ -58,7 +58,7 @@ PC
     id: 4,
     date: "2026년 5월 14일 9:51",
     category: "업데이트",
-    title: "고객센터 메뉴에 공제보험 및 기타보험 항목이 추가되었습니다",
+    title: "고객센터 메뉴에 공제보험 및 기타보험 항목 추가",
     content: `
 고객센터 메뉴에 공제보험 및 기타보험 항목이 추가되었습니다.
 
@@ -71,7 +71,7 @@ PC
     id: 3,
     date: "2026년 5월 14일 9:12",
     category: "업데이트",
-    title: "예금 · 적금 계산기가 추가되었습니다",
+    title: "예금 · 적금 계산기 추가",
     content: `
 예금 · 적금 계산기가 추가되었습니다 !
 
@@ -85,7 +85,7 @@ PC
     id: 2,
     date: "2026년 5월 14일 9:11",
     category: "업데이트",
-    title: "화폐가치 계산기가 추가되었습니다",
+    title: "화폐가치 계산기 추가",
     content: `
 화폐가치 계산기가 추가되었습니다 !
 
