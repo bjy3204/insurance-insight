@@ -354,7 +354,9 @@ if (savedVersion != noticeVersion.toString()) {
       </div>
 
       {/* 앱처럼 사용하기 */}
-      {showInstall && (
+      {/* 앱처럼 사용하기 */}
+{showInstall &&
+  /iPhone|iPad|iPod|Android/i.test(window.navigator.userAgent) && (
         <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-20 md:mb-8">
           <button
             onClick={async () => {
