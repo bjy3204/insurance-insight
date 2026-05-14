@@ -198,7 +198,7 @@ if (savedVersion != noticeVersion.toString()) {
 };
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-28 md:pb-24 lg:pb-2">
+    <main className="min-h-screen bg-gray-100 pb-28 md:pb-40 lg:pb-2">
       {/* 헤더 */}
       <header className="bg-white border-b shadow-sm">
         <div className="max-w-[1500px] mx-auto px-5 py-6">
