@@ -397,6 +397,73 @@ const lifeCompanies = [
       "서울특별시 영등포구 양산로 91 리드원지식산업센터 3층 310호 iM라이프생명보험 보험금 접수센터",
   },
 ];
+const mutualCompanies = [
+  {
+    name: "우체국보험",
+    logo: "/logos/customer-mutual/epost.png",
+    claim: "https://epostlife.go.kr/PYIMRD0002.do",
+    phone: "1599-0100",
+  },
+
+  {
+    name: "MG새마을금고",
+    logo: "/logos/customer-mutual/mg.png",
+    claim: "https://insure.kfcc.co.kr/#/PGE_IHG_00039",
+    phone: "1599-9010",
+  },
+
+  {
+    name: "신협",
+    logo: "/logos/customer-mutual/cu.png",
+    claim: "https://openbank.cu.co.kr/",
+    phone: "1544-3030",
+  },
+
+  {
+    name: "수협",
+    logo: "/logos/customer-mutual/suhyup.png",
+    claim: "https://www.suhyup-bank.com/",
+    phone: "1588-4119",
+  },
+
+  {
+    name: "THE K 손해보험",
+    logo: "/logos/customer-mutual/thek.png",
+    claim: "https://www.ktcu.or.kr/PPW-CSA-100101",
+    phone: "1577-3993",
+  },
+];
+
+const etcCompanies = [
+  {
+    name: "Carrot",
+    logo: "/logos/customer-etc/carrot.png",
+    claim:
+      "https://www.carrotins.com/desktop/reward/claim/guide/",
+    phone: "1566-0300",
+  },
+
+  {
+    name: "AXA",
+    logo: "/logos/customer-etc/axa.png",
+    claim: "https://www.axa.co.kr/cui/cmk/cl/CMKCLL02M01.html",
+    phone: "1588-5114",
+  },
+
+  {
+    name: "카카오페이손해보험",
+    logo: "/logos/customer-etc/kakaopay.png",
+    claim: "https://kakaopayinscorp.co.kr/",
+    phone: "1544-0022",
+  },
+
+  {
+    name: "신한EZ손해보험",
+    logo: "/logos/customer-etc/shinhanez.png",
+    claim: "https://www.shinhanez.co.kr/static/man/MAIN0000M01.html",
+    phone: "1544-2580",
+  },
+];
 
 export default function CustomerCenterPage() {
   const [search, setSearch] = useState("");
@@ -405,11 +472,27 @@ const [tab, setTab] = useState("nonlife");
 const currentCompanies =
   tab === "nonlife"
     ? nonlifeCompanies
-    : lifeCompanies;
+    : tab === "life"
+    ? lifeCompanies
+    : tab === "mutual"
+    ? mutualCompanies
+    : etcCompanies;
 
-const filteredCompanies = currentCompanies.filter((company) =>
-  company.name.toLowerCase().includes(search.toLowerCase())
-);
+const allCompanies = [
+  ...nonlifeCompanies,
+  ...lifeCompanies,
+  ...mutualCompanies,
+  ...etcCompanies,
+];
+
+const filteredCompanies =
+  search.trim() !== ""
+    ? allCompanies.filter((company) =>
+        company.name
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      )
+    : currentCompanies;
 
   return (
     <main className="min-h-screen bg-gray-50 pb-10">
@@ -473,11 +556,11 @@ const filteredCompanies = currentCompanies.filter((company) =>
         </div>
 
         {/* 탭 */}
-<div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7">
+<div className="grid grid-cols-2 md:grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
 
   <button
     onClick={() => setTab("nonlife")}
-    className={`rounded-xl py-3 font-bold ${
+    className={`rounded-xl py-3 text-sm md:text-base font-bold ${
       tab === "nonlife"
         ? "bg-white text-blue-600 shadow-sm"
         : "text-gray-600"
@@ -488,7 +571,7 @@ const filteredCompanies = currentCompanies.filter((company) =>
 
   <button
     onClick={() => setTab("life")}
-    className={`rounded-xl py-3 font-bold ${
+    className={`rounded-xl py-3 text-sm md:text-base font-bold ${
       tab === "life"
         ? "bg-white text-blue-600 shadow-sm"
         : "text-gray-600"
@@ -497,6 +580,27 @@ const filteredCompanies = currentCompanies.filter((company) =>
     생명보험
   </button>
 
+<button
+  onClick={() => setTab("mutual")}
+  className={`rounded-xl py-3 text-sm md:text-base font-bold ${
+    tab === "mutual"
+      ? "bg-white text-blue-600 shadow-sm"
+      : "text-gray-600"
+  }`}
+>
+  공제보험
+</button>
+
+<button
+  onClick={() => setTab("etc")}
+  className={`rounded-xl py-3 text-sm md:text-base font-bold ${
+    tab === "etc"
+      ? "bg-white text-blue-600 shadow-sm"
+      : "text-gray-600"
+  }`}
+>
+  기타보험
+</button>
 </div>
 
         {/* 카드 */}
@@ -582,37 +686,41 @@ const filteredCompanies = currentCompanies.filter((company) =>
               </div>
 
               {/* 정보 */}
-              <div className="space-y-5">
+<div className="space-y-5">
 
-                <div className="flex gap-3">
-                  <Printer className="w-5 h-5 text-gray-400 mt-1 shrink-0" />
+  {company.fax && (
+    <div className="flex gap-3">
+      <Printer className="w-5 h-5 text-gray-400 mt-1 shrink-0" />
 
-                  <div>
-                    <p className="text-sm text-gray-400 mb-1">
-                      팩스번호
-                    </p>
+      <div>
+        <p className="text-sm text-gray-400 mb-1">
+          팩스번호
+        </p>
 
-                    <p className="text-lg font-bold text-gray-800">
-                      {company.fax}
-                    </p>
-                  </div>
-                </div>
+        <p className="text-lg font-bold text-gray-800">
+          {company.fax}
+        </p>
+      </div>
+    </div>
+  )}
 
-                <div className="flex gap-3">
-  <MapPin className="w-5 h-5 text-gray-400 mt-1 shrink-0" />
+  {company.address && (
+    <div className="flex gap-3">
+      <MapPin className="w-5 h-5 text-gray-400 mt-1 shrink-0" />
 
-  <div>
-    <p className="text-sm text-gray-400 mb-1">
-      주소
-    </p>
+      <div>
+        <p className="text-sm text-gray-400 mb-1">
+          주소
+        </p>
 
-    <p className="text-base font-semibold text-gray-800 leading-relaxed">
-      ({company.zipcode}) {company.address}
-    </p>
-  </div>
+        <p className="text-base font-semibold text-gray-800 leading-relaxed">
+          ({company.zipcode}) {company.address}
+        </p>
+      </div>
+    </div>
+  )}
+
 </div>
-
-              </div>
 
             </div>
           ))}
