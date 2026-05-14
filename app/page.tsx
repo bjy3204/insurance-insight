@@ -198,14 +198,14 @@ if (savedVersion != noticeVersion.toString()) {
 };
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-20 md:pb-26">
+    <main className="min-h-screen bg-gray-100 pb-28 md:pb-2">
       {/* 헤더 */}
       <header className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="max-w-[1500px] mx-auto px-5 py-6">
           <div className="relative flex items-center justify-center md:justify-center">
 
   {/* 모바일 TODAY */}{showInstall && (
-  <div className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2">
+  <div className="hidden md:flex absolute left-5 top-1/2 -translate-y-1/2">
     <button
       onClick={async () => {
         if (deferredPrompt) {
@@ -374,7 +374,7 @@ if (savedVersion != noticeVersion.toString()) {
   }
 
   alert(
-    "홈화면에 추가 후 앱처럼 사용하실 수 있습니다.\n\n사파리 또는 크롬에서 열기\n\n모바일: 공유 또는 메뉴 버튼 → 홈 화면에 추가\n\nPC: 브라우저 메뉴 → 앱 설치"
+    "홈화면에 추가 후 앱처럼 사용하세요 !\n\n사파리 또는 크롬에서 열기\n\n모바일: 공유 또는 메뉴 버튼 → 홈 화면에 추가\n\nPC: 브라우저 메뉴 → 앱 설치"
   );
 }}
             className="
@@ -599,9 +599,9 @@ rel="noopener noreferrer"
       )}
             {/* 공지사항 팝업 */}
       {noticeOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-4xl rounded-xl shadow-xl overflow-hidden">
-            <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4">
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
+            <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
               <div className="font-bold flex items-center gap-2">
                 <Megaphone className="w-5 h-5" />
                 공지사항
@@ -613,111 +613,101 @@ rel="noopener noreferrer"
             </div>
 
             {!selectedNotice ? (
-              <div className="p-4">
-                <table className="w-full text-sm border-separate border-spacing-0">
-                  <thead className="bg-gray-50 rounded-xl overflow-hidden">
-                    <tr>
-                      <th className="py-3 w-20">번호</th>
-                      <th className="py-3">제목</th>
-                      <th className="py-3 w-36">날짜</th>
-                    </tr>
-                  </thead>
+  <div className="p-4 overflow-y-auto flex-1">
+    <div className="space-y-3">
+      {pagedNotices.map((notice) => (
+        <button
+          key={notice.id}
+          onClick={() => setSelectedNotice(notice)}
+          className="
+            w-full
+            text-left
+            bg-white
+            border
+            border-gray-200
+            rounded-2xl
+            p-4
+            hover:bg-gray-50
+            transition
+          "
+        >
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <span className="text-xs font-bold text-gray-400">
+              NO. {notice.id}
+            </span>
 
-                  <tbody>
-                    {pagedNotices.map((notice) => (
-                      <tr
-  key={notice.id}
-  onClick={() => setSelectedNotice(notice)}
-  className="
-    border-b
-    border-gray-100
-    hover:bg-gray-50
-    cursor-pointer
-    transition
-  "
->
-                        <td className="py-3 text-center text-gray-700">
-  {notice.id}
-</td>
-                        <td className="py-3 font-medium">
-  <div className="flex items-center gap-3">
-    
-    <span>
-      {notice.title}
-    </span>
+            <span
+              className={`
+                px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap
+                ${
+                  notice.category === "업데이트"
+                    ? "bg-blue-100 text-blue-600"
+                    : notice.category === "강의안내"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : notice.category === "OPEN"
+                    ? "bg-emerald-100 text-emerald-700 px-3"
+                    : "bg-orange-100 text-orange-600"
+                }
+              `}
+            >
+              {notice.category}
+            </span>
+          </div>
 
-    <span
-      className={`
-        px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap
-        ${
-          notice.category === "업데이트"
-  ? "bg-blue-100 text-blue-600"
-  : notice.category === "강의안내"
-  ? "bg-yellow-100 text-yellow-700"
-  : notice.category === "OPEN"
-  ? "bg-emerald-100 text-emerald-700 px-3"
-  : "bg-orange-100 text-orange-600"
-        }
-      `}
-    >
-      {notice.category}
-    </span>
+          <div className="font-bold text-gray-900 leading-snug break-keep">
+            {notice.title}
+          </div>
 
+          <div className="text-xs text-gray-500 mt-2">
+            {notice.date}
+          </div>
+        </button>
+      ))}
+    </div>
+
+    <div className="flex justify-center mt-5">
+      <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+        <button
+          onClick={() => setNoticePage((p) => Math.max(1, p - 1))}
+          disabled={noticePage === 1}
+          className="px-4 py-2 hover:bg-gray-100 disabled:text-gray-300"
+        >
+          이전
+        </button>
+
+        {Array.from({ length: totalNoticePages }).map((_, index) => {
+          const page = index + 1;
+
+          return (
+            <button
+              key={page}
+              onClick={() => setNoticePage(page)}
+              className={`px-4 py-2 border-l hover:bg-slate-600 ${
+                noticePage === page
+                  ? "bg-slate-700 text-white"
+                  : "bg-white text-blue-600"
+              }`}
+            >
+              {page}
+            </button>
+          );
+        })}
+
+        <button
+          onClick={() =>
+            setNoticePage((p) => Math.min(totalNoticePages, p + 1))
+          }
+          disabled={noticePage === totalNoticePages}
+          className="px-4 py-2 border-l hover:bg-gray-50 disabled:text-gray-300"
+        >
+          다음
+        </button>
+      </div>
+    </div>
   </div>
-</td>
-                        <td className="py-3 text-center text-gray-500 text-xs">
-                          {notice.date}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                <div className="flex justify-center mt-5">
-                  <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
-                    <button
-                      onClick={() => setNoticePage((p) => Math.max(1, p - 1))}
-                      disabled={noticePage === 1}
-                      className="px-4 py-2 hover:bg-gray-100 disabled:text-gray-300"
-                    >
-                      이전
-                    </button>
-
-                    {Array.from({ length: totalNoticePages }).map((_, index) => {
-                      const page = index + 1;
-
-                      return (
-                        <button
-                          key={page}
-                          onClick={() => setNoticePage(page)}
-                          className={`px-4 py-2 border-l hover:bg-slate-600 ${
-                            noticePage === page
-                              ? "bg-slate-700 text-white"
-                              : "bg-white text-blue-600"
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      );
-                    })}
-
-                    <button
-                      onClick={() =>
-                        setNoticePage((p) =>
-                          Math.min(totalNoticePages, p + 1)
-                        )
-                      }
-                      disabled={noticePage === totalNoticePages}
-                      className="px-4 py-2 border-l hover:bg-gray-50 disabled:text-gray-300"
-                    >
-                      다음
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="px-10 py-6">
-                <h2 className="text-2xl font-black text-gray-900">
+) : (
+              <div className="px-6 md:px-10 py-6 overflow-y-auto flex-1">
+                <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep">
                   {selectedNotice.title}
                 </h2>
 
@@ -725,7 +715,7 @@ rel="noopener noreferrer"
                   작성일: {selectedNotice.date}
                 </p>
 
-                <div className="border-t mt-5 pt-0 whitespace-pre-line leading-relaxed text-gray-800 min-h-[220px]">
+                <div className="border-t mt-5 pt-5 whitespace-pre-line leading-relaxed text-gray-800">
                   {selectedNotice.content}
                 </div>
 
