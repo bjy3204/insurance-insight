@@ -105,12 +105,13 @@ const [hasUpdate, setHasUpdate] = useState(false);
 
   useEffect(() => {
   const isStandalone =
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as any).standalone;
+  window.matchMedia("(display-mode: standalone)").matches ||
+  (window.navigator as any).standalone;
 
-  if (!isStandalone) {
-    setShowInstall(true);
-  }
+const isMobile =
+  /iPhone|iPad|iPod|Android/i.test(window.navigator.userAgent);
+
+setShowInstall(!isStandalone && isMobile);
 
   const fetchVisitor = async (hit = false) => {
     try {
