@@ -297,7 +297,7 @@ if (savedVersion != noticeVersion.toString()) {
           <button
             onClick={() => {
               alert(
-                "아이폰: 공유 버튼 → 홈 화면에 추가\n\n안드로이드: 메뉴 → 홈 화면에 추가"
+                "사파리 또는 크롬에서 열기\n\n아이폰: 공유 버튼 → 홈 화면에 추가\n\n안드로이드: 메뉴 → 홈 화면에 추가"
               );
             }}
             className="
