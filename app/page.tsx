@@ -313,7 +313,7 @@ if (savedVersion != noticeVersion.toString()) {
       </header>
 
       {/* 메인 */}
-      <div className="max-w-[1500px] mx-auto px-5 py-8 sm:p-10">
+      <div className="max-w-[1500px] mx-auto px-5 py-8 sm:p-10 md:pb-32 lg:pb-10">
   <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
           {menus.map((menu) => {
             const Icon = menu.icon;
@@ -616,24 +616,24 @@ rel="noopener noreferrer"
   <div className="flex flex-col flex-1 min-h-0">
 
     {/* 모바일 카드형 */}
-    <div className="p-4 space-y-3 md:hidden overflow-y-auto flex-1">
+    <div className="p-4 space-y-2 md:hidden overflow-y-auto flex-1">
       {pagedNotices.map((notice) => (
         <button
           key={notice.id}
           onClick={() => setSelectedNotice(notice)}
           className="
-            w-full
-            text-left
-            bg-white
-            border
-            border-gray-200
-            rounded-2xl
-            p-4
-            hover:bg-gray-50
-            transition
-          "
+  w-full
+  text-left
+  bg-white
+  border
+  border-gray-200
+  rounded-2xl
+  p-3
+  hover:bg-gray-50
+  transition
+"
         >
-          <div className="flex items-center justify-between gap-3 mb-2">
+          <div className="flex items-center justify-between gap-2 mb-1">
             <span className="text-xs font-bold text-gray-400">
               NO. {notice.id}
             </span>
@@ -656,11 +656,11 @@ rel="noopener noreferrer"
             </span>
           </div>
 
-          <div className="font-bold text-gray-900 leading-snug break-keep">
+          <div className="font-bold text-gray-900 leading-tight break-keep">
             {notice.title}
           </div>
 
-          <div className="text-xs text-gray-500 mt-2">
+          <div className="text-xs text-gray-500 mt-1">
             {notice.date}
           </div>
         </button>
@@ -691,11 +691,11 @@ rel="noopener noreferrer"
                 transition
               "
             >
-              <td className="py-3 text-center text-gray-700">
+              <td className="py-4 text-center text-gray-700 border-b border-gray-100">
                 {notice.id}
               </td>
 
-              <td className="py-3 font-medium">
+              <td className="py-4 font-medium border-b border-gray-100">
                 <div className="flex items-center gap-3">
                   <span>{notice.title}</span>
 
@@ -718,7 +718,7 @@ rel="noopener noreferrer"
                 </div>
               </td>
 
-              <td className="py-3 text-center text-gray-500 text-xs">
+              <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">
                 {notice.date}
               </td>
             </tr>
@@ -728,7 +728,7 @@ rel="noopener noreferrer"
     </div>
 
     {/* 페이지네이션 */}
-    <div className="flex justify-center border-t pt-4 pb-4 shrink-0">
+    <div className="flex justify-center pt-4 pb-4 shrink-0">
       <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
         <button
           onClick={() => setNoticePage((p) => Math.max(1, p - 1))}
@@ -770,9 +770,9 @@ rel="noopener noreferrer"
 
   </div>
 ) : (
-              <div className="px-6 md:px-10 pt-4 pb-6 flex flex-col flex-1 min-h-0">
+              <div className="px-6 md:px-10 pt-4 pb-6 flex-1 min-h-0 flex flex-col">
 
-  <div className="overflow-y-auto">
+  <div className="overflow-y-auto flex-1">
     <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep">
       {selectedNotice.title}
     </h2>
@@ -781,12 +781,12 @@ rel="noopener noreferrer"
       작성일: {selectedNotice.date}
     </p>
 
-    <div className="border-t mt-5 pt-5 whitespace-pre-line text-[15px] leading-7 text-gray-800 break-keep">
+    <div className="border-t border-gray-200 mt-3 pt-2 pb-6 whitespace-pre-line text-[15px] leading-6 text-gray-800 break-keep">
       {selectedNotice.content}
     </div>
   </div>
 
-  <div className="border-t mt-6 pt-4 text-center shrink-0">
+  <div className="border-t border-gray-200 pt-4 text-center shrink-0">
     <button
       onClick={() => setSelectedNotice(null)}
       className="px-5 py-3 rounded-xl bg-gray-700 text-white font-bold text-sm"
