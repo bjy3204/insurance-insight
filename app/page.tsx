@@ -84,7 +84,7 @@ const menus = [
 export default function Home() {
   const [today, setToday] = useState(0);
   const [total, setTotal] = useState(0);
-  const [showInstall, setShowInstall] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   const [open, setOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
@@ -108,10 +108,22 @@ const [hasUpdate, setHasUpdate] = useState(false);
   window.matchMedia("(display-mode: standalone)").matches ||
   (window.navigator as any).standalone;
 
-const isMobile =
-  /iPhone|iPad|iPod|Android/i.test(window.navigator.userAgent);
+if (isStandalone) {
+  setShowInstall(false);
+  return;
+}
 
-setShowInstall(!isStandalone && isMobile);
+const handleBeforeInstallPrompt = (e: any) => {
+  e.preventDefault();
+  setDeferredPrompt(e);
+  setShowInstall(true);
+};
+
+window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+return () => {
+  window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+};
 
   const fetchVisitor = async (hit = false) => {
     try {
@@ -179,7 +191,7 @@ if (savedVersion != noticeVersion.toString()) {
 };
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-28 md:pb-26">
+    <main className="min-h-screen bg-gray-100 pb-36 md:pb-28">
       {/* 헤더 */}
       <header className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
@@ -296,11 +308,24 @@ if (savedVersion != noticeVersion.toString()) {
       {showInstall && (
         <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-8">
           <button
-            onClick={() => {
-              alert(
-                "사파리 또는 크롬에서 열기\n\n아이폰: 공유 버튼 → 홈 화면에 추가\n\n안드로이드: 메뉴 → 홈 화면에 추가"
-              );
-            }}
+            onClick={async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+
+    const result = await deferredPrompt.userChoice;
+
+    if (result.outcome === "accepted") {
+      setShowInstall(false);
+      setDeferredPrompt(null);
+    }
+
+    return;
+  }
+
+  alert(
+    "홈화면에 추가 후 앱처럼 사용하실 수 있습니다.\n\n사파리 또는 크롬에서 열기\n\n모바일: 공유 또는 메뉴 버튼 → 홈 화면에 추가\n\nPC: 브라우저 메뉴 → 앱 설치"
+  );
+}}
             className="
               w-full
               bg-white
