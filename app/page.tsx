@@ -84,6 +84,7 @@ const menus = [
 export default function Home() {
   const [today, setToday] = useState(0);
   const [total, setTotal] = useState(0);
+  const [showInstall, setShowInstall] = useState(false);
 
   const [open, setOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
@@ -103,8 +104,16 @@ const pagedNotices = notices.slice(
 const [hasUpdate, setHasUpdate] = useState(false);
 
   useEffect(() => {
-    const fetchVisitor = async (hit = false) => {
-  try {
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as any).standalone;
+
+  if (!isStandalone) {
+    setShowInstall(true);
+  }
+
+  const fetchVisitor = async (hit = false) => {
+    try {
     const res = await fetch(`/api/visitor${hit ? "?hit=1" : ""}`, {
       cache: "no-store",
     });
@@ -169,7 +178,7 @@ if (savedVersion != noticeVersion.toString()) {
 };
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-28">
+    <main className="min-h-screen bg-gray-100 pb-40">
       {/* 헤더 */}
       <header className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
@@ -278,9 +287,44 @@ if (savedVersion != noticeVersion.toString()) {
 </p>
               </a>
             );
-          })}
+                   })}
         </div>
       </div>
+
+      {/* 앱처럼 사용하기 */}
+      {showInstall && (
+        <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-8">
+          <button
+            onClick={() => {
+              alert(
+                "아이폰: 공유 버튼 → 홈 화면에 추가\n\n안드로이드: 메뉴 → 홈 화면에 추가"
+              );
+            }}
+            className="
+              w-full
+              bg-white
+              border
+              border-gray-200
+              rounded-xl
+              px-4
+              py-3
+              flex
+              items-center
+              justify-center
+              gap-2
+              text-sm
+              shadow-sm
+            "
+          >
+            <span className="text-base">⭐</span>
+
+            <span className="font-semibold text-gray-800">
+              앱처럼 사용하기
+            </span>
+          </button>
+        </div>
+      )}
+
 <button
   onClick={() => {
     localStorage.setItem("noticeRead", noticeVersion.toString());
