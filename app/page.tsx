@@ -357,7 +357,7 @@ if (savedVersion != noticeVersion.toString()) {
       {/* 앱처럼 사용하기 */}
 {showInstall &&
   /iPhone|iPad|iPod|Android/i.test(window.navigator.userAgent) && (
-        <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-16 md:mb-8">
+        <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-16 md:hidden">
           <button
             onClick={async () => {
   if (deferredPrompt) {
@@ -613,8 +613,10 @@ rel="noopener noreferrer"
             </div>
 
             {!selectedNotice ? (
-  <div className="p-4 overflow-y-auto flex-1">
-    <div className="space-y-3">
+  <div className="overflow-y-auto flex-1">
+
+    {/* 모바일 카드형 */}
+    <div className="p-4 space-y-3 md:hidden">
       {pagedNotices.map((notice) => (
         <button
           key={notice.id}
@@ -665,7 +667,68 @@ rel="noopener noreferrer"
       ))}
     </div>
 
-    <div className="flex justify-center mt-5">
+    {/* PC 테이블형 */}
+    <div className="hidden md:block p-4">
+      <table className="w-full text-sm border-separate border-spacing-0">
+        <thead className="bg-gray-50 rounded-xl overflow-hidden">
+          <tr>
+            <th className="py-3 w-20">번호</th>
+            <th className="py-3">제목</th>
+            <th className="py-3 w-36">날짜</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {pagedNotices.map((notice) => (
+            <tr
+              key={notice.id}
+              onClick={() => setSelectedNotice(notice)}
+              className="
+                border-b
+                border-gray-100
+                hover:bg-gray-50
+                cursor-pointer
+                transition
+              "
+            >
+              <td className="py-3 text-center text-gray-700">
+                {notice.id}
+              </td>
+
+              <td className="py-3 font-medium">
+                <div className="flex items-center gap-3">
+                  <span>{notice.title}</span>
+
+                  <span
+                    className={`
+                      px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap
+                      ${
+                        notice.category === "업데이트"
+                          ? "bg-blue-100 text-blue-600"
+                          : notice.category === "강의안내"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : notice.category === "OPEN"
+                          ? "bg-emerald-100 text-emerald-700 px-3"
+                          : "bg-orange-100 text-orange-600"
+                      }
+                    `}
+                  >
+                    {notice.category}
+                  </span>
+                </div>
+              </td>
+
+              <td className="py-3 text-center text-gray-500 text-xs">
+                {notice.date}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {/* 페이지네이션 */}
+    <div className="flex justify-center mt-5 pb-5">
       <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
         <button
           onClick={() => setNoticePage((p) => Math.max(1, p - 1))}
@@ -704,6 +767,7 @@ rel="noopener noreferrer"
         </button>
       </div>
     </div>
+
   </div>
 ) : (
               <div className="px-6 md:px-10 py-6 overflow-y-auto flex-1">
