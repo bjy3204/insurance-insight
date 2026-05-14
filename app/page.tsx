@@ -179,7 +179,7 @@ if (savedVersion != noticeVersion.toString()) {
 };
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-40">
+    <main className="min-h-screen bg-gray-100 pb-28 md:pb-28">
       {/* 헤더 */}
       <header className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
