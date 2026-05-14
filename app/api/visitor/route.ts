@@ -8,7 +8,9 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const hit = searchParams.get("hit");
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = new Date().toLocaleDateString("sv-SE", {
+  timeZone: "Asia/Seoul",
+});
 
     const todayKey = `visitor:today:${today}`;
     const totalKey = "visitor:total";
