@@ -108,7 +108,9 @@ const [hasUpdate, setHasUpdate] = useState(false);
   }
 };
 
-    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayKey = new Date().toLocaleDateString("sv-SE", {
+  timeZone: "Asia/Seoul",
+});
 const visited = localStorage.getItem("visitedDate");
 
 if (visited !== todayKey) {
