@@ -214,7 +214,7 @@ survivor: [
               </div>
 
               <p className="text-sm text-gray-500 mt-1">
-                노후 연금 · 은퇴자금 계산
+                은퇴자금 · 연금액 · 국민연금 계산
               </p>
             </div>
 

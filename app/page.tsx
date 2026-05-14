@@ -69,7 +69,7 @@ const menus = [
 },
 {
   title: "연금계산기",
-  desc: "노후 연금 · 은퇴자금 계산",
+  desc: "은퇴자금 · 연금액 · 국민연금 계산",
   icon: PiggyBank,
   link: "/pension-calculator",
 },
