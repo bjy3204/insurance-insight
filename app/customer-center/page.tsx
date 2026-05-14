@@ -403,6 +403,9 @@ const mutualCompanies = [
     logo: "/logos/customer-mutual/epost.png",
     claim: "https://epostlife.go.kr/PYIMRD0002.do",
     phone: "1599-0100",
+    fax: "",
+zipcode: "",
+address: "",
   },
 
   {
@@ -410,6 +413,9 @@ const mutualCompanies = [
     logo: "/logos/customer-mutual/mg.png",
     claim: "https://insure.kfcc.co.kr/#/PGE_IHG_00039",
     phone: "1599-9010",
+    fax: "",
+zipcode: "",
+address: "",
   },
 
   {
@@ -417,6 +423,9 @@ const mutualCompanies = [
     logo: "/logos/customer-mutual/cu.png",
     claim: "https://openbank.cu.co.kr/",
     phone: "1544-3030",
+    fax: "",
+zipcode: "",
+address: "",
   },
 
   {
@@ -424,6 +433,9 @@ const mutualCompanies = [
     logo: "/logos/customer-mutual/suhyup.png",
     claim: "https://www.suhyup-bank.com/",
     phone: "1588-4119",
+    fax: "",
+zipcode: "",
+address: "",
   },
 
   {
@@ -431,6 +443,9 @@ const mutualCompanies = [
     logo: "/logos/customer-mutual/thek.png",
     claim: "https://www.ktcu.or.kr/PPW-CSA-100101",
     phone: "1577-3993",
+    fax: "",
+zipcode: "",
+address: "",
   },
 ];
 
@@ -441,6 +456,9 @@ const etcCompanies = [
     claim:
       "https://www.carrotins.com/desktop/reward/claim/guide/",
     phone: "1566-0300",
+    fax: "",
+zipcode: "",
+address: "",
   },
 
   {
@@ -448,6 +466,9 @@ const etcCompanies = [
     logo: "/logos/customer-etc/axa.png",
     claim: "https://www.axa.co.kr/cui/cmk/cl/CMKCLL02M01.html",
     phone: "1588-5114",
+    fax: "",
+zipcode: "",
+address: "",
   },
 
   {
@@ -455,6 +476,9 @@ const etcCompanies = [
     logo: "/logos/customer-etc/kakaopay.png",
     claim: "https://kakaopayinscorp.co.kr/",
     phone: "1544-0022",
+    fax: "",
+zipcode: "",
+address: "",
   },
 
   {
@@ -462,6 +486,9 @@ const etcCompanies = [
     logo: "/logos/customer-etc/shinhanez.png",
     claim: "https://www.shinhanez.co.kr/static/man/MAIN0000M01.html",
     phone: "1544-2580",
+    fax: "",
+zipcode: "",
+address: "",
   },
 ];
 
