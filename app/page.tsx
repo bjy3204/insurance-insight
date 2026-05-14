@@ -305,7 +305,7 @@ if (savedVersion != noticeVersion.toString()) {
               bg-white
               border
               border-gray-200
-              rounded-xl
+              rounded-2xl
               px-4
               py-3
               flex
@@ -316,11 +316,9 @@ if (savedVersion != noticeVersion.toString()) {
               shadow-sm
             "
           >
-            <span className="text-base">⭐</span>
-
             <span className="font-semibold text-gray-800">
-              앱처럼 사용하기
-            </span>
+  앱처럼 사용하기
+</span>
           </button>
         </div>
       )}
