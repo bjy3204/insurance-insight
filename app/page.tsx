@@ -198,7 +198,7 @@ if (savedVersion != noticeVersion.toString()) {
 };
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-28 md:pb-2">
+    <main className="min-h-screen bg-gray-100 pb-28 md:pb-24 lg:pb-2">
       {/* 헤더 */}
       <header className="bg-white border-b shadow-sm">
         <div className="max-w-[1500px] mx-auto px-5 py-6">
@@ -600,7 +600,7 @@ rel="noopener noreferrer"
             {/* 공지사항 팝업 */}
       {noticeOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4">
-          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[85vh] lg:h-[65vh] flex flex-col">
             <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
               <div className="font-bold flex items-center gap-2">
                 <Megaphone className="w-5 h-5" />
@@ -613,10 +613,10 @@ rel="noopener noreferrer"
             </div>
 
             {!selectedNotice ? (
-  <div className="overflow-y-auto flex-1">
+  <div className="flex flex-col flex-1 min-h-0">
 
     {/* 모바일 카드형 */}
-    <div className="p-4 space-y-3 md:hidden">
+    <div className="p-4 space-y-3 md:hidden overflow-y-auto flex-1">
       {pagedNotices.map((notice) => (
         <button
           key={notice.id}
@@ -668,7 +668,7 @@ rel="noopener noreferrer"
     </div>
 
     {/* PC 테이블형 */}
-    <div className="hidden md:block p-4">
+    <div className="hidden md:block p-4 overflow-y-auto flex-1">
       <table className="w-full text-sm border-separate border-spacing-0">
         <thead className="bg-gray-50 rounded-xl overflow-hidden">
           <tr>
@@ -728,7 +728,7 @@ rel="noopener noreferrer"
     </div>
 
     {/* 페이지네이션 */}
-    <div className="flex justify-center mt-5 pb-5">
+    <div className="flex justify-center border-t pt-4 pb-4 shrink-0">
       <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
         <button
           onClick={() => setNoticePage((p) => Math.max(1, p - 1))}
@@ -770,28 +770,32 @@ rel="noopener noreferrer"
 
   </div>
 ) : (
-              <div className="px-6 md:px-10 py-6 overflow-y-auto flex-1">
-                <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep">
-                  {selectedNotice.title}
-                </h2>
+              <div className="px-6 md:px-10 pt-4 pb-6 flex flex-col flex-1 min-h-0">
 
-                <p className="text-xs md:text-sm text-gray-500 mt-2">
-                  작성일: {selectedNotice.date}
-                </p>
+  <div className="overflow-y-auto">
+    <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep">
+      {selectedNotice.title}
+    </h2>
 
-                <div className="border-t mt-5 pt-5 whitespace-pre-line text-[15px] leading-7 text-gray-800 break-keep">
-                  {selectedNotice.content}
-                </div>
+    <p className="text-xs md:text-sm text-gray-500 mt-2">
+      작성일: {selectedNotice.date}
+    </p>
 
-                <div className="border-t mt-6 pt-4 text-center">
-                  <button
-                    onClick={() => setSelectedNotice(null)}
-                    className="px-5 py-3 rounded-xl bg-gray-700 text-white font-bold text-sm"
-                  >
-                    목록으로
-                  </button>
-                </div>
-              </div>
+    <div className="border-t mt-5 pt-5 whitespace-pre-line text-[15px] leading-7 text-gray-800 break-keep">
+      {selectedNotice.content}
+    </div>
+  </div>
+
+  <div className="border-t mt-6 pt-4 text-center shrink-0">
+    <button
+      onClick={() => setSelectedNotice(null)}
+      className="px-5 py-3 rounded-xl bg-gray-700 text-white font-bold text-sm"
+    >
+      목록으로
+    </button>
+  </div>
+
+</div>
             )}
           </div>
         </div>
