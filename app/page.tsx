@@ -84,6 +84,7 @@ const menus = [
 export default function Home() {
   const [today, setToday] = useState(0);
   const [total, setTotal] = useState(0);
+  const [showInstall, setShowInstall] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   const [open, setOpen] = useState(false);
@@ -110,7 +111,8 @@ const [hasUpdate, setHasUpdate] = useState(false);
 
 if (isStandalone) {
   setShowInstall(false);
-  return;
+} else {
+  setShowInstall(true);
 }
 
 const handleBeforeInstallPrompt = (e: any) => {
@@ -197,7 +199,49 @@ if (savedVersion != noticeVersion.toString()) {
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center md:justify-center">
 
-  {/* 모바일 TODAY */}
+  {/* 모바일 TODAY */}{showInstall && (
+  <div className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2">
+    <button
+      onClick={async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+
+          const result = await deferredPrompt.userChoice;
+
+          if (result.outcome === "accepted") {
+            setShowInstall(false);
+            setDeferredPrompt(null);
+          }
+
+          return;
+        }
+
+        alert(
+          "크롬 또는 엣지에서 브라우저 메뉴 → 앱 설치를 눌러주세요."
+        );
+      }}
+      className="
+        px-4
+        h-12
+        rounded-2xl
+        border
+        border-gray-300
+        bg-white
+        flex
+        items-center
+        justify-center
+        text-sm
+        font-semibold
+        text-gray-800
+        shadow-sm
+        hover:bg-gray-50
+        transition
+      "
+    >
+      바로가기 만들기
+    </button>
+  </div>
+)}
   <div className="absolute left-0 top-1/2 -translate-y-1/2 md:hidden">
     <div className="text-center">
       <p className="text-[10px] leading-none text-gray-400 font-bold">
@@ -306,7 +350,7 @@ if (savedVersion != noticeVersion.toString()) {
 
       {/* 앱처럼 사용하기 */}
       {showInstall && (
-        <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-8">
+        <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-28 md:mb-8">
           <button
             onClick={async () => {
   if (deferredPrompt) {
