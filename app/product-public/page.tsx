@@ -256,7 +256,7 @@ export default function ProductPublicPage() {
               <div className="flex items-center justify-center gap-2">
                 <Building2 className="w-7 h-7 text-blue-600" />
 
-                <h1 className="text-2xl font-black text-blue-600">
+                <h1 className="text-2xl font-black text-gray-900">
                   상품공시실
                 </h1>
               </div>
