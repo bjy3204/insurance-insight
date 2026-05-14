@@ -106,26 +106,25 @@ const [hasUpdate, setHasUpdate] = useState(false);
 
   useEffect(() => {
   const isStandalone =
-  window.matchMedia("(display-mode: standalone)").matches ||
-  (window.navigator as any).standalone;
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as any).standalone;
 
-if (isStandalone) {
-  setShowInstall(false);
-} else {
-  setShowInstall(true);
-}
+  if (isStandalone) {
+    setShowInstall(false);
+  } else {
+    setShowInstall(true);
+  }
 
-const handleBeforeInstallPrompt = (e: any) => {
-  e.preventDefault();
-  setDeferredPrompt(e);
-  setShowInstall(true);
-};
+  const handleBeforeInstallPrompt = (e: any) => {
+    e.preventDefault();
+    setDeferredPrompt(e);
+    setShowInstall(true);
+  };
 
-window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
-return () => {
-  window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-};
+  window.addEventListener(
+    "beforeinstallprompt",
+    handleBeforeInstallPrompt
+  );
 
   const fetchVisitor = async (hit = false) => {
     try {
@@ -158,7 +157,13 @@ if (visited !== todayKey) {
 if (savedVersion != noticeVersion.toString()) {
   setHasUpdate(true);
 }
-  }, []);
+  return () => {
+  window.removeEventListener(
+    "beforeinstallprompt",
+    handleBeforeInstallPrompt
+  );
+};
+}, []);
 
   const sendMessage = async () => {
   if (!fixMessage.trim() && !addMessage.trim()) {
@@ -350,7 +355,7 @@ if (savedVersion != noticeVersion.toString()) {
 
       {/* 앱처럼 사용하기 */}
       {showInstall && (
-        <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-28 md:mb-8">
+        <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-20 md:mb-8">
           <button
             onClick={async () => {
   if (deferredPrompt) {
