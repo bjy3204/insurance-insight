@@ -249,8 +249,14 @@ if (savedVersion != noticeVersion.toString()) {
 
             return (
               <a
-                key={menu.title}
-                href={menu.link}
+  key={menu.title}
+  href={menu.link}
+  target={
+    menu.title === "보험인사이트 폴더"
+      ? "_blank"
+      : "_self"
+  }
+  rel="noopener noreferrer"
                 className="
   bg-white
   p-7
@@ -328,6 +334,8 @@ if (savedVersion != noticeVersion.toString()) {
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a
             href="https://naver.me/xsZ8mk7H"
+            target="_blank"
+rel="noopener noreferrer"
             className="py-3 flex flex-col items-center gap-1"
           >
             <Newspaper className="w-5 h-5" />
@@ -336,6 +344,8 @@ if (savedVersion != noticeVersion.toString()) {
 
           <a
             href="https://open.kakao.com/o/gD7ej63h"
+            target="_blank"
+rel="noopener noreferrer"
             className="py-3 flex flex-col items-center gap-1"
           >
             <MessageCircle className="w-5 h-5" />
@@ -344,6 +354,8 @@ if (savedVersion != noticeVersion.toString()) {
 
           <a
             href="https://www.instagram.com/g__tree_/"
+            target="_blank"
+rel="noopener noreferrer"
             className="py-3 flex flex-col items-center gap-1"
           >
             <FaInstagram className="w-5 h-5" />
