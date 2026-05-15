@@ -1704,6 +1704,12 @@ const calculateSimple = () => {
     flex
     items-center
     justify-center
+    shadow-lg
+hover:shadow-2xl
+hover:-translate-y-0.5
+transition-all
+duration-200
+cursor-pointer
   "
 >
   <BookOpen className="w-6 h-6 text-white" />

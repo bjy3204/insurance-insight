@@ -135,8 +135,8 @@ duration-200
   top-3
   left-3
 
-  w-8
-  h-8
+  w-6.5
+  h-6.5
   md:w-7
   md:h-7
 
@@ -159,7 +159,7 @@ duration-200
         alt={company.name}
         className="
           max-w-[160px]
-max-h-[6px]
+max-h-[62px]
 
 md:max-w-[180px]
 md:max-h-[72px]

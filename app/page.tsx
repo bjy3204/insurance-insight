@@ -420,6 +420,11 @@ if (savedVersion != noticeVersion.toString()) {
     flex
     items-center
     justify-center
+    hover:shadow-2xl
+hover:-translate-y-0.5
+transition-all
+duration-200
+cursor-pointer
   "
 >
   <Megaphone className="w-6 h-6 text-white" />
@@ -607,7 +612,10 @@ rel="noopener noreferrer"
                 공지사항
               </div>
 
-              <button onClick={() => setNoticeOpen(false)}>
+              <button
+  onClick={() => setNoticeOpen(false)}
+  className="cursor-pointer"
+>
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -733,7 +741,7 @@ rel="noopener noreferrer"
         <button
           onClick={() => setNoticePage((p) => Math.max(1, p - 1))}
           disabled={noticePage === 1}
-          className="px-4 py-2 hover:bg-gray-100 disabled:text-gray-300"
+          className="px-4 py-2 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
         >
           이전
         </button>
@@ -745,7 +753,7 @@ rel="noopener noreferrer"
             <button
               key={page}
               onClick={() => setNoticePage(page)}
-              className={`px-4 py-2 border-l hover:bg-slate-600 ${
+              className={`px-4 py-2 border-l hover:bg-slate-600 cursor-pointer ${
                 noticePage === page
                   ? "bg-slate-700 text-white"
                   : "bg-white text-blue-600"
@@ -761,7 +769,7 @@ rel="noopener noreferrer"
             setNoticePage((p) => Math.min(totalNoticePages, p + 1))
           }
           disabled={noticePage === totalNoticePages}
-          className="px-4 py-2 border-l hover:bg-gray-50 disabled:text-gray-300"
+          className="px-4 py-2 border-l hover:bg-gray-50 disabled:text-gray-300 cursor-pointer"
         >
           다음
         </button>
