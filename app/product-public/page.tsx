@@ -237,8 +237,8 @@ export default function ProductPublicPage() {
   rel="noopener noreferrer"
   className="
   cursor-pointer
-  px-10
-  md:px-6
+  px-12
+  md:px-5.5
   py-2.5
   rounded-xl
   bg-gray-800

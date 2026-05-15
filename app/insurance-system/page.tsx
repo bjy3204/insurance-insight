@@ -135,8 +135,8 @@ duration-200
   top-3
   left-3
 
-  w-6
-  h-6
+  w-8
+  h-8
   md:w-7
   md:h-7
 
