@@ -19,6 +19,7 @@ const nonlifeCompanies = [
     logo: "/logos/customer-nonlife/db.png",
     claim: "https://www.idbins.com/pc/bizxpress/ct/dc/FWCUSV1301.shtm",
     claimPdf: "/claims/nonlife/db.pdf",
+    dentalPdf: "/claims/nonlife-dental/db.pdf",
     phone: "1588-0100",
     fax: "0505-181-4862",
     zipcode: "54966",
@@ -29,6 +30,7 @@ const nonlifeCompanies = [
     logo: "/logos/customer-nonlife/samsung.png",
     claim: "https://www.samsungfire.com/v2/html/claim/01/C_010_030_001.html",
     claimPdf: "/claims/nonlife/samsung.pdf",
+    dentalPdf: "/claims/nonlife-dental/samsung.pdf",
     phone: "1588-5114",
     fax: "0505-162-0872",
     zipcode: "07275",
@@ -39,6 +41,7 @@ const nonlifeCompanies = [
     logo: "/logos/customer-nonlife/hanhwa.png",
     claim: "https://www.hwgeneralins.com/fplaza/compensation/receipt01.do",
     claimPdf: "/claims/nonlife/hanhwa.pdf",
+    dentalPdf: "/claims/nonlife-dental/hanhwa.pdf",
     phone: "1566-8000",
     fax: "0505-779-1004",
     zipcode: "04386",
@@ -49,6 +52,7 @@ const nonlifeCompanies = [
     logo: "/logos/customer-nonlife/hyundai.png",
     claim: "https://www.hi.co.kr/serviceAction.do?menuId=100631",
     claimPdf: "/claims/nonlife/hyundai.pdf",
+    dentalPdf: "/claims/nonlife-dental/hyundai.pdf",
     phone: "1588-5656",
     fax: "0507-162-0872",
     zipcode: "07275",
@@ -59,6 +63,7 @@ const nonlifeCompanies = [
     logo: "/logos/customer-nonlife/meritz.png",
     claim: "https://www.meritzfire.com/compensation/longterm-insurance/request-document.do#!/",
     claimPdf: "/claims/nonlife/meritz.pdf",
+    dentalPdf: "/claims/nonlife-dental/meritz.pdf",
     phone: "1566-7711",
     fax: "0505-021-3400",
     zipcode: "14623",
@@ -69,6 +74,7 @@ const nonlifeCompanies = [
     logo: "/logos/customer-nonlife/lotte.png",
     claim: "https://lotteins.co.kr/web/C/D/C/cdc_claim_0502.jsp",
     claimPdf: "/claims/nonlife/lotte.pdf",
+    dentalPdf: "/claims/nonlife-dental/lotte.pdf",
     phone: "1588-3344",
     fax: "0504-800-0700",
     zipcode: "07254",
@@ -79,6 +85,7 @@ const nonlifeCompanies = [
     logo: "/logos/customer-nonlife/kb.png",
     claim: "https://www.kbinsure.co.kr/CG205020001.ec",
     claimPdf: "/claims/nonlife/kb.pdf",
+    dentalPdf: "/claims/nonlife-dental/kb.pdf",
     phone: "1544-0114",
     fax: "0505-136-6500",
     zipcode: "04027",
@@ -89,6 +96,7 @@ const nonlifeCompanies = [
     logo: "/logos/customer-nonlife/mg.png",
     claim: "https://www.yebyeol.co.kr/RW031010DM.scp?menuId=MN0501020",
     claimPdf: "/claims/nonlife/mg.pdf",
+    dentalPdf: "/claims/nonlife-dental/mg.pdf",
     phone: "1588-5959",
     fax: "0505-088-1646",
     zipcode: "07294",
@@ -99,6 +107,7 @@ const nonlifeCompanies = [
     logo: "/logos/customer-nonlife/nh.png",
     claim: "https://www.nhfire.co.kr/customer/bilgdcm/retrieveBilgDcmList.nhfire",
     claimPdf: "/claims/nonlife/nh.pdf",
+    dentalPdf: "/claims/nonlife-dental/nh.pdf",
     phone: "1644-9000",
     fax: "0505-060-7000",
     zipcode: "03736",
@@ -109,6 +118,7 @@ const nonlifeCompanies = [
     logo: "/logos/customer-nonlife/hana.png",
     claim: "https://www.hanainsure.co.kr/w/claim/healthReward/rewardDocCarGuide",
     claimPdf: "/claims/nonlife/hana.pdf",
+    dentalPdf: "/claims/nonlife-dental/hana.pdf",
     phone: "1566-3000",
     fax: "0504-3764-0765",
     zipcode: "03137",
@@ -119,6 +129,7 @@ const nonlifeCompanies = [
     logo: "/logos/customer-nonlife/heungkuk.png",
     claim: "https://www.heungkukfire.co.kr/FRW/compensation/accidentDocInfo.do",
     claimPdf: "/claims/nonlife/heungkuk.pdf",
+    dentalPdf: "/claims/nonlife-dental/heungkuk.pdf",
     phone: "1688-1688",
     fax: "0504-800-0700",
     zipcode: "07254",
@@ -129,6 +140,7 @@ const nonlifeCompanies = [
     logo: "/logos/customer-nonlife/aig.png",
     claim: "https://www.aig.co.kr/wm/content.html?contentId=DPWMS406&menuId=MS406",
     claimPdf: "/claims/nonlife/aig.pdf",
+    dentalPdf: "/claims/nonlife-dental/aig.pdf",
     phone: "1544-2792",
     fax: "02-2011-4607",
     zipcode: "57987",
@@ -139,18 +151,21 @@ const nonlifeCompanies = [
     logo: "/logos/customer-nonlife/lina.png",
     claim: "https://www.chubb.com/kr-kr/claims/report-a-claim.html",
     claimPdf: "/claims/nonlife/lina.pdf",
+    dentalPdf: "/claims/nonlife-dental/lina.pdf",
     phone: "1566-5800",
     fax: "02-6742-3992",
     zipcode: "03187",
     address: "서울시 종로구 종로 6 광화문우체국 사서함 386(서린동)",
   },
 ];
+
 const lifeCompanies = [
   {
     name: "교보생명",
     logo: "/logos/customer-life/kyobolife.png",
     claim: "https://www.kyobo.com/dgt/web/customer/support/need-papers/list",
     claimPdf: "/claims/life/kyobolife.pdf",
+    dentalPdf: "/claims/life-dental/kyobolife.pdf",
     phone: "1588-1001",
     fax: "고객센터 문의",
     zipcode: "07291",
@@ -163,6 +178,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/shinhanlife.png",
     claim: "https://www.shinhanlife.co.kr/hp/cdhf0020t02.do",
     claimPdf: "/claims/life/shinhanlife.pdf",
+    dentalPdf: "/claims/life-dental/shinhanlife.pdf",
     phone: "1588-5580",
     fax: "고객센터 문의",
     zipcode: "04535",
@@ -171,22 +187,11 @@ const lifeCompanies = [
   },
 
   {
-    name: "메트라이프",
-    logo: "/logos/customer-life/metlifelife.png",
-    claim: "https://cyber.metlife.co.kr/claim/requiredDocumentNotice",
-    claimPdf: "/claims/life/metlifelife.pdf",
-    phone: "1588-9600",
-    fax: "02-3469-9428",
-    zipcode: "06211",
-    address:
-      "서울특별시 강남구 테헤란로 316 메트라이프타워 클레임서비스팀",
-  },
-
-  {
     name: "삼성생명",
     logo: "/logos/customer-life/samsunglife.png",
     claim: "https://www.samsunglife.com/individual/mysamsunglife/insurance/internet/MDP-MYINT020110M",
     claimPdf: "/claims/life/samsunglife.pdf",
+    dentalPdf: "/claims/life-dental/samsunglife.pdf",
     phone: "1588-3114",
     fax: "고객센터 문의",
     zipcode: "",
@@ -198,6 +203,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/kdblife.png",
     claim: "https://www.kdblife.co.kr/ajax.do?scrId=HCSCT006M01P",
     claimPdf: "/claims/life/kdblife.pdf",
+    dentalPdf: "/claims/life-dental/kdblife.pdf",
     phone: "1588-4040",
     fax: "02-2669-7939",
     zipcode: "07261",
@@ -210,6 +216,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/kblife.png",
     claim: "https://www.kblife.co.kr/customer-center/informRequiredDocument.do",
     claimPdf: "/claims/life/kblife.pdf",
+    dentalPdf: "/claims/life-dental/kblife.pdf",
     phone: "1588-3374",
     fax: "02-6220-9912",
     zipcode: "06253",
@@ -222,6 +229,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/heungkuklife.png",
     claim: "https://www.heungkuklife.co.kr/jsps/front/help/customer_require_tab.jsp",
     claimPdf: "/claims/life/heungkuklife.pdf",
+    dentalPdf: "/claims/life-dental/heungkuklife.pdf",
     phone: "1588-2288",
     fax: "고객센터 문의",
     zipcode: "07254",
@@ -234,6 +242,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/dblife.png",
     claim: "https://www.idblife.com/support/guide/acbf_clm",
     claimPdf: "/claims/life/dblife.pdf",
+    dentalPdf: "/claims/life-dental/dblife.pdf",
     phone: "1588-3131",
     fax: "0505-129-3134",
     zipcode: "04799",
@@ -246,6 +255,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/dongyanglife.png",
     claim: "https://www.myangel.co.kr/indvins/acctClapdClmNtc",
     claimPdf: "/claims/life/dongyanglife.pdf",
+    dentalPdf: "/claims/life-dental/dongyanglife.pdf",
     phone: "1577-1004",
     fax: "02-3289-4517",
     zipcode: "28510",
@@ -258,6 +268,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/abllife.png",
     claim: "https://www.abllife.co.kr/st/custDesk/insSrvcGudn/acdtInsmClamGudn/acdtInsmClamGudn3?page=index",
     claimPdf: "/claims/life/abllife.pdf",
+    dentalPdf: "/claims/life-dental/abllife.pdf",
     phone: "1588-6500",
     fax: "02-3299-5544",
     zipcode: "03116",
@@ -266,22 +277,11 @@ const lifeCompanies = [
   },
 
   {
-    name: "IBK연금보험",
-    logo: "/logos/customer-life/ibklife.png",
-    claim: "https://www.ibki.co.kr/process/HP_CSCETR_POSN_DOC_INS_LIST?bltb_cod=SC000014&sctn=in&TAB=in",
-    claimPdf: "/claims/life/ibklife.pdf",
-    phone: "1577-4117",
-    fax: "02-2270-1577",
-    zipcode: "04511",
-    address:
-      "서울 중구 칠패로 37, 17층 IBK연금보험 고객서비스부",
-  },
-
-  {
     name: "라이나생명",
     logo: "/logos/customer-life/linalife.png",
     claim: "https://www.lina.co.kr/cyber/accident-insurance/document-zero",
     claimPdf: "/claims/life/linalife.pdf",
+    dentalPdf: "/claims/life-dental/linalife.pdf",
     phone: "1588-0058",
     fax: "02-6944-1200",
     zipcode: "03156",
@@ -294,6 +294,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/hanhwalife.png",
     claim: "https://www.hanwhalife.com/static/main/myPage/insurance/accident/document/MY_INAPADC_T10000.jsp",
     claimPdf: "/claims/life/hanhwalife.pdf",
+    dentalPdf: "/claims/life-dental/hanhwalife.pdf",
     phone: "1588-6363",
     fax: "고객센터 문의",
     zipcode: "04513",
@@ -306,6 +307,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/hanalife.png",
     claim: "https://www.hanalife.co.kr/csc/accidentGuideRenew/accidentPaymentDocument.do",
     claimPdf: "/claims/life/hanalife.pdf",
+    dentalPdf: "/claims/life-dental/hanalife.pdf",
     phone: "1577-1112",
     fax: "고객센터 문의",
     zipcode: "04538",
@@ -318,6 +320,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/miraeassetlife.png",
     claim: "https://life.miraeasset.com/home/index.do#MO-HO-030501-010000",
     claimPdf: "/claims/life/miraeassetlife.pdf",
+    dentalPdf: "/claims/life-dental/miraeassetlife.pdf",
     phone: "1588-0220",
     fax: "고객센터 문의",
     zipcode: "07208",
@@ -330,6 +333,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/nhlife.png",
     claim: "https://www.nhlife.co.kr/ho/cc/HOCC0010M00.nhl",
     claimPdf: "/claims/life/nhlife.pdf",
+    dentalPdf: "/claims/life-dental/nhlife.pdf",
     phone: "1544-4000",
     fax: "02-6971-6040",
     zipcode: "04156",
@@ -342,6 +346,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/aialife.png",
     claim: "https://www.aia.co.kr/ko/customer-support/customer-guide/forms/claims.html",
     claimPdf: "/claims/life/aialife.pdf",
+    dentalPdf: "/claims/life-dental/aialife.pdf",
     phone: "1588-9898",
     fax: "02-2021-4540",
     zipcode: "04511",
@@ -354,6 +359,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/chubblife.png",
     claim: "https://www.chubblife.co.kr/front/ctmcenter/insurance/listDocu.do",
     claimPdf: "/claims/life/chubblife.pdf",
+    dentalPdf: "/claims/life-dental/chubblife.pdf",
     phone: "1599-4600",
     fax: "02-3480-7801",
     zipcode: "06162",
@@ -362,22 +368,11 @@ const lifeCompanies = [
   },
 
   {
-    name: "BNP파리바 카디프생명",
-    logo: "/logos/customer-life/cardiflife.png",
-    claim: "https://www.cardif.co.kr/mycardif/ch/agt/chagt001.do",
-    claimPdf: "/claims/life/cardiflife.pdf",
-    phone: "1688-1118",
-    fax: "02-3788-8939",
-    zipcode: "04637",
-    address:
-      "서울특별시 영등포구 국회대로 612 7층, 11층 BNP파리바 카디프생명 보험금 담당자 앞",
-  },
-
-  {
     name: "푸본현대생명",
     logo: "/logos/customer-life/fubonlife.png",
     claim: "https://www.fubonhyundai.com/#CUSI070100000000",
     claimPdf: "/claims/life/fubonlife.pdf",
+    dentalPdf: "/claims/life-dental/fubonlife.pdf",
     phone: "1577-3311",
     fax: "0505-106-0311",
     zipcode: "07327",
@@ -390,6 +385,7 @@ const lifeCompanies = [
     logo: "/logos/customer-life/imlife.png",
     claim: "https://www.imlifeins.co.kr/BB/BB_D010.do",
     claimPdf: "/claims/life/imlife.pdf",
+    dentalPdf: "/claims/life-dental/imlife.pdf",
     phone: "1588-4770",
     fax: "0505-083-5420",
     zipcode: "07261",
@@ -496,6 +492,8 @@ export default function CustomerCenterPage() {
   const [search, setSearch] = useState("");
 const [tab, setTab] = useState("nonlife");
 const [selectedCompany, setSelectedCompany] = useState<any>(null);
+const [selectedPdf, setSelectedPdf] = useState("");
+const [selectedPdfTitle, setSelectedPdfTitle] = useState("");
 
 const currentCompanies =
   tab === "nonlife"
@@ -754,28 +752,42 @@ const filteredCompanies =
       </div>
     </div>
 
+    {company.dentalPdf ? (
+  <div className="grid grid-cols-2 gap-2">
     <button
-      onClick={() => setSelectedCompany(company)}
-      className="
-        w-full
-        h-12
-        rounded-xl
-        bg-gray-50
-        text-gray-700
-        text-sm
-        font-bold
-        flex
-        items-center
-        justify-center
-        transition-all
-        duration-200
-        hover:bg-gray-100
-        hover:shadow-md
-        hover:-translate-y-0.5
-      "
+      onClick={() => {
+        setSelectedCompany(company);
+        setSelectedPdf(company.claimPdf);
+        setSelectedPdfTitle("청구서");
+      }}
+      className="h-12 rounded-xl bg-gray-50 text-gray-700 text-sm font-bold flex items-center justify-center transition-all duration-200 hover:bg-gray-100 hover:shadow-md hover:-translate-y-0.5"
     >
       청구서
     </button>
+
+    <button
+      onClick={() => {
+        setSelectedCompany(company);
+        setSelectedPdf(company.dentalPdf);
+        setSelectedPdfTitle("치과서류");
+      }}
+      className="h-12 rounded-xl bg-gray-50 text-gray-700 text-sm font-bold flex items-center justify-center transition-all duration-200 hover:bg-gray-100 hover:shadow-md hover:-translate-y-0.5"
+    >
+      치과서류
+    </button>
+  </div>
+) : (
+  <button
+    onClick={() => {
+      setSelectedCompany(company);
+      setSelectedPdf(company.claimPdf);
+      setSelectedPdfTitle("청구서");
+    }}
+    className="w-full h-12 rounded-xl bg-gray-50 text-gray-700 text-sm font-bold flex items-center justify-center transition-all duration-200 hover:bg-gray-100 hover:shadow-md hover:-translate-y-0.5"
+  >
+    청구서
+  </button>
+)}
   </>
 )}
 
@@ -797,7 +809,7 @@ const filteredCompanies =
       <div className="h-14 border-b flex items-center justify-between px-5">
 
         <p className="text-sm font-semibold text-gray-900">
-          {selectedCompany.name}
+          {selectedCompany.name} {selectedPdfTitle}
         </p>
 
         <button
@@ -824,7 +836,7 @@ const filteredCompanies =
   </p>
 
   <a
-    href={selectedCompany.claimPdf}
+    href={selectedPdf}
     target="_blank"
     className="
       px-5
@@ -843,7 +855,7 @@ const filteredCompanies =
 
 {/* PC */}
 <iframe
-  src={selectedCompany.claimPdf}
+  src={selectedPdf}
   className="hidden lg:block w-full h-[1200px] rounded-lg border-0"
 />
 

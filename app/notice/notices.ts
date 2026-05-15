@@ -1,5 +1,17 @@
-export const noticeVersion = 5;
+export const noticeVersion = 8;
 export const notices = [
+  {
+  id: 8,
+  date: "2026년 5월 15일 10:45",
+  category: "업데이트",
+  title: "5세대 실손보험 계산기 업데이트",
+  content: `5세대 실손보험 계산기가 수정되었습니다.
+
+✓ 비급여 3종 중증 · 비중증 분리
+
+계산기 사용중 계산 오류가 발견되면
+'보험나무에게 메세지 보내기'를 통해 남겨주세요 😊`,
+},
     {
   id: 7,
   date: "2026년 5월 15일 09:02",
