@@ -110,8 +110,8 @@ function CompanyCard({ company, type }: any) {
       <img
         src={
           company.browser === "chrome"
-            ? "/icons/Chrome.png"
-            : "/icons/Edge.png"
+            ? "/icons/chrome.png"
+            : "/icons/edge.png"
         }
         alt={company.browser}
         className="
@@ -257,7 +257,7 @@ export default function InsuranceSystemPage() {
               </div>
 
               <p className="text-sm text-gray-500 mt-1">
-                자주 사용하는 전산을 드래그해서 위로 옮기세요 !
+                전산 카드를 드래그해 원하는 위치로 이동해 보세요 !
               </p>
             </div>
 
