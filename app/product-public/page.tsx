@@ -183,7 +183,7 @@ export default function ProductPublicPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-9">
           {filteredCompanies.map(([name, image, link, phone]) => {
             let logoPath = "";
 
@@ -198,12 +198,9 @@ export default function ProductPublicPage() {
             }
 
             return (
-  <a
-    key={name}
-    href={link}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="
+  <div
+  key={name}
+  className="
   bg-white
   rounded-3xl
   h-40
@@ -229,16 +226,17 @@ export default function ProductPublicPage() {
 
  <div
   className="
-    px-7
-    py-2
+  cursor-pointer
+    px-6
+    py-2.5
     rounded-xl
-    bg-gray-800
+    bg-gray-200
     text-white
     text-sm
     font-medium
     transition-all
     duration-200
-    hover:bg-gray-300
+    hover:bg-gray-800
   "
 >
     상품공시실 바로가기
@@ -247,7 +245,7 @@ export default function ProductPublicPage() {
 </div>
 
                 
-              </a>
+              </div>
             );
           })}
         </div>
