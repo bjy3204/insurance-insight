@@ -183,7 +183,7 @@ export default function ProductPublicPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-8">
           {filteredCompanies.map(([name, image, link, phone]) => {
             let logoPath = "";
 
@@ -198,47 +198,56 @@ export default function ProductPublicPage() {
             }
 
             return (
-              <div
-                key={name}
-                className="bg-white rounded-3xl p-5 border border-gray-200 shadow-sm"
-              >
+  <a
+    key={name}
+    href={link}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="
+  bg-white
+  rounded-3xl
+  h-40
+  px-5
+  border
+  border-gray-200
+  shadow-sm
+  flex
+  items-center
+  justify-center
+  transition-all
+  duration-200
+  
+"
+  >
                 <div className="flex flex-col items-center justify-center">
-                  <img
-                    src={logoPath}
-                    alt={name}
-                    className="w-40 h-16 object-contain mb-2"
-                  />
 
-                  <div className="text-center mb-2">
-  <p className="text-xl font-bold text-gray-800">
-  {phone}
-</p>
-</div>
-                </div>
+  <img
+    src={logoPath}
+    alt={name}
+    className="w-40 h-16 object-contain mb-4"
+  />
 
-                <a
-  href={link}
-  target="_blank"
-  rel="noopener noreferrer"
+ <div
   className="
-    mt-5
-    w-full
-    h-12
+    px-7
+    py-2
     rounded-xl
-    bg-blue-600
+    bg-gray-800
     text-white
     text-sm
-    font-bold
-    flex
-    items-center
-    justify-center
-    transition
-    hover:bg-blue-700
+    font-medium
+    transition-all
+    duration-200
+    hover:bg-gray-300
   "
 >
-  공시실 바로가기
-</a>
-              </div>
+    상품공시실 바로가기
+  </div>
+
+</div>
+
+                
+              </a>
             );
           })}
         </div>
