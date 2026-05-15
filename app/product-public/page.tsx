@@ -9,6 +9,8 @@ import {
   Search,
   Newspaper,
   MessageCircle,
+  BookOpen,
+  X,
 } from "lucide-react";
 
 import { FaInstagram } from "react-icons/fa";
@@ -67,8 +69,294 @@ const etcCompanies = [
   ["카카오페이손해보험", "kakaopay.png", "https://kakaopayinscorp.co.kr/disclosure/goods", "1544-0022"],
   ["신한EZ손해보험", "shinhanez.png", "https://www.shinhanez.co.kr/static/pub/PUB20000T01.html", "1544-2580"],
 ];
+const termsDictionary = [
+  {
+    title: "보험계약체결",
+    subtitle: "고지의무 · 고지사항 · 계약해지 제한",
+    pages: [
+      {
+        page: 1,
+        title: "보험계약의 체결과 고지의무",
+        body: `◎ 보험계약자 또는 피보험자가 보험계약 체결 당시에 보험자에 대하여 중요한 사항을 고지하거나 부실고지를 하지 아니할 의무
 
+◎ 고지의무는 보험계약의 선의성과 윤리성에 기인한 것`,
+      },
+
+      {
+        page: 2,
+        title: "고지의무의 법적성질",
+        body: `◎ 법적성질`,
+        table: [
+          [
+            "자기의무",
+            "보험계약자 등이 이 의무를 위반한 경우 계약이 해지될 수 있고 이를 방지하기 위한 의무",
+          ],
+
+          [
+            "간접의무",
+            "보험계약의 체결을 위한 전제요건으로서의 간접의무",
+          ],
+
+          [
+            "법정의무",
+            "상법 제651조에 규정된 법률상의 의무",
+          ],
+        ],
+      },
+
+      {
+        page: 3,
+        title: "고지의무 내용 : 당사자",
+        body: `◎ 고지의무자
+보험계약자
+피보험자
+대리인
+
+◎ 고지의 상대방
+보험자
+그 대리인`,
+        table: [
+          ["계약대리점", "계약체결권 및 고지수령권이 모두 있음"],
+
+          ["보험의", "계약체결권은 없으나 고지수령권은 있음"],
+        ],
+      },
+
+      {
+        page: 4,
+        title: "고지의무 내용 : 고지사항",
+        body: `◎ 중요한 사항
+
+보험계약의 체결 여부에 중대한 영향을 미치는 사항
+
+예)
+보험사고의 발생사실, 기왕증, 현재증, 나이, 직업 등
+
+보험자가 제시한 질문표는 중요한 사항으로 추정함`,
+      },
+
+      {
+        page: 5,
+        title: "고지의무 위반 : 요건",
+        body: `◎ 요건`,
+        table: [
+          [
+            "주관적 요건",
+            "고지의무 위반에 대하여 고의 또는 중대한 과실",
+          ],
+
+          [
+            "객관적 요건",
+            "중요사항의 불고지 또는 부실고지가 있어야 함",
+          ],
+
+          ["증명책임", "주장하는 자, 즉 보험자"],
+        ],
+      },
+
+      {
+        page: 6,
+        title: "고지의무 위반 : 효과",
+        body: `◎ 보험계약의 해지
+
+원칙적으로 보험계약의 해지는 일방의 의사표시로 가능
+
+해지의 상대방은 보험계약자 또는 그 대리인
+
+피보험자나 보험수익자는 계약당사자가 아니므로 해지상대방이 아님
+
+보험계약이 해지된 경우 보험료전액 또는 해지환급금을 청구할 수 있음
+
+고지의무위반과 보험사고 사이에 인과관계가 있을 때에는 보험계약 해지 전의 보험금 지급에 대해 반환 청구 가능`,
+      },
+
+      {
+        page: 7,
+        title: "보험계약 해지의 제한",
+        body: `제척기간의 경과
+
+고지의무위반 사실을 안 날로 1월, 계약 체결일로부터 3년
+
+보험자 또는 그 대리인이 중요한 사항을 알았거나 중대한 과실로 알지 못한 경우
+
+보험사고와 고지의무위반 사이에 인과관계가 부존재하는 때에도 보험계약자가 이를 증명한 경우`,
+      },
+    ],
+  },
+
+  {
+    title: "보험금 청구",
+    subtitle: "계약관계자 · 보험금 지급 · 면책사유",
+    pages: [
+      {
+        page: 1,
+        title: "보험계약관계자의 개관",
+        body: `보험자
+
+보험사업의 주체로서 보험을 인수하는 자로서 보험사고가 발생한 경우 보험금을 지급할 의무를 지는 자
+
+보험계약자
+
+보험계약관계에서 보험자와 자기의 이름으로 보험계약을 체결하고 보험료지급의무를 부담하는 자`,
+      },
+
+      {
+        page: 2,
+        title: "계약당사자 이외의 자",
+        body: `◎ 피보험자`,
+        table: [
+          [
+            "손해보험",
+            "피보험이익의 주체로서 보험사고의 발생으로 생긴 재산상의 손해보상을 받을 권리를 갖는 자",
+          ],
+
+          [
+            "생명보험",
+            "보험사고 발생의 객체가 되는 자 · 보험에 들어진 자",
+          ],
+        ],
+      },
+
+      {
+        page: 3,
+        title: "보험금의 지급",
+        body: `◎ 방법
+
+보험금의 지급방법은 금전으로 지급하는 것이 원칙이며 당사자의 특약에 따라 현물 또는 기타의 급여로서도 할 수 있음
+
+◎ 시기
+
+보험사고발생의 통지를 받은 후 지체없이 보험금액을 정하고 10일 이내에 지급함
+
+보험금의 청구를 신의성실의 원칙에 반하여 시기적으로 하는 경우에는 보험금 청구가 제한될 수 있음`,
+      },
+
+      {
+        page: 4,
+        title: "면책사유",
+        body: `◎ 요건
+
+보험사고가 보험계약자 또는 피보험자, 보험수익자의 고의 또는 중대한 과실로 인하여 발생된 경우
+
+보험사고가 전쟁 기타의 변란으로 생긴 때
+
+보험분쟁 약관에서 정한 면책사유
+
+면책약관은 보험계약자 또는 피보험자나 보험수익자의 불이익으로 변경하지 않는 범위 내에서 유효`,
+      },
+    ],
+  },
+
+  {
+    title: "보험금 조사",
+    subtitle: "지급사유 조사 · 사기청구 · 과다청구",
+    pages: [
+      {
+        page: 1,
+        title: "보험의 기본 원리",
+        body: `◎ 보험의 기본 원리`,
+        table: [
+          [
+            "대수의 법칙",
+            "사건의 발생확률은 관찰의 횟수를 늘려가면 일정한 발생확률이 나오고 이 확률은 대개 비슷하게 되는 것",
+          ],
+
+          [
+            "수지상등의 원칙",
+            "보험계약자가 납입하는 보험료의 총액과 보험회사가 지급하는 보험금 및 지출비용의 총액이 동일한 금액이 되도록 하는 것",
+          ],
+        ],
+      },
+
+      {
+        page: 2,
+        title: "보험금 지급사유의 조사",
+        body: `보험계약자 등이 보험금 지급청구를 하였을 때 보험금 지급청구에 대한 내용과 보험계약에서 정하고 있는 보험금 지급사유의 일치성을 조사하여야 함
+
+보험금 지급사유에 해당하는 경우에 한하여 보험금을 지급함`,
+      },
+
+      {
+        page: 3,
+        title: "사기청구 조사",
+        body: `보험금을 편취할 목적으로 보험사고를 조작하거나 의도적으로 발생시키는 행위
+
+허위사고, 방화, 고의상해 등이 포함될 수 있음`,
+      },
+
+      {
+        page: 4,
+        title: "과다청구 조사",
+        body: `실제 손해보다 과다하게 보험금을 청구하는 경우
+
+치료비, 차량수리비 등을 부풀리는 사례 포함`,
+      },
+    ],
+  },
+
+  {
+    title: "의료자문",
+    subtitle: "의료자문 필요성 · 동의 · 제3자 판단",
+    pages: [
+      {
+        page: 1,
+        title: "의료자문을 통한 보험금 지급여부 판단",
+        body: `보험금 청구서 및 관련 서류 등의 검토를 통해 보험금 청구가 이루어짐
+
+보험계약상의 문제 또는 보험금 지급 여부의 결정이 어려운 경우 의료자문 실시`,
+      },
+
+      {
+        page: 2,
+        title: "의료자문",
+        body: `보험자가 자문기관에 환자의 의무기록 및 영상 등 정보를 제공하고 이에 대한 의학적 소견을 받는 행위`,
+      },
+
+      {
+        page: 3,
+        title: "의료자문의 동의",
+        body: `피보험자 등과 보험자가 보험금 지급사유에 대해 합의하지 못할 때는 제3자의 의견을 들을 수 있음
+
+의료비용은 보험자가 부담`,
+      },
+    ],
+  },
+
+  {
+    title: "판례 · 사례",
+    subtitle: "고지의무 · 자살면책 · 설명의무",
+    pages: [
+      {
+        page: 1,
+        title: "고지의무 위반과 보험금 지급",
+        body: `보험자는 고지의무 위반 사실과 보험사고 발생 사이 인과관계를 불문하고 계약 해지 가능
+
+다만 인과관계가 없는 경우 보험금은 지급해야 함`,
+      },
+
+      {
+        page: 2,
+        title: "자살 면책 판례",
+        body: `자유로운 의사결정을 할 수 없는 상태에서 발생한 자살은 면책사유에서 제외될 수 있음
+
+심신상실 상태 여부 등을 종합적으로 판단`,
+      },
+
+      {
+        page: 3,
+        title: "설명의무 판례",
+        body: `보험설계사가 중요한 사항을 설명하지 않은 경우 손해배상 책임 발생 가능
+
+보험회사의 사용자 책임 인정 가능`,
+      },
+    ],
+  },
+];
 export default function ProductPublicPage() {
+ const [termsOpen, setTermsOpen] = useState(false);
+const [selectedTerm, setSelectedTerm] = useState<any>(null);
+
+const [selectedItem, setSelectedItem] = useState(0);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("nonlife");
 
@@ -126,7 +414,7 @@ export default function ProductPublicPage() {
       </header>
 
       <section className="max-w-7xl mx-auto px-5 py-6">
-        <div className="bg-white rounded-2xl border border-gray-300 px-4 py-3 flex items-center gap-3 mb-5">
+        <div className="bg-white rounded-2xl border px-4 py-3 flex items-center gap-3 mb-5">
           <Search className="w-5 h-5 text-gray-400" />
 
           <input
@@ -225,7 +513,7 @@ export default function ProductPublicPage() {
     max-w-[150px]
     max-h-[62px]
     md:max-w-[160px]
-    md:max-h-66
+    md:max-h-[66px]
     object-contain
     mb-4
   "
@@ -237,7 +525,7 @@ export default function ProductPublicPage() {
   rel="noopener noreferrer"
   className="
   cursor-pointer
-  px-12
+  px-10
   md:px-5.5
   py-2.5
   rounded-xl
@@ -304,6 +592,188 @@ export default function ProductPublicPage() {
           </a>
         </div>
       </div>
+     {/* 약관 사전 아이콘 */}
+<button
+  onClick={() => setTermsOpen(!termsOpen)}
+  className="
+    fixed
+    left-6
+    bottom-24
+    z-40
+    w-14
+    h-14
+    rounded-full
+    bg-gray-800
+    shadow-lg
+    hover:shadow-2xl
+    hover:-translate-y-0.5
+    transition-all
+    duration-200
+    cursor-pointer
+    flex
+    items-center
+    justify-center
+  "
+>
+  <BookOpen className="w-6 h-6 text-white" />
+</button>
+
+{/* 메뉴 */}
+{termsOpen && (
+  <div className="fixed left-6 bottom-40 z-40 bg-white border border-gray-200 shadow-xl rounded-2xl p-3 flex flex-col gap-2 w-64">
+    {termsDictionary.map((item) => (
+      <button
+        key={item.title}
+        onClick={() => {
+          setSelectedTerm(item);
+
+setSelectedItem(0);
+setTermsOpen(false);
+        }}
+        className="w-full px-4 py-3 rounded-xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer"
+      >
+        <p className="text-sm font-bold text-gray-800">{item.title}</p>
+        <p className="text-xs text-gray-400 mt-1">{item.subtitle}</p>
+      </button>
+    ))}
+  </div>
+)}
+
+{/* 팝업 */}
+{selectedTerm && (
+  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col">
+      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+        <div className="font-bold flex items-center gap-2">
+          <BookOpen className="w-5 h-5" />
+          {selectedTerm.title}
+        </div>
+
+        <button
+          onClick={() => setSelectedTerm(null)}
+          className="cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="p-5 overflow-y-auto">
+        
+
+        {(() => {
+  const filteredPages = selectedTerm.pages;
+
+  const item = filteredPages[selectedItem];
+
+  if (!item) {
+    return (
+      <div className="text-center text-sm text-gray-400 py-10">
+        검색 결과가 없습니다
+      </div>
+    );
+  }
+
+  return (
+    <>
+    
+
+      {/* 내용 */}
+      <div className="rounded-2xl border border-gray-200 px-5 py-4 mb-5">
+        <h3 className="text-lg font-black text-gray-900 mb-3">
+          {item.title}
+        </h3>
+
+        <div
+  className="
+    text-[15px]
+    text-gray-700
+    leading-[1.8]
+    whitespace-break-spaces
+    break-keep
+    tracking-[-0.01em]
+  "
+>
+  {item.body}
+</div>
+
+{/* 표 */}
+{item.table && (
+  <div className="overflow-hidden rounded-2xl border border-gray-200 mt-5">
+    <table className="w-full text-sm">
+      <tbody>
+        {item.table.map((row: any, index: number) => (
+          <tr
+            key={index}
+            className="border-b border-gray-200 last:border-b-0"
+          >
+            <td
+  className="
+    bg-gray-50
+    px-4
+    py-3
+    font-bold
+    text-gray-900
+    w-28
+    md:w-36
+    align-top
+    border-r
+    border-gray-200
+  "
+>
+              {row[0]}
+            </td>
+
+            <td
+  className="
+    px-4
+    py-3
+    text-gray-700
+    leading-[1.7]
+    break-keep
+  "
+>
+              {row[1]}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+      </div>
+       {/* 소주제 버튼 */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {filteredPages.map((sub: any, index: number) => (
+          <button
+            key={index}
+            onClick={() => setSelectedItem(index)}
+            className={`
+              px-4
+              py-2
+              rounded-xl
+              text-sm
+              font-semibold
+              transition
+              cursor-pointer
+              ${
+                selectedItem === index
+                  ? "bg-slate-800 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }
+            `}
+          >
+            {sub.title}
+          </button>
+        ))}
+      </div>
+    </>
+    
+  );
+})()}
+      </div>
+    </div>
+  </div>
+)}
     </main>
   );
 }

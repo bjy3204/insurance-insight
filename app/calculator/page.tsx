@@ -1955,7 +1955,7 @@ w-62
                 <span
                   className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${
                     cover.includes("제외")
-                      ? "bg-red-100 text-red-600"
+                      ? "bg-gray-100 text-gray-500"
                       : cover.includes("가능")
                       ? "bg-blue-100 text-blue-600"
                       : cover.includes("제한")

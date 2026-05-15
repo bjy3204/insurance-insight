@@ -753,9 +753,9 @@ rel="noopener noreferrer"
             <button
               key={page}
               onClick={() => setNoticePage(page)}
-              className={`px-4 py-2 border-l hover:bg-slate-600 cursor-pointer ${
+              className={`px-4 py-2 border-l border-gray-200 hover:bg-slate-600 cursor-pointer ${
                 noticePage === page
-                  ? "bg-slate-700 text-white"
+                  ? "bg-slate-800 text-white"
                   : "bg-white text-blue-600"
               }`}
             >
