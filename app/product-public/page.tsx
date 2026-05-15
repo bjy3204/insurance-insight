@@ -222,7 +222,7 @@ export default function ProductPublicPage() {
   src={logoPath}
   alt={name}
   className="
-    max-w-[120px]
+    max-w-[135px]
     max-h-10
     md:max-w-[150px]
     md:max-h-14
@@ -237,7 +237,7 @@ export default function ProductPublicPage() {
   rel="noopener noreferrer"
   className="
   cursor-pointer
-  px-4
+  px-6
   md:px-6
   py-2.5
   rounded-xl
@@ -258,7 +258,7 @@ export default function ProductPublicPage() {
 </span>
 
 <span className="inline md:hidden">
-  바로가기
+  상품공시실
 </span>
 </a>
 
