@@ -222,10 +222,10 @@ export default function ProductPublicPage() {
   src={logoPath}
   alt={name}
   className="
-    max-w-150px]
-    max-h-14
-    md:max-w-[150px]
-    md:max-h-14
+    max-w-[150px]
+    max-h-[62px]
+    md:max-w-[160px]
+    md:max-h-66
     object-contain
     mb-4
   "
@@ -237,8 +237,8 @@ export default function ProductPublicPage() {
   rel="noopener noreferrer"
   className="
   cursor-pointer
-  px-8
-  md:px-7
+  px-10
+  md:px-6
   py-2.5
   rounded-xl
   bg-gray-800

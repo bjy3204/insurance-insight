@@ -101,6 +101,12 @@ function CompanyCard({ company, type }: any) {
   border
   border-gray-200
   shadow-sm
+  shadow-[inset_0_1px_3px_rgba(0,0,0,0.05)]
+  hover:shadow-xl
+active:shadow-inner
+active:scale-[0.98]
+transition-all
+duration-200
 
   flex
   items-center
@@ -129,10 +135,10 @@ function CompanyCard({ company, type }: any) {
   top-3
   left-3
 
-  w-5
-  h-5
-  md:w-6
-  md:h-6
+  w-6
+  h-6
+  md:w-7
+  md:h-7
 
   opacity-100
   scale-100
@@ -152,10 +158,10 @@ function CompanyCard({ company, type }: any) {
         src={`/logos/${type}/${company.image}`}
         alt={company.name}
         className="
-          max-w-[150px]
-max-h-[62px]
+          max-w-[160px]
+max-h-[6px]
 
-md:max-w-[165px]
+md:max-w-[180px]
 md:max-h-[72px]
           object-contain
           select-none
