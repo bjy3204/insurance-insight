@@ -240,14 +240,14 @@ export default function ProductPublicPage() {
     px-6
     py-2.5
     rounded-xl
-    bg-gray-200
+    bg-gray-800
     text-white
     text-sm
     font-medium
     transition-all
     duration-200
     active:scale-[0.97]
-    hover:bg-gray-800
+    hover:bg-gray-200
   "
 >
   상품공시실 바로가기
