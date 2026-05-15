@@ -72,9 +72,10 @@ function CompanyCard({ company, type }: any) {
   } = useSortable({ id: company.id });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  transform: CSS.Transform.toString(transform),
+  transition,
+  WebkitTapHighlightColor: "transparent",
+};
 
   return (
     <a
@@ -86,26 +87,34 @@ function CompanyCard({ company, type }: any) {
       target="_blank"
       rel="noopener noreferrer"
       className="
-        group
-        relative
-        w-full
-        h-[150px]
-        bg-white
-        rounded-2xl
-        border
-        border-gray-200
-        shadow-sm
-        cursor-grab
-        active:cursor-grabbing
-        transition-all
-        duration-300
-        flex
-        items-center
-        justify-center
-        hover:-translate-y-1
-        hover:border-gray-300
-        hover:[box-shadow:inset_0_3px_14px_rgba(0,0,0,0.11),0_10px_20px_rgba(0,0,0,0.06)]
-      "
+  group
+  relative
+
+  bg-white
+  rounded-3xl
+
+  h-36 md:h-40
+
+  px-3 md:px-5
+
+  border
+  border-gray-200
+  shadow-sm
+
+  flex
+  items-center
+  justify-center
+
+  transition-all
+  duration-200
+
+  active:scale-[0.97]
+  active:shadow-inner
+
+  hover:-translate-y-1
+  hover:border-gray-300
+  hover:shadow-md
+"
     >
       <img
         src={
@@ -134,8 +143,11 @@ function CompanyCard({ company, type }: any) {
         src={`/logos/${type}/${company.image}`}
         alt={company.name}
         className="
-          max-w-[180px]
-          max-h-[90px]
+          max-w-[140px]
+max-h-[52px]
+
+md:max-w-[165px]
+md:max-h-[72px]
           object-contain
           select-none
           transition-all
@@ -300,7 +312,7 @@ export default function InsuranceSystemPage() {
             items={currentItems.map((item) => item.id)}
             strategy={rectSortingStrategy}
           >
-            <div className="w-full grid grid-cols-2 md:grid-cols-5 gap-y-5 gap-x-8 place-items-stretch">
+            <div className="w-full grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-8 place-items-stretch">
               {currentItems.map((company) => (
                 <CompanyCard
                   key={company.id}
