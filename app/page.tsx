@@ -755,8 +755,8 @@ rel="noopener noreferrer"
               onClick={() => setNoticePage(page)}
               className={`px-4 py-2 border-l border-gray-200 hover:bg-slate-600 cursor-pointer ${
                 noticePage === page
-                  ? "bg-slate-800 text-white"
-                  : "bg-white text-blue-600"
+  ? "bg-slate-800 text-white"
+  : "bg-white text-gray-600 hover:bg-gray-100"
               }`}
             >
               {page}
@@ -797,7 +797,21 @@ rel="noopener noreferrer"
   <div className="border-t border-gray-200 pt-4 text-center shrink-0">
     <button
       onClick={() => setSelectedNotice(null)}
-      className="px-5 py-3 rounded-xl bg-gray-700 text-white font-bold text-sm"
+      className="
+  px-5
+  py-3
+  rounded-xl
+  bg-gray-700
+  text-white
+  text-sm
+  font-bold
+  cursor-pointer
+  hover:bg-gray-600
+  hover:shadow-md
+ 
+  transition-all
+  duration-200
+"
     >
       목록으로
     </button>

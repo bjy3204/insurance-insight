@@ -10,10 +10,12 @@ import {
   Newspaper,
   MessageCircle,
   BookOpen,
+    FileText,
   X,
 } from "lucide-react";
 
 import { FaInstagram } from "react-icons/fa";
+import { PRESS } from "./press";
 
 const nonlifeCompanies = [
   ["DB손해보험", "db.png", "https://www.idbins.com/FWMAIV1534.do", "1588-0100"],
@@ -355,6 +357,10 @@ const termsDictionary = [
 export default function ProductPublicPage() {
  const [termsOpen, setTermsOpen] = useState(false);
 const [selectedTerm, setSelectedTerm] = useState<any>(null);
+const [pressOpen, setPressOpen] = useState(false);
+const [selectedPress, setSelectedPress] = useState<any>(null);
+const [pressSearch, setPressSearch] = useState("");
+const [pressPage, setPressPage] = useState(1);
 
 const [selectedItem, setSelectedItem] = useState(0);
   const [search, setSearch] = useState("");
@@ -375,6 +381,26 @@ const [selectedItem, setSelectedItem] = useState(0);
     ...mutualCompanies,
     ...etcCompanies,
   ];
+const sortedPress = [...PRESS.items].sort(
+  (a, b) =>
+    new Date(b.date.replace(/\./g, "-")).getTime() -
+    new Date(a.date.replace(/\./g, "-")).getTime()
+);
+
+const filteredPress = sortedPress.filter((item) =>
+  `${item.title} ${item.date} ${item.source} ${item.body}`
+    .toLowerCase()
+    .includes(pressSearch.toLowerCase())
+);
+
+const PRESS_PER_PAGE = 10;
+
+const totalPressPages = Math.ceil(filteredPress.length / PRESS_PER_PAGE);
+
+const paginatedPress = filteredPress.slice(
+  (pressPage - 1) * PRESS_PER_PAGE,
+  pressPage * PRESS_PER_PAGE
+);
 
   const filteredCompanies =
     search.trim() !== ""
@@ -592,6 +618,7 @@ const [selectedItem, setSelectedItem] = useState(0);
           </a>
         </div>
       </div>
+      
      {/* 약관 사전 아이콘 */}
 <button
   onClick={() => setTermsOpen(!termsOpen)}
@@ -636,9 +663,247 @@ setTermsOpen(false);
         <p className="text-xs text-gray-400 mt-1">{item.subtitle}</p>
       </button>
     ))}
+    <button
+  onClick={() => {
+    setPressOpen(true);
+    setTermsOpen(false);
+    setSelectedPress(null);
+    setPressSearch("");
+  }}
+  className="
+    w-full
+    px-4
+    py-3
+    rounded-xl
+    bg-white
+    border
+    border-gray-200
+    text-left
+    hover:border-blue-300
+    hover:bg-blue-50
+    transition
+    cursor-pointer
+  "
+>
+  <p className="text-sm font-bold text-gray-800">
+    보도자료
+  </p>
+
+  <p className="text-xs text-gray-400 mt-1">
+    금융위 보도자료 모음
+  </p>
+</button>
   </div>
 )}
+{/* 보도자료 팝업 */}
+{pressOpen && (
+  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
+      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+        <div className="font-bold flex items-center gap-2">
+          <Newspaper className="w-5 h-5" />
+          보도자료
+        </div>
 
+        <button
+          onClick={() => {
+            setPressOpen(false);
+            setSelectedPress(null);
+          }}
+          className="cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {!selectedPress ? (
+        <>
+          <div className="p-4 border-b border-gray-100">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+              <input
+                value={pressSearch}
+                onChange={(e) => {
+  setPressSearch(e.target.value);
+  setPressPage(1);
+}}
+                placeholder="보도자료 검색"
+                className="w-full rounded-2xl border border-gray-200 pl-11 pr-4 py-3 text-sm outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex-1 min-h-0 flex flex-col">
+  <div className="overflow-y-auto flex-1 p-4">
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="border-b border-gray-200 text-gray-500">
+          <th className="py-3 w-20">번호</th>
+          <th className="py-3 text-left">제목</th>
+          <th className="py-3 w-32">출처</th>
+          <th className="py-3 w-32">날짜</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {paginatedPress.map((item, index) => (
+          <tr
+            key={item.id}
+            onClick={() => setSelectedPress(item)}
+            className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition"
+          >
+            <td className="py-3.5 text-center">
+              {filteredPress.length -
+                ((pressPage - 1) * PRESS_PER_PAGE + index)}
+            </td>
+
+            <td className="py-3.5 font-medium break-keep">
+              {item.title}
+            </td>
+
+            <td className="py-3.5 text-center text-gray-500 text-xs">
+              {item.source}
+            </td>
+
+            <td className="py-3.5 text-center text-gray-500 text-xs">
+              {item.date}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  {totalPressPages > 1 && (
+    <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
+      <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+        <button
+          onClick={() => setPressPage((p) => Math.max(1, p - 1))}
+          disabled={pressPage === 1}
+          className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+        >
+          이전
+        </button>
+
+        {Array.from({ length: totalPressPages }).map((_, index) => {
+          const page = index + 1;
+
+          return (
+            <button
+              key={page}
+              onClick={() => setPressPage(page)}
+              className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
+                pressPage === page
+                  ? "bg-slate-800 text-white"
+                  : "bg-white text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              {page}
+            </button>
+          );
+        })}
+
+        <button
+          onClick={() =>
+            setPressPage((p) => Math.min(totalPressPages, p + 1))
+          }
+          disabled={pressPage === totalPressPages}
+          className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+        >
+          다음
+        </button>
+      </div>
+    </div>
+  )}
+</div>
+        </>
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto px-6 py-5">
+  <h2 className="text-2xl font-black text-gray-900 break-keep leading-snug">
+    {selectedPress.title}
+  </h2>
+
+  <p className="text-sm text-gray-400 mt-2">
+    {selectedPress.date} · {selectedPress.source}
+  </p>
+
+  <div className="border-t border-gray-200 mt-4 pt-3 break-keep text-[15px] leading-[1.8] text-gray-700">
+    {selectedPress.pdfs && (
+      <div className="flex flex-wrap gap-3 mb-4">
+        {selectedPress.pdfs.map((pdf: string, index: number) => (
+          <a
+            key={index}
+            href={pdf}
+            download
+            className="
+              inline-flex
+              items-center
+              gap-1.5
+              text-sm
+              text-gray-500
+              underline
+              underline-offset-2
+              hover:text-gray-700
+              transition
+            "
+          >
+            <FileText className="w-4 h-4" />
+            PDF 다운로드
+            {selectedPress.pdfs.length > 1 && ` ${index + 1}`}
+          </a>
+        ))}
+      </div>
+    )}
+
+    <div className="whitespace-pre-line">
+      {selectedPress.body}
+    </div>
+    {selectedPress.pdfs?.[0] && (
+  <div className="mt-6">
+    <iframe
+      src={selectedPress.pdfs[0]}
+      className="
+        w-full
+        h-[900px]
+        rounded-2xl
+        border
+        border-gray-200
+      "
+    />
+    <p className="text-xs text-gray-400 mt-2">
+  일부 모바일 환경에서는 PDF 미리보기가 지원되지 않을 수 있습니다.
+</p>
+  </div>
+)}
+  </div>
+</div>
+
+          <div className="border-t border-gray-200 p-4 text-center">
+            <button
+              onClick={() => setSelectedPress(null)}
+              className="
+  px-5
+  py-3
+  rounded-xl
+  bg-gray-700
+  text-white
+  text-sm
+  font-bold
+  cursor-pointer
+  hover:bg-gray-600
+  transition
+"
+            >
+              목록으로
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+)}
 {/* 팝업 */}
 {selectedTerm && (
   <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
