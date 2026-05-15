@@ -982,7 +982,7 @@ const calculateSimple = () => {
               key={item.id}
               onClick={() => setGeneration(item.id)}
               className={`
-                bg-white rounded-2xl border p-4 text-left transition
+  bg-white rounded-2xl border p-4 text-left transition cursor-pointer
                 ${
                   generation === item.id
                     ? "border-blue-600 shadow-md"
@@ -1797,7 +1797,10 @@ w-62
 실손 사전
         </div>
 
-        <button onClick={() => setDictionaryModalOpen(false)}>
+        <button
+  onClick={() => setDictionaryModalOpen(false)}
+  className="cursor-pointer"
+>
           <X className="w-5 h-5" />
         </button>
       </div>
