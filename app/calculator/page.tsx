@@ -1924,57 +1924,59 @@ w-62
   </div>
 )}
         {/* 면책사항 */}
-        {dictionaryTab === "면책사항" && (
-          <div className="overflow-hidden rounded-2xl border border-gray-200">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left font-bold text-gray-700">
-                    항목
-                  </th>
-                  <th className="px-2 py-3 text-left font-bold text-gray-700 w-[88px] min-w-[88px]">
-  구분
-</th>
-                  <th className="px-4 py-3 text-left font-bold text-gray-700">
-                    비고
-                  </th>
-                </tr>
-              </thead>
+{dictionaryTab === "면책사항" && (
+  <div className="overflow-hidden rounded-2xl border border-gray-200">
+    <table className="w-full text-sm table-fixed">
+      <thead className="bg-gray-50">
+        <tr>
+          <th className="w-[32%] pl-7 pr-2 py-3 text-left font-bold text-gray-700">
+            항목
+          </th>
 
-              <tbody>
-                {dictionaryData[selectedDictionaryGen].exclude.map(
-  ([item, cover, note]: [string, string, string]) => (
-    <tr key={item} className="border-t border-gray-100">
-      <td className="px-4 py-3 text-gray-700">
-        {item}
-      </td>
+          <th className="w-[30%] px-2 py-3 text-center font-bold text-gray-700">
+            구분
+          </th>
 
-      <td className="px-2 py-3 w-[88px] min-w-[88px]">
-  <span
-    className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${
-            cover.includes("제외")
-              ? "bg-red-100 text-red-600"
-              : cover.includes("가능")
-              ? "bg-blue-100 text-blue-600"
-              : cover.includes("제한")
-              ? "bg-yellow-100 text-yellow-700"
-              : "bg-gray-100 text-gray-600"
-          }`}
-        >
-          {cover}
-        </span>
-      </td>
+          <th className="w-[38%] pl-3 pr-5 py-3 text-left font-bold text-gray-700">
+            비고
+          </th>
+        </tr>
+      </thead>
 
-      <td className="px-4 py-3 text-gray-500">
-        {note}
-      </td>
-    </tr>
-  )
-)}
-              </tbody>
-            </table>
-          </div>
+      <tbody>
+        {dictionaryData[selectedDictionaryGen].exclude.map(
+          ([item, cover, note]: [string, string, string]) => (
+            <tr key={item} className="border-t border-gray-100">
+              <td className="pl-7 pr-2 py-3 text-gray-700 break-keep">
+                {item}
+              </td>
+
+              <td className="px-2 py-3 text-center">
+                <span
+                  className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${
+                    cover.includes("제외")
+                      ? "bg-red-100 text-red-600"
+                      : cover.includes("가능")
+                      ? "bg-blue-100 text-blue-600"
+                      : cover.includes("제한")
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {cover}
+                </span>
+              </td>
+
+              <td className="pl-3 pr-5 py-3 text-gray-500 leading-relaxed break-keep">
+                {note}
+              </td>
+            </tr>
+          )
         )}
+      </tbody>
+    </table>
+  </div>
+)}
 
         <p className="mt-5 text-xs text-gray-400 leading-relaxed">
           ※ 실제 보장내용은 가입 시기, 상품명, 특약 구성, 약관에 따라 달라질 수 있습니다.
