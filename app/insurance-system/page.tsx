@@ -89,6 +89,7 @@ function CompanyCard({ company, type }: any) {
       className="
   group
   relative
+  touch-none
 
   bg-white
   rounded-3xl
@@ -151,8 +152,8 @@ function CompanyCard({ company, type }: any) {
         src={`/logos/${type}/${company.image}`}
         alt={company.name}
         className="
-          max-w-[140px]
-max-h-[52px]
+          max-w-[150px]
+max-h-[62px]
 
 md:max-w-[165px]
 md:max-h-[72px]
@@ -174,10 +175,20 @@ export default function InsuranceSystemPage() {
   const [nonlifeItems, setNonlifeItems] = useState(nonlifeCompanies);
   const [lifeItems, setLifeItems] = useState(lifeCompanies);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(TouchSensor)
-  );
+ const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 6,
+    },
+  }),
+
+  useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 120,
+      tolerance: 8,
+    },
+  })
+);
 
   useEffect(() => {
     const savedNonlife = localStorage.getItem("nonlife-order");
@@ -277,7 +288,7 @@ export default function InsuranceSystemPage() {
               </div>
 
               <p className="text-sm text-gray-500 mt-1">
-                보험사 카드 이동 설정 가능 (pc)
+                보험사를 원하는 위치로 이동해 사용하세요
               </p>
             </div>
 
