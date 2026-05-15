@@ -238,7 +238,7 @@ export default function ProductPublicPage() {
   className="
   cursor-pointer
   px-6
-  md:px-6
+  md:px-10
   py-2.5
   rounded-xl
   bg-gray-800
