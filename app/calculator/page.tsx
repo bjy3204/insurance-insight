@@ -8,6 +8,8 @@ import {
   Calculator,
   Newspaper,
   MessageCircle,
+  BookOpen,
+  X,
 } from "lucide-react";
 
 import { FaInstagram } from "react-icons/fa";
@@ -27,6 +29,10 @@ export default function CalculatorPage() {
   const [generation, setGeneration] = useState("gen1");
   const [type, setType] = useState("outpatient");
   const [hospitalType, setHospitalType] = useState("clinic");
+  const [dictionaryOpen, setDictionaryOpen] = useState(false);
+const [dictionaryModalOpen, setDictionaryModalOpen] = useState(false);
+const [selectedDictionaryGen, setSelectedDictionaryGen] = useState("1세대");
+const [dictionaryTab, setDictionaryTab] = useState("실손정보");
 
   const [outpatientLimit, setOutpatientLimit] = useState("");
   const [medicineLimit, setMedicineLimit] = useState("");
@@ -1400,6 +1406,200 @@ const calculateSimple = () => {
           </a>
         </div>
       </div>
+      {/* 실손 사전 아이콘 */}
+<button
+  onClick={() => setDictionaryOpen(!dictionaryOpen)}
+  className="
+    fixed
+    left-6
+    bottom-24
+    z-40
+    w-14
+    h-14
+    rounded-full
+    bg-gray-800
+    shadow-lg
+    flex
+    items-center
+    justify-center
+  "
+>
+  <BookOpen className="w-6 h-6 text-white" />
+</button>
+
+{/* 세대 선택 메뉴 */}
+{dictionaryOpen && (
+  <div
+    className="
+      fixed
+      left-6
+      bottom-40
+      z-40
+      bg-white
+      border
+      border-gray-200
+      shadow-xl
+      rounded-2xl
+      p-3
+      grid
+      grid-cols-3
+      gap-2
+    "
+  >
+    {["1세대", "2세대", "3세대", "4세대", "5세대", "유병자"].map((gen) => (
+      <button
+        key={gen}
+        onClick={() => {
+          setSelectedDictionaryGen(gen);
+          setDictionaryTab("실손정보");
+          setDictionaryModalOpen(true);
+          setDictionaryOpen(false);
+        }}
+        className="
+          px-3
+          py-2
+          rounded-xl
+          bg-gray-100
+          text-sm
+          font-bold
+          text-gray-700
+          hover:bg-blue-50
+          hover:text-blue-600
+          transition
+        "
+      >
+        {gen}
+      </button>
+    ))}
+  </div>
+)}
+
+{/* 실손 사전 팝업 */}
+{dictionaryModalOpen && (
+  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col">
+      
+      {/* 팝업 헤더 */}
+      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+        <div className="font-bold flex items-center gap-2">
+          <BookOpen className="w-5 h-5" />
+          {selectedDictionaryGen} 실손 사전
+        </div>
+
+        <button onClick={() => setDictionaryModalOpen(false)}>
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="p-5 overflow-y-auto">
+        {/* 팝업 내부 탭 */}
+        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
+          <button
+            onClick={() => setDictionaryTab("실손정보")}
+            className={`rounded-xl py-3 font-bold transition ${
+              dictionaryTab === "실손정보"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600"
+            }`}
+          >
+            실손정보
+          </button>
+
+          <button
+            onClick={() => setDictionaryTab("면책사항")}
+            className={`rounded-xl py-3 font-bold transition ${
+              dictionaryTab === "면책사항"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600"
+            }`}
+          >
+            면책사항
+          </button>
+        </div>
+
+        {/* 실손정보 */}
+        {dictionaryTab === "실손정보" && (
+          <div className="space-y-3">
+            {[
+              ["적용기간", "내용 입력 예정"],
+              ["보험기간", "내용 입력 예정"],
+              ["갱신주기", "내용 입력 예정"],
+              ["담보구성", "내용 입력 예정"],
+              ["자기부담금", "내용 입력 예정"],
+              ["본인부담한도", "내용 입력 예정"],
+              ["상급병실", "내용 입력 예정"],
+            ].map(([label, value]) => (
+              <div
+                key={label}
+                className="rounded-2xl border border-gray-200 p-4"
+              >
+                <p className="text-sm font-black text-gray-900">
+                  {label}
+                </p>
+
+                <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+                  {value}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 면책사항 */}
+        {dictionaryTab === "면책사항" && (
+          <div className="overflow-hidden rounded-2xl border border-gray-200">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-bold text-gray-700">
+                    항목
+                  </th>
+                  <th className="px-4 py-3 text-left font-bold text-gray-700">
+                    보상 여부
+                  </th>
+                  <th className="px-4 py-3 text-left font-bold text-gray-700">
+                    비고
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {[
+                  ["미용·성형", "제외", "내용 입력 예정"],
+                  ["건강검진", "제한", "내용 입력 예정"],
+                  ["예방접종", "제외", "내용 입력 예정"],
+                  ["임신·출산", "제한", "내용 입력 예정"],
+                  ["치과·한방", "제한", "내용 입력 예정"],
+                  ["비급여 항목", "세대별 상이", "내용 입력 예정"],
+                ].map(([item, cover, desc]) => (
+                  <tr key={item} className="border-t border-gray-100">
+                    <td className="px-4 py-3 text-gray-700">
+                      {item}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-bold text-gray-600">
+                        {cover}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-3 text-gray-500">
+                      {desc}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <p className="mt-5 text-xs text-gray-400 leading-relaxed">
+          ※ 실제 보장내용은 가입 시기, 상품명, 특약 구성, 약관에 따라 달라질 수 있습니다.
+        </p>
+      </div>
+    </div>
+  </div>
+)}
     </main>
   );
 }
