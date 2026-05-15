@@ -124,18 +124,26 @@ function CompanyCard({ company, type }: any) {
         }
         alt={company.browser}
         className="
-          absolute
-          top-3
-          left-3
-          w-6
-          h-6
-          opacity-0
-          scale-90
-          transition-all
-          duration-300
-          group-hover:opacity-100
-          group-hover:scale-100
-        "
+  absolute
+  top-3
+  left-3
+
+  w-5
+  h-5
+  md:w-6
+  md:h-6
+
+  opacity-100
+  scale-100
+
+  md:opacity-0
+  md:scale-90
+  md:group-hover:opacity-100
+  md:group-hover:scale-100
+
+  transition-all
+  duration-300
+"
         draggable="false"
       />
 
@@ -269,7 +277,7 @@ export default function InsuranceSystemPage() {
               </div>
 
               <p className="text-sm text-gray-500 mt-1">
-                전산 카드를 드래그해 원하는 위치로 이동해 보세요 !
+                보험사 카드 이동 설정 가능 (pc)
               </p>
             </div>
 
