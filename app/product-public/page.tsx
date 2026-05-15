@@ -183,7 +183,7 @@ export default function ProductPublicPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-9">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-9">
           {filteredCompanies.map(([name, image, link, phone]) => {
             let logoPath = "";
 
@@ -204,7 +204,7 @@ export default function ProductPublicPage() {
   bg-white
   rounded-3xl
   h-36 md:h-40
-  px-5
+  px-3 md:px-5
   border
   border-gray-200
   shadow-sm
@@ -236,21 +236,30 @@ export default function ProductPublicPage() {
   target="_blank"
   rel="noopener noreferrer"
   className="
-    cursor-pointer
-    px-6
-    py-2.5
-    rounded-xl
-    bg-gray-800
-    text-white
-    text-sm
-    font-medium
-    transition-all
-    duration-200
-    active:scale-[0.97]
-    hover:bg-gray-200
-  "
+  cursor-pointer
+  px-4
+  md:px-6
+  py-2.5
+  rounded-xl
+  bg-gray-800
+  text-white
+  text-[11px]
+  md:text-sm
+  font-medium
+  whitespace-nowrap
+  transition-all
+  duration-200
+  active:scale-[0.97]
+  hover:bg-gray-200
+"
 >
+  <span className="hidden md:inline">
   상품공시실 바로가기
+</span>
+
+<span className="inline md:hidden">
+  바로가기
+</span>
 </a>
 
 </div>
