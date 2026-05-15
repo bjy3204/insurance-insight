@@ -101,7 +101,7 @@ function CompanyCard({ company, type }: any) {
   border
   border-gray-200
   shadow-sm
-  shadow-[inset_0_1px_3px_rgba(0,0,0,0.05)]
+  
   hover:shadow-xl
 active:shadow-inner
 active:scale-[0.98]
