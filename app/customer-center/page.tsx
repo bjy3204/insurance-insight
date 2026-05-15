@@ -814,11 +814,38 @@ const filteredCompanies =
 
         
 
-        {/* PDF */}
-        <iframe
-          src={selectedCompany.claimPdf}
-          className="w-full h-[1200px] rounded-lg border-0"
-        />
+        {/* 모바일 · 태블릿 */}
+<div className="lg:hidden flex flex-col items-center justify-center h-full text-center">
+
+  <p className="text-sm text-gray-500 leading-relaxed mb-5">
+    모바일 · 태블릿에서는
+    <br />
+    PDF 미리보기가 지원되지 않을 수 있습니다.
+  </p>
+
+  <a
+    href={selectedCompany.claimPdf}
+    target="_blank"
+    className="
+      px-5
+      py-3
+      rounded-xl
+      bg-gray-800
+      text-white
+      text-sm
+      font-bold
+    "
+  >
+    청구서 다운로드
+  </a>
+
+</div>
+
+{/* PC */}
+<iframe
+  src={selectedCompany.claimPdf}
+  className="hidden lg:block w-full h-[1200px] rounded-lg border-0"
+/>
 
       </div>
 
