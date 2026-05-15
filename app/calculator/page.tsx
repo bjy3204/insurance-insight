@@ -1923,9 +1923,9 @@ w-62
                   <th className="px-4 py-3 text-left font-bold text-gray-700">
                     항목
                   </th>
-                  <th className="px-4 py-3 text-left font-bold text-gray-700">
-                    구분
-                  </th>
+                  <th className="px-2 py-3 text-left font-bold text-gray-700 w-[88px] min-w-[88px]">
+  구분
+</th>
                   <th className="px-4 py-3 text-left font-bold text-gray-700">
                     비고
                   </th>
@@ -1940,9 +1940,9 @@ w-62
         {item}
       </td>
 
-      <td className="px-4 py-3">
-        <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${
+      <td className="px-2 py-3 w-[88px] min-w-[88px]">
+  <span
+    className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium ${
             cover.includes("제외")
               ? "bg-red-100 text-red-600"
               : cover.includes("가능")
