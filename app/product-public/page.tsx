@@ -203,7 +203,7 @@ export default function ProductPublicPage() {
   className="
   bg-white
   rounded-3xl
-  h-40
+  h-36 md:h-40
   px-5
   border
   border-gray-200
@@ -219,14 +219,24 @@ export default function ProductPublicPage() {
                 <div className="flex flex-col items-center justify-center">
 
   <img
-    src={logoPath}
-    alt={name}
-    className="w-40 h-16 object-contain mb-4"
-  />
-
- <div
+  src={logoPath}
+  alt={name}
   className="
-  cursor-pointer
+    max-w-[120px]
+    max-h-10
+    md:max-w-[150px]
+    md:max-h-14
+    object-contain
+    mb-4
+  "
+/>
+
+ <a
+  href={link}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="
+    cursor-pointer
     px-6
     py-2.5
     rounded-xl
@@ -236,11 +246,12 @@ export default function ProductPublicPage() {
     font-medium
     transition-all
     duration-200
+    active:scale-[0.97]
     hover:bg-gray-800
   "
 >
-    상품공시실 바로가기
-  </div>
+  상품공시실 바로가기
+</a>
 
 </div>
 
