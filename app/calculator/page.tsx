@@ -15,6 +15,7 @@ import {
 import { FaInstagram } from "react-icons/fa";
 
 const generations = [
+  
   { id: "gen1", name: "1세대", period: "~2009.09", note: "자기부담금 0%" },
   { id: "gen2a", name: "2세대", period: "2009.10~2012.12", note: "급여 90%" },
   { id: "gen2b", name: "2세대", period: "2013.01~2015.08", note: "급여 80%" },
@@ -24,7 +25,251 @@ const generations = [
   { id: "gen5", name: "5세대", period: "2026.05~", note: "비급여 중증 · 비중증 분리" },
   { id: "simple", name: "유병자", period: "유병자 실손", note: "약제비 · 비급여3종 제외" },
 ];
+const dictionaryData: any = {
+  "1세대": {
+    info: [
+      ["구분", "표준화 이전"],
+      ["보험기간", "80세, 100세"],
+      ["갱신주기", "5년, 3년"],
+      ["본인부담한도", "없음"],
+      ["상급병실", "병실료 차액 50%"],
+      ["가입금액", "입원 최대 1억 / 통원 10만~50만 등 상품별 상이"],
+    ],
+    selfpay: [
+      ["입원", "자기부담금 0%"],
+      ["통원", "상품별 5천원 또는 1만원 공제"],
+      ["약제비", "통원 한도 내 포함 또는 상품별 상이"],
+      ["비급여3종", "해당 없음"],
+    ],
+    waiting: [
+      ["상해입원", "365일 보장"],
+      ["질병입원", "365일 보장 후 180일 면책 가능"],
+      ["통원", "30회 보장 후 180일 면책 가능"],
+    ],
+    exclude: [
+      ["미용·성형", "보장 제외"],
+      ["건강검진", "치료 목적 시 가능"],
+      ["예방접종", "보장 제외"],
+      ["임신·출산", "보장 제외"],
+      ["치과·한방", "약관별 제한"],
+      ["해외치료", "일부 상품 가능"],
+    ],
+  },
 
+  "2세대 1차": {
+    info: [
+      ["구분", "표준화 Ⅰ"],
+      ["보험기간", "100세"],
+      ["갱신주기", "3년"],
+      ["본인부담한도", "입원 자기부담금 연 200만원"],
+      ["상급병실", "병실료 차액 50% (1일 10만원 한도)"],
+      ["가입금액", "입원 최대 5천만원 / 통원 최대 30만원"],
+    ],
+    selfpay: [
+      ["입원", "자기부담금 10%"],
+      ["통원", "의원 1만 / 병원 1.5만 / 종합병원 2만원 공제"],
+      ["약제비", "8천원 공제"],
+      ["비급여3종", "해당 없음"],
+    ],
+    waiting: [
+      ["입원", "최초 입원일부터 365일 보장 후 90일 면책"],
+      ["통원", "1년 내 180회 보장"],
+    ],
+    exclude: [
+      ["미용·성형", "보장 제외"],
+      ["건강검진", "치료 목적 시 가능"],
+      ["예방접종", "보장 제외"],
+      ["임신·출산", "보장 제외"],
+      ["치과", "대부분 제한"],
+      ["정신질환", "대부분 제한"],
+    ],
+  },
+
+  "2세대 2차": {
+    info: [
+      ["구분", "표준화 Ⅱ"],
+      ["보험기간", "15년 재가입"],
+      ["갱신주기", "1년"],
+      ["본인부담한도", "입원 자기부담금 연 200만원"],
+      ["상급병실", "병실료 차액 50% (1일 10만원 한도)"],
+      ["가입금액", "입원 최대 5천만원 / 통원 최대 30만원"],
+    ],
+    selfpay: [
+      ["입원", "표준형 20% / 선택형 10%"],
+      ["통원", "의원 1만원, 병원 1.5만원, 종합병원 2만원 또는 20% 중 큰 금액"],
+      ["약제비", "8천원 또는 20% 중 큰 금액"],
+      ["비급여3종", "해당 없음"],
+    ],
+    waiting: [
+      ["입원", "최초 입원일부터 365일 보장 후 90일 면책"],
+      ["통원", "1년 내 180회 보장"],
+      ["동일 질병·상해", "퇴원 후 180일 이내 재입원 시 같은 사고로 볼 수 있음"],
+    ],
+    exclude: [
+      ["미용·성형", "보장 제외"],
+      ["건강검진", "치료 목적 시 가능"],
+      ["예방접종", "보장 제외"],
+      ["임신·출산", "보장 제외"],
+      ["치과", "대부분 제한"],
+      ["정신질환", "대부분 제한"],
+    ],
+  },
+
+  "2세대 3차": {
+    info: [
+      ["구분", "표준화 Ⅲ"],
+      ["보험기간", "15년 재가입"],
+      ["갱신주기", "1년"],
+      ["본인부담한도", "입원 자기부담금 연 200만원"],
+      ["상급병실", "병실료 차액 50% (1일 10만원 한도)"],
+      ["가입금액", "입원 최대 5천만원 / 통원 최대 30만원"],
+    ],
+    selfpay: [
+      ["입원", "급여 10% / 비급여 20% 자기부담"],
+      ["통원", "1만·1.5만·2만원 또는 급여10%, 비급여20% 중 큰 금액"],
+      ["약제비", "8천원 또는 급여10%+비급여20% 중 큰 금액"],
+      ["비급여3종", "해당 없음"],
+    ],
+    waiting: [
+      ["입원", "2016년 이후 보장한도 소진 시까지"],
+      ["275일 초과", "최초입원~보장종료가 275일 초과 시 90일 면책"],
+      ["275일 이내", "365일에서 실제 입원일수를 뺀 기간 면책"],
+      ["통원", "1년 내 180회 보장"],
+    ],
+    exclude: [
+      ["미용·성형", "보장 제외"],
+      ["건강검진", "치료 목적 시 가능"],
+      ["예방접종", "보장 제외"],
+      ["임신·출산", "보장 제외"],
+      ["치과", "K09~K14 일부 가능"],
+      ["정신질환", "2016년 이후 일부 급여 가능"],
+    ],
+  },
+
+  "3세대": {
+    info: [
+      ["구분", "착한실손"],
+      ["보험기간", "15년 재가입"],
+      ["갱신주기", "1년"],
+      ["본인부담한도", "입원 자기부담금 연 200만원"],
+      ["상급병실", "병실료 차액 50% (1일 10만원 한도)"],
+      ["가입금액", "입원 5,000만원 / 통원 최대 30만원 / 도수 350만원 / 주사 250만원 / MRI 300만원"],
+    ],
+    selfpay: [
+      ["입원", "급여 10% / 비급여 20% 자기부담"],
+      ["통원", "1만·1.5만·2만원 또는 급여10%, 비급여20% 중 큰 금액"],
+      ["약제비", "8천원 또는 급여10%, 비급여20% 중 큰 금액"],
+      ["비급여3종", "2만원 또는 30% 중 큰 금액"],
+    ],
+    waiting: [
+      ["입원", "한도 소진 시 다음 계약해당일부터 보장"],
+      ["통원", "1년 내 180회 보장"],
+      ["비급여3종", "도수 50회 / 비급여주사 50회 / MRI 연 300만원"],
+    ],
+    exclude: [
+      ["미용·성형", "보장 제외"],
+      ["비만", "보장 제외"],
+      ["임신·출산", "대부분 제외"],
+      ["도수치료", "효과 입증 필요"],
+      ["영양주사", "치료 목적 확인 필요"],
+      ["해외치료", "보장 제외"],
+    ],
+  },
+
+  "4세대": {
+    info: [
+      ["구분", "보험료 차등제"],
+      ["보험기간", "5년 재가입"],
+      ["갱신주기", "1년"],
+      ["본인부담한도", "급여 입원 자기부담금 연 200만원"],
+      ["상급병실", "병실료 차액 50% (1일 10만원 한도)"],
+      ["가입금액", "급여 5,000만원 / 비급여 5,000만원 / 통원 회당 20만원 / 도수 350만원 / 주사 250만원 / MRI 300만원"],
+    ],
+    selfpay: [
+      ["입원", "급여 20% / 비급여 30% 자기부담"],
+      ["통원", "급여 병·의원 1만원, 상급·종합병원 2만원 또는 20% 중 큰 금액 / 비급여 3만원 또는 30% 중 큰 금액"],
+      ["약제비", "통원 급여에 포함"],
+      ["비급여3종", "3만원 또는 30% 중 큰 금액"],
+    ],
+    waiting: [
+      ["입원", "한도 소진 시 다음 계약해당일부터 보장"],
+      ["통원", "회당 20만원 / 비급여 통원 연 100회"],
+      ["비급여3종", "한도 또는 횟수 소진 시 다음 계약해당일까지"],
+    ],
+    exclude: [
+      ["미용·성형", "보장 제외"],
+      ["비만", "보장 제외"],
+      ["임신·출산", "대부분 제외"],
+      ["비급여 백내장", "제한 강화"],
+      ["영양주사", "치료 목적 제한"],
+      ["해외치료", "보장 제외"],
+    ],
+  },
+
+  "5세대": {
+    info: [
+      ["구분", "중증·비중증 비급여 분리"],
+      ["적용기간", "2026.04~"],
+      ["보험기간", "5년 재가입"],
+      ["갱신주기", "1년"],
+      ["본인부담한도", "급여 200만원 / 중증 비급여 상급·종합병원 연 500만원"],
+      ["상급병실", "병실료 차액 50% (1일 10만원 한도)"],
+      ["가입금액", "급여 5,000만원 / 중증 비급여 5,000만원 / 비중증 비급여 1,000만원 / 중증 3종 도수 350만·주사 250만·MRI 300만"],
+    ],
+    selfpay: [
+      ["입원 급여", "20% 자기부담"],
+      ["입원 중증 비급여", "30% 자기부담"],
+      ["입원 비중증 비급여", "50% 자기부담"],
+      ["통원 급여", "건보 본인부담률 또는 20% 중 큰 금액"],
+      ["통원 중증 비급여", "3만원 또는 30% 중 큰 금액"],
+      ["통원 비중증 비급여", "5만원 또는 50% 중 큰 금액"],
+      ["3종 중증", "3만원 또는 30% 중 큰 금액"],
+      ["3종 비중증", "5만원 또는 50% 중 큰 금액"],
+    ],
+    waiting: [
+      ["입원", "한도 소진 시 다음 계약해당일부터 보장"],
+      ["통원", "통원 일당 20만원"],
+      ["비급여3종", "각 항목 한도 소진 시 다음 계약해당일까지"],
+    ],
+    exclude: [
+      ["미용·성형", "보장 제외"],
+      ["비만", "보장 제외"],
+      ["해외치료", "보장 제외"],
+      ["근골격계 비중증 치료", "보장 제한"],
+      ["비급여 도수·주사", "보장 제한"],
+      ["비급여 백내장", "제한 강화"],
+    ],
+  },
+
+  "유병자": {
+    info: [
+      ["구분", "간편심사 실손"],
+      ["보험기간", "3년 재가입"],
+      ["갱신주기", "1년"],
+      
+      ["상급병실", "병실료 차액 50% (1일 10만원 한도)"],
+      ["가입금액", "입원 5,000만원 / 통원 회당 20만원"],
+    ],
+    selfpay: [
+      ["입원", "10만원 또는 30% 중 큰 금액"],
+      ["통원", "2만원 또는 30% 중 큰 금액"],
+      ["약제비", "보장 제외"],
+      ["비급여3종", "보장 제외"],
+    ],
+    waiting: [
+      ["입원", "365일 보장 후 90일 면책"],
+      ["통원", "연 180회 보장"],
+    ],
+    exclude: [
+      ["처방조제", "보장 제외"],
+      ["도수치료", "보장 제외"],
+      ["비급여주사", "보장 제외"],
+      ["MRI/MRA 특약", "보장 제외"],
+      ["미용·성형", "보장 제외"],
+      ["비만", "보장 제외"],
+    ],
+  },
+};
 export default function CalculatorPage() {
   const [generation, setGeneration] = useState("gen1");
   const [type, setType] = useState("outpatient");
@@ -517,7 +762,7 @@ const calculateGen5 = () => {
       0
     );
 
-    // 5세대 통원 비급여 보상한도: 중증+비중증 합산 20만원
+    // 5세대 통원 비급여 보장한도: 중증+비중증 합산 20만원
     const uncoveredPay = Math.min(
       severeUncoveredPay + mildUncoveredPay,
       200000
@@ -565,7 +810,7 @@ const calculateGen5 = () => {
 
   const mildUncoveredDeductible = Math.round(mildUncoveredAmount * 0.5);
 
-  // 5세대 입원 비중증 비급여 보상한도: 300만원
+  // 5세대 입원 비중증 비급여 보장한도: 300만원
   const mildUncoveredPay = Math.min(
     Math.max(mildUncoveredAmount - mildUncoveredDeductible, 0),
     3000000
@@ -1226,7 +1471,7 @@ const calculateSimple = () => {
             </h2>
 
             {generation === "gen5" && (
-  <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
+  <div className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-5">
     <button
       onClick={() => setSpecialType("severe")}
       className={`rounded-xl py-3 font-bold ${
@@ -1413,6 +1658,7 @@ const calculateSimple = () => {
     fixed
     left-6
     bottom-24
+  
     z-40
     w-14
     h-14
@@ -1432,7 +1678,7 @@ const calculateSimple = () => {
   <div
     className="
       fixed
-      left-6
+      left-10
       bottom-40
       z-40
       bg-white
@@ -1441,36 +1687,56 @@ const calculateSimple = () => {
       shadow-xl
       rounded-2xl
       p-3
-      grid
-      grid-cols-3
-      gap-2
+      flex
+flex-col
+gap-2
+w-62
     "
   >
-    {["1세대", "2세대", "3세대", "4세대", "5세대", "유병자"].map((gen) => (
-      <button
-        key={gen}
-        onClick={() => {
-          setSelectedDictionaryGen(gen);
-          setDictionaryTab("실손정보");
-          setDictionaryModalOpen(true);
-          setDictionaryOpen(false);
-        }}
-        className="
-          px-3
-          py-2
-          rounded-xl
-          bg-gray-100
-          text-sm
-          font-bold
-          text-gray-700
-          hover:bg-blue-50
-          hover:text-blue-600
-          transition
-        "
-      >
-        {gen}
-      </button>
-    ))}
+    {[
+  { title: "1세대", date: "~2009.09", value: "1세대" },
+{ title: "2세대", date: "2009.10~2012.12", value: "2세대 1차" },
+{ title: "2세대", date: "2013.01~2015.08", value: "2세대 2차" },
+{ title: "2세대", date: "2015.09~2017.03", value: "2세대 3차" },
+{ title: "3세대", date: "2017.04~2021.06", value: "3세대" },
+{ title: "4세대", date: "2021.07~2026.04", value: "4세대" },
+{ title: "5세대", date: "2026.05~", value: "5세대" },
+{ title: "유병자 실손", date: "2018.04~", value: "유병자" },
+].map((gen) => (
+  <button
+    key={gen.value}
+    onClick={() => {
+      setSelectedDictionaryGen(gen.value);
+      setDictionaryTab("실손정보");
+      setDictionaryModalOpen(true);
+      setDictionaryOpen(false);
+    }}
+    className="
+      w-full
+      px-4
+      py-3
+      rounded-xl
+      bg-gray-100
+      text-sm
+      font-bold
+      text-gray-700
+      text-left
+      hover:bg-blue-50
+      hover:text-blue-600
+      transition
+    "
+  >
+    <div className="flex items-center justify-between gap-4">
+  <span className="text-sm font-bold text-gray-800">
+    {gen.title}
+  </span>
+
+  <span className="text-xs font-medium text-gray-400">
+    {gen.date}
+  </span>
+</div>
+  </button>
+))}
   </div>
 )}
 
@@ -1483,7 +1749,10 @@ const calculateSimple = () => {
       <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2">
           <BookOpen className="w-5 h-5" />
-          {selectedDictionaryGen} 실손 사전
+          {selectedDictionaryGen.includes("2세대")
+  ? "2세대"
+  : selectedDictionaryGen}{" "}
+실손 사전
         </div>
 
         <button onClick={() => setDictionaryModalOpen(false)}>
@@ -1493,10 +1762,10 @@ const calculateSimple = () => {
 
       <div className="p-5 overflow-y-auto">
         {/* 팝업 내부 탭 */}
-        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
+        <div className="grid grid-cols-4 gap-1 bg-gray-200 rounded-2xl p-1 mb-5">
           <button
             onClick={() => setDictionaryTab("실손정보")}
-            className={`rounded-xl py-3 font-bold transition ${
+            className={`rounded-xl py-3 text-[12px] sm:text-sm font-bold transition whitespace-nowrap ${
               dictionaryTab === "실손정보"
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-600"
@@ -1504,10 +1773,29 @@ const calculateSimple = () => {
           >
             실손정보
           </button>
-
+          <button
+  onClick={() => setDictionaryTab("자기부담금")}
+  className={`rounded-xl py-3 text-[11px] sm:text-sm font-bold transition whitespace-nowrap ${
+    dictionaryTab === "자기부담금"
+      ? "bg-white text-blue-600 shadow-sm"
+      : "text-gray-600"
+  }`}
+>
+  자기부담금
+</button>
+<button
+  onClick={() => setDictionaryTab("면책기간")}
+  className={`rounded-xl py-3 text-[12px] sm:text-sm font-bold transition whitespace-nowrap ${
+    dictionaryTab === "면책기간"
+      ? "bg-white text-blue-600 shadow-sm"
+      : "text-gray-600"
+  }`}
+>
+  면책기간
+</button>
           <button
             onClick={() => setDictionaryTab("면책사항")}
-            className={`rounded-xl py-3 font-bold transition ${
+            className={`rounded-xl py-3 text-[12px] sm:text-sm font-bold transition whitespace-nowrap ${
               dictionaryTab === "면책사항"
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-600"
@@ -1518,33 +1806,68 @@ const calculateSimple = () => {
         </div>
 
         {/* 실손정보 */}
-        {dictionaryTab === "실손정보" && (
-          <div className="space-y-3">
-            {[
-              ["적용기간", "내용 입력 예정"],
-              ["보험기간", "내용 입력 예정"],
-              ["갱신주기", "내용 입력 예정"],
-              ["담보구성", "내용 입력 예정"],
-              ["자기부담금", "내용 입력 예정"],
-              ["본인부담한도", "내용 입력 예정"],
-              ["상급병실", "내용 입력 예정"],
-            ].map(([label, value]) => (
-              <div
-                key={label}
-                className="rounded-2xl border border-gray-200 p-4"
-              >
-                <p className="text-sm font-black text-gray-900">
-                  {label}
-                </p>
+{dictionaryTab === "실손정보" && (
+  <div className="space-y-3">
+    {dictionaryData[selectedDictionaryGen].info.map(
+      ([label, value]: [string, string]) => (
+        <div
+          key={label}
+          className="rounded-2xl border border-gray-200 p-4"
+        >
+          <p className="text-sm font-black text-gray-900">
+            {label}
+          </p>
 
-                <p className="text-sm text-gray-500 mt-1 leading-relaxed">
-                  {value}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
+          <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+            {value}
+          </p>
+        </div>
+      )
+    )}
+  </div>
+)}
+{/* 자기부담금 */}
+{dictionaryTab === "자기부담금" && (
+  <div className="space-y-3">
+    {dictionaryData[selectedDictionaryGen].selfpay.map(
+      ([label, value]: [string, string]) => (
+        <div
+          key={label}
+          className="rounded-2xl border border-gray-200 p-4"
+        >
+          <p className="text-sm font-black text-gray-900">
+            {label}
+          </p>
 
+          <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+            {value}
+          </p>
+        </div>
+      )
+    )}
+  </div>
+)}
+{/* 면책기간 */}
+{dictionaryTab === "면책기간" && (
+  <div className="space-y-3">
+    {dictionaryData[selectedDictionaryGen].waiting.map(
+      ([label, value]: [string, string]) => (
+        <div
+          key={label}
+          className="rounded-2xl border border-gray-200 p-4"
+        >
+          <p className="text-sm font-black text-gray-900">
+            {label}
+          </p>
+
+          <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+            {value}
+          </p>
+        </div>
+      )
+    )}
+  </div>
+)}
         {/* 면책사항 */}
         {dictionaryTab === "면책사항" && (
           <div className="overflow-hidden rounded-2xl border border-gray-200">
@@ -1555,7 +1878,7 @@ const calculateSimple = () => {
                     항목
                   </th>
                   <th className="px-4 py-3 text-left font-bold text-gray-700">
-                    보상 여부
+                    구분
                   </th>
                   <th className="px-4 py-3 text-left font-bold text-gray-700">
                     비고
@@ -1564,30 +1887,33 @@ const calculateSimple = () => {
               </thead>
 
               <tbody>
-                {[
-                  ["미용·성형", "제외", "내용 입력 예정"],
-                  ["건강검진", "제한", "내용 입력 예정"],
-                  ["예방접종", "제외", "내용 입력 예정"],
-                  ["임신·출산", "제한", "내용 입력 예정"],
-                  ["치과·한방", "제한", "내용 입력 예정"],
-                  ["비급여 항목", "세대별 상이", "내용 입력 예정"],
-                ].map(([item, cover, desc]) => (
-                  <tr key={item} className="border-t border-gray-100">
-                    <td className="px-4 py-3 text-gray-700">
-                      {item}
-                    </td>
+                {dictionaryData[selectedDictionaryGen].exclude.map(
+  ([item, cover]: [string, string]) => (
+    <tr key={item} className="border-t border-gray-100">
+      <td className="px-4 py-3 text-gray-700">
+        {item}
+      </td>
 
-                    <td className="px-4 py-3">
-                      <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-bold text-gray-600">
-                        {cover}
-                      </span>
-                    </td>
+      <td className="px-4 py-3">
+        <span
+  className={`rounded-full px-2 py-1 text-xs font-medium ${
+    cover.includes("제외")
+      ? "bg-red-100 text-red-600"
+      : cover.includes("가능")
+      ? "bg-blue-100 text-blue-600"
+      : "bg-gray-100 text-gray-600"
+  }`}
+>
+  {cover}
+</span>
+      </td>
 
-                    <td className="px-4 py-3 text-gray-500">
-                      {desc}
-                    </td>
-                  </tr>
-                ))}
+      <td className="px-4 py-3 text-gray-500">
+        약관 기준 적용
+      </td>
+    </tr>
+  )
+)}
               </tbody>
             </table>
           </div>
