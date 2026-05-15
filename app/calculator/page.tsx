@@ -41,6 +41,7 @@ export default function CalculatorPage() {
   const [manualTherapy, setManualTherapy] = useState("");
   const [injection, setInjection] = useState("");
   const [mri, setMri] = useState("");
+  const [specialType, setSpecialType] = useState("severe");
 
   const [days, setDays] = useState("");
   const [roomType, setRoomType] = useState("standard");
@@ -447,17 +448,35 @@ const deductible = totalWithSpecial - pay;
 };
 };
 const calculateGen5 = () => {
-  const specialTotal = manualTherapyAmount + injectionAmount + mriAmount;
+  const specialTotal =
+    specialType === "severe"
+      ? manualTherapyAmount + injectionAmount + mriAmount
+      : mriAmount;
 
   const calculateGen5SpecialPay = (amount: number, limit: number) => {
-    const deductible = Math.max(30000, Math.round(amount * 0.3));
+    const deductible =
+      specialType === "severe"
+        ? Math.max(30000, Math.round(amount * 0.3))
+        : Math.max(50000, Math.round(amount * 0.5));
+
     const pay = Math.max(amount - deductible, 0);
     return Math.min(pay, limit);
   };
 
-  const manualPay = calculateGen5SpecialPay(manualTherapyAmount, 3500000);
-  const injectionPay = calculateGen5SpecialPay(injectionAmount, 2500000);
-  const mriPay = calculateGen5SpecialPay(mriAmount, 3000000);
+  const manualPay =
+    specialType === "severe"
+      ? calculateGen5SpecialPay(manualTherapyAmount, 3500000)
+      : 0;
+
+  const injectionPay =
+    specialType === "severe"
+      ? calculateGen5SpecialPay(injectionAmount, 2500000)
+      : 0;
+
+  const mriPay =
+    specialType === "severe"
+      ? calculateGen5SpecialPay(mriAmount, 3000000)
+      : calculateGen5SpecialPay(mriAmount, 2000000);
 
   const specialPay = manualPay + injectionPay + mriPay;
 
@@ -744,7 +763,7 @@ const calculateSimple = () => {
                 onChange={(e) =>
                   setOutpatientLimit(parseNumber(e.target.value))
                 }
-                className="mt-2 w-full rounded-2xl border px-4 h-[56px] outline-none text-lg font-bold bg-white"
+                className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white"
               />
             </div>
 
@@ -798,7 +817,7 @@ const calculateSimple = () => {
                 type="text"
                 value={formatNumber(covered)}
                 onChange={(e) => setCovered(parseNumber(e.target.value))}
-                className="mt-2 w-full rounded-2xl border px-4 h-[56px] outline-none text-lg font-bold bg-white"
+                className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white"
               />
             </div>
           </div>
@@ -819,7 +838,7 @@ const calculateSimple = () => {
                 type="text"
                 value={formatNumber(uncovered)}
                 onChange={(e) => setUncovered(parseNumber(e.target.value))}
-                className="mt-2 w-full rounded-2xl border px-4 h-[56px] outline-none text-lg font-bold bg-white"
+                className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white"
               />
             </div>
 
@@ -834,7 +853,7 @@ const calculateSimple = () => {
   onChange={(e) =>
     setMildUncovered(parseNumber(e.target.value))
   }
-  className="mt-2 w-full rounded-2xl border px-4 h-[56px] outline-none text-lg font-bold bg-white"
+  className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white"
 />
             </div>
           </div>
@@ -859,7 +878,7 @@ const calculateSimple = () => {
                 onChange={(e) =>
                   setOutpatientLimit(parseNumber(e.target.value))
                 }
-                className="mt-2 w-full rounded-2xl border px-4 h-[56px] outline-none text-lg font-bold bg-white"
+                className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white"
               />
             </div>
 
@@ -909,12 +928,12 @@ const calculateSimple = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-bold text-gray-500">급여</label>
-                <input type="text" value={formatNumber(covered)} onChange={(e) => setCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border px-4 h-[56px] outline-none text-lg font-bold bg-white" />
+                <input type="text" value={formatNumber(covered)} onChange={(e) => setCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white" />
               </div>
 
               <div>
                 <label className="text-sm font-bold text-gray-500">비급여</label>
-                <input type="text" value={formatNumber(uncovered)} onChange={(e) => setUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border px-4 h-[56px] outline-none text-lg font-bold bg-white" />
+                <input type="text" value={formatNumber(uncovered)} onChange={(e) => setUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white" />
               </div>
             </div>
           </div>
@@ -940,19 +959,19 @@ const calculateSimple = () => {
                   onChange={(e) =>
                     setMedicineLimit(parseNumber(e.target.value))
                   }
-                  className="mt-2 w-full rounded-2xl border px-4 h-[56px] outline-none text-lg font-bold bg-white"
+                  className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-bold text-gray-500">급여</label>
-                  <input type="text" value={formatNumber(medicineCovered)} onChange={(e) => setMedicineCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border px-4 h-[56px] outline-none text-lg font-bold bg-white" />
+                  <input type="text" value={formatNumber(medicineCovered)} onChange={(e) => setMedicineCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white" />
                 </div>
 
                 <div>
                   <label className="text-sm font-bold text-gray-500">비급여</label>
-                  <input type="text" value={formatNumber(medicineUncovered)} onChange={(e) => setMedicineUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border px-4 h-[56px] outline-none text-lg font-bold bg-white" />
+                  <input type="text" value={formatNumber(medicineUncovered)} onChange={(e) => setMedicineUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white" />
                 </div>
               </div>
             </div>
@@ -1029,7 +1048,7 @@ const calculateSimple = () => {
                   setCovered(parseNumber(e.target.value))
                 }
                 className="
-                  mt-2 w-full rounded-2xl border px-4 h-[56px]
+                  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
                   outline-none text-lg font-bold bg-white
                 "
               />
@@ -1058,7 +1077,7 @@ const calculateSimple = () => {
                   setUncovered(parseNumber(e.target.value))
                 }
                 className="
-                  mt-2 w-full rounded-2xl border px-4 h-[56px]
+                  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
                   outline-none text-lg font-bold bg-white
                 "
               />
@@ -1076,7 +1095,7 @@ const calculateSimple = () => {
                   setMildUncovered(parseNumber(e.target.value))
                 }
                 className="
-                  mt-2 w-full rounded-2xl border px-4 h-[56px]
+                  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
                   outline-none text-lg font-bold bg-white
                 "
               />
@@ -1098,7 +1117,7 @@ const calculateSimple = () => {
               value={formatNumber(covered)}
               onChange={(e) => setCovered(parseNumber(e.target.value))}
               className="
-                mt-2 w-full rounded-2xl border px-4 h-[56px]
+                mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
                 outline-none text-lg font-bold
               "
             />
@@ -1114,7 +1133,7 @@ const calculateSimple = () => {
               value={formatNumber(uncovered)}
               onChange={(e) => setUncovered(parseNumber(e.target.value))}
               className="
-                mt-2 w-full rounded-2xl border px-4 h-[56px]
+                mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
                 outline-none text-lg font-bold
               "
             />
@@ -1133,7 +1152,7 @@ const calculateSimple = () => {
                 setDays(e.target.value.replace(/[^0-9]/g, ""))
               }
               className="
-                mt-2 w-full rounded-2xl border px-4 h-[56px]
+                mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
                 outline-none text-lg font-bold
               "
             />
@@ -1182,7 +1201,7 @@ const calculateSimple = () => {
                   setRoomDiff(parseNumber(e.target.value))
                 }
                 className="
-                  mt-2 w-full rounded-2xl border px-4 h-[56px]
+                  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
                   outline-none text-lg font-bold
                 "
               />
@@ -1200,75 +1219,114 @@ const calculateSimple = () => {
               비급여 3종
             </h2>
 
-            <p className="text-sm text-gray-500 mb-5 leading-relaxed">
+            {generation === "gen5" && (
+  <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
+    <button
+      onClick={() => setSpecialType("severe")}
+      className={`rounded-xl py-3 font-bold ${
+        specialType === "severe"
+          ? "bg-white text-blue-600 shadow-sm"
+          : "text-gray-600"
+      }`}
+    >
+      중증
+    </button>
+
+    <button
+      onClick={() => setSpecialType("mild")}
+      className={`rounded-xl py-3 font-bold ${
+        specialType === "mild"
+          ? "bg-white text-blue-600 shadow-sm"
+          : "text-gray-600"
+      }`}
+    >
+      비중증
+    </button>
+  </div>
+)}
+
+<p className="text-sm text-gray-500 mb-5 leading-relaxed">
   {generation === "gen3" ? (
     <>
       도수치료 350만원 / 비급여주사 250만원 / MRI·MRA 300만원 한도
-      <br />
-      각 항목별 2만원 또는 30% 중 큰 금액 공제
+    
+    </>
+  ) : generation === "gen5" && specialType === "mild" ? (
+    <>
+      
+      MRI·MRA 200만원 한도
     </>
   ) : (
     <>
       도수치료 350만원 / 비급여주사 250만원 / MRI·MRA 300만원 한도
-      <br />
-      각 항목별 3만원 또는 30% 중 큰 금액 공제
+     
     </>
   )}
 </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="text-sm font-bold text-gray-500">
-                  도수치료
-                </label>
+<div
+  className={`grid grid-cols-1 ${
+    generation === "gen5" && specialType === "mild"
+      ? "md:grid-cols-1"
+      : "md:grid-cols-3"
+  } gap-4`}
+>
+  {!(generation === "gen5" && specialType === "mild") && (
+    <>
+      <div>
+        <label className="text-sm font-bold text-gray-500">
+          도수치료
+        </label>
 
-                <input
-                  type="text"
-                  value={formatNumber(manualTherapy)}
-                  onChange={(e) =>
-                    setManualTherapy(parseNumber(e.target.value))
-                  }
-                  className="
-                    mt-2 w-full rounded-2xl border px-4 h-[56px]
-                    outline-none text-lg font-bold bg-white
-                  "
-                />
-              </div>
+        <input
+          type="text"
+          value={formatNumber(manualTherapy)}
+          onChange={(e) =>
+            setManualTherapy(parseNumber(e.target.value))
+          }
+          className="
+            mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
+            outline-none text-lg font-bold bg-white
+          "
+        />
+      </div>
 
-              <div>
-                <label className="text-sm font-bold text-gray-500">
-                  비급여주사
-                </label>
+      <div>
+        <label className="text-sm font-bold text-gray-500">
+          비급여주사
+        </label>
 
-                <input
-                  type="text"
-                  value={formatNumber(injection)}
-                  onChange={(e) =>
-                    setInjection(parseNumber(e.target.value))
-                  }
-                  className="
-                    mt-2 w-full rounded-2xl border px-4 h-[56px]
-                    outline-none text-lg font-bold bg-white
-                  "
-                />
-              </div>
+        <input
+          type="text"
+          value={formatNumber(injection)}
+          onChange={(e) =>
+            setInjection(parseNumber(e.target.value))
+          }
+          className="
+            mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
+            outline-none text-lg font-bold bg-white
+          "
+        />
+      </div>
+    </>
+  )}
 
-              <div>
-                <label className="text-sm font-bold text-gray-500">
-                  MRI/MRA
-                </label>
+  <div>
+    <label className="text-sm font-bold text-gray-500">
+      MRI/MRA
+    </label>
 
-                <input
-                  type="text"
-                  value={formatNumber(mri)}
-                  onChange={(e) => setMri(parseNumber(e.target.value))}
-                  className="
-                    mt-2 w-full rounded-2xl border px-4 h-[56px]
-                    outline-none text-lg font-bold bg-white
-                  "
-                />
-              </div>
-            </div>
+    <input
+      type="text"
+      value={formatNumber(mri)}
+      onChange={(e) => setMri(parseNumber(e.target.value))}
+      className="
+        mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
+        outline-none text-lg font-bold bg-white
+      "
+    />
+  </div>
+</div>
           </div>
         )}
 
