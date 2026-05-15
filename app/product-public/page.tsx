@@ -222,7 +222,7 @@ export default function ProductPublicPage() {
   src={logoPath}
   alt={name}
   className="
-    max-w-[135px]
+    max-w-140px]
     max-h-10
     md:max-w-[150px]
     md:max-h-14
