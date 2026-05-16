@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+
 import Link from "next/link";
 
 import {
@@ -356,7 +356,7 @@ const termsDictionary = [
   },
 ];
 export default function ProductPublicPage() {
-  const searchParams = useSearchParams();
+ 
  const [termsOpen, setTermsOpen] = useState(false);
 const [selectedTerm, setSelectedTerm] = useState<any>(null);
 const [pressOpen, setPressOpen] = useState(false);
@@ -376,16 +376,7 @@ const [selectedItem, setSelectedItem] = useState(0);
     setShowPressDot(true);
   }
 }, []);
-useEffect(() => {
-  if (searchParams.get("press") === "1") {
-    setPressOpen(true);
-  }
-  const savedReadPressIds = localStorage.getItem("readPressIds");
 
-if (savedReadPressIds) {
-  setReadPressIds(JSON.parse(savedReadPressIds));
-}
-}, [searchParams]);
   const currentCompanies =
     tab === "nonlife"
       ? nonlifeCompanies
