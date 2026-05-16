@@ -291,54 +291,60 @@ const toggleType = (type: string) => {
   </div>
 
   {/* 정보 박스 */}
-  <div className="grid grid-cols-3 gap-3 mt-4">
-    <a
-      href={hospital.tel !== "-" ? `tel:${hospital.tel}` : undefined}
-      className="
-        bg-gray-50
-        rounded-2xl
-        p-3
-        text-center
-        hover:bg-gray-100
-        transition
-      "
-    >
-      <p className="text-xs text-gray-400 font-bold">
-        전화번호
-      </p>
+<div className="grid grid-cols-3 gap-3 mt-4">
+  <a
+    href={hospital.tel !== "-" ? `tel:${hospital.tel}` : undefined}
+    className="
+      bg-gray-50
+      rounded-2xl
+      py-4
+      px-3
+      text-center
+      hover:bg-gray-100
+      transition
+    "
+  >
+    <p className="text-[11px] text-gray-400 font-semibold">
+      전화번호
+    </p>
 
-      <p className="text-sm font-black text-gray-900 mt-1">
-        {hospital.tel}
-      </p>
-    </a>
+    <p className="text-[18px] font-black text-gray-900 mt-1 tracking-tight">
+      {hospital.tel}
+    </p>
+  </a>
 
-    <div className="bg-gray-50 rounded-2xl p-3 text-center">
-      <p className="text-xs text-gray-400 font-bold">
-        총 의사수
-      </p>
+  <div className="bg-gray-50 rounded-2xl py-4 px-3 text-center">
+    <p className="text-[11px] text-gray-400 font-semibold">
+      총 의사수
+    </p>
 
-      <p className="text-sm font-black text-gray-900 mt-1">
-        {hospital.doctorCount}
-      </p>
-    </div>
+    <p className="text-[18px] font-black text-gray-900 mt-1 tracking-tight">
+      <span className="text-blue-600">
+  {String(hospital.doctorCount).replace("명", "")}
+</span>{" "}
+명
+    </p>
+  </div>
 
-    <a
-      href={hospital.homepage}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="
-        bg-gray-800
-        rounded-2xl
-        p-3
-        flex
-        flex-col
-        items-center
-        justify-center
-        text-white
-        hover:bg-gray-700
-        transition
-      "
-    >
+  <a
+    href={hospital.homepage}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="
+      bg-gray-800
+      rounded-2xl
+      py-4
+      px-3
+      flex
+      items-center
+      justify-center
+      gap-2
+      text-white
+      hover:bg-gray-700
+      transition
+    "
+  >
+    <div className="text-center">
       <p className="text-[11px] font-bold opacity-70">
         병원정보
       </p>
@@ -346,9 +352,11 @@ const toggleType = (type: string) => {
       <p className="text-sm font-black mt-1">
         바로가기
       </p>
-    </a>
-  </div>
+    </div>
 
+    
+  </a>
+</div>
   {/* 상세정보 버튼 */}
   <button
   onClick={() =>
