@@ -288,7 +288,7 @@ useEffect(() => {
 };
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-28 md:pb-40 lg:pb-18">
+    <main className="min-h-screen bg-gray-100 pb-56 md:pb-40 lg:pb-18">
       {/* 헤더 */}
       <header className="bg-white border-b shadow-sm">
         <div className="max-w-[1500px] mx-auto px-5 py-6">
@@ -573,9 +573,7 @@ setQuickOpen(false);
       >
         보도자료
 
-        {hasUpdate && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-red-500 rounded-full" />
-        )}
+        
       </button>
 
       <button
@@ -684,7 +682,7 @@ cursor-pointer
         className="
           fixed
           right-6
-          bottom-24
+          bottom-40 md:bottom-24
           z-40
           bg-blue-600
           text-white
