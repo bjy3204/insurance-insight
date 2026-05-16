@@ -8,8 +8,10 @@ import {
   FileText,
   Newspaper,
   MessageCircle,
+  Hospital,
+  X,
 } from "lucide-react";
-
+import HospitalInfoPopup from "./hospital-info";
 import { FaInstagram } from "react-icons/fa";
 
 const tabs = [
@@ -304,6 +306,7 @@ const claimDocs = {
 
 export default function ClaimDocsPage() {
   const [tab, setTab] = useState<Tab>("공통");
+  const [hospitalOpen, setHospitalOpen] = useState(false);
 
   return (
     <main className="min-h-screen bg-gray-100 pb-24">
@@ -428,7 +431,35 @@ export default function ClaimDocsPage() {
         </div>
 
       </section>
-
+{/* 병원정보 버튼 */}
+<button
+  onClick={() => setHospitalOpen(true)}
+  className="
+    fixed
+    left-6
+    bottom-24
+    z-40
+    w-14
+    h-14
+    rounded-full
+    bg-gray-800
+    shadow-lg
+    flex
+    items-center
+    justify-center
+    hover:shadow-2xl
+    hover:-translate-y-0.5
+    transition-all
+    duration-200
+    cursor-pointer
+  "
+>
+  <Hospital className="w-6 h-6 text-white" />
+</button>
+<HospitalInfoPopup
+  open={hospitalOpen}
+  onClose={() => setHospitalOpen(false)}
+/>
       {/* 하단 고정 메뉴 */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
 

@@ -781,7 +781,9 @@ rel="noopener noreferrer"
       이전
     </button>
 
-    {Array.from({ length: totalNoticePages }).map((_, index) => {
+    {Array.from({
+  length: Math.min(totalNoticePages, 10),
+}).map((_, index) => {
       const page = index + 1;
 
       return (

@@ -807,7 +807,9 @@ setTermsOpen(false);
           이전
         </button>
 
-        {Array.from({ length: totalPressPages }).map((_, index) => {
+        {Array.from({
+  length: Math.min(totalPressPages, 10),
+}).map((_, index) => {
           const page = index + 1;
 
           return (
