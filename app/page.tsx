@@ -627,7 +627,7 @@ setQuickOpen(false);
               border-gray-200
               rounded-2xl
               px-4
-              h-[56px]
+              h-[50px]
               flex
               items-center
               justify-center
