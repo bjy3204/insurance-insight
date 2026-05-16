@@ -370,6 +370,11 @@ const [selectedItem, setSelectedItem] = useState(0);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("nonlife");
   useEffect(() => {
+    const savedReadPressIds = localStorage.getItem("readPressIds");
+
+if (savedReadPressIds) {
+  setReadPressIds(JSON.parse(savedReadPressIds));
+}
   const savedVersion = localStorage.getItem("press-version");
 
   if (savedVersion !== PRESS.version) {

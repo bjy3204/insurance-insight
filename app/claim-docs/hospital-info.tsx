@@ -25,7 +25,7 @@ export default function HospitalInfoPopup({ open, onClose }: Props) {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [openedIndex, setOpenedIndex] = useState<number | null>(null);
-  const [filterOpen, setFilterOpen] = useState(true);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const hospitalTypes = ["의원", "종합병원", "상급종합병원"];
   const itemsPerPage = 10;
