@@ -361,16 +361,13 @@ export default function ClaimDocsPage() {
 
         {/* 탭 */}
 <div className="overflow-x-auto mb-7">
-
-  <div className="flex gap-2 min-w-max">
-
+  <div className="grid grid-cols-12 bg-gray-200 rounded-2xl p-1 gap-1 min-w-[1180px]">
     {tabs.map((item) => (
       <button
         key={item}
         onClick={() => setTab(item)}
         className={`
-          rounded-2xl
-          px-5
+          rounded-xl
           py-3
           font-bold
           text-sm
@@ -379,16 +376,14 @@ export default function ClaimDocsPage() {
           ${
             tab === item
               ? "bg-white text-blue-600 shadow-sm"
-              : "bg-gray-200 text-gray-600"
+              : "text-gray-600"
           }
         `}
       >
         {item}
       </button>
     ))}
-
   </div>
-
 </div>
         {/* 카드 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

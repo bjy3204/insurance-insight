@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 import {
@@ -361,10 +361,18 @@ const [pressOpen, setPressOpen] = useState(false);
 const [selectedPress, setSelectedPress] = useState<any>(null);
 const [pressSearch, setPressSearch] = useState("");
 const [pressPage, setPressPage] = useState(1);
+const [showPressDot, setShowPressDot] = useState(false);
 
 const [selectedItem, setSelectedItem] = useState(0);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("nonlife");
+  useEffect(() => {
+  const savedVersion = localStorage.getItem("press-version");
+
+  if (savedVersion !== PRESS.version) {
+    setShowPressDot(true);
+  }
+}, []);
 
   const currentCompanies =
     tab === "nonlife"
@@ -643,6 +651,10 @@ const paginatedPress = filteredPress.slice(
   "
 >
   <BookOpen className="w-6 h-6 text-white" />
+
+  {showPressDot && (
+    <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full" />
+  )}
 </button>
 
 {/* 메뉴 */}
@@ -665,11 +677,14 @@ setTermsOpen(false);
     ))}
     <button
   onClick={() => {
-    setPressOpen(true);
-    setTermsOpen(false);
-    setSelectedPress(null);
-    setPressSearch("");
-  }}
+  setPressOpen(true);
+  setTermsOpen(false);
+  setSelectedPress(null);
+  setPressSearch("");
+
+  localStorage.setItem("press-version", PRESS.version);
+  setShowPressDot(false);
+}}
   className="
     w-full
     px-4
@@ -685,9 +700,13 @@ setTermsOpen(false);
     cursor-pointer
   "
 >
+  <div className="flex items-center gap-2">
   <p className="text-sm font-bold text-gray-800">
     보도자료
   </p>
+
+  
+</div>
 
   <p className="text-xs text-gray-400 mt-1">
     금융위 보도자료 모음

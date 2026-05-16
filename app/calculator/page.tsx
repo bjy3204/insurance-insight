@@ -1507,7 +1507,7 @@ const calculateSimple = () => {
             </h2>
 
             {generation === "gen5" && (
-  <div className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-5">
+  <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
     <button
       onClick={() => setSpecialType("severe")}
       className={`rounded-xl py-3 font-bold ${

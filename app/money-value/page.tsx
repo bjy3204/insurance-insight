@@ -91,47 +91,29 @@ export default function MoneyValuePage() {
       <div className="max-w-5xl mx-auto px-4 py-6">
 
         {/* 탭 */}
-        <div className="flex justify-center gap-2 mb-4">
-          <button
-            onClick={() => setType("future")}
-            className={`
-              px-5
-              h-11
-              rounded-2xl
-              font-bold
-              text-sm
-              transition
-              shadow-sm
-              ${
-                type === "future"
-                  ? "bg-white text-blue-600"
-                  : "bg-gray-200 text-gray-600"
-              }
-            `}
-          >
-            미래가치
-          </button>
+<div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7">
+  <button
+    onClick={() => setType("future")}
+    className={`rounded-xl py-3 font-bold transition ${
+      type === "future"
+        ? "bg-white text-blue-600 shadow-sm"
+        : "text-gray-600"
+    }`}
+  >
+    미래가치
+  </button>
 
-          <button
-            onClick={() => setType("present")}
-            className={`
-              px-5
-              h-11
-              rounded-2xl
-              font-bold
-              text-sm
-              transition
-              shadow-sm
-              ${
-                type === "present"
-                  ? "bg-white text-blue-600"
-                  : "bg-gray-200 text-gray-600"
-              }
-            `}
-          >
-            현재가치
-          </button>
-        </div>
+  <button
+    onClick={() => setType("present")}
+    className={`rounded-xl py-3 font-bold transition ${
+      type === "present"
+        ? "bg-white text-blue-600 shadow-sm"
+        : "text-gray-600"
+    }`}
+  >
+    현재가치
+  </button>
+</div>
 
         {/* 카드 */}
         <div className="bg-white rounded-3xl shadow-sm p-5">

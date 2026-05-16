@@ -224,23 +224,51 @@ survivor: [
       </header>
 
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
-          <TopButton active={tab === "retire"} onClick={() => setTab("retire")}>
-            은퇴설계
-          </TopButton>
+        <div className="grid grid-cols-2 md:grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
+  <button
+    onClick={() => setTab("retire")}
+    className={`rounded-xl py-3 font-bold transition ${
+      tab === "retire"
+        ? "bg-white text-blue-600 shadow-sm"
+        : "text-gray-600"
+    }`}
+  >
+    은퇴설계
+  </button>
 
-          <TopButton active={tab === "pension"} onClick={() => setTab("pension")}>
-            연금액
-          </TopButton>
+  <button
+    onClick={() => setTab("pension")}
+    className={`rounded-xl py-3 font-bold transition ${
+      tab === "pension"
+        ? "bg-white text-blue-600 shadow-sm"
+        : "text-gray-600"
+    }`}
+  >
+    연금액
+  </button>
 
-          <TopButton active={tab === "lump"} onClick={() => setTab("lump")}>
-            목돈
-          </TopButton>
+  <button
+    onClick={() => setTab("lump")}
+    className={`rounded-xl py-3 font-bold transition ${
+      tab === "lump"
+        ? "bg-white text-blue-600 shadow-sm"
+        : "text-gray-600"
+    }`}
+  >
+    목돈
+  </button>
 
-          <TopButton active={tab === "nps"} onClick={() => setTab("nps")}>
-            국민연금
-          </TopButton>
-        </div>
+  <button
+    onClick={() => setTab("nps")}
+    className={`rounded-xl py-3 font-bold transition ${
+      tab === "nps"
+        ? "bg-white text-blue-600 shadow-sm"
+        : "text-gray-600"
+    }`}
+  >
+    국민연금
+  </button>
+</div>
 
         <div className="text-center text-sm text-gray-500 leading-relaxed mb-5">
           {description[tab]}

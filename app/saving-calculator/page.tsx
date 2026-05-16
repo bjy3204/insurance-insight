@@ -161,28 +161,35 @@ const principal = monthly * months;
 
       <div className="max-w-5xl mx-auto px-4 py-6">
         {/* 탭 */}
-        <div className="flex justify-center gap-2 mb-4">
-          <TopButton
-  active={type === "saving"}
-  onClick={() => {
-    setType("saving");
-    setInterestType("simple");
-  }}
->
-  적금
-</TopButton>
+<div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7">
+  <button
+    onClick={() => {
+      setType("saving");
+      setInterestType("simple");
+    }}
+    className={`rounded-xl py-3 font-bold transition ${
+      type === "saving"
+        ? "bg-white text-blue-600 shadow-sm"
+        : "text-gray-600"
+    }`}
+  >
+    적금
+  </button>
 
-
-<TopButton
-  active={type === "deposit"}
-  onClick={() => {
-    setType("deposit");
-    setInterestType("simple");
-  }}
->
-  예금
-</TopButton>
-        </div>
+  <button
+    onClick={() => {
+      setType("deposit");
+      setInterestType("simple");
+    }}
+    className={`rounded-xl py-3 font-bold transition ${
+      type === "deposit"
+        ? "bg-white text-blue-600 shadow-sm"
+        : "text-gray-600"
+    }`}
+  >
+    예금
+  </button>
+</div>
 
         <div className="bg-white rounded-3xl shadow-sm p-5">
           {/* 이자방식 */}
