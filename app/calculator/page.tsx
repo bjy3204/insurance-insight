@@ -949,7 +949,7 @@ const calculateSimple = () => {
             <Link
               href="/"
               className="
-                w-11 h-11 rounded-xl border border-gray-300 bg-white
+                w-11 h-11 rounded-2xl border border-gray-300 bg-white
                 flex items-center justify-center
               "
             >
@@ -1006,7 +1006,7 @@ const calculateSimple = () => {
         <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-6">
           <button
             onClick={() => setType("outpatient")}
-            className={`rounded-xl py-3 font-bold ${
+            className={`rounded-2xl py-3 font-bold ${
               type === "outpatient"
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-600"
@@ -1017,7 +1017,7 @@ const calculateSimple = () => {
 
           <button
             onClick={() => setType("inpatient")}
-            className={`rounded-xl py-3 font-bold ${
+            className={`rounded-2xl py-3 font-bold ${
               type === "inpatient"
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-600"
@@ -1062,7 +1062,7 @@ const calculateSimple = () => {
               <div className="grid grid-cols-3 gap-2 mt-2">
                 <button
                   onClick={() => setHospitalType("clinic")}
-                  className={`rounded-xl py-3 font-bold border ${
+                  className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
                     hospitalType === "clinic"
                       ? "bg-blue-50 text-blue-600 border-blue-600"
                       : "bg-white text-gray-600 border-gray-200"
@@ -1073,7 +1073,7 @@ const calculateSimple = () => {
 
                 <button
                   onClick={() => setHospitalType("general")}
-                  className={`rounded-xl py-3 font-bold border ${
+                  className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
                     hospitalType === "general"
                       ? "bg-blue-50 text-blue-600 border-blue-600"
                       : "bg-white text-gray-600 border-gray-200"
@@ -1084,7 +1084,7 @@ const calculateSimple = () => {
 
                 <button
                   onClick={() => setHospitalType("advanced")}
-                  className={`rounded-xl py-3 font-bold border ${
+                  className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
                     hospitalType === "advanced"
                       ? "bg-blue-50 text-blue-600 border-blue-600"
                       : "bg-white text-gray-600 border-gray-200"
@@ -1178,7 +1178,7 @@ const calculateSimple = () => {
     <div className="grid grid-cols-3 gap-2 mt-2">
       <button
         onClick={() => setHospitalType("clinic")}
-        className={`rounded-xl py-3 font-bold border ${
+        className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
           hospitalType === "clinic"
             ? "bg-blue-50 text-blue-600 border-blue-600"
             : "bg-white text-gray-600 border-gray-200"
@@ -1189,7 +1189,7 @@ const calculateSimple = () => {
 
       <button
         onClick={() => setHospitalType("general")}
-        className={`rounded-xl py-3 font-bold border ${
+        className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
           hospitalType === "general"
             ? "bg-blue-50 text-blue-600 border-blue-600"
             : "bg-white text-gray-600 border-gray-200"
@@ -1200,7 +1200,7 @@ const calculateSimple = () => {
 
       <button
         onClick={() => setHospitalType("advanced")}
-        className={`rounded-xl py-3 font-bold border ${
+        className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
           hospitalType === "advanced"
             ? "bg-blue-50 text-blue-600 border-blue-600"
             : "bg-white text-gray-600 border-gray-200"
@@ -1290,7 +1290,7 @@ const calculateSimple = () => {
               <div className="grid grid-cols-3 gap-2 mt-2">
                 <button
                   onClick={() => setHospitalType("clinic")}
-                  className={`rounded-xl py-3 font-bold border ${
+                  className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
                     hospitalType === "clinic"
                       ? "bg-blue-50 text-blue-600 border-blue-600"
                       : "bg-white text-gray-600 border-gray-200"
@@ -1301,7 +1301,7 @@ const calculateSimple = () => {
 
                 <button
                   onClick={() => setHospitalType("general")}
-                  className={`rounded-xl py-3 font-bold border ${
+                  className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
                     hospitalType === "general"
                       ? "bg-blue-50 text-blue-600 border-blue-600"
                       : "bg-white text-gray-600 border-gray-200"
@@ -1312,7 +1312,7 @@ const calculateSimple = () => {
 
                 <button
                   onClick={() => setHospitalType("advanced")}
-                  className={`rounded-xl py-3 font-bold border ${
+                  className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
                     hospitalType === "advanced"
                       ? "bg-blue-50 text-blue-600 border-blue-600"
                       : "bg-white text-gray-600 border-gray-200"
@@ -1453,7 +1453,7 @@ const calculateSimple = () => {
             <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mt-2">
               <button
                 onClick={() => setRoomType("standard")}
-                className={`rounded-xl py-3 font-bold ${
+                className={`rounded-2xl py-3 font-bold ${
                   roomType === "standard"
                     ? "bg-white text-blue-600 shadow-sm"
                     : "text-gray-600"
@@ -1464,7 +1464,7 @@ const calculateSimple = () => {
 
               <button
                 onClick={() => setRoomType("premium")}
-                className={`rounded-xl py-3 font-bold ${
+                className={`rounded-2xl py-3 font-bold ${
                   roomType === "premium"
                     ? "bg-white text-blue-600 shadow-sm"
                     : "text-gray-600"
@@ -1510,7 +1510,7 @@ const calculateSimple = () => {
   <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
     <button
       onClick={() => setSpecialType("severe")}
-      className={`rounded-xl py-3 font-bold ${
+      className={`rounded-2xl py-3 font-bold ${
         specialType === "severe"
           ? "bg-white text-blue-600 shadow-sm"
           : "text-gray-600"
@@ -1521,7 +1521,7 @@ const calculateSimple = () => {
 
     <button
       onClick={() => setSpecialType("mild")}
-      className={`rounded-xl py-3 font-bold ${
+      className={`rounded-2xl py-3 font-bold ${
         specialType === "mild"
           ? "bg-white text-blue-600 shadow-sm"
           : "text-gray-600"
@@ -1757,7 +1757,7 @@ w-62
       w-full
       px-4
       py-3
-      rounded-xl
+      rounded-2xl
       bg-gray-100
       text-sm
       font-bold
@@ -1810,7 +1810,7 @@ w-62
         <div className="grid grid-cols-4 gap-1 bg-gray-200 rounded-2xl p-1 mb-5">
           <button
             onClick={() => setDictionaryTab("실손정보")}
-            className={`rounded-xl py-3 text-[12px] sm:text-sm font-bold transition whitespace-nowrap ${
+            className={`rounded-2xl py-3 text-[12px] sm:text-sm font-bold transition whitespace-nowrap ${
               dictionaryTab === "실손정보"
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-600"
@@ -1820,7 +1820,7 @@ w-62
           </button>
           <button
   onClick={() => setDictionaryTab("자기부담금")}
-  className={`rounded-xl py-3 text-[11px] sm:text-sm font-bold transition whitespace-nowrap ${
+  className={`rounded-2xl py-3 text-[11px] sm:text-sm font-bold transition whitespace-nowrap ${
     dictionaryTab === "자기부담금"
       ? "bg-white text-blue-600 shadow-sm"
       : "text-gray-600"
@@ -1830,7 +1830,7 @@ w-62
 </button>
 <button
   onClick={() => setDictionaryTab("면책기간")}
-  className={`rounded-xl py-3 text-[12px] sm:text-sm font-bold transition whitespace-nowrap ${
+  className={`rounded-2xl py-3 text-[12px] sm:text-sm font-bold transition whitespace-nowrap ${
     dictionaryTab === "면책기간"
       ? "bg-white text-blue-600 shadow-sm"
       : "text-gray-600"
@@ -1840,7 +1840,7 @@ w-62
 </button>
           <button
             onClick={() => setDictionaryTab("면책사항")}
-            className={`rounded-xl py-3 text-[12px] sm:text-sm font-bold transition whitespace-nowrap ${
+            className={`rounded-2xl py-3 text-[12px] sm:text-sm font-bold transition whitespace-nowrap ${
               dictionaryTab === "면책사항"
                 ? "bg-white text-blue-600 shadow-sm"
                 : "text-gray-600"

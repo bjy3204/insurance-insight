@@ -135,7 +135,7 @@ const principal = monthly * months;
             <Link
               href="/"
               className="
-                w-11 h-11 rounded-xl border border-gray-300 bg-white
+                w-11 h-11 rounded-2xl border border-gray-300 bg-white
                 flex items-center justify-center
               "
             >
@@ -167,7 +167,7 @@ const principal = monthly * months;
       setType("saving");
       setInterestType("simple");
     }}
-    className={`rounded-xl py-3 font-bold transition ${
+    className={`rounded-2xl py-3 font-bold transition ${
       type === "saving"
         ? "bg-white text-blue-600 shadow-sm"
         : "text-gray-600"
@@ -181,7 +181,7 @@ const principal = monthly * months;
       setType("deposit");
       setInterestType("simple");
     }}
-    className={`rounded-xl py-3 font-bold transition ${
+    className={`rounded-2xl py-3 font-bold transition ${
       type === "deposit"
         ? "bg-white text-blue-600 shadow-sm"
         : "text-gray-600"
@@ -258,16 +258,39 @@ const principal = monthly * months;
             </label>
 
             <div className="grid grid-cols-3 gap-2">
-              <SelectButton active={taxRate === 15.4} onClick={() => setTaxRate(15.4)}>
-                일반과세
-              </SelectButton>
-              <SelectButton active={taxRate === 9.5} onClick={() => setTaxRate(9.5)}>
-                세금우대
-              </SelectButton>
-              <SelectButton active={taxRate === 0} onClick={() => setTaxRate(0)}>
-                비과세
-              </SelectButton>
-            </div>
+  <button
+    onClick={() => setTaxRate(15.4)}
+    className={`rounded-2xl py-3 font-bold border ${
+      taxRate === 15.4
+        ? "bg-blue-50 text-blue-600 border-blue-600"
+        : "bg-white text-gray-600 border-gray-200"
+    }`}
+  >
+    일반과세
+  </button>
+
+  <button
+    onClick={() => setTaxRate(9.5)}
+    className={`rounded-2xl py-3 font-bold border ${
+      taxRate === 9.5
+        ? "bg-blue-50 text-blue-600 border-blue-600"
+        : "bg-white text-gray-600 border-gray-200"
+    }`}
+  >
+    세금우대
+  </button>
+
+  <button
+    onClick={() => setTaxRate(0)}
+    className={`rounded-2xl py-3 font-bold border ${
+      taxRate === 0
+        ? "bg-blue-50 text-blue-600 border-blue-600"
+        : "bg-white text-gray-600 border-gray-200"
+    }`}
+  >
+    비과세
+  </button>
+</div>
           </div>
 
           {/* 결과 */}
