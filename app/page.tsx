@@ -16,12 +16,15 @@ import {
   CircleDollarSign,
   Landmark,
   PiggyBank,
+  ChevronDown,
+ChevronUp,
 } from "lucide-react";
 
 import { FaInstagram } from "react-icons/fa";
 import emailjs from "@emailjs/browser";
 import { notices, noticeVersion } from "./notice/notices";
-
+import HospitalInfoPopup from "./claim-docs/hospital-info";
+import { PRESS } from "./product-public/press";
 const menus = [
   
   {
@@ -89,6 +92,12 @@ export default function Home() {
 
   const [open, setOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [hospitalOpen, setHospitalOpen] = useState(false);
+const [pressOpen, setPressOpen] = useState(false);
+const [selectedPress, setSelectedPress] = useState<any>(null);
+const [pressSearch, setPressSearch] = useState("");
+const [pressPage, setPressPage] = useState(1);
 const [noticePage, setNoticePage] = useState(1);
 const [selectedNotice, setSelectedNotice] = useState<any>(null);
   const [fixMessage, setFixMessage] = useState("");
@@ -170,7 +179,19 @@ if (savedReadNoticeIds) {
   );
 };
 }, []);
+useEffect(() => {
+  const handleClick = () => {
+    setQuickOpen(false);
+  };
 
+  if (quickOpen) {
+    window.addEventListener("click", handleClick);
+  }
+
+  return () => {
+    window.removeEventListener("click", handleClick);
+  };
+}, [quickOpen]);
   const sendMessage = async () => {
   if (!fixMessage.trim() && !addMessage.trim()) {
     alert("수정할 내용 또는 추가하고 싶은 내용을 입력해주세요.");
@@ -320,7 +341,10 @@ if (savedReadNoticeIds) {
 
       {/* 메인 */}
       <div className="max-w-[1500px] mx-auto px-5 py-8 sm:p-10 md:pb-32 lg:pb-10">
-  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+  <div className="relative grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+
+  
+
           {menus.map((menu) => {
             const Icon = menu.icon;
 
@@ -355,7 +379,158 @@ if (savedReadNoticeIds) {
 </p>
               </a>
             );
-                   })}
+                             })}
+
+          {/* 빠른 실행 */}
+<div className="relative">
+  <button
+    onClick={(e) => {
+  e.stopPropagation();
+  setQuickOpen(!quickOpen);
+}}
+    className="
+      w-full
+      h-[50px]
+      px-4
+      py-3
+      rounded-2xl
+      bg-white
+      border
+      border-gray-200
+      shadow-sm
+      text-sm
+      font-bold
+      text-gray-700
+      flex
+      items-center
+      justify-center
+      gap-2
+      hover:bg-gray-50
+      transition
+      whitespace-nowrap
+    "
+  >
+    빠른 메뉴 실행하기
+
+    {quickOpen ? (
+      <ChevronUp className="w-4 h-4 text-gray-400" />
+    ) : (
+      <ChevronDown className="w-4 h-4 text-gray-400" />
+    )}
+  </button>
+
+  {quickOpen && (
+  <div
+    onClick={(e) => e.stopPropagation()}
+    className="
+        absolute
+        animate-in
+fade-in
+zoom-in-95
+duration-150
+        left-0
+        top-[58px]
+        z-10
+        w-full
+        rounded-2xl
+        bg-white
+        border
+        border-gray-200
+        shadow-xl
+        overflow-hidden
+        grid
+        grid-cols-2
+      "
+    >
+      <button
+        onClick={() => {
+          setHospitalOpen(true);
+          setQuickOpen(false);
+        }}
+        className="
+          min-h-[62px]
+          px-3
+          text-center
+          text-[13px]
+          font-bold
+          text-gray-700
+          hover:bg-gray-50
+          transition
+          border-r
+          border-b
+          border-gray-100
+        "
+      >
+        병원정보 검색
+      </button>
+
+      <button
+        onClick={() => {
+          alert("기대수명 계산기 팝업은 연금계산기 코드 연결 후 열 수 있습니다.");
+          setQuickOpen(false);
+        }}
+        className="
+          min-h-[62px]
+          px-3
+          text-center
+          text-[13px]
+          font-bold
+          text-gray-700
+          hover:bg-gray-50
+          transition
+          border-b
+          border-gray-100
+        "
+      >
+        기대수명 계산기
+      </button>
+
+      <button
+        onClick={() => {
+          setPressOpen(true);
+          setSelectedPress(null);
+          setPressSearch("");
+          setPressPage(1);
+          setQuickOpen(false);
+        }}
+        className="
+          relative
+          min-h-[62px]
+          px-3
+          text-center
+          text-[13px]
+          font-bold
+          text-gray-700
+          hover:bg-gray-50
+          transition
+          border-r
+          border-gray-100
+        "
+      >
+        보도자료
+
+        {hasUpdate && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-red-500 rounded-full" />
+        )}
+      </button>
+
+      <button
+        className="
+          min-h-[62px]
+          px-3
+          text-center
+          text-[13px]
+          font-bold
+          text-gray-300
+          bg-gray-50
+        "
+      >
+        추가 예정
+      </button>
+    </div>
+  )}
+</div>
+
         </div>
       </div>
 
@@ -460,7 +635,7 @@ cursor-pointer
       </button>
 
       {/* 하단 고정 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a
             href="https://naver.me/xsZ8mk7H"
@@ -859,6 +1034,10 @@ rel="noopener noreferrer"
           </div>
         </div>
       )}
+      <HospitalInfoPopup
+  open={hospitalOpen}
+  onClose={() => setHospitalOpen(false)}
+/>
     </main>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 import {
@@ -355,6 +356,7 @@ const termsDictionary = [
   },
 ];
 export default function ProductPublicPage() {
+  const searchParams = useSearchParams();
  const [termsOpen, setTermsOpen] = useState(false);
 const [selectedTerm, setSelectedTerm] = useState<any>(null);
 const [pressOpen, setPressOpen] = useState(false);
@@ -373,7 +375,11 @@ const [selectedItem, setSelectedItem] = useState(0);
     setShowPressDot(true);
   }
 }, []);
-
+useEffect(() => {
+  if (searchParams.get("press") === "1") {
+    setPressOpen(true);
+  }
+}, [searchParams]);
   const currentCompanies =
     tab === "nonlife"
       ? nonlifeCompanies
@@ -652,9 +658,7 @@ const paginatedPress = filteredPress.slice(
 >
   <BookOpen className="w-6 h-6 text-white" />
 
-  {showPressDot && (
-    <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full" />
-  )}
+ 
 </button>
 
 {/* 메뉴 */}
