@@ -755,11 +755,11 @@ setTermsOpen(false);
 
           <div className="flex-1 min-h-0 flex flex-col">
   <div className="overflow-y-auto flex-1 p-4">
-    <table className="w-full text-sm">
+    <table className="w-full table-fixed text-sm">
       <thead>
-        <tr className="border-b border-gray-200 text-gray-500">
+  <tr className="bg-gray-50 border-b border-gray-200 text-gray-500">
           <th className="py-3 w-20">번호</th>
-          <th className="py-3 text-left">제목</th>
+          <th className="py-3 text-center">제목</th>
           <th className="py-3 w-32">출처</th>
           <th className="py-3 w-32">날짜</th>
         </tr>
@@ -772,20 +772,22 @@ setTermsOpen(false);
             onClick={() => setSelectedPress(item)}
             className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition"
           >
-            <td className="py-3.5 text-center">
+            <td className="py-4 text-center text-gray-700 border-b border-gray-100">
               {filteredPress.length -
                 ((pressPage - 1) * PRESS_PER_PAGE + index)}
             </td>
 
-            <td className="py-3.5 font-medium break-keep">
-              {item.title}
-            </td>
+            <td className="py-4 font-medium text-gray-800 border-b border-gray-100 overflow-hidden">
+  <div className="truncate">
+    {item.title}
+  </div>
+</td>
 
-            <td className="py-3.5 text-center text-gray-500 text-xs">
+            <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">
               {item.source}
             </td>
 
-            <td className="py-3.5 text-center text-gray-500 text-xs">
+            <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">
               {item.date}
             </td>
           </tr>

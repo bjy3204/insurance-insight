@@ -1,4 +1,4 @@
-export const noticeVersion = 1;
+export const noticeVersion = 11;
 export const notices = [{
   id: 11,
   date: "2026년 5월 16일 08:52",
@@ -19,8 +19,7 @@ export const notices = [{
 현재 보험약관사전 및 보도자료는
 지속적으로 수정 · 업데이트 중입니다.
 
-일부 내용에 오류가 있을 수 있으니
-참고용으로 활용해 주세요.
+일부 내용에 오류가 있을 수 있으니 참고용으로 활용해 주세요.
 
 수정이 필요한 부분이나 추가되었으면 하는 내용은
 '보험나무에게 메세지 보내기'를 통해 남겨주세요 !😊`,
