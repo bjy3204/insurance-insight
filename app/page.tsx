@@ -493,7 +493,7 @@ zoom-in-95
 duration-150
         left-0
         top-[58px]
-        z-10
+        z-[1]
         w-full
         rounded-2xl
         bg-white
@@ -627,7 +627,7 @@ setQuickOpen(false);
               border-gray-200
               rounded-2xl
               px-4
-              py-3
+              h-[56px]
               flex
               items-center
               justify-center
