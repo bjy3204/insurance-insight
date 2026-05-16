@@ -14,13 +14,22 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://insurance-insight.vercel.app"),
+
   title: "보험인사이트",
+
   description: "보험설계사 업무 통합 플랫폼",
+
+  manifest: "/manifest.webmanifest",
+
+  themeColor: "#ffffff",
 
   openGraph: {
     title: "보험인사이트",
+
     description: "보험사전산, 상품공시실, 고객센터",
+
     url: "https://insurance-insight.vercel.app",
+
     siteName: "보험인사이트",
 
     images: [
@@ -43,10 +52,12 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+      </body>
     </html>
   );
 }

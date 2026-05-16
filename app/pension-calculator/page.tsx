@@ -7,13 +7,36 @@ import {
   PiggyBank,
   Newspaper,
   MessageCircle,
+  FileText,
+  X,
+  Search,
 } from "lucide-react";
+import {
+  npsOldAgeTable,
+  npsDisabilityTable,
+  npsSurvivorTable,
+} from "./npsTableData";
+import {
+  LIFE_DATA_YEAR,
+  lifeExpectancyData,
+} from "./lifeExpectancyData";
 import { FaInstagram } from "react-icons/fa";
 
 type TabType = "retire" | "pension" | "lump" | "nps";
-
+type NpsTableTab = "노령연금" | "장애연금" | "유족연금";
+type LifeGender = "남성" | "여성";
 export default function PensionCalculatorPage() {
   const [tab, setTab] = useState<TabType>("retire");
+  const [npsTableOpen, setNpsTableOpen] = useState(false);
+
+
+const [npsTableTab, setNpsTableTab] = useState<NpsTableTab>("노령연금");
+const [lifeGender, setLifeGender] = useState<LifeGender>("남성");
+const [npsSearch, setNpsSearch] = useState("");
+const [pensionInfoOpen, setPensionInfoOpen] = useState(false);
+const [lifeOpen, setLifeOpen] = useState(false);
+
+const [lifeAge, setLifeAge] = useState("");
 
   const [currentAge, setCurrentAge] = useState("");
   const [pensionStartAge, setPensionStartAge] = useState("");
@@ -192,7 +215,46 @@ survivor: [
     nps:
       "월 납입보험료를 기준으로 국민연금 예상 수령액을 간편하게 확인할 수 있습니다.",
   };
+const currentNpsTable =
+  npsTableTab === "노령연금"
+    ? npsOldAgeTable
+    : npsTableTab === "장애연금"
+    ? npsDisabilityTable
+    : npsSurvivorTable;
 
+const filteredNpsTable = currentNpsTable.filter((row: any) =>
+  
+  `${row.income} ${row.premium}`
+    .replaceAll(",", "")
+    .includes(npsSearch.replaceAll(",", ""))
+);
+const lifeAgeNumber = lifeAge === "" ? null : Number(lifeAge);
+
+const selectedLife =
+  lifeAgeNumber === null
+    ? null
+    : lifeExpectancyData[lifeGender as keyof typeof lifeExpectancyData]?.[
+        lifeAgeNumber as keyof (typeof lifeExpectancyData)["남성"]
+      ];
+
+const expectYears = selectedLife?.expect || 0;
+
+const averageSickYears =
+  lifeGender === "남성"
+    ? 16.2
+    : 20.2;
+const sickYears = Math.min(
+  averageSickYears,
+  expectYears
+);
+
+const healthyYears = Math.max(
+  expectYears - sickYears,
+  0
+);
+
+const expectAge = Number(lifeAge || 0) + expectYears;
+const sickStartAge = Number(lifeAge || 0) + healthyYears;
   return (
     <main className="min-h-screen bg-gray-100 pb-24">
       <header className="bg-white border-b border-black shadow-sm">
@@ -618,7 +680,379 @@ survivor: [
 </div>
         </div>
       </div>
+<button
+  onClick={() => setPensionInfoOpen(!pensionInfoOpen)}
+  className="
+    fixed
+    left-6
+    bottom-24
+    z-40
+    w-14
+    h-14
+    rounded-full
+    bg-gray-800
+    shadow-lg
+    flex
+    items-center
+    justify-center
+    hover:shadow-2xl
+    hover:-translate-y-0.5
+    transition-all
+    duration-200
+    cursor-pointer
+  "
+>
+  <FileText className="w-6 h-6 text-white" />
+</button>
+{pensionInfoOpen && (
+  <div className="fixed left-6 bottom-40 z-40 bg-white border border-gray-200 shadow-xl rounded-2xl p-3 flex flex-col gap-2 w-64">
+    <button
+      onClick={() => {
+        setNpsTableOpen(true);
+        setPensionInfoOpen(false);
+      }}
+      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer"
+    >
+      <p className="text-sm font-bold text-gray-800">
+        국민연금 예상연금월액표
+      </p>
+      <p className="text-xs text-gray-400 mt-1">
+        노령 · 장애 · 유족연금 기준표
+      </p>
+    </button>
 
+    <button
+      onClick={() => {
+        setLifeOpen(true);
+        setPensionInfoOpen(false);
+      }}
+      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer"
+    >
+      <p className="text-sm font-bold text-gray-800">
+        평균 기대수명 계산기
+      </p>
+      <p className="text-xs text-gray-400 mt-1">
+        기대여명 · 건강기간 · 유병기간 계산
+      </p>
+    </button>
+  </div>
+)}
+{npsTableOpen && (
+  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
+      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+        <div className="font-bold flex items-center gap-2">
+          <FileText className="w-5 h-5" />
+          국민연금 예상연금월액표
+        </div>
+
+        <button
+          onClick={() => setNpsTableOpen(false)}
+          className="cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="p-5 flex-1 min-h-0 flex flex-col">
+        <div className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-5">
+          {(["노령연금", "장애연금", "유족연금"] as NpsTableTab[]).map((item) => (
+            <button
+              key={item}
+              onClick={() => {
+                setNpsTableTab(item);
+                setNpsSearch("");
+              }}
+              className={`rounded-xl py-3 text-sm font-bold transition ${
+                npsTableTab === item
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600"
+              }`}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+
+        <div className="relative mb-4">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+          <input
+            value={
+  npsSearch
+    ? Number(npsSearch.replaceAll(",", "")).toLocaleString()
+    : ""
+}
+onChange={(e) =>
+  setNpsSearch(
+    e.target.value.replaceAll(",", "").replace(/[^0-9]/g, "")
+  )
+}
+            placeholder="보험료 또는 기준소득월액 검색"
+            className="w-full rounded-2xl border border-gray-200 pl-11 pr-4 py-3 text-sm outline-none"
+          />
+        </div>
+
+        <div className="overflow-auto flex-1 border border-gray-200 rounded-2xl">
+          <table className="w-full min-w-[900px] text-sm">
+            <thead className="bg-gray-50 text-gray-500 sticky top-0 z-10">
+  <tr>
+    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">
+      번호
+    </th>
+
+    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">
+      기준소득월액
+    </th>
+
+    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">
+      보험료
+    </th>
+
+    {npsTableTab === "노령연금" ? (
+      <>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">10년</th>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">15년</th>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">20년</th>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">25년</th>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">30년</th>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">35년</th>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">40년</th>
+      </>
+    ) : npsTableTab === "장애연금" ? (
+      <>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">장애1급</th>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">장애2급</th>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">장애3급</th>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">장애4급</th>
+      </>
+    ) : (
+      <>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">10년 미만</th>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">10~20년</th>
+        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">20년 이상</th>
+      </>
+    )}
+  </tr>
+</thead>
+
+            <tbody>
+  {filteredNpsTable.map((row: any, index: number) => (
+    <tr key={index} className="hover:bg-gray-50">
+      <td className="py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap">
+        {row.no?.toLocaleString()}
+      </td>
+
+      <td className="py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap">
+        {row.income?.toLocaleString()}
+      </td>
+
+      <td className="py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap">
+        {row.premium?.toLocaleString()}
+      </td>
+
+      {npsTableTab === "노령연금" ? (
+        <>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year10?.toLocaleString()}</td>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year15?.toLocaleString()}</td>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year20?.toLocaleString()}</td>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year25?.toLocaleString()}</td>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year30?.toLocaleString()}</td>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year35?.toLocaleString()}</td>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year40?.toLocaleString()}</td>
+        </>
+      ) : npsTableTab === "장애연금" ? (
+        <>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.grade1?.toLocaleString()}</td>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.grade2?.toLocaleString()}</td>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.grade3?.toLocaleString()}</td>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.grade4Lump?.toLocaleString()}</td>
+        </>
+      ) : (
+        <>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.under10?.toLocaleString()}</td>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.between10And20?.toLocaleString()}</td>
+          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year20?.toLocaleString()}</td>
+        </>
+      )}
+    </tr>
+  ))}
+</tbody>
+          </table>
+
+          {filteredNpsTable.length === 0 && (
+            <div className="text-center text-sm text-gray-400 py-10">
+              검색 결과가 없습니다
+            </div>
+          )}
+          
+        </div>
+        <p className="text-xs text-gray-500 leading-relaxed mt-4 px-1">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;본 표는 2026년 국민연금 예상연금월액표 기준이며,
+  실제 수령액은 가입이력 · 재평가율 · 연금개시연령 ·
+  부양가족연금액 및 제도 변경 등에 따라 달라질 수 있습니다. (단위 :원)
+</p>
+      </div>
+    </div>
+  </div>
+)}
+{lifeOpen && (
+  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
+      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+        <div className="font-bold flex items-center gap-2">
+          <FileText className="w-5 h-5" />
+          기대수명 계산기
+        </div>
+
+        <button
+          onClick={() => setLifeOpen(false)}
+          className="cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="p-5 overflow-y-auto">
+        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
+          {(["남성", "여성"] as LifeGender[]).map((item) => (
+            <button
+              key={item}
+              onClick={() => setLifeGender(item)}
+              className={`rounded-xl py-3 text-sm font-bold transition ${
+                lifeGender === item
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600"
+              }`}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+
+        <div className="mb-5">
+  <label className="text-lg font-black text-gray-800 mb-3 block">
+    현재 나이
+  </label>
+
+  <div className="relative">
+    <input
+      value={lifeAge}
+      onChange={(e) =>
+        setLifeAge(e.target.value.replace(/[^0-9]/g, ""))
+      }
+      placeholder="나이를 입력하세요"
+      inputMode="numeric"
+      className="
+        w-full
+        h-14
+        rounded-2xl
+        border
+        border-gray-200
+        px-5
+        pr-16
+        text-lg
+        font-bold
+        outline-none
+        focus:ring-2
+        focus:ring-blue-500
+      "
+    />
+
+    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-lg">
+      세
+    </span>
+  </div>
+</div>
+
+        <div className="bg-blue-50 rounded-3xl p-6 text-center mb-5">
+          <img
+            src={`/icons/pension/${lifeGender === "남성" ? "male" : "female"}.png`}
+            alt={lifeGender}
+            className="w-20 h-20 object-contain mx-auto mb-4"
+          />
+
+          {selectedLife ? (
+            <p className="text-gray-700 text-lg font-medium leading-relaxed">
+              현재 <span className="font-bold">{lifeAge}세</span>{" "}
+              <span className="font-bold">{lifeGender}</span> 기준,
+              <br />
+              예상 기대수명은 약{" "}
+              <span className="text-blue-600 font-black">
+                {expectAge.toFixed(1)}세
+              </span>
+              입니다.
+            </p>
+          ) : (
+            <p className="text-gray-400 text-sm leading-relaxed">
+              나이를 입력하면 기대여명과 건강기간을 확인할 수 있습니다.
+            </p>
+          )}
+        </div>
+
+        {selectedLife && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
+              <p className="text-sm font-bold text-gray-500 mb-2">기대여명</p>
+              <p className="text-2xl font-black text-blue-600">
+                {expectYears.toFixed(1)}년
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
+              <p className="text-sm font-bold text-gray-500 mb-2">건강기간</p>
+              <p className="text-2xl font-black text-blue-600">
+                {healthyYears.toFixed(1)}년
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
+              <p className="text-sm font-bold text-gray-500 mb-2">유병기간</p>
+              <p className="text-2xl font-black text-blue-600">
+                {sickYears.toFixed(1)}년
+              </p>
+            </div>
+          </div>
+        )}
+
+        {selectedLife && (
+  <div className="mt-5 rounded-2xl bg-gray-50 border border-gray-200 p-4">
+    <p className="text-sm text-gray-700 leading-relaxed">
+      현재 <span className="font-bold">{lifeAge}세</span>{" "}
+      <span className="font-bold">{lifeGender}</span> 기준,
+      기대여명은 약{" "}
+      <span className="font-bold text-blue-600">
+        {expectYears.toFixed(1)}년
+      </span>
+      이며 예상 기대수명은 약{" "}
+      <span className="font-bold text-blue-600">
+        {expectAge.toFixed(1)}세
+      </span>
+      입니다.
+      <br />
+      건강기간은 약{" "}
+      <span className="font-bold text-blue-600">
+        {healthyYears.toFixed(1)}년
+      </span>
+      으로, 앞으로 약{" "}
+      <span className="font-bold text-blue-600">
+        {healthyYears.toFixed(1)}년
+      </span>
+      뒤부터 유병기간이 시작될 수 있습니다.
+    </p>
+  </div>
+)}
+
+
+        <p className="text-xs text-gray-500 leading-relaxed mt-5 px-1">
+  &nbsp;&nbsp;&nbsp;&nbsp;본 자료는 통계청 「2024년 생명표」 및
+  유병기간 제외 기대수명(건강수명) 통계를 참고하여 계산한 추정값이며,
+  개인의 건강상태 · 생활습관 · 질병 이력 등에 따라 실제 결과와 다를 수 있습니다.
+</p>
+      </div>
+    </div>
+  </div>
+)}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a href="https://naver.me/xsZ8mk7H" className="py-3 flex flex-col items-center gap-1">
