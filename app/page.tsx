@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import {
+  LIFE_DATA_YEAR,
+  lifeExpectancyData,
+} from "./pension-calculator/lifeExpectancyData";
 import {
   FileText,
   Calculator,
@@ -18,6 +21,7 @@ import {
   PiggyBank,
   ChevronDown,
 ChevronUp,
+Search,
 } from "lucide-react";
 
 import { FaInstagram } from "react-icons/fa";
@@ -98,6 +102,9 @@ const [pressOpen, setPressOpen] = useState(false);
 const [selectedPress, setSelectedPress] = useState<any>(null);
 const [pressSearch, setPressSearch] = useState("");
 const [pressPage, setPressPage] = useState(1);
+const [lifeOpen, setLifeOpen] = useState(false);
+const [lifeGender, setLifeGender] = useState<"남성" | "여성">("남성");
+const [lifeAge, setLifeAge] = useState("");
 const [noticePage, setNoticePage] = useState(1);
 const [selectedNotice, setSelectedNotice] = useState<any>(null);
   const [fixMessage, setFixMessage] = useState("");
@@ -113,6 +120,57 @@ const pagedNotices = notices.slice(
 
 const [hasUpdate, setHasUpdate] = useState(false);
 const [readNoticeIds, setReadNoticeIds] = useState<number[]>([]);
+const lifeAgeNumber = lifeAge === "" ? null : Number(lifeAge);
+
+const selectedLife =
+  lifeAgeNumber === null
+    ? null
+    : lifeExpectancyData[
+        lifeGender as keyof typeof lifeExpectancyData
+      ]?.[
+        lifeAgeNumber as keyof (typeof lifeExpectancyData)["남성"]
+      ];
+
+const expectYears = selectedLife?.expect || 0;
+
+const averageSickYears =
+  lifeGender === "남성"
+    ? 16.2
+    : 20.2;
+
+const sickYears = Math.min(
+  averageSickYears,
+  expectYears
+);
+
+const healthyYears = Math.max(
+  expectYears - sickYears,
+  0
+);
+
+const expectAge =
+  Number(lifeAge || 0) + expectYears;
+const [readPressIds, setReadPressIds] = useState<number[]>([]);
+const sortedPress = [...PRESS.items].sort(
+  (a, b) =>
+    new Date(b.date.replace(/\./g, "-")).getTime() -
+    new Date(a.date.replace(/\./g, "-")).getTime()
+);
+
+const filteredPress = sortedPress.filter((item) =>
+  `${item.title} ${item.date} ${item.source} ${item.body}`
+    .toLowerCase()
+    .includes(pressSearch.toLowerCase())
+);
+
+const PRESS_PER_PAGE = 10;
+
+const totalPressPages = Math.ceil(filteredPress.length / PRESS_PER_PAGE);
+
+const paginatedPress = filteredPress.slice(
+  (pressPage - 1) * PRESS_PER_PAGE,
+  pressPage * PRESS_PER_PAGE
+);
 
   useEffect(() => {
   const isStandalone =
@@ -171,6 +229,11 @@ const savedReadNoticeIds = localStorage.getItem("readNoticeIds");
 
 if (savedReadNoticeIds) {
   setReadNoticeIds(JSON.parse(savedReadNoticeIds));
+  const savedReadPressIds = localStorage.getItem("readPressIds");
+
+if (savedReadPressIds) {
+  setReadPressIds(JSON.parse(savedReadPressIds));
+}
 }
   return () => {
   window.removeEventListener(
@@ -466,7 +529,8 @@ duration-150
 
       <button
         onClick={() => {
-          alert("기대수명 계산기 팝업은 연금계산기 코드 연결 후 열 수 있습니다.");
+          setLifeOpen(true);
+setQuickOpen(false);
           setQuickOpen(false);
         }}
         className="
@@ -1038,6 +1102,346 @@ rel="noopener noreferrer"
   open={hospitalOpen}
   onClose={() => setHospitalOpen(false)}
 />
+{lifeOpen && (
+  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
+      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+        <div className="font-bold flex items-center gap-2">
+          <FileText className="w-5 h-5" />
+          기대수명 계산기
+        </div>
+
+        <button
+          onClick={() => setLifeOpen(false)}
+          className="cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="p-5 overflow-y-auto">
+        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
+          {(["남성", "여성"] as const).map((item) => (
+            <button
+              key={item}
+              onClick={() => setLifeGender(item)}
+              className={`rounded-xl py-3 text-sm font-bold transition ${
+                lifeGender === item
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600"
+              }`}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+
+        <div className="mb-5">
+          <div className="relative">
+            <input
+              value={lifeAge}
+              onChange={(e) =>
+                setLifeAge(
+                  e.target.value.replace(/[^0-9]/g, "")
+                )
+              }
+              placeholder="나이를 입력하세요"
+              className="
+                w-full
+                h-14
+                rounded-2xl
+                border
+                border-gray-200
+                px-5
+                pr-16
+                text-lg
+                font-bold
+                outline-none
+              "
+            />
+
+            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-lg">
+              세
+            </span>
+          </div>
+        </div>
+{!selectedLife && (
+  <div className="bg-blue-50 rounded-3xl p-8 text-center mb-5">
+    <img
+      src={`/icons/pension/${lifeGender === "남성" ? "male" : "female"}.png`}
+      alt={lifeGender}
+      className="w-20 h-20 object-contain mx-auto mb-4"
+    />
+
+    <p className="text-sm text-gray-400 leading-relaxed">
+      나이를 입력하면 기대여명과 건강기간을 확인할 수 있습니다.
+    </p>
+   
+  </div>
+  
+)}
+        {selectedLife && (
+  <>
+    <div className="bg-blue-50 rounded-3xl p-6 text-center mb-5">
+      <img
+        src={`/icons/pension/${lifeGender === "남성" ? "male" : "female"}.png`}
+        alt={lifeGender}
+        className="w-20 h-20 object-contain mx-auto mb-4"
+      />
+
+      <p className="text-gray-700 text-lg font-medium leading-relaxed">
+        현재 <span className="font-bold">{lifeAge}세</span>{" "}
+        <span className="font-bold">{lifeGender}</span> 기준,
+        <br />
+        예상 기대수명은 약{" "}
+        <span className="text-blue-600 font-black">
+          {expectAge.toFixed(1)}세
+        </span>
+        입니다.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
+        <p className="text-sm font-bold text-gray-500 mb-2">
+          기대여명
+        </p>
+
+        <p className="text-2xl font-black text-blue-600">
+          {expectYears.toFixed(1)}년
+        </p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
+        <p className="text-sm font-bold text-gray-500 mb-2">
+          건강기간
+        </p>
+
+        <p className="text-2xl font-black text-blue-600">
+          {healthyYears.toFixed(1)}년
+        </p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
+        <p className="text-sm font-bold text-gray-500 mb-2">
+          유병기간
+        </p>
+
+        <p className="text-2xl font-black text-blue-600">
+          {sickYears.toFixed(1)}년
+        </p>
+      </div>
+    </div>
+
+    <div className="mt-5 rounded-2xl bg-gray-50 border border-gray-200 p-4">
+      <p className="text-sm text-gray-700 leading-relaxed">
+        현재 <span className="font-bold">{lifeAge}세</span>{" "}
+        <span className="font-bold">{lifeGender}</span> 기준,
+        기대여명은 약{" "}
+        <span className="font-bold text-blue-600">
+          {expectYears.toFixed(1)}년
+        </span>
+        이며 예상 기대수명은 약{" "}
+        <span className="font-bold text-blue-600">
+          {expectAge.toFixed(1)}세
+        </span>
+        입니다.
+        <br />
+        건강기간은 약{" "}
+        <span className="font-bold text-blue-600">
+          {healthyYears.toFixed(1)}년
+        </span>
+        으로, 앞으로 약{" "}
+        <span className="font-bold text-blue-600">
+          {healthyYears.toFixed(1)}년
+        </span>
+        뒤부터 유병기간이 시작될 수 있습니다.
+      </p>
+    </div>
+  </>
+)}
+<p className="text-xs text-gray-500 leading-relaxed mt-5 px-1">
+  본 자료는 통계청 「2024년 생명표」 및
+  유병기간 제외 기대수명(건강수명) 통계를 참고하여 계산한 추정값이며,
+  개인의 건강상태 · 생활습관 · 질병 이력 등에 따라 실제 결과와 다를 수 있습니다.
+</p>
+      </div>
+    </div>
+  </div>
+)}
+{pressOpen && (
+  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
+      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+        <div className="font-bold flex items-center gap-2">
+          <Newspaper className="w-5 h-5" />
+          보도자료
+        </div>
+
+        <button
+          onClick={() => {
+            setPressOpen(false);
+            setSelectedPress(null);
+          }}
+          className="cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {!selectedPress ? (
+        <>
+          <div className="p-4 border-b border-gray-100">
+            <input
+              value={pressSearch}
+              onChange={(e) => {
+                setPressSearch(e.target.value);
+                setPressPage(1);
+              }}
+              placeholder="보도자료 검색"
+              className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none"
+            />
+          </div>
+
+          <div className="flex-1 min-h-0 flex flex-col">
+            <div className="overflow-y-auto flex-1 p-4">
+              <table className="w-full table-fixed text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200 text-gray-500">
+                    <th className="py-3 w-20">번호</th>
+                    <th className="py-3 text-center">제목</th>
+                    <th className="py-3 w-32">출처</th>
+                    <th className="py-3 w-32">날짜</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {paginatedPress.map((item, index) => (
+                    <tr
+                      key={item.id}
+                      onClick={() => {
+  setSelectedPress(item);
+
+  const nextReadPressIds = Array.from(
+    new Set([...readPressIds, item.id])
+  );
+
+  setReadPressIds(nextReadPressIds);
+  localStorage.setItem(
+    "readPressIds",
+    JSON.stringify(nextReadPressIds)
+  );
+}}
+                      className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition"
+                    >
+                      <td className="py-4 text-center text-gray-700 border-b border-gray-100">
+                        {filteredPress.length -
+                          ((pressPage - 1) * PRESS_PER_PAGE + index)}
+                      </td>
+
+                      <td className="py-4 font-medium text-gray-800 border-b border-gray-100 overflow-hidden">
+                        <div className="flex items-center gap-2 overflow-hidden">
+  <span className="truncate">
+    {item.title}
+  </span>
+
+  {!readPressIds.includes(item.id) && (
+    <span className="shrink-0 px-2 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">
+      NEW
+    </span>
+  )}
+</div>
+                      </td>
+
+                      <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">
+                        {item.source}
+                      </td>
+
+                      <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">
+                        {item.date}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {totalPressPages > 1 && (
+              <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
+                <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+                  <button
+                    onClick={() => setPressPage((p) => Math.max(1, p - 1))}
+                    disabled={pressPage === 1}
+                    className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+                  >
+                    이전
+                  </button>
+
+                  {Array.from({
+                    length: Math.min(totalPressPages, 10),
+                  }).map((_, index) => {
+                    const page = index + 1;
+
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setPressPage(page)}
+                        className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
+                          pressPage === page
+                            ? "bg-slate-800 text-white"
+                            : "bg-white text-gray-600 hover:bg-gray-100"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() =>
+                      setPressPage((p) => Math.min(totalPressPages, p + 1))
+                    }
+                    disabled={pressPage === totalPressPages}
+                    className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+                  >
+                    다음
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto px-6 py-5">
+            <h2 className="text-2xl font-black text-gray-900 break-keep leading-snug">
+              {selectedPress.title}
+            </h2>
+
+            <p className="text-sm text-gray-400 mt-2">
+              {selectedPress.date} · {selectedPress.source}
+            </p>
+
+            <div className="border-t border-gray-200 mt-4 pt-3 break-keep text-[15px] leading-[1.8] text-gray-700">
+              <div className="whitespace-pre-line">
+                {selectedPress.body}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 p-4 text-center">
+            <button
+              onClick={() => setSelectedPress(null)}
+              className="px-5 py-3 rounded-xl bg-gray-700 text-white text-sm font-bold cursor-pointer hover:bg-gray-600 transition"
+            >
+              목록으로
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+)}
     </main>
   );
 }

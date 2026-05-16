@@ -1045,7 +1045,7 @@ onChange={(e) =>
 
 
         <p className="text-xs text-gray-500 leading-relaxed mt-5 px-1">
-  &nbsp;&nbsp;&nbsp;&nbsp;본 자료는 통계청 「2024년 생명표」 및
+  본 자료는 통계청 「2024년 생명표」 및
   유병기간 제외 기대수명(건강수명) 통계를 참고하여 계산한 추정값이며,
   개인의 건강상태 · 생활습관 · 질병 이력 등에 따라 실제 결과와 다를 수 있습니다.
 </p>

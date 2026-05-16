@@ -364,6 +364,7 @@ const [selectedPress, setSelectedPress] = useState<any>(null);
 const [pressSearch, setPressSearch] = useState("");
 const [pressPage, setPressPage] = useState(1);
 const [showPressDot, setShowPressDot] = useState(false);
+const [readPressIds, setReadPressIds] = useState<number[]>([]);
 
 const [selectedItem, setSelectedItem] = useState(0);
   const [search, setSearch] = useState("");
@@ -379,6 +380,11 @@ useEffect(() => {
   if (searchParams.get("press") === "1") {
     setPressOpen(true);
   }
+  const savedReadPressIds = localStorage.getItem("readPressIds");
+
+if (savedReadPressIds) {
+  setReadPressIds(JSON.parse(savedReadPressIds));
+}
 }, [searchParams]);
   const currentCompanies =
     tab === "nonlife"
@@ -773,7 +779,19 @@ setTermsOpen(false);
         {paginatedPress.map((item, index) => (
           <tr
             key={item.id}
-            onClick={() => setSelectedPress(item)}
+            onClick={() => {
+  setSelectedPress(item);
+
+  const nextReadPressIds = Array.from(
+    new Set([...readPressIds, item.id])
+  );
+
+  setReadPressIds(nextReadPressIds);
+  localStorage.setItem(
+    "readPressIds",
+    JSON.stringify(nextReadPressIds)
+  );
+}}
             className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition"
           >
             <td className="py-4 text-center text-gray-700 border-b border-gray-100">
@@ -782,9 +800,17 @@ setTermsOpen(false);
             </td>
 
             <td className="py-4 font-medium text-gray-800 border-b border-gray-100 overflow-hidden">
-  <div className="truncate">
+  <div className="flex items-center gap-2 overflow-hidden">
+  <span className="truncate">
     {item.title}
-  </div>
+  </span>
+
+  {!readPressIds.includes(item.id) && (
+    <span className="shrink-0 px-2 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">
+      NEW
+    </span>
+  )}
+</div>
 </td>
 
             <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">

@@ -1,9 +1,18 @@
+const hasRedisEnv =
+  process.env.UPSTASH_REDIS_REST_URL &&
+  process.env.UPSTASH_REDIS_REST_TOKEN;
 import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 
 const redis = Redis.fromEnv();
 
 export async function GET(request: Request) {
+  if (!hasRedisEnv) {
+  return NextResponse.json({
+    today: 0,
+    total: 0,
+  });
+}
   try {
     const { searchParams } = new URL(request.url);
     const hit = searchParams.get("hit");
