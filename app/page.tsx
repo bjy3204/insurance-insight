@@ -103,6 +103,7 @@ const pagedNotices = notices.slice(
 );
 
 const [hasUpdate, setHasUpdate] = useState(false);
+const [readNoticeIds, setReadNoticeIds] = useState<number[]>([]);
 
   useEffect(() => {
   const isStandalone =
@@ -156,6 +157,11 @@ if (visited !== todayKey) {
 
 if (savedVersion != noticeVersion.toString()) {
   setHasUpdate(true);
+}
+const savedReadNoticeIds = localStorage.getItem("readNoticeIds");
+
+if (savedReadNoticeIds) {
+  setReadNoticeIds(JSON.parse(savedReadNoticeIds));
 }
   return () => {
   window.removeEventListener(
@@ -605,7 +611,7 @@ rel="noopener noreferrer"
             {/* 공지사항 팝업 */}
       {noticeOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4">
-          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[85vh] lg:h-[65vh] flex flex-col">
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[70vh] flex flex-col">
             <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
               <div className="font-bold flex items-center gap-2">
                 <Megaphone className="w-5 h-5" />
@@ -628,7 +634,19 @@ rel="noopener noreferrer"
       {pagedNotices.map((notice) => (
         <button
           key={notice.id}
-          onClick={() => setSelectedNotice(notice)}
+          onClick={() => {
+  setSelectedNotice(notice);
+
+  const nextReadIds = Array.from(
+    new Set([...readNoticeIds, notice.id])
+  );
+
+  setReadNoticeIds(nextReadIds);
+  localStorage.setItem(
+    "readNoticeIds",
+    JSON.stringify(nextReadIds)
+  );
+}}
           className="
   w-full
   text-left
@@ -646,22 +664,24 @@ rel="noopener noreferrer"
               NO. {notice.id}
             </span>
 
-            <span
-              className={`
-                px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap
-                ${
-                  notice.category === "업데이트"
-                    ? "bg-blue-100 text-blue-600"
-                    : notice.category === "강의안내"
-                    ? "bg-yellow-100 text-yellow-700"
-                    : notice.category === "OPEN"
-                    ? "bg-emerald-100 text-emerald-700 px-3"
-                    : "bg-orange-100 text-orange-600"
-                }
-              `}
-            >
-              {notice.category}
-            </span>
+            {!readNoticeIds.includes(notice.id) && (
+  <span
+    className={`
+      px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap
+      ${
+        notice.category === "업데이트"
+          ? "bg-blue-100 text-blue-600"
+          : notice.category === "강의안내"
+          ? "bg-yellow-100 text-yellow-700"
+          : notice.category === "OPEN"
+          ? "bg-emerald-100 text-emerald-700 px-3"
+          : "bg-orange-100 text-orange-600"
+      }
+    `}
+  >
+    {notice.category}
+  </span>
+)}
           </div>
 
           <div className="font-bold text-gray-900 leading-tight break-keep">
@@ -690,7 +710,19 @@ rel="noopener noreferrer"
           {pagedNotices.map((notice) => (
             <tr
               key={notice.id}
-              onClick={() => setSelectedNotice(notice)}
+              onClick={() => {
+  setSelectedNotice(notice);
+
+  const nextReadIds = Array.from(
+    new Set([...readNoticeIds, notice.id])
+  );
+
+  setReadNoticeIds(nextReadIds);
+  localStorage.setItem(
+    "readNoticeIds",
+    JSON.stringify(nextReadIds)
+  );
+}}
               className="
                 border-b
                 border-gray-100
@@ -707,22 +739,24 @@ rel="noopener noreferrer"
                 <div className="flex items-center gap-3">
                   <span>{notice.title}</span>
 
-                  <span
-                    className={`
-                      px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap
-                      ${
-                        notice.category === "업데이트"
-                          ? "bg-blue-100 text-blue-600"
-                          : notice.category === "강의안내"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : notice.category === "OPEN"
-                          ? "bg-emerald-100 text-emerald-700 px-3"
-                          : "bg-orange-100 text-orange-600"
-                      }
-                    `}
-                  >
-                    {notice.category}
-                  </span>
+                  {!readNoticeIds.includes(notice.id) && (
+  <span
+    className={`
+      px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap
+      ${
+        notice.category === "업데이트"
+          ? "bg-blue-100 text-blue-600"
+          : notice.category === "강의안내"
+          ? "bg-yellow-100 text-yellow-700"
+          : notice.category === "OPEN"
+          ? "bg-emerald-100 text-emerald-700 px-3"
+          : "bg-orange-100 text-orange-600"
+      }
+    `}
+  >
+    {notice.category}
+  </span>
+)}
                 </div>
               </td>
 
@@ -736,45 +770,46 @@ rel="noopener noreferrer"
     </div>
 
     {/* 페이지네이션 */}
-    <div className="flex justify-center pt-4 pb-4 shrink-0">
-      <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+    {/* 페이지네이션 */}
+<div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
+  <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+    <button
+      onClick={() => setNoticePage((p) => Math.max(1, p - 1))}
+      disabled={noticePage === 1}
+      className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+    >
+      이전
+    </button>
+
+    {Array.from({ length: totalNoticePages }).map((_, index) => {
+      const page = index + 1;
+
+      return (
         <button
-          onClick={() => setNoticePage((p) => Math.max(1, p - 1))}
-          disabled={noticePage === 1}
-          className="px-4 py-2 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+          key={page}
+          onClick={() => setNoticePage(page)}
+          className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
+            noticePage === page
+              ? "bg-slate-800 text-white"
+              : "bg-white text-gray-600 hover:bg-gray-100"
+          }`}
         >
-          이전
+          {page}
         </button>
+      );
+    })}
 
-        {Array.from({ length: totalNoticePages }).map((_, index) => {
-          const page = index + 1;
-
-          return (
-            <button
-              key={page}
-              onClick={() => setNoticePage(page)}
-              className={`px-4 py-2 border-l border-gray-200 hover:bg-slate-600 cursor-pointer ${
-                noticePage === page
-  ? "bg-slate-800 text-white"
-  : "bg-white text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              {page}
-            </button>
-          );
-        })}
-
-        <button
-          onClick={() =>
-            setNoticePage((p) => Math.min(totalNoticePages, p + 1))
-          }
-          disabled={noticePage === totalNoticePages}
-          className="px-4 py-2 border-l hover:bg-gray-50 disabled:text-gray-300 cursor-pointer"
-        >
-          다음
-        </button>
-      </div>
-    </div>
+    <button
+      onClick={() =>
+        setNoticePage((p) => Math.min(totalNoticePages, p + 1))
+      }
+      disabled={noticePage === totalNoticePages}
+      className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+    >
+      다음
+    </button>
+  </div>
+</div>
 
   </div>
 ) : (
