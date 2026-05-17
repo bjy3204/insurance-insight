@@ -20,6 +20,7 @@ import {
   CalendarDays,
   Landmark,
   PiggyBank,
+  Briefcase,
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
@@ -85,6 +86,12 @@ const menus = [
   desc: "보험업계 강의 일정 공유 플랫폼",
   icon: CalendarDays,
   link: "/lecture",
+},
+{
+  title: "이직 컨설팅",
+  desc: "검수형 조직 연결 컨설팅 플랫폼",
+  icon: Briefcase,
+  link: "/job",
 },
 
   
@@ -437,6 +444,7 @@ useEffect(() => {
   hover:-translate-y-1
   transition
   min-h-[190px]
+  cursor-default
 `}
               >
                 <Icon
