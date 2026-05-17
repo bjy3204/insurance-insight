@@ -1,7 +1,7 @@
 export const noticeVersion = 16;
 export const notices = [{
   id: 17,
-  date: "2026년 5월 18일 23:50",
+  date: "2026년 5월 18일 08:00",
   category: "업데이트",
   title: "이직컨설팅 메뉴 오픈",
   content: `이직컨설팅 메뉴가 새롭게 오픈되었습니다.
