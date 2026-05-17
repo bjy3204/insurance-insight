@@ -1784,8 +1784,14 @@ w-62
 
 {/* 실손 사전 팝업 */}
 {dictionaryModalOpen && (
-  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col">
+  <div
+  onClick={() => setDictionaryModalOpen(false)}
+  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+>
+    <div
+  onClick={(e) => e.stopPropagation()}
+  className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
+>
       
       {/* 팝업 헤더 */}
       <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
@@ -1799,7 +1805,17 @@ w-62
 
         <button
   onClick={() => setDictionaryModalOpen(false)}
-  className="cursor-pointer"
+  className="
+  cursor-pointer
+  w-9
+  h-9
+  rounded-full
+  flex
+  items-center
+  justify-center
+  hover:bg-white/10
+  transition
+"
 >
           <X className="w-5 h-5" />
         </button>

@@ -17,11 +17,11 @@ import {
   X,
   Megaphone,
   CircleDollarSign,
+  CalendarDays,
   Landmark,
   PiggyBank,
+  ChevronUp,
   ChevronDown,
-ChevronUp,
-Search,
 } from "lucide-react";
 
 import { FaInstagram } from "react-icons/fa";
@@ -81,11 +81,13 @@ const menus = [
   link: "/pension-calculator",
 },
 {
-    title: "보험인사이트 폴더",
-    desc: "보험 자료 모음",
-    icon: FolderOpen,
-    link: "https://naver.me/FWTmVFQz",
-  },
+  title: "강의일정",
+  desc: "보험업계 강의 일정 공유 플랫폼",
+  icon: CalendarDays,
+  link: "/lecture",
+},
+
+  
 ];
 
 export default function Home() {
@@ -421,8 +423,12 @@ useEffect(() => {
       : "_self"
   }
   rel="noopener noreferrer"
-                className="
-  bg-white
+                className={`
+  ${
+    menu.title === "강의일정"
+  ? "bg-white border border-gray-100"
+  : "bg-white"
+  }
   p-7
   sm:p-8
   rounded-3xl
@@ -431,9 +437,15 @@ useEffect(() => {
   hover:-translate-y-1
   transition
   min-h-[190px]
-"
+`}
               >
-                <Icon className="w-10 h-10 text-blue-600 mb-4" />
+                <Icon
+  className={`w-10 h-10 mb-4 ${
+    menu.title === "강의일정"
+  ? "text-blue-600"
+  : "text-blue-600"
+  }`}
+/>
 
                 <h2 className="text-lg font-bold">{menu.title}</h2>
 
@@ -576,19 +588,26 @@ setQuickOpen(false);
         
       </button>
 
-      <button
-        className="
-          min-h-[62px]
-          px-3
-          text-center
-          text-[13px]
-          font-bold
-          text-gray-300
-          bg-gray-50
-        "
-      >
-        추가 예정
-      </button>
+     <a
+  href="https://naver.me/FWTmVFQz"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="
+    min-h-[62px]
+    px-3
+    text-center
+    text-[13px]
+    font-bold
+    text-gray-700
+    hover:bg-gray-50
+    transition
+    flex
+    items-center
+    justify-center
+  "
+>
+  보험자료 더보기
+</a>
     </div>
   )}
 </div>
@@ -737,7 +756,20 @@ rel="noopener noreferrer"
           <div className="bg-white rounded-3xl p-6 w-full max-w-md relative">
             <button
               onClick={() => setOpen(false)}
-              className="absolute right-5 top-5 text-gray-400"
+              className="
+  absolute
+  right-5
+  top-5
+  w-9
+  h-9
+  rounded-full
+  flex
+  items-center
+  justify-center
+  text-gray-400
+  hover:bg-gray-100
+  transition
+"
             >
               <X className="w-5 h-5" />
             </button>
@@ -847,7 +879,10 @@ rel="noopener noreferrer"
       )}
             {/* 공지사항 팝업 */}
       {noticeOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4">
+        <div
+  onClick={() => setNoticeOpen(false)}
+  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
+>
           <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[70vh] flex flex-col">
             <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
               <div className="font-bold flex items-center gap-2">
@@ -857,7 +892,17 @@ rel="noopener noreferrer"
 
               <button
   onClick={() => setNoticeOpen(false)}
-  className="cursor-pointer"
+  className="
+  cursor-pointer
+  w-9
+  h-9
+  rounded-full
+  flex
+  items-center
+  justify-center
+  hover:bg-white/10
+  transition
+"
 >
                 <X className="w-5 h-5" />
               </button>
@@ -1111,7 +1156,17 @@ rel="noopener noreferrer"
 
         <button
           onClick={() => setLifeOpen(false)}
-          className="cursor-pointer"
+          className="
+  cursor-pointer
+  w-9
+  h-9
+  rounded-full
+  flex
+  items-center
+  justify-center
+  hover:bg-white/10
+  transition
+"
         >
           <X className="w-5 h-5" />
         </button>
@@ -1281,7 +1336,17 @@ rel="noopener noreferrer"
             setPressOpen(false);
             setSelectedPress(null);
           }}
-          className="cursor-pointer"
+          className="
+  cursor-pointer
+  w-9
+  h-9
+  rounded-full
+  flex
+  items-center
+  justify-center
+  hover:bg-white/10
+  transition
+"
         >
           <X className="w-5 h-5" />
         </button>

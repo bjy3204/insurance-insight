@@ -107,9 +107,22 @@ const toggleType = (type: string) => {
             병원정보 검색
           </div>
 
-          <button onClick={onClose} className="cursor-pointer">
-            <X className="w-5 h-5" />
-          </button>
+          <button
+  onClick={onClose}
+  className="
+    cursor-pointer
+    w-9
+    h-9
+    rounded-full
+    flex
+    items-center
+    justify-center
+    hover:bg-white/10
+    transition
+  "
+>
+  <X className="w-5 h-5" />
+</button>
                 </div>
 
         <div className="hospital-scroll flex-1 overflow-y-auto p-5">

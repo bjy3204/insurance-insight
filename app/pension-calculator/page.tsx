@@ -738,8 +738,14 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
   </div>
 )}
 {npsTableOpen && (
-  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
+  <div
+  onClick={() => setNpsTableOpen(false)}
+  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+>
+    <div
+  onClick={(e) => e.stopPropagation()}
+  className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
+>
       <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2">
           <FileText className="w-5 h-5" />
@@ -748,7 +754,17 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
 
         <button
           onClick={() => setNpsTableOpen(false)}
-          className="cursor-pointer"
+          className="
+  cursor-pointer
+  w-9
+  h-9
+  rounded-full
+  flex
+  items-center
+  justify-center
+  hover:bg-white/10
+  transition
+"
         >
           <X className="w-5 h-5" />
         </button>
@@ -897,8 +913,14 @@ onChange={(e) =>
   </div>
 )}
 {lifeOpen && (
-  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
+  <div
+  onClick={() => setLifeOpen(false)}
+  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+>
+    <div
+  onClick={(e) => e.stopPropagation()}
+  className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
+>
       <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2">
           <FileText className="w-5 h-5" />
@@ -907,7 +929,17 @@ onChange={(e) =>
 
         <button
           onClick={() => setLifeOpen(false)}
-          className="cursor-pointer"
+          className="
+  cursor-pointer
+  w-9
+  h-9
+  rounded-full
+  flex
+  items-center
+  justify-center
+  hover:bg-white/10
+  transition
+"
         >
           <X className="w-5 h-5" />
         </button>
