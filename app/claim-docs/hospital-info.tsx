@@ -112,10 +112,7 @@ const toggleType = (type: string) => {
   setSelectedType(type);
 };
   return (
-    <div
-  onClick={onClose}
-  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
->
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4">
      <div
   onClick={(e) => e.stopPropagation()}
   className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"

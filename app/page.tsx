@@ -1,5 +1,5 @@
 "use client";
-
+import DiseaseCodePopup from "./claim-docs/disease-code-popup";
 import { useEffect, useState } from "react";
 import {
   LIFE_DATA_YEAR,
@@ -82,6 +82,12 @@ const menus = [
   link: "/pension-calculator",
 },
 {
+  title: "보험인사이트 폴더",
+  desc: "보험 자료 모음",
+  icon: FolderOpen,
+  link: "https://naver.me/FWTmVFQz",
+},
+{
   title: "강의일정",
   desc: "보험업계 강의 일정 공유 플랫폼",
   icon: CalendarDays,
@@ -107,6 +113,7 @@ export default function Home() {
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
   const [hospitalOpen, setHospitalOpen] = useState(false);
+  const [diseaseOpen, setDiseaseOpen] = useState(false);
 const [pressOpen, setPressOpen] = useState(false);
 const [selectedPress, setSelectedPress] = useState<any>(null);
 const [pressSearch, setPressSearch] = useState("");
@@ -596,10 +603,11 @@ setQuickOpen(false);
         
       </button>
 
-     <a
-  href="https://naver.me/FWTmVFQz"
-  target="_blank"
-  rel="noopener noreferrer"
+    <button
+  onClick={() => {
+    setDiseaseOpen(true);
+    setQuickOpen(false);
+  }}
   className="
     min-h-[62px]
     px-3
@@ -614,8 +622,8 @@ setQuickOpen(false);
     justify-center
   "
 >
-  보험자료 더보기
-</a>
+  상병코드 검색
+</button>
     </div>
   )}
 </div>
@@ -887,7 +895,10 @@ rel="noopener noreferrer"
       )}
             {/* 공지사항 팝업 */}
       {noticeOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4">
+        <div
+  onClick={() => setNoticeOpen(false)}
+  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
+>
           <div
   onClick={(e) => e.stopPropagation()}
   className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[70vh] flex flex-col"
@@ -1153,6 +1164,12 @@ rel="noopener noreferrer"
   open={hospitalOpen}
   onClose={() => setHospitalOpen(false)}
 />
+
+<DiseaseCodePopup
+  open={diseaseOpen}
+  onClose={() => setDiseaseOpen(false)}
+/>
+
 {lifeOpen && (
   <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
     <div className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
@@ -1332,12 +1349,8 @@ rel="noopener noreferrer"
 )}
 {pressOpen && (
   <div
-    onClick={() => {
-      setPressOpen(false);
-      setSelectedPress(null);
-    }}
-    className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
-  >
+  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+>
     <div
   onClick={(e) => e.stopPropagation()}
   className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
