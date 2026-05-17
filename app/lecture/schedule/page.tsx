@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -20,7 +20,7 @@ import {
 import { lectureFormLinks } from "../formLinks";
 
 
-export default function LectureSchedulePage() {
+function LectureSchedulePageContent() {
   const searchParams = useSearchParams();
   const selectedCategory = searchParams.get("category");
 
@@ -640,5 +640,12 @@ rel={
 </div>
 
     </main>
+  );
+}
+export default function LectureSchedulePage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-gray-100" />}>
+      <LectureSchedulePageContent />
+    </Suspense>
   );
 }
