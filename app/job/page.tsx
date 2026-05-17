@@ -108,7 +108,7 @@ const currentCompanies = filteredCompanies.slice(
 
         <p className="text-[13px] text-gray-400 mb-6 px-1 break-keep">
           회사 등록 시 검토 후 승인된 조직만 등록되며 무분별한 공개 연결이 아닌
-          조건 기반 조직 연결을 지향합니다.
+          조건 기반 조직 연결을 지향합니다.(현재 무료 운영중입니다 !)
         </p>
 
        <section className="-mt-4 min-h-[400px] flex flex-col">
