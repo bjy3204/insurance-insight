@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -18,7 +18,7 @@ import {
 import { lectureFormLinks } from "../formLinks";
 
 
-export default function InstructorPage() {
+function InstructorPageContent() {
     const [instructors, setInstructors] = useState<any[]>([]);
 const [loading, setLoading] = useState(true);
 
@@ -451,5 +451,12 @@ const currentInstructors = filteredInstructors.slice(
   </div>
 </div>
     </main>
+  );
+}
+export default function InstructorPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-gray-100" />}>
+      <InstructorPageContent />
+    </Suspense>
   );
 }
