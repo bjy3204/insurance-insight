@@ -89,7 +89,7 @@ const menus = [
 },
 {
   title: "이직 컨설팅",
-  desc: "검수형 조직 연결 컨설팅 플랫폼",
+  desc: "보험 조직 연결 컨설팅 플랫폼",
   icon: Briefcase,
   link: "/job",
 },
