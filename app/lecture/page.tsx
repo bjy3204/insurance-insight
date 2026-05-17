@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 
-export default function LecturePage() {
+function LecturePageContent() {
   const searchParams = useSearchParams();
 
   const [instructors, setInstructors] = useState<any[]>([]);
@@ -569,5 +569,12 @@ transition
   </div>
 </div>
     </main>
+  );
+}
+export default function LecturePage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-gray-100" />}>
+      <LecturePageContent />
+    </Suspense>
   );
 }
