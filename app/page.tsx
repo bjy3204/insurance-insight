@@ -1495,10 +1495,56 @@ rel="noopener noreferrer"
             </p>
 
             <div className="border-t border-gray-200 mt-4 pt-3 break-keep text-[15px] leading-[1.8] text-gray-700">
-              <div className="whitespace-pre-line">
-                {selectedPress.body}
-              </div>
-            </div>
+  {selectedPress.pdfs && (
+    <div className="flex flex-wrap gap-3 mb-4">
+      {selectedPress.pdfs.map((pdf: string, index: number) => (
+        <a
+          key={index}
+          href={pdf}
+          download
+          className="
+            inline-flex
+            items-center
+            gap-1.5
+            text-sm
+            text-gray-500
+            underline
+            underline-offset-2
+            hover:text-gray-700
+            transition
+          "
+        >
+          <FileText className="w-4 h-4" />
+          PDF 다운로드
+          {selectedPress.pdfs.length > 1 && ` ${index + 1}`}
+        </a>
+      ))}
+    </div>
+  )}
+
+  <div className="whitespace-pre-line">
+    {selectedPress.body}
+  </div>
+
+  {selectedPress.pdfs?.[0] && (
+    <div className="mt-6">
+      <iframe
+        src={selectedPress.pdfs[0]}
+        className="
+          w-full
+          h-[900px]
+          rounded-2xl
+          border
+          border-gray-200
+        "
+      />
+
+      <p className="text-xs text-gray-400 mt-2">
+        일부 모바일 환경에서는 PDF 미리보기가 지원되지 않을 수 있습니다.
+      </p>
+    </div>
+  )}
+</div>
           </div>
 
           <div className="border-t border-gray-200 p-4 text-center">
