@@ -1,4 +1,4 @@
-export const noticeVersion = 16;
+export const noticeVersion = 1;
 export const notices = [{
   id: 17,
   date: "2026년 5월 18일 08:00",
