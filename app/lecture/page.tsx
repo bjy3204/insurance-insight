@@ -9,6 +9,7 @@ import {
   ArrowLeft,
   CalendarDays,
   Search,
+  Star,
   MapPin,
   Clock,
   User,
@@ -24,9 +25,16 @@ function LecturePageContent() {
 
   const [instructors, setInstructors] = useState<any[]>([]);
   const [lectures, setLectures] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [search, setSearch] = useState("");
-  const [selectedLecture, setSelectedLecture] = useState<any>(null);
-  const [selectedDate, setSelectedDate] = useState("");
+ const [selectedLecture, setSelectedLecture] = useState<any>(null);
+ const [lecturePopupMode, setLecturePopupMode] = useState<"lecture" | "instructor" | "review">("lecture");
+
+const [selectedDate, setSelectedDate] = useState("");
+const [reviewSearch, setReviewSearch] = useState("");
+const [reviewPage, setReviewPage] = useState(1);
+const [expanded, setExpanded] = useState<string[]>([]);
+const reviewsPerPage = 5;
 
   const selectedCategory = searchParams.get("category");
 
@@ -42,11 +50,44 @@ function LecturePageContent() {
       .then((data) => {
         setLectures(Array.isArray(data) ? data : []);
       });
+      fetch("/api/reviews")
+      .then((res) => res.json())
+      .then((data) => {
+        setReviews(Array.isArray(data) ? data : []);
+      });
   }, []);
 
     const hasInstructor = (name: string) =>
     instructors.some((item) => item.name === name);
 
+const selectedInstructorInfo = selectedLecture
+  ? instructors.find(
+      (instructor) => instructor.name === selectedLecture.instructorName
+    )
+  : null;
+
+const selectedReviews = reviews
+  .filter((review) => review.lectureTitle === selectedLecture?.title)
+  .filter((review) =>
+    `${review.writer} ${review.content} ${review.rating}`
+      .toLowerCase()
+      .includes(reviewSearch.toLowerCase())
+  )
+  .sort(
+    (a, b) =>
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+const totalReviewPages = Math.max(
+  1,
+  Math.ceil(selectedReviews.length / reviewsPerPage)
+);
+
+const currentReviews = selectedReviews.slice(
+  (reviewPage - 1) * reviewsPerPage,
+  reviewPage * reviewsPerPage
+);
+  
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 const currentYear = today.getFullYear();
@@ -378,6 +419,7 @@ transition
   type="button"
   onClick={() => {
   setSelectedLecture(lecture);
+  setLecturePopupMode("lecture");
 
   setTimeout(() => {
     const popup = document.querySelector(".lecture-popup-scroll");
@@ -412,128 +454,464 @@ transition
           </div>
         </section>
       </div>
-      {/* 강의 상세 팝업 */}
+     
+{/* 강의 상세 팝업 */}
 {selectedLecture && (
   <div
-    onClick={() => setSelectedLecture(null)}
+    onClick={() => {
+      setSelectedLecture(null);
+      setLecturePopupMode("lecture");
+    }}
     className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center"
   >
     <div
-  onClick={(e) => e.stopPropagation()}
-  className="bg-white w-[calc(100%-24px)] sm:max-w-5xl h-[88vh] rounded-t-3xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col"
->
-
+      onClick={(e) => e.stopPropagation()}
+      className="bg-white w-[calc(100%-24px)] sm:max-w-5xl h-[88vh] rounded-t-3xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col"
+    >
       <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between shrink-0">
-        <div className="font-bold flex items-center gap-2">
-          <CalendarDays className="w-5 h-5" />
-          강의 상세
-        </div>
+        {lecturePopupMode === "lecture" ? (
+          <div className="font-bold flex items-center gap-2">
+            <CalendarDays className="w-5 h-5" />
+            강의 상세
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setLecturePopupMode("lecture")}
+            className="h-9 px-3 rounded-xl bg-white/10 text-white text-sm font-bold flex items-center gap-1 cursor-pointer hover:bg-white/15 transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            뒤로가기
+          </button>
+        )}
 
         <button
           type="button"
-          onClick={() => setSelectedLecture(null)}
-          className="
-  cursor-pointer
-  w-9
-  h-9
-  rounded-full
-  flex
-  items-center
-  justify-center
-  hover:bg-white/10
-  active:bg-white/10
-  transition
-"
+          onClick={() => {
+            setSelectedLecture(null);
+            setLecturePopupMode("lecture");
+          }}
+          className="cursor-pointer w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 active:bg-white/10 transition"
         >
           <X className="w-5 h-5" />
         </button>
       </div>
 
-      <div className="p-6 overflow-y-auto flex-1 lecture-popup-scroll min-w-0">
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold">
-            {selectedLecture.area}
-          </span>
+      {lecturePopupMode === "lecture" && (
+        <>
+          <div className="p-6 overflow-y-auto flex-1 lecture-popup-scroll min-w-0">
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold">
+                {selectedLecture.area}
+              </span>
 
-          <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">
-            {selectedLecture.category}
-          </span>
+              <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">
+                {selectedLecture.category}
+              </span>
 
-          <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold">
-            {selectedLecture.status}
-          </span>
-        </div>
+              <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-xs font-bold">
+                {selectedLecture.status}
+              </span>
+            </div>
 
-        <h2 className="text-[26px] leading-tight font-black text-gray-900 mb-4 break-all">
-          {selectedLecture.title}
-        </h2>
+            <h2 className="text-[26px] leading-tight font-black text-gray-900 mb-4 break-all">
+              {selectedLecture.title}
+            </h2>
 
-        <div className="space-y-2.5 text-sm text-gray-700 mb-5">
-          <p className="flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-gray-400" />
-            {selectedLecture.date}
-          </p>
+            <div className="space-y-2.5 text-sm text-gray-700 mb-5">
+              <p className="flex items-center gap-2">
+                <CalendarDays className="w-4 h-4 text-gray-400" />
+                {selectedLecture.date}
+              </p>
 
-          <p className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-gray-400" />
-            {selectedLecture.time}
-          </p>
+              <p className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-gray-400" />
+                {selectedLecture.time}
+              </p>
 
-          <p className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-gray-400" />
-            {selectedLecture.area}
-          </p>
+              <p className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-gray-400" />
+                {selectedLecture.area}
+              </p>
 
-          <p className="flex items-center gap-2 flex-wrap">
-            <BadgeCheck className="w-4 h-4 text-gray-400" />
+              <p className="flex items-center gap-2 flex-wrap">
+                <BadgeCheck className="w-4 h-4 text-gray-400" />
 
-            {hasInstructor(selectedLecture.instructorName) ? (
-              <Link
-                href={`/lecture/instructor?name=${encodeURIComponent(selectedLecture.instructorName)}`}
-                className="font-bold text-blue-600 underline underline-offset-2"
-              >
-                {selectedLecture.instructorName}
-              </Link>
-            ) : (
-              <span>{selectedLecture.instructorName}</span>
+                {hasInstructor(selectedLecture.instructorName) ? (
+                  <button
+                    type="button"
+                    onClick={() => setLecturePopupMode("instructor")}
+                    className="font-bold text-blue-600 underline underline-offset-2 cursor-pointer"
+                  >
+                    {selectedLecture.instructorName}
+                  </button>
+                ) : (
+                  <span>{selectedLecture.instructorName}</span>
+                )}
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 mb-6">
+              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line break-all">
+                {selectedLecture.desc}
+              </p>
+            </div>
+
+            {selectedLecture.images?.length > 0 && (
+              <div className="space-y-3 min-w-0">
+                {selectedLecture.images.map((image: string, index: number) => (
+                  <img
+                    key={index}
+                    src={image}
+                    alt={`${selectedLecture.title}-${index}`}
+                    className="w-full max-w-full max-h-[700px] object-contain bg-gray-50"
+                  />
+                ))}
+              </div>
             )}
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 mb-6">
-          <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line break-all">
-  {selectedLecture.desc}
-</p>
-        </div>
-
-        {selectedLecture.images?.length > 0 && (
-          <div className="space-y-3 min-w-0">
-            {selectedLecture.images.map((image: string, index: number) => (
-              <img
-                key={index}
-                src={image}
-                alt={`${selectedLecture.title}-${index}`}
-                className="w-full max-w-full max-h-[700px] object-contain bg-gray-50"
-              />
-            ))}
           </div>
-        )}
-      </div>
 
-      <div className="shrink-0 border-t border-gray-200 bg-white p-4">
-        <a
-          href={selectedLecture.applyLink || "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full text-center rounded-2xl bg-gray-800 text-white py-4 text-sm font-bold"
+          <div className="shrink-0 border-t border-gray-200 bg-white p-4">
+            <a
+              href={selectedLecture.applyLink || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full text-center rounded-2xl bg-gray-800 text-white py-4 text-sm font-bold"
+            >
+              신청하기
+            </a>
+          </div>
+        </>
+      )}
+
+{lecturePopupMode === "review" && (
+  <>
+    <div className="shrink-0 bg-white px-5 py-4">
+      <p className="text-sm font-bold text-gray-700 mb-4">
+        총 {selectedReviews.length}개의 후기
+      </p>
+
+      <div className="relative">
+        <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+        <input
+          value={reviewSearch}
+          onChange={(e) => {
+            setReviewSearch(e.target.value);
+            setReviewPage(1);
+          }}
+          placeholder="후기 내용을 검색하세요"
+          className="w-full rounded-2xl border border-gray-200 bg-white pl-10 pr-4 py-3 text-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition"
+        />
+      </div>
+    </div>
+
+    <div className="flex-1 overflow-y-auto px-5 pt-0 pb-5 space-y-4">
+      {currentReviews.length === 0 && (
+        <div className="text-center text-sm text-gray-400 py-16">
+          등록된 후기가 없습니다.
+        </div>
+      )}
+
+      {currentReviews.map((review) => (
+        <div
+          key={review.id}
+          className="rounded-3xl border border-gray-200 p-5 min-h-[170px] flex flex-col"
         >
-          신청하기
-        </a>
-      </div>
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div>
+              <p className="font-bold text-gray-900">
+                {review.writer}
+              </p>
 
+              <p className="text-xs text-gray-400">
+                {review.lectureTitle}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-0.5 shrink-0">
+              {Array.from({ length: 5 }).map((_, index) => {
+                const filled =
+                  index < (review.rating?.match(/⭐/g)?.length || 0);
+
+                return (
+                  <span
+                    key={index}
+                    className={
+                      filled
+                        ? "text-yellow-400 text-lg"
+                        : "text-gray-300 text-lg"
+                    }
+                  >
+                    ★
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          <p
+            className={`text-[15px] leading-relaxed text-gray-700 whitespace-pre-line ${
+              expanded.includes(review.id) ? "" : "line-clamp-1"
+            }`}
+          >
+            {review.content}
+          </p>
+
+          {review.content?.length > 35 && (
+            <button
+              type="button"
+              onClick={() => {
+                if (expanded.includes(review.id)) {
+                  setExpanded(expanded.filter((id) => id !== review.id));
+                } else {
+                  setExpanded([...expanded, review.id]);
+                }
+              }}
+              className="mt-2 text-xs text-gray-400 font-medium cursor-pointer hover:text-gray-500 transition"
+            >
+              {expanded.includes(review.id) ? "접기" : "더보기"}
+            </button>
+          )}
+
+          <div className="mt-3 text-xs text-gray-400">
+            {new Date(review.date).toLocaleDateString("ko-KR")}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="shrink-0 border-t border-gray-200 bg-white px-5 pt-3 pb-4">
+      <div className="flex items-center justify-center gap-2 flex-wrap">
+        <button
+          onClick={() => setReviewPage((prev) => Math.max(prev - 1, 1))}
+          className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm cursor-pointer hover:bg-gray-50"
+        >
+          이전
+        </button>
+
+        {Array.from({ length: totalReviewPages }).map((_, index) => {
+          const page = index + 1;
+
+          return (
+            <button
+              key={page}
+              onClick={() => setReviewPage(page)}
+              className={`w-9 h-9 rounded-xl text-sm font-semibold border cursor-pointer ${
+                reviewPage === page
+                  ? "bg-slate-800 text-white border-slate-800"
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+              }`}
+            >
+              {page}
+            </button>
+          );
+        })}
+
+        <button
+          onClick={() =>
+            setReviewPage((prev) => Math.min(prev + 1, totalReviewPages))
+          }
+          className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm cursor-pointer hover:bg-gray-50"
+        >
+          다음
+        </button>
+      </div>
+    </div>
+  </>
+)}
+
+      {lecturePopupMode === "instructor" && (
+  <>
+    <div className="p-6 overflow-y-auto flex-1 min-w-0">
+      {!selectedInstructorInfo && (
+        <div className="text-center text-sm text-gray-400 py-16">
+          등록된 강사 정보가 없습니다.
+        </div>
+      )}
+
+      {selectedInstructorInfo && (
+        <div>
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="w-full lg:w-[220px] shrink-0">
+              {selectedInstructorInfo.image ? (
+                <img
+                  src={selectedInstructorInfo.image}
+                  alt={selectedInstructorInfo.name}
+                  className="w-full max-h-[320px] lg:max-h-none rounded-2xl object-contain border border-gray-200 bg-gray-50 p-2"
+                />
+              ) : (
+                <div className="w-full h-[260px] rounded-2xl border border-gray-200 bg-gray-50 flex items-center justify-center text-sm text-gray-400 font-medium">
+                  등록된 사진이 없습니다
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <h2 className="text-2xl font-black text-gray-900 mb-2">
+                {selectedInstructorInfo.name}
+              </h2>
+
+              <p className="text-sm text-blue-600 font-bold mb-2">
+                {selectedInstructorInfo.category}
+              </p>
+
+              <p className="text-sm text-gray-500 mb-5">
+                {selectedInstructorInfo.area}
+              </p>
+
+              <div className="rounded-2xl bg-gray-50 border border-gray-200 p-5">
+                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line break-all">
+                  {selectedInstructorInfo.desc}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 진행 강의 */}
+          <div className="mt-6">
+            <h3 className="text-sm font-black text-gray-900 mb-3">
+              진행 강의
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {lectures
+                .filter(
+                  (lecture) =>
+                    lecture.instructorName === selectedInstructorInfo.name
+                )
+                .map((lecture) => (
+                  <button
+                    key={lecture.id}
+                    type="button"
+                    onClick={() => {
+  setSelectedLecture(lecture);
+  setLecturePopupMode("review");
+  setReviewPage(1);
+  setReviewSearch("");
+}}
+                    className="text-left rounded-2xl border border-gray-200 bg-white p-4 cursor-pointer hover:bg-gray-50 transition"
+                  >
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-medium">
+                        {lecture.category}
+                      </span>
+
+                      <span className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
+                        {lecture.area}
+                      </span>
+
+                      <span className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
+                        {lecture.date}
+                      </span>
+                    </div>
+
+                    <h4 className="text-sm font-black text-gray-900 break-keep leading-snug mb-2">
+                      {lecture.title}
+                    </h4>
+
+                    <p className="text-xs text-gray-400">
+  강의후기 보기
+</p>
+                  </button>
+                ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+
+    {selectedInstructorInfo && (
+      <div className="shrink-0 border-t border-gray-200 bg-white p-4">
+        <div className="flex items-center justify-center gap-1 mb-3">
+          <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+
+          <span className="text-sm font-bold text-gray-900">
+            {(
+              reviews
+                .filter((review) =>
+                  lectures.some(
+                    (lecture) =>
+                      lecture.title === review.lectureTitle &&
+                      lecture.instructorName === selectedInstructorInfo.name
+                  )
+                )
+                .reduce(
+                  (sum, review) =>
+                    sum + (review.rating?.match(/⭐/g)?.length || 0),
+                  0
+                ) /
+              Math.max(
+                1,
+                reviews.filter((review) =>
+                  lectures.some(
+                    (lecture) =>
+                      lecture.title === review.lectureTitle &&
+                      lecture.instructorName === selectedInstructorInfo.name
+                  )
+                ).length
+              )
+            ).toFixed(1)}
+          </span>
+
+          <span className="text-xs text-gray-400">
+            · 후기{" "}
+            {
+              reviews.filter((review) =>
+                lectures.some(
+                  (lecture) =>
+                    lecture.title === review.lectureTitle &&
+                    lecture.instructorName === selectedInstructorInfo.name
+                )
+              ).length
+            }
+            개
+          </span>
+        </div>
+
+        <div className="flex gap-2">
+          {selectedInstructorInfo.openchat && (
+            <a
+              href={
+                selectedInstructorInfo.openchat.startsWith("http")
+                  ? selectedInstructorInfo.openchat
+                  : `tel:${selectedInstructorInfo.openchat.replace(/-/g, "")}`
+              }
+              target={
+                selectedInstructorInfo.openchat.startsWith("http")
+                  ? "_blank"
+                  : undefined
+              }
+              rel={
+                selectedInstructorInfo.openchat.startsWith("http")
+                  ? "noopener noreferrer"
+                  : undefined
+              }
+              className="flex-1 text-center rounded-2xl bg-gray-900 text-white py-4 text-sm font-bold"
+            >
+              문의하기
+            </a>
+          )}
+
+          {selectedInstructorInfo.instagram && (
+            <a
+              href={selectedInstructorInfo.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 text-center rounded-2xl border border-gray-200 bg-white text-gray-900 py-4 text-sm font-bold"
+            >
+              SNS
+            </a>
+          )}
+        </div>
+      </div>
+    )}
+    </>
+)}
     </div>
   </div>
 )}
+
+
       {/* 하단 고정 등록 메뉴 */}
 <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t shadow-lg">
   <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">

@@ -402,8 +402,18 @@ const currentReviews = selectedReviews.slice(
       </div>
 
       {selectedLecture && (
-  <div className="fixed inset-0 z-[60] bg-black/40 flex items-end sm:items-center justify-center">
-    <div className="bg-white w-full sm:max-w-5xl h-[88vh] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col">
+  <div
+    onClick={() => {
+      setSelectedLecture(null);
+      setPopupMode("review");
+      setPreviousPopupMode(null);
+    }}
+    className="fixed inset-0 z-[60] bg-black/40 flex items-end sm:items-center justify-center"
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="bg-white w-full sm:max-w-5xl h-[88vh] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col"
+    >
 
       {/* 상단 */}
       <div className="shrink-0 bg-slate-800 text-white px-5 py-4 border-b border-slate-700">

@@ -456,7 +456,7 @@ const paginatedPress = filteredPress.slice(
       </header>
 
       <section className="max-w-7xl mx-auto px-5 py-6">
-        <div className="bg-white rounded-2xl border px-4 py-3 flex items-center gap-3 mb-5">
+        <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3 mb-5">
           <Search className="w-5 h-5 text-gray-400" />
 
           <input
@@ -773,7 +773,7 @@ setTermsOpen(false);
   setPressPage(1);
 }}
                 placeholder="보도자료 검색"
-                className="w-full rounded-2xl border border-gray-200 pl-11 pr-4 py-3 text-sm outline-none"
+                className="w-full rounded-2xl border border-gray-200 pl-11 pr-4 py-3 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition"
               />
             </div>
           </div>

@@ -570,7 +570,7 @@ const filteredCompanies =
       <section className="max-w-7xl mx-auto px-5 py-6">
 
         {/* 검색 */}
-        <div className="bg-white rounded-2xl border px-4 py-3 flex items-center gap-3 mb-5">
+        <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3 mb-5">
           <Search className="w-5 h-5 text-gray-400" />
 
           <input

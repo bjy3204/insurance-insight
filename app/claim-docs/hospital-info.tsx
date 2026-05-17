@@ -25,9 +25,14 @@ export default function HospitalInfoPopup({ open, onClose }: Props) {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [openedIndex, setOpenedIndex] = useState<number | null>(null);
-  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(true);
 
   const hospitalTypes = ["의원", "종합병원", "상급종합병원"];
+  const normalize = (value: any) =>
+  String(value ?? "")
+    .toLowerCase()
+    .replaceAll(" ", "")
+    .trim();
   const itemsPerPage = 10;
 
   const totalPages = Math.max(1, Math.ceil(results.length / itemsPerPage));
@@ -41,33 +46,41 @@ const handleSearch = () => {
   setLoading(true);
 
   try {
+    const sidoKeyword = normalize(sido);
+    const dongKeyword = normalize(dong);
+    const departmentKeyword = normalize(department);
+    const hospitalNameKeyword = normalize(hospitalName);
+
     const filtered = hospitalData.filter((hospital) => {
+      const typeText = normalize(hospital.type);
+      const originalTypeText = normalize(hospital.originalType);
+      const addressText = normalize(hospital.address);
+      const departmentText = normalize(hospital.departments);
+      const nameText = normalize(hospital.name);
+
       const matchType =
         selectedType === "전체" ||
-        hospital.type === selectedType;
+        typeText.includes(normalize(selectedType)) ||
+        originalTypeText.includes(normalize(selectedType));
 
       const matchSido =
-        !sido.trim() ||
-        hospital.address.includes(sido.trim());
+        !sidoKeyword || addressText.includes(sidoKeyword);
 
       const matchDong =
-        !dong.trim() ||
-        hospital.address.includes(dong.trim());
+        !dongKeyword || addressText.includes(dongKeyword);
 
       const matchDepartment =
-        !department.trim() ||
-        hospital.departments.includes(department.trim());
+        !departmentKeyword || departmentText.includes(departmentKeyword);
 
-        const matchHospitalName =
-  !hospitalName.trim() ||
-  hospital.name.includes(hospitalName.trim());
+      const matchHospitalName =
+        !hospitalNameKeyword || nameText.includes(hospitalNameKeyword);
 
       return (
         matchType &&
         matchSido &&
         matchDong &&
         matchDepartment &&
-matchHospitalName
+        matchHospitalName
       );
     });
 
@@ -99,8 +112,14 @@ const toggleType = (type: string) => {
   setSelectedType(type);
 };
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4">
-      <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[70vh] flex flex-col">
+    <div
+  onClick={onClose}
+  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
+>
+     <div
+  onClick={(e) => e.stopPropagation()}
+  className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
+>
         <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
           <div className="font-bold flex items-center gap-2">
             <Hospital className="w-5 h-5" />
@@ -184,7 +203,7 @@ const toggleType = (type: string) => {
               onChange={(e) => setSido(e.target.value)}
               
               placeholder="시·도"
-              className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none text-sm"
+              className="w-full border border-gray-200 rounded-2xl bg-white px-4 py-3 outline-none text-sm focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition"
             />
 
             <input
@@ -196,7 +215,7 @@ const toggleType = (type: string) => {
   }
 }}
               placeholder="동(선택)"
-              className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none text-sm"
+             className="w-full border border-gray-200 rounded-2xl bg-white px-4 py-3 outline-none text-sm focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition"
             />
 
             <input
@@ -208,7 +227,7 @@ const toggleType = (type: string) => {
   }
 }}
               placeholder="진료과목"
-              className="w-full border border-gray-200 rounded-2xl px-4 py-3 outline-none text-sm"
+              className="w-full border border-gray-200 rounded-2xl bg-white px-4 py-3 outline-none text-sm focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition"
             />
           </div>
 
@@ -222,10 +241,15 @@ const toggleType = (type: string) => {
     border
     border-gray-200
     rounded-2xl
+    bg-white
     px-4
     py-3
     outline-none
     text-sm
+    focus:border-slate-400
+    focus:ring-2
+    focus:ring-slate-100
+    transition
   "
 />
 

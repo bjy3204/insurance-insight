@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import HospitalInfoPopup from "./hospital-info";
+import DiseaseCodePopup from "./disease-code-popup";
 import { FaInstagram } from "react-icons/fa";
 
 const tabs = [
@@ -308,6 +309,9 @@ export default function ClaimDocsPage() {
   const [tab, setTab] = useState<Tab>("공통");
   const [hospitalOpen, setHospitalOpen] = useState(false);
 
+  const [infoMenuOpen, setInfoMenuOpen] = useState(false);
+const [diseaseOpen, setDiseaseOpen] = useState(false);
+
   return (
     <main className="min-h-screen bg-gray-100 pb-24">
 
@@ -431,9 +435,9 @@ export default function ClaimDocsPage() {
         </div>
 
       </section>
-{/* 병원정보 버튼 */}
+{/* 정보 메뉴 버튼 */}
 <button
-  onClick={() => setHospitalOpen(true)}
+  onClick={() => setInfoMenuOpen(!infoMenuOpen)}
   className="
     fixed
     left-6
@@ -456,9 +460,53 @@ export default function ClaimDocsPage() {
 >
   <Hospital className="w-6 h-6 text-white" />
 </button>
+
+{infoMenuOpen && (
+  <div className="fixed left-6 bottom-40 z-40 bg-white border border-gray-200 shadow-xl rounded-2xl p-3 flex flex-col gap-2 w-64">
+
+    <button
+      onClick={() => {
+        setHospitalOpen(true);
+        setInfoMenuOpen(false);
+      }}
+      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer"
+    >
+      <p className="text-sm font-bold text-gray-800">
+        병원정보 검색
+      </p>
+
+      <p className="text-xs text-gray-400 mt-1">
+        병원명 · 진료과목 · 전화번호 검색
+      </p>
+    </button>
+
+    <button
+      onClick={() => {
+        setDiseaseOpen(true);
+        setInfoMenuOpen(false);
+      }}
+      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer"
+    >
+      <p className="text-sm font-bold text-gray-800">
+        상병코드 검색
+      </p>
+
+      <p className="text-xs text-gray-400 mt-1">
+        질병명 · 상병코드 검색
+      </p>
+    </button>
+
+  </div>
+)}
+
 <HospitalInfoPopup
   open={hospitalOpen}
   onClose={() => setHospitalOpen(false)}
+/>
+
+<DiseaseCodePopup
+  open={diseaseOpen}
+  onClose={() => setDiseaseOpen(false)}
 />
       {/* 하단 고정 메뉴 */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
