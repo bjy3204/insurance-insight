@@ -746,7 +746,7 @@ const filteredCompanies =
           주소
         </p>
 
-        <p className="text-base font-semibold text-gray-800 leading-relaxed min-h-[96px]">
+        <p className="text-base font-semibold text-gray-800 leading-relaxed min-h-[55px]">
           ({company.zipcode}) {company.address}
         </p>
       </div>
