@@ -39,6 +39,23 @@ import emailjs from "@emailjs/browser";
 import { notices, noticeVersion } from "./notice/notices";
 import HospitalInfoPopup from "./claim-docs/hospital-info";
 import { PRESS } from "./product-public/press";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+
+import { CSS } from "@dnd-kit/utilities";
+
 type MemoItem = {
   id: string;
   title: string;
@@ -52,80 +69,96 @@ type MemoItem = {
   updatedAt: string;
 };
 
-const menus = [
-  
+const defaultMenus = [
   {
+    id: "insurance-system",
     title: "보험사전산",
     desc: "보험사별 전산 바로가기",
     icon: Monitor,
     link: "/insurance-system",
   },
   {
+    id: "customer-center",
     title: "고객센터",
     desc: "고객센터 · 팩스번호 · 등기주소 안내",
     icon: Phone,
     link: "/customer-center",
   },
   {
+    id: "product-public",
     title: "상품공시실",
     desc: "보험사별 상품공시실 바로가기",
     icon: Building2,
     link: "/product-public",
   },
   {
+    id: "claim-docs",
     title: "청구서류",
     desc: "보험금 청구서류 안내",
     icon: FileText,
     link: "/claim-docs",
   },
   {
+    id: "calculator",
     title: "실비계산기",
     desc: "세대별 실손보험금 계산기",
     icon: Calculator,
     link: "/calculator",
   },
-
   {
-  title: "화폐가치계산기",
-  desc: "시간의 경과에 따른 화폐가치 계산",
-  icon: CircleDollarSign,
-  link: "/money-value",
-},
-{
-  title: "예금·적금 계산기",
-  desc: "단리 · 복리 만기금액 계산",
-  icon: Landmark,
-  link: "/saving-calculator",
-},
-{
-  title: "연금계산기",
-  desc: "은퇴자금 · 연금액 · 국민연금 계산",
-  icon: PiggyBank,
-  link: "/pension-calculator",
-},
-{
-  title: "보험인사이트 폴더",
-  desc: "보험 자료 모음",
-  icon: FolderOpen,
-  link: "https://naver.me/FWTmVFQz",
-},
-{
-  title: "강의일정",
-  desc: "보험업계 강의 일정 공유 플랫폼",
-  icon: CalendarDays,
-  link: "/lecture",
-},
-{
-  title: "이직 컨설팅",
-  desc: "보험 조직 연결 컨설팅 플랫폼",
-  icon: Briefcase,
-  link: "/job",
-},
-
-  
+    id: "money-value",
+    title: "화폐가치계산기",
+    desc: "시간의 경과에 따른 화폐가치 계산",
+    icon: CircleDollarSign,
+    link: "/money-value",
+  },
+  {
+    id: "saving-calculator",
+    title: "예금·적금 계산기",
+    desc: "단리 · 복리 만기금액 계산",
+    icon: Landmark,
+    link: "/saving-calculator",
+  },
+  {
+    id: "pension-calculator",
+    title: "연금계산기",
+    desc: "은퇴자금 · 연금액 · 국민연금 계산",
+    icon: PiggyBank,
+    link: "/pension-calculator",
+  },
+  {
+    id: "insurance-folder",
+    title: "보험인사이트 폴더",
+    desc: "보험 자료 모음",
+    icon: FolderOpen,
+    link: "https://naver.me/FWTmVFQz",
+  },
+  {
+    id: "lecture",
+    title: "강의일정",
+    desc: "보험업계 강의 일정 공유 플랫폼",
+    icon: CalendarDays,
+    link: "/lecture",
+  },
+  {
+    id: "job",
+    title: "이직 컨설팅",
+    desc: "보험 조직 연결 컨설팅 플랫폼",
+    icon: Briefcase,
+    link: "/job",
+  },
 ];
 
 export default function Home() {
+    const [menus, setMenus] = useState(defaultMenus);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
   const [today, setToday] = useState(0);
   const [total, setTotal] = useState(0);
   const [showInstall, setShowInstall] = useState(false);
@@ -136,6 +169,8 @@ export default function Home() {
   const [quickOpen, setQuickOpen] = useState(false);
     const [settingOpen, setSettingOpen] = useState(false);
   const [memoOpen, setMemoOpen] = useState(false);
+  const [menuSortOpen, setMenuSortOpen] = useState(false);
+const [tempMenus, setTempMenus] = useState(defaultMenus);
   const [memos, setMemos] = useState<MemoItem[]>([]);
   const [memoTitle, setMemoTitle] = useState("");
   const [memoContent, setMemoContent] = useState("");
@@ -371,6 +406,36 @@ if (savedReadPressIds) {
   );
 };
 }, []);
+
+useEffect(() => {
+  const savedOrder = localStorage.getItem("insurance-menu-order");
+
+  if (!savedOrder) return;
+
+  try {
+    const orderIds = JSON.parse(savedOrder);
+
+    const orderedMenus = orderIds
+      .map((id: string) => defaultMenus.find((menu) => menu.id === id))
+      .filter(Boolean);
+
+    const missingMenus = defaultMenus.filter(
+      (menu) => !orderIds.includes(menu.id)
+    );
+
+    setMenus([...orderedMenus, ...missingMenus]);
+  } catch {
+    setMenus(defaultMenus);
+  }
+}, []);
+
+useEffect(() => {
+  localStorage.setItem(
+    "insurance-menu-order",
+    JSON.stringify(menus.map((menu) => menu.id))
+  );
+}, [menus]);
+
 useEffect(() => {
   const handleClick = () => {
     setQuickOpen(false);
@@ -398,6 +463,19 @@ useEffect(() => {
     window.removeEventListener("click", handleClick);
   };
 }, [settingOpen]);
+
+const handleMenuSortDragEnd = (event: any) => {
+  const { active, over } = event;
+
+  if (!over || active.id === over.id) return;
+
+  setTempMenus((items) => {
+    const oldIndex = items.findIndex((item) => item.id === active.id);
+    const newIndex = items.findIndex((item) => item.id === over.id);
+
+    return arrayMove(items, oldIndex, newIndex);
+  });
+};
 
 const saveMemos = (nextMemos: MemoItem[]) => {
   setMemos(nextMemos);
@@ -699,6 +777,7 @@ const deleteMemo = (id: string) => {
               overflow-hidden
             "
           >
+            
           <button
   onClick={() => {
     setMemoOpen(true);
@@ -741,6 +820,31 @@ const deleteMemo = (id: string) => {
 >
   메뉴 추가
 </button>
+
+<button
+  onClick={() => {
+    setTempMenus(menus);
+    setMenuSortOpen(true);
+    setSettingOpen(false);
+  }}
+  className="
+    block
+    w-full
+    text-left
+    px-4
+    py-3
+    text-sm
+    font-bold
+    text-gray-700
+    hover:bg-gray-50
+    transition
+    border-t
+    border-gray-100
+    cursor-default
+  "
+>
+  위치 변경
+</button>
           </div>
         )}
       </div>
@@ -755,46 +859,42 @@ const deleteMemo = (id: string) => {
       <div className="max-w-[1500px] mx-auto px-5 py-8 sm:p-10 md:pb-32 lg:pb-10">
        
         <div className="relative grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
-          {menus.map((menu) => {
-            const Icon = menu.icon;
+        {menus.map((menu) => {
+  const Icon = menu.icon;
 
-            return (
-              <a
-                key={menu.title}
-                href={menu.link}
-                target={
-                  menu.title === "보험인사이트 폴더"
-                    ? "_blank"
-                    : "_self"
-                }
-                rel="noopener noreferrer"
-                className={`
-                  ${
-                    menu.title === "강의일정"
-                      ? "bg-white border border-gray-100"
-                      : "bg-white"
-                  }
-                  p-7
-                  sm:p-8
-                  rounded-3xl
-                  shadow
-                  hover:shadow-xl
-                  hover:-translate-y-1
-                  transition
-                  min-h-[190px]
-                  cursor-default
-                `}
-              >
-                <Icon className="w-10 h-10 mb-4 text-blue-600" />
+  return (
+    <a
+      key={menu.id}
+      href={menu.link}
+      target={menu.title === "보험인사이트 폴더" ? "_blank" : "_self"}
+      rel="noopener noreferrer"
+      className={`
+        ${
+          menu.title === "강의일정"
+            ? "bg-white border border-gray-100"
+            : "bg-white"
+        }
+        p-7
+        sm:p-8
+        rounded-3xl
+        shadow
+        hover:shadow-xl
+        hover:-translate-y-1
+        transition
+        min-h-[190px]
+        cursor-default
+      `}
+    >
+      <Icon className="w-10 h-10 mb-4 text-blue-600" />
 
-                <h2 className="text-lg font-bold">{menu.title}</h2>
+      <h2 className="text-lg font-bold">{menu.title}</h2>
 
-                <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
-                  {menu.desc}
-                </p>
-              </a>
-            );
-          })}
+      <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
+        {menu.desc}
+      </p>
+    </a>
+  );
+})}
 
           {/* 빠른 실행 */}
           <div className="relative">
@@ -1603,6 +1703,120 @@ rel="noopener noreferrer"
           </div>
         </div>
       )}
+
+{/* 메뉴 정렬 팝업 */}
+{menuSortOpen && (
+  <div
+    onClick={() => setMenuSortOpen(false)}
+    className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col"
+    >
+      <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
+        <div className="font-bold flex items-center gap-2">
+          <Settings className="w-5 h-5" />
+          메뉴 위치 변경
+        </div>
+
+        <button
+          onClick={() => setMenuSortOpen(false)}
+          className="
+            w-9
+            h-9
+            rounded-full
+            flex
+            items-center
+            justify-center
+            text-white
+            hover:bg-white/10
+            transition
+            cursor-default
+          "
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="px-5 py-4 border-b border-gray-100">
+        <p className="text-sm font-bold text-gray-800">
+          메뉴 위치를 수정하시겠습니까?
+        </p>
+        <p className="text-xs text-gray-500 mt-1">
+          아래 카드를 드래그해서 원하는 순서로 변경한 뒤 확인 버튼을 눌러주세요.
+        </p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-5">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleMenuSortDragEnd}
+        >
+          <SortableContext
+            items={tempMenus.map((menu) => menu.id)}
+            strategy={rectSortingStrategy}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+              {tempMenus.map((menu) => (
+                <SortableMenuSortCard key={menu.id} menu={menu} />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      </div>
+
+      <div className="border-t border-gray-100 bg-white p-4 flex gap-3 justify-center">
+        <button
+          onClick={() => {
+            setTempMenus(menus);
+            setMenuSortOpen(false);
+          }}
+          className="
+            w-32
+            h-12
+            rounded-2xl
+            bg-gray-100
+            text-gray-700
+            text-sm
+            font-bold
+            hover:bg-gray-200
+            transition
+            cursor-default
+          "
+        >
+          취소
+        </button>
+
+        <button
+          onClick={() => {
+            setMenus(tempMenus);
+            localStorage.setItem(
+              "insurance-menu-order",
+              JSON.stringify(tempMenus.map((menu) => menu.id))
+            );
+            setMenuSortOpen(false);
+          }}
+          className="
+            w-32
+            h-12
+            rounded-2xl
+            bg-gray-800
+            text-white
+            text-sm
+            font-bold
+            hover:bg-gray-700
+            transition
+            cursor-default
+          "
+        >
+          확인
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* 메모장 팝업 */}
       {memoOpen && (
@@ -2571,5 +2785,56 @@ ${getMemoColorClass(memo.color)}
   </div>
 )}
     </main>
+  );
+}
+
+function SortableMenuSortCard({ menu }: { menu: any }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: menu.id });
+
+  const Icon = menu.icon;
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : "auto",
+    opacity: isDragging ? 0.9 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`
+        bg-white
+        p-7
+        sm:p-8
+        rounded-3xl
+        shadow
+        border
+        border-gray-100
+        transition
+        min-h-[190px]
+        cursor-grab
+        active:cursor-grabbing
+        ${isDragging ? "shadow-2xl scale-[1.02]" : ""}
+      `}
+    >
+      <Icon className="w-10 h-10 mb-4 text-blue-600" />
+
+      <h2 className="text-lg font-bold">{menu.title}</h2>
+
+      <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
+        {menu.desc}
+      </p>
+    </div>
   );
 }
