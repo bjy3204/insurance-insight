@@ -705,13 +705,35 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
   <FileText className="w-6 h-6 text-white" />
 </button>
 {pensionInfoOpen && (
-  <div className="fixed left-6 bottom-40 z-40 bg-white border border-gray-200 shadow-xl rounded-2xl p-3 flex flex-col gap-2 w-64">
+  <div
+    onClick={() => setPensionInfoOpen(false)}
+    className="fixed inset-0 z-40"
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="
+        fixed
+        left-6
+        bottom-40
+        z-40
+        bg-white
+        border
+        border-gray-200
+        shadow-xl
+        rounded-2xl
+        p-3
+        flex
+        flex-col
+        gap-2
+        w-64
+      "
+    >
     <button
       onClick={() => {
         setNpsTableOpen(true);
         setPensionInfoOpen(false);
       }}
-      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer"
+      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition"
     >
       <p className="text-sm font-bold text-gray-800">
         국민연금 예상연금월액표
@@ -726,7 +748,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
         setLifeOpen(true);
         setPensionInfoOpen(false);
       }}
-      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer"
+      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition "
     >
       <p className="text-sm font-bold text-gray-800">
         평균 기대수명 계산기
@@ -735,8 +757,10 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
         기대여명 · 건강기간 · 유병기간 계산
       </p>
     </button>
+      </div>
   </div>
 )}
+
 {npsTableOpen && (
   <div
   onClick={() => setNpsTableOpen(false)}
