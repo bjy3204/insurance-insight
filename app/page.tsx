@@ -715,18 +715,19 @@ cursor-pointer
       <button
         onClick={() => setOpen(true)}
         className="
-          fixed
-          right-6
-          bottom-40 md:bottom-24
-          z-40
-          bg-blue-600
-          text-white
-          px-5
-          py-4
-          rounded-2xl
-          shadow-lg
-          font-bold
-        "
+  fixed
+  right-6
+  bottom-24
+  md:bottom-40
+  z-40
+  bg-blue-600
+  text-white
+  px-5
+  py-4
+  rounded-2xl
+  shadow-lg
+  font-bold
+"
       >
         보험나무에게 메세지 보내기
       </button>
