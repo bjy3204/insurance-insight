@@ -1050,7 +1050,7 @@ const calculateSimple = () => {
                 onChange={(e) =>
                   setOutpatientLimit(parseNumber(e.target.value))
                 }
-                className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white"
+                className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition"
               />
             </div>
 
@@ -1104,7 +1104,7 @@ const calculateSimple = () => {
                 type="text"
                 value={formatNumber(covered)}
                 onChange={(e) => setCovered(parseNumber(e.target.value))}
-                className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white"
+                className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition"
               />
             </div>
           </div>
@@ -1125,7 +1125,7 @@ const calculateSimple = () => {
                 type="text"
                 value={formatNumber(uncovered)}
                 onChange={(e) => setUncovered(parseNumber(e.target.value))}
-                className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white"
+                className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition"
               />
             </div>
 
@@ -1140,7 +1140,7 @@ const calculateSimple = () => {
   onChange={(e) =>
     setMildUncovered(parseNumber(e.target.value))
   }
-  className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white"
+  className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition"
 />
             </div>
           </div>
@@ -1165,7 +1165,7 @@ const calculateSimple = () => {
                 onChange={(e) =>
                   setOutpatientLimit(parseNumber(e.target.value))
                 }
-                className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white"
+                className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition"
               />
             </div>
 
@@ -1215,12 +1215,12 @@ const calculateSimple = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-bold text-gray-500">급여</label>
-                <input type="text" value={formatNumber(covered)} onChange={(e) => setCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white" />
+                <input type="text" value={formatNumber(covered)} onChange={(e) => setCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
               </div>
 
               <div>
                 <label className="text-sm font-bold text-gray-500">비급여</label>
-                <input type="text" value={formatNumber(uncovered)} onChange={(e) => setUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white" />
+                <input type="text" value={formatNumber(uncovered)} onChange={(e) => setUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
               </div>
             </div>
           </div>
@@ -1246,19 +1246,19 @@ const calculateSimple = () => {
                   onChange={(e) =>
                     setMedicineLimit(parseNumber(e.target.value))
                   }
-                  className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white"
+                  className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-bold text-gray-500">급여</label>
-                  <input type="text" value={formatNumber(medicineCovered)} onChange={(e) => setMedicineCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white" />
+                  <input type="text" value={formatNumber(medicineCovered)} onChange={(e) => setMedicineCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
 
                 <div>
                   <label className="text-sm font-bold text-gray-500">비급여</label>
-                  <input type="text" value={formatNumber(medicineUncovered)} onChange={(e) => setMedicineUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white" />
+                  <input type="text" value={formatNumber(medicineUncovered)} onChange={(e) => setMedicineUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
               </div>
             </div>
@@ -1335,9 +1335,10 @@ const calculateSimple = () => {
                   setCovered(parseNumber(e.target.value))
                 }
                 className="
-                  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
-                  outline-none text-lg font-bold bg-white
-                "
+  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
+  outline-none text-lg font-bold bg-white
+  focus:ring-2 focus:ring-blue-500 transition
+"
               />
             </div>
 
@@ -1363,10 +1364,11 @@ const calculateSimple = () => {
                 onChange={(e) =>
                   setUncovered(parseNumber(e.target.value))
                 }
-                className="
-                  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
-                  outline-none text-lg font-bold bg-white
-                "
+               className="
+  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
+  outline-none text-lg font-bold bg-white
+  focus:ring-2 focus:ring-blue-500 transition
+"
               />
             </div>
 
@@ -1382,9 +1384,10 @@ const calculateSimple = () => {
                   setMildUncovered(parseNumber(e.target.value))
                 }
                 className="
-                  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
-                  outline-none text-lg font-bold bg-white
-                "
+  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
+  outline-none text-lg font-bold bg-white
+  focus:ring-2 focus:ring-blue-500 transition
+"
               />
             </div>
 
@@ -1572,9 +1575,10 @@ const calculateSimple = () => {
             setManualTherapy(parseNumber(e.target.value))
           }
           className="
-            mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
-            outline-none text-lg font-bold bg-white
-          "
+  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
+  outline-none text-lg font-bold bg-white
+  focus:ring-2 focus:ring-blue-500 transition
+"
         />
       </div>
 
@@ -1590,9 +1594,10 @@ const calculateSimple = () => {
             setInjection(parseNumber(e.target.value))
           }
           className="
-            mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
-            outline-none text-lg font-bold bg-white
-          "
+  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
+  outline-none text-lg font-bold bg-white
+  focus:ring-2 focus:ring-blue-500 transition
+"
         />
       </div>
     </>
@@ -1608,9 +1613,10 @@ const calculateSimple = () => {
       value={formatNumber(mri)}
       onChange={(e) => setMri(parseNumber(e.target.value))}
       className="
-        mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
-        outline-none text-lg font-bold bg-white
-      "
+  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
+  outline-none text-lg font-bold bg-white
+  focus:ring-2 focus:ring-blue-500 transition
+"
     />
   </div>
 </div>
