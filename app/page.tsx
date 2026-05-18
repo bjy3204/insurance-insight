@@ -678,6 +678,28 @@ setQuickOpen(false);
         </div>
       )}
 
+      {/* 모바일 메세지 버튼 */}
+<div className="max-w-[1500px] mx-auto px-5 -mt-10 mb-16 md:hidden">
+  <button
+    onClick={() => setOpen(true)}
+    className="
+      w-full
+      h-[50px]
+      rounded-2xl
+      bg-blue-600
+      text-white
+      text-sm
+      font-bold
+      shadow-sm
+      flex
+      items-center
+      justify-center
+    "
+  >
+    보험나무에게 메세지 보내기
+  </button>
+</div>
+
 <button
   onClick={() => {
     localStorage.setItem("noticeRead", noticeVersion.toString());
@@ -710,26 +732,30 @@ cursor-pointer
   {hasUpdate && (
     <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full" />
   )}
+
 </button>
-      {/* 메세지 버튼 */}
-      <button
-        onClick={() => setOpen(true)}
-        className="
-          fixed
-          right-6
-          bottom-28 md:bottom-24
-          z-40
-          bg-blue-600
-          text-white
-          px-5
-          py-4
-          rounded-2xl
-          shadow-lg
-          font-bold
-        "
-      >
-        보험나무에게 메세지 보내기
-      </button>
+      {/* PC 메세지 버튼 */}
+<button
+  onClick={() => setOpen(true)}
+  className="
+    hidden
+    md:block
+    fixed
+    right-6
+    bottom-20
+    lg:bottom-40
+    z-40
+    bg-blue-600
+    text-white
+    px-5
+    py-4
+    rounded-2xl
+    shadow-lg
+    font-bold
+  "
+>
+  보험나무에게 메세지 보내기
+</button>
 
       {/* 하단 고정 */}
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg">
