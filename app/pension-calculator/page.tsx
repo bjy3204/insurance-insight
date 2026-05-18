@@ -699,7 +699,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
     hover:-translate-y-0.5
     transition-all
     duration-200
-    cursor-pointer
+   
   "
 >
   <FileText className="w-6 h-6 text-white" />
@@ -1074,28 +1074,32 @@ onChange={(e) =>
         {selectedLife && (
   <div className="mt-5 rounded-2xl bg-gray-50 border border-gray-200 p-4">
     <p className="text-sm text-gray-700 leading-relaxed">
-      현재 <span className="font-bold">{lifeAge}세</span>{" "}
-      <span className="font-bold">{lifeGender}</span> 기준,
-      기대여명은 약{" "}
-      <span className="font-bold text-blue-600">
-        {expectYears.toFixed(1)}년
-      </span>
-      이며 예상 기대수명은 약{" "}
-      <span className="font-bold text-blue-600">
-        {expectAge.toFixed(1)}세
-      </span>
-      입니다.
-      <br />
-      건강기간은 약{" "}
-      <span className="font-bold text-blue-600">
-        {healthyYears.toFixed(1)}년
-      </span>
-      으로, 앞으로 약{" "}
-      <span className="font-bold text-blue-600">
-        {healthyYears.toFixed(1)}년
-      </span>
-      뒤부터 유병기간이 시작될 수 있습니다.
-    </p>
+  현재 <span className="font-bold">{lifeAge}세</span>{" "}
+  <span className="font-bold">{lifeGender}</span> 기준,
+  예상 기대수명은 약{" "}
+  <span className="font-bold text-blue-600">
+    {expectAge.toFixed(1)}세
+  </span>
+  이며 남은 기대여명은 약{" "}
+  <span className="font-bold text-blue-600">
+    {expectYears.toFixed(1)}년
+  </span>
+  입니다.
+  <br />
+  건강기간은 약{" "}
+  <span className="font-bold text-blue-600">
+    {healthyYears.toFixed(1)}년
+  </span>
+  으로, 약{" "}
+  <span className="font-bold text-blue-600">
+    {sickStartAge.toFixed(1)}세
+  </span>
+  부터 평균{" "}
+  <span className="font-bold text-blue-600">
+    {sickYears.toFixed(1)}년
+  </span>
+  동안 유병기간이 이어질 수 있습니다.
+</p>
   </div>
 )}
 

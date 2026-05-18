@@ -23,6 +23,15 @@ import {
   Briefcase,
   ChevronUp,
   ChevronDown,
+  Settings,
+  NotebookPen,
+  Pin,
+  Eye,
+  EyeOff,
+  Trash2,
+  Plus,
+    Search,
+  Pencil,
 } from "lucide-react";
 
 import { FaInstagram } from "react-icons/fa";
@@ -30,6 +39,19 @@ import emailjs from "@emailjs/browser";
 import { notices, noticeVersion } from "./notice/notices";
 import HospitalInfoPopup from "./claim-docs/hospital-info";
 import { PRESS } from "./product-public/press";
+type MemoItem = {
+  id: string;
+  title: string;
+  content: string;
+  pinned: boolean;
+  visible: boolean;
+  color?: "white" | "blue" | "yellow" | "red" | "clear";
+  x?: number;
+  y?: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 const menus = [
   
   {
@@ -112,6 +134,17 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
+    const [settingOpen, setSettingOpen] = useState(false);
+  const [memoOpen, setMemoOpen] = useState(false);
+  const [memos, setMemos] = useState<MemoItem[]>([]);
+  const [memoTitle, setMemoTitle] = useState("");
+  const [memoContent, setMemoContent] = useState("");
+  const [memoSearch, setMemoSearch] = useState("");
+  const [memoPage, setMemoPage] = useState(1);
+  const [memoAddOpen, setMemoAddOpen] = useState(false);
+const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
+  
+  
   const [hospitalOpen, setHospitalOpen] = useState(false);
   const [diseaseOpen, setDiseaseOpen] = useState(false);
 const [pressOpen, setPressOpen] = useState(false);
@@ -166,6 +199,8 @@ const healthyYears = Math.max(
 
 const expectAge =
   Number(lifeAge || 0) + expectYears;
+  const sickStartAge =
+  Number(lifeAge || 0) + healthyYears;
 const [readPressIds, setReadPressIds] = useState<number[]>([]);
 const sortedPress = [...PRESS.items].sort(
   (a, b) =>
@@ -187,6 +222,78 @@ const paginatedPress = filteredPress.slice(
   (pressPage - 1) * PRESS_PER_PAGE,
   pressPage * PRESS_PER_PAGE
 );
+
+const MEMOS_PER_PAGE = 6;
+
+const sortedMemos = [...memos].sort((a, b) => {
+  if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+
+  return (
+    new Date(b.updatedAt).getTime() -
+    new Date(a.updatedAt).getTime()
+  );
+});
+
+const filteredMemos = sortedMemos.filter((memo) =>
+  `${memo.title} ${memo.content}`
+    .toLowerCase()
+    .includes(memoSearch.toLowerCase())
+);
+
+const totalMemoPages = Math.max(
+  1,
+  Math.ceil(filteredMemos.length / MEMOS_PER_PAGE)
+);
+
+const pagedMemos = filteredMemos.slice(
+  (memoPage - 1) * MEMOS_PER_PAGE,
+  memoPage * MEMOS_PER_PAGE
+);
+
+const visibleMemos = sortedMemos.filter((memo) => memo.visible);
+
+const getMemoColorClass = (color?: MemoItem["color"]) => {
+  switch (color) {
+    case "blue":
+      return "bg-blue-50/80 border-blue-100";
+    case "yellow":
+      return "bg-yellow-50/80 border-yellow-100";
+    case "red":
+      return "bg-red-50/80 border-red-100";
+    case "clear":
+  return "bg-white/40 border-gray-200";
+    case "white":
+    default:
+      return "bg-white border-gray-200";
+  }
+};
+
+const memoColorOptions: {
+  value: MemoItem["color"];
+  className: string;
+}[] = [
+  {
+    value: "white",
+    className: "bg-white border-gray-300 hover:bg-gray-50",
+  },
+  {
+    value: "blue",
+    className: "bg-blue-50 border-blue-100 hover:bg-blue-100",
+  },
+  {
+    value: "yellow",
+    className: "bg-yellow-50 border-yellow-100 hover:bg-yellow-100",
+  },
+  {
+    value: "red",
+    className: "bg-red-50 border-red-100 hover:bg-red-100",
+  },
+  {
+  value: "clear",
+  className:
+    "border-gray-300 bg-[length:10px_10px] bg-[position:0_0,5px_5px] bg-[image:linear-gradient(45deg,#e5e7eb_25%,transparent_25%,transparent_75%,#e5e7eb_75%,#e5e7eb),linear-gradient(45deg,#e5e7eb_25%,white_25%,white_75%,#e5e7eb_75%,#e5e7eb)] hover:brightness-95",
+},
+];
 
   useEffect(() => {
   const isStandalone =
@@ -236,6 +343,12 @@ if (visited !== todayKey) {
 } else {
   fetchVisitor(false);
 }
+const savedMemos = localStorage.getItem("personalMemos");
+
+if (savedMemos) {
+  setMemos(JSON.parse(savedMemos));
+}
+
     const savedVersion = localStorage.getItem("noticeRead");
 
 if (savedVersion != noticeVersion.toString()) {
@@ -271,6 +384,138 @@ useEffect(() => {
     window.removeEventListener("click", handleClick);
   };
 }, [quickOpen]);
+
+useEffect(() => {
+  const handleClick = () => {
+    setSettingOpen(false);
+  };
+
+  if (settingOpen) {
+    window.addEventListener("click", handleClick);
+  }
+
+  return () => {
+    window.removeEventListener("click", handleClick);
+  };
+}, [settingOpen]);
+
+const saveMemos = (nextMemos: MemoItem[]) => {
+  setMemos(nextMemos);
+  localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
+};
+
+const addMemo = () => {
+  if (!memoTitle.trim() && !memoContent.trim()) {
+    alert("메모 제목 또는 내용을 입력해주세요.");
+    return;
+  }
+
+  const now = new Date().toISOString();
+
+  const newMemo: MemoItem = {
+    id: crypto.randomUUID(),
+    title: memoTitle.trim() || "제목 없는 메모",
+    content: memoContent.trim(),
+    pinned: false,
+    visible: false,
+    color: "white",
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  saveMemos([newMemo, ...memos]);
+
+  setMemoTitle("");
+  setMemoContent("");
+  setMemoPage(1);
+};
+
+const updateMemo = (
+  id: string,
+  field: "title" | "content",
+  value: string
+) => {
+  const nextMemos = memos.map((memo) =>
+    memo.id === id
+      ? {
+          ...memo,
+          [field]: value,
+          updatedAt: new Date().toISOString(),
+        }
+      : memo
+  );
+
+  saveMemos(nextMemos);
+};
+
+const toggleMemoVisible = (id: string) => {
+  const nextMemos = memos.map((memo) =>
+    memo.id === id
+      ? {
+          ...memo,
+          visible: !memo.visible,
+          updatedAt: new Date().toISOString(),
+        }
+      : memo
+  );
+
+  saveMemos(nextMemos);
+};
+
+const toggleMemoPinned = (id: string) => {
+  const nextMemos = memos.map((memo) =>
+    memo.id === id
+      ? {
+          ...memo,
+          pinned: !memo.pinned,
+          updatedAt: new Date().toISOString(),
+        }
+      : memo
+  );
+
+  saveMemos(nextMemos);
+};
+
+const moveMemoSticker = (id: string, x: number, y: number) => {
+  const nextMemos = memos.map((memo) =>
+    memo.id === id
+      ? {
+          ...memo,
+          x,
+          y,
+        }
+      : memo
+  );
+
+  saveMemos(nextMemos);
+};
+
+const changeMemoColor = (id: string, color: MemoItem["color"]) => {
+  const nextMemos = memos.map((memo) =>
+    memo.id === id
+      ? {
+          ...memo,
+          color,
+          updatedAt: new Date().toISOString(),
+        }
+      : memo
+  );
+
+  saveMemos(nextMemos);
+};
+
+const deleteMemo = (id: string) => {
+  if (!confirm("메모를 삭제하시겠습니까?")) return;
+
+  const nextMemos = memos.filter((memo) => memo.id !== id);
+
+  saveMemos(nextMemos);
+
+  if (memoPage > 1 && pagedMemos.length === 1) {
+    setMemoPage((p) => Math.max(1, p - 1));
+  }
+};
+
   const sendMessage = async () => {
   if (!fixMessage.trim() && !addMessage.trim()) {
     alert("수정할 내용 또는 추가하고 싶은 내용을 입력해주세요.");
@@ -389,9 +634,9 @@ useEffect(() => {
     </div>
   </div>
 
-  {/* PC 방문자 카운터 */}
-  <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2">
-    <div className="flex items-center gap-5 text-center">
+    {/* PC 방문자 카운터 + 설정 */}
+  <div className="hidden md:block absolute right-2 top-1/2 -translate-y-1/2 z-[100]">
+    <div className="flex items-center gap-10 text-center">
       <div>
         <p className="text-[10px] leading-none text-gray-400 font-bold">
           TODAY
@@ -411,226 +656,390 @@ useEffect(() => {
           {total.toLocaleString()}
         </p>
       </div>
+
+      <div className="relative">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setSettingOpen(!settingOpen);
+          }}
+          className="
+            w-10
+            h-10
+            rounded-full
+            border
+            border-gray-200
+            bg-white
+            shadow-sm
+            flex
+            items-center
+            justify-center
+            hover:bg-gray-50
+            transition
+            cursor-default
+          "
+        >
+          <Settings className="w-5 h-5 text-gray-400" />
+        </button>
+
+        {settingOpen && (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="
+              absolute
+              right-0
+              top-12
+              z-[999]
+              w-40
+              rounded-2xl
+              bg-white
+              border
+              border-gray-200
+              shadow-xl
+              overflow-hidden
+            "
+          >
+          <button
+  onClick={() => {
+    setMemoOpen(true);
+    setSettingOpen(false);
+  }}
+  className="
+    block
+    w-full
+    text-left
+    px-4
+    py-3
+    text-sm
+    font-bold
+    text-gray-700
+    hover:bg-gray-50
+    transition
+    cursor-default
+  "
+>
+  메모장
+</button>
+
+<button
+  onClick={() => alert("메뉴 추가 기능은 다음 단계에서 연결합니다.")}
+  className="
+    block
+    w-full
+    text-left
+    px-4
+    py-3
+    text-sm
+    font-bold
+    text-gray-700
+    hover:bg-gray-50
+    transition
+    border-t
+    border-gray-100
+    cursor-default
+  "
+>
+  메뉴 추가
+</button>
+          </div>
+        )}
+      </div>
     </div>
   </div>
 
           </div>
         </div>
       </header>
-
-      {/* 메인 */}
+      
+            {/* 메인 */}
       <div className="max-w-[1500px] mx-auto px-5 py-8 sm:p-10 md:pb-32 lg:pb-10">
-  <div className="relative grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
-
-  
-
+       
+        <div className="relative grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
           {menus.map((menu) => {
             const Icon = menu.icon;
 
             return (
               <a
-  key={menu.title}
-  href={menu.link}
-  target={
-    menu.title === "보험인사이트 폴더"
-      ? "_blank"
-      : "_self"
-  }
-  rel="noopener noreferrer"
+                key={menu.title}
+                href={menu.link}
+                target={
+                  menu.title === "보험인사이트 폴더"
+                    ? "_blank"
+                    : "_self"
+                }
+                rel="noopener noreferrer"
                 className={`
-  ${
-    menu.title === "강의일정"
-  ? "bg-white border border-gray-100"
-  : "bg-white"
-  }
-  p-7
-  sm:p-8
-  rounded-3xl
-  shadow
-  hover:shadow-xl
-  hover:-translate-y-1
-  transition
-  min-h-[190px]
-  cursor-default
-`}
+                  ${
+                    menu.title === "강의일정"
+                      ? "bg-white border border-gray-100"
+                      : "bg-white"
+                  }
+                  p-7
+                  sm:p-8
+                  rounded-3xl
+                  shadow
+                  hover:shadow-xl
+                  hover:-translate-y-1
+                  transition
+                  min-h-[190px]
+                  cursor-default
+                `}
               >
-                <Icon
-  className={`w-10 h-10 mb-4 ${
-    menu.title === "강의일정"
-  ? "text-blue-600"
-  : "text-blue-600"
-  }`}
-/>
+                <Icon className="w-10 h-10 mb-4 text-blue-600" />
 
                 <h2 className="text-lg font-bold">{menu.title}</h2>
 
                 <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
-  {menu.desc}
-</p>
+                  {menu.desc}
+                </p>
               </a>
             );
-                             })}
+          })}
 
           {/* 빠른 실행 */}
-<div className="relative">
-  <button
-    onClick={(e) => {
-  e.stopPropagation();
-  setQuickOpen(!quickOpen);
-}}
-    className="
-      w-full
-      h-[50px]
-      px-4
-      py-3
-      rounded-2xl
-      bg-white
-      border
-      border-gray-200
-      shadow-sm
-      text-sm
-      font-bold
-      text-gray-700
-      flex
-      items-center
-      justify-center
-      gap-2
-      hover:bg-gray-50
-      transition
-      whitespace-nowrap
-    "
-  >
-    빠른 메뉴 실행하기
+          <div className="relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setQuickOpen(!quickOpen);
+              }}
+              className="
+                w-full
+                h-[50px]
+                px-4
+                py-3
+                rounded-2xl
+                bg-white
+                border
+                border-gray-200
+                shadow-sm
+                text-sm
+                font-bold
+                text-gray-700
+                flex
+                items-center
+                justify-center
+                gap-2
+                hover:bg-gray-50
+                transition
+                whitespace-nowrap
+              "
+            >
+              빠른 메뉴 실행하기
 
-    {quickOpen ? (
-      <ChevronUp className="w-4 h-4 text-gray-400" />
-    ) : (
-      <ChevronDown className="w-4 h-4 text-gray-400" />
-    )}
-  </button>
+              {quickOpen ? (
+                <ChevronUp className="w-4 h-4 text-gray-400" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              )}
+            </button>
 
-  {quickOpen && (
-  <div
-    onClick={(e) => e.stopPropagation()}
-    className="
-        absolute
-        animate-in
-fade-in
-zoom-in-95
-duration-150
-        left-0
-        top-[58px]
-        z-[1]
-        w-full
-        rounded-2xl
-        bg-white
-        border
-        border-gray-200
-        shadow-xl
-        overflow-hidden
-        grid
-        grid-cols-2
-      "
-    >
-      <button
-        onClick={() => {
-          setHospitalOpen(true);
-          setQuickOpen(false);
-        }}
-        className="
-          min-h-[62px]
-          px-3
-          text-center
-          text-[13px]
-          font-bold
-          text-gray-700
-          hover:bg-gray-50
-          transition
-          border-r
-          border-b
-          border-gray-100
-        "
-      >
-        병원정보 검색
-      </button>
+            {quickOpen && (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="
+                  absolute
+                  animate-in
+                  fade-in
+                  zoom-in-95
+                  duration-150
+                  left-0
+                  top-[58px]
+                  z-[1]
+                  w-full
+                  rounded-2xl
+                  bg-white
+                  border
+                  border-gray-200
+                  shadow-xl
+                  overflow-hidden
+                  grid
+                  grid-cols-2
+                "
+              >
+                <button
+                  onClick={() => {
+                    setHospitalOpen(true);
+                    setQuickOpen(false);
+                  }}
+                  className="
+                    min-h-[62px]
+                    px-3
+                    text-center
+                    text-[13px]
+                    font-bold
+                    text-gray-700
+                    hover:bg-gray-50
+                    transition
+                    border-r
+                    border-b
+                    border-gray-100
+                  "
+                >
+                  병원정보 검색
+                </button>
 
-      <button
-        onClick={() => {
-          setLifeOpen(true);
-setQuickOpen(false);
-          setQuickOpen(false);
-        }}
-        className="
-          min-h-[62px]
-          px-3
-          text-center
-          text-[13px]
-          font-bold
-          text-gray-700
-          hover:bg-gray-50
-          transition
-          border-b
-          border-gray-100
-        "
-      >
-        기대수명 계산기
-      </button>
+                <button
+                  onClick={() => {
+                    setLifeOpen(true);
+                    setQuickOpen(false);
+                  }}
+                  className="
+                    min-h-[62px]
+                    px-3
+                    text-center
+                    text-[13px]
+                    font-bold
+                    text-gray-700
+                    hover:bg-gray-50
+                    transition
+                    border-b
+                    border-gray-100
+                  "
+                >
+                  기대수명 계산기
+                </button>
 
-      <button
-        onClick={() => {
-          setPressOpen(true);
-          setSelectedPress(null);
-          setPressSearch("");
-          setPressPage(1);
-          setQuickOpen(false);
-        }}
-        className="
-          relative
-          min-h-[62px]
-          px-3
-          text-center
-          text-[13px]
-          font-bold
-          text-gray-700
-          hover:bg-gray-50
-          transition
-          border-r
-          border-gray-100
-        "
-      >
-        보도자료
+                <button
+                  onClick={() => {
+                    setPressOpen(true);
+                    setSelectedPress(null);
+                    setPressSearch("");
+                    setPressPage(1);
+                    setQuickOpen(false);
+                  }}
+                  className="
+                    relative
+                    min-h-[62px]
+                    px-3
+                    text-center
+                    text-[13px]
+                    font-bold
+                    text-gray-700
+                    hover:bg-gray-50
+                    transition
+                    border-r
+                    border-gray-100
+                  "
+                >
+                  보도자료
+                </button>
 
-        
-      </button>
-
-    <button
-  onClick={() => {
-    setDiseaseOpen(true);
-    setQuickOpen(false);
-  }}
-  className="
-    min-h-[62px]
-    px-3
-    text-center
-    text-[13px]
-    font-bold
-    text-gray-700
-    hover:bg-gray-50
-    transition
-    flex
-    items-center
-    justify-center
-  "
->
-  상병코드 검색
-</button>
-    </div>
-  )}
-</div>
-
+                <button
+                  onClick={() => {
+                    setDiseaseOpen(true);
+                    setQuickOpen(false);
+                  }}
+                  className="
+                    min-h-[62px]
+                    px-3
+                    text-center
+                    text-[13px]
+                    font-bold
+                    text-gray-700
+                    hover:bg-gray-50
+                    transition
+                    flex
+                    items-center
+                    justify-center
+                  "
+                >
+                  상병코드 검색
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+{/* 메인 플로팅 메모 */}
+{visibleMemos.map((memo, index) => (
+  <div
+    key={memo.id}
+    onDoubleClick={() => setSelectedMemo(memo)}
+    onMouseDown={(e) => {
+      const target = e.target as HTMLElement;
 
+      if (target.closest("button")) return;
+
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startLeft = memo.x ?? 24;
+      const startTop = memo.y ?? 150 + index * 210;
+
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        const nextX = startLeft + moveEvent.clientX - startX;
+        const nextY = startTop + moveEvent.clientY - startY;
+
+        moveMemoSticker(memo.id, nextX, nextY);
+      };
+
+  
+
+      const handleMouseUp = () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    }}
+    style={{
+      left: memo.x ?? 24,
+      top: memo.y ?? 150 + index * 210,
+    }}
+    className={`
+  fixed
+  z-30
+  hidden
+  md:block
+  w-[260px]
+  min-h-[190px]
+  rounded-3xl
+  shadow
+  p-5
+  hover:shadow-xl
+  hover:-translate-y-1
+  transition
+  cursor-default
+  ${getMemoColorClass(memo.color)}
+`}
+  >
+    <div className="flex items-start justify-between gap-2 mb-1">
+      <h3 className="text-sm font-black text-gray-900 break-keep line-clamp-1">
+        {memo.title}
+      </h3>
+
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleMemoVisible(memo.id);
+        }}
+        className="
+          w-8
+          h-8
+          -mt-2
+          rounded-full
+          flex
+          items-center
+          justify-center
+          text-gray-400
+          hover:bg-gray-100
+          hover:text-gray-600
+          transition
+          shrink-0
+          cursor-default
+        "
+        title="메인에서 숨기기"
+      >
+        <Pin className="w-4 h-4" />
+      </button>
+    </div>
+
+    <p className="text-sm text-gray-600 leading-relaxed line-clamp-5 whitespace-pre-line break-keep">
+      {memo.content}
+    </p>
+  </div>
+))}
       {/* 앱처럼 사용하기 */}
       {/* 앱처럼 사용하기 */}
 {showInstall &&
@@ -724,7 +1133,7 @@ setQuickOpen(false);
 hover:-translate-y-0.5
 transition-all
 duration-200
-cursor-pointer
+
   "
 >
   <Megaphone className="w-6 h-6 text-white" />
@@ -746,12 +1155,14 @@ cursor-pointer
     lg:bottom-25
     z-40
     bg-blue-600
+     
     text-white
     px-5
     py-4
     rounded-2xl
     shadow-lg
     font-bold
+    
   "
 >
   보험나무에게 메세지 보내기
@@ -891,13 +1302,16 @@ rel="noopener noreferrer"
               <button
                 onClick={() => setOpen(false)}
                 className="
-                  flex-1
-                  py-4
-                  rounded-2xl
-                  bg-gray-100
-                  font-bold
-                  text-gray-700
-                "
+  flex-1
+  py-4
+  rounded-2xl
+  bg-gray-100
+  font-bold
+  text-gray-700
+  hover:bg-gray-200
+  active:scale-[0.98]
+  transition
+"
               >
                 취소
               </button>
@@ -905,13 +1319,16 @@ rel="noopener noreferrer"
               <button
                 onClick={sendMessage}
                 className="
-                  flex-1
-                  py-4
-                  rounded-2xl
-                  bg-blue-600
-                  text-white
-                  font-bold
-                "
+  flex-1
+  py-4
+  rounded-2xl
+  bg-blue-600
+  hover:bg-blue-700
+  text-white
+  font-bold
+  active:scale-[0.98]
+  transition
+"
               >
                 보내기
               </button>
@@ -1186,6 +1603,548 @@ rel="noopener noreferrer"
           </div>
         </div>
       )}
+
+      {/* 메모장 팝업 */}
+      {memoOpen && (
+        <div
+          onClick={() => setMemoOpen(false)}
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col"
+          >
+            <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
+              <div className="font-bold flex items-center gap-2">
+                <NotebookPen className="w-5 h-5" />
+                메모장
+              </div>
+
+              <button
+                onClick={() => setMemoOpen(false)}
+                className="
+                  w-9
+                  h-9
+                  rounded-full
+                  flex
+                  items-center
+                  justify-center
+                  text-white
+                  hover:bg-white/10
+                  transition
+                  cursor-default
+                "
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 border-b border-gray-100">
+  <div className="grid grid-cols-[1fr_auto] gap-3">
+    <div className="relative">
+      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+      <input
+        value={memoSearch}
+        onChange={(e) => {
+          setMemoSearch(e.target.value);
+          setMemoPage(1);
+        }}
+        placeholder="메모 검색"
+       className="
+  w-full
+  h-12
+  rounded-2xl
+  border
+  border-gray-200
+  bg-white
+  pl-11
+  pr-4
+  text-sm
+  outline-none
+  focus:border-gray-400
+  focus:ring-2
+  focus:ring-gray-100
+  transition
+"
+      />
+    </div>
+
+    <button
+      onClick={() => setMemoAddOpen(true)}
+      className="
+        h-12
+        rounded-2xl
+        bg-gray-800
+        text-white
+        px-5
+        text-sm
+        font-bold
+        flex
+        items-center
+        justify-center
+        gap-1.5
+        hover:bg-gray-700
+        transition
+        cursor-default
+      "
+    >
+      <Plus className="w-4 h-4" />
+      추가
+    </button>
+  </div>
+</div>
+
+              
+
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
+              {pagedMemos.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-sm text-gray-400">
+                  저장된 메모가 없습니다.
+                </div>
+              ) : (
+                pagedMemos.map((memo) => (
+                  <div
+  key={memo.id}
+  onDoubleClick={() => setSelectedMemo(memo)}
+  className={`
+  rounded-2xl
+border
+shadow-sm
+${getMemoColorClass(memo.color)}
+  hover:shadow-md
+  hover:-translate-y-0.5
+  transition-all
+  duration-200
+  cursor-default
+  p-4
+`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1 min-w-0 flex flex-col min-h-[130px]">
+                        <h3 className="text-sm font-black text-gray-900 mb-2 break-keep">
+  {memo.title}
+</h3>
+
+<p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line break-keep">
+  {memo.content}
+</p>
+
+
+
+<p className="text-[11px] text-gray-400 mt-auto pt-3">
+  수정일{" "}
+  {new Date(memo.updatedAt).toLocaleDateString("ko-KR")}
+</p>
+                      </div>
+
+                      <div className="flex flex-col gap-2 shrink-0">
+                        <button
+                          onClick={(e) => {
+  e.stopPropagation();
+  toggleMemoVisible(memo.id);
+}}
+                          className={`
+                            w-10
+                            h-10
+                            rounded-full
+                            flex
+                            items-center
+                            justify-center
+                            border
+                            transition
+                            cursor-default
+                            ${
+                              memo.visible
+                                ? "bg-blue-600 border-blue-600 text-white"
+                                : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50"
+                            }
+                          `}
+                          title="메인 노출"
+                        >
+                          {memo.visible ? (
+                            <Eye className="w-4 h-4" />
+                          ) : (
+                            <EyeOff className="w-4 h-4" />
+                          )}
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+  e.stopPropagation();
+  toggleMemoPinned(memo.id);
+}}
+                          className={`
+                            w-10
+                            h-10
+                            rounded-full
+                            flex
+                            items-center
+                            justify-center
+                            border
+                            transition
+                            cursor-default
+                            ${
+                              memo.pinned
+                                ? "bg-gray-800 border-gray-800 text-white"
+                                : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50"
+                            }
+                          `}
+                          title="상단 고정"
+                        >
+                          <Pin className="w-4 h-4" />
+                        </button>
+
+                        <button
+  onClick={(e) => {
+  e.stopPropagation();
+  setSelectedMemo(memo);
+}}
+  className="
+    w-10
+    h-10
+    rounded-full
+    flex
+    items-center
+    justify-center
+    border
+    border-gray-200
+    bg-white
+    text-gray-400
+    hover:bg-gray-50
+    hover:text-gray-600
+    transition
+    cursor-default
+  "
+  title="수정"
+>
+  <Pencil className="w-4 h-4" />
+</button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100 bg-white">
+              <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+                <button
+                  onClick={() => setMemoPage((p) => Math.max(1, p - 1))}
+                  disabled={memoPage === 1}
+                  className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-default"
+                >
+                  이전
+                </button>
+
+                {Array.from({
+                  length: Math.min(totalMemoPages, 10),
+                }).map((_, index) => {
+                  const page = index + 1;
+
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setMemoPage(page)}
+                      className={`px-4 py-2 border-l border-gray-200 cursor-default ${
+                        memoPage === page
+                          ? "bg-slate-800 text-white"
+                          : "bg-white text-gray-600 hover:bg-gray-100"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+
+                <button
+                  onClick={() =>
+                    setMemoPage((p) => Math.min(totalMemoPages, p + 1))
+                  }
+                  disabled={memoPage === totalMemoPages}
+                  className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-default"
+                >
+                  다음
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+              {/* 메모 추가 팝업 */}
+      {memoAddOpen && (
+        <div
+          onClick={() => setMemoAddOpen(false)}
+          className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4"
+        >
+          <div
+  onClick={(e) => e.stopPropagation()}
+  className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6"
+>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-black text-gray-900">
+                메모 추가
+              </h2>
+
+              <button
+                onClick={() => setMemoAddOpen(false)}
+                className="
+                  w-9
+                  h-9
+                  rounded-full
+                  flex
+                  items-center
+                  justify-center
+                  text-gray-400
+                  hover:bg-gray-100
+                  transition
+                  cursor-default
+                "
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <input
+              value={memoTitle}
+              onChange={(e) => setMemoTitle(e.target.value)}
+              placeholder="메모 제목"
+              className="
+                w-full
+                h-12
+                rounded-2xl
+                border
+                border-gray-200
+                px-4
+                text-sm
+                outline-none
+                mb-3
+              "
+            />
+
+            <textarea
+              value={memoContent}
+              onChange={(e) => setMemoContent(e.target.value)}
+              placeholder="메모 내용을 입력하세요"
+              className="
+                w-full
+                h-56
+                rounded-2xl
+                border
+                border-gray-200
+                p-4
+                text-sm
+                outline-none
+                resize-none
+                mb-5
+              "
+            />
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setMemoAddOpen(false)}
+                className="
+                  flex-1
+                  h-12
+                  rounded-2xl
+                  bg-gray-100
+                  text-gray-700
+                  text-sm
+                  font-bold
+                  hover:bg-gray-200
+                  transition
+                  cursor-default
+                "
+              >
+                취소
+              </button>
+
+              <button
+                onClick={() => {
+                  addMemo();
+                  setMemoAddOpen(false);
+                }}
+                className="
+                  flex-1
+                  h-12
+                  rounded-2xl
+                  bg-gray-800
+                  text-white
+                  text-sm
+                  font-bold
+                  hover:bg-gray-700
+                  transition
+                  cursor-default
+                "
+              >
+                저장
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+            {/* 메모 상세 팝업 */}
+      {selectedMemo && (
+        <div
+          onClick={() => setSelectedMemo(null)}
+          className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6"
+          >
+            <div className="flex items-center justify-between mb-5">
+  <h2 className="text-xl font-black text-gray-900">
+    메모 수정
+  </h2>
+
+  <div className="flex items-center gap-2">
+    {memoColorOptions.map((color) => (
+      <button
+        key={color.value}
+        type="button"
+        onClick={() => {
+          changeMemoColor(selectedMemo.id, color.value);
+
+          setSelectedMemo({
+            ...selectedMemo,
+            color: color.value,
+            updatedAt: new Date().toISOString(),
+          });
+        }}
+        className={`
+          w-7
+          h-7
+          rounded-full
+          border
+          transition
+          hover:scale-105
+          ${
+            selectedMemo.color === color.value
+              ? "ring-2 ring-gray-400 ring-offset-2"
+              : ""
+          }
+          ${color.className}
+        `}
+      />
+    ))}
+
+    <button
+      onClick={() => setSelectedMemo(null)}
+      className="
+        w-9
+        h-9
+        rounded-full
+        flex
+        items-center
+        justify-center
+        text-gray-400
+        hover:bg-gray-100
+        transition
+        cursor-default
+      "
+    >
+      <X className="w-5 h-5" />
+    </button>
+  </div>
+</div>
+              
+
+            <input
+              value={selectedMemo.title}
+              onChange={(e) => {
+                updateMemo(selectedMemo.id, "title", e.target.value);
+                setSelectedMemo({
+                  ...selectedMemo,
+                  title: e.target.value,
+                  updatedAt: new Date().toISOString(),
+                });
+              }}
+              className="
+                w-full
+                h-12
+                rounded-2xl
+                border
+                border-gray-200
+                px-4
+                text-sm
+                font-bold
+                outline-none
+                mb-3
+              "
+            />
+
+            <textarea
+  value={selectedMemo.content}
+  onChange={(e) => {
+    updateMemo(selectedMemo.id, "content", e.target.value);
+    setSelectedMemo({
+      ...selectedMemo,
+      content: e.target.value,
+      updatedAt: new Date().toISOString(),
+    });
+  }}
+  className="
+    w-full
+    h-56
+    rounded-2xl
+    border
+    border-gray-200
+    p-4
+    text-sm
+    outline-none
+    resize-none
+    mb-5
+  "
+/>
+
+<div className="flex gap-3">
+  <button
+    onClick={() => {
+      deleteMemo(selectedMemo.id);
+      setSelectedMemo(null);
+    }}
+    className="
+      flex-1
+      h-12
+      rounded-2xl
+      bg-gray-100
+      text-gray-600
+      text-sm
+      font-bold
+      hover:bg-red-50
+      hover:text-red-500
+      transition
+      cursor-default
+    "
+  >
+    삭제
+  </button>
+
+  <button
+    onClick={() => setSelectedMemo(null)}
+    className="
+      flex-1
+      h-12
+      rounded-2xl
+      bg-gray-800
+      text-white
+      text-sm
+      font-bold
+      hover:bg-gray-700
+      transition
+      cursor-default
+    "
+  >
+    완료
+  </button>
+</div>
+          </div>
+        </div>
+      )}
+
       <HospitalInfoPopup
   open={hospitalOpen}
   onClose={() => setHospitalOpen(false)}
@@ -1338,29 +2297,33 @@ rel="noopener noreferrer"
     </div>
 
     <div className="mt-5 rounded-2xl bg-gray-50 border border-gray-200 p-4">
-      <p className="text-sm text-gray-700 leading-relaxed">
-        현재 <span className="font-bold">{lifeAge}세</span>{" "}
-        <span className="font-bold">{lifeGender}</span> 기준,
-        기대여명은 약{" "}
-        <span className="font-bold text-blue-600">
-          {expectYears.toFixed(1)}년
-        </span>
-        이며 예상 기대수명은 약{" "}
-        <span className="font-bold text-blue-600">
-          {expectAge.toFixed(1)}세
-        </span>
-        입니다.
-        <br />
-        건강기간은 약{" "}
-        <span className="font-bold text-blue-600">
-          {healthyYears.toFixed(1)}년
-        </span>
-        으로, 앞으로 약{" "}
-        <span className="font-bold text-blue-600">
-          {healthyYears.toFixed(1)}년
-        </span>
-        뒤부터 유병기간이 시작될 수 있습니다.
-      </p>
+     <p className="text-sm text-gray-700 leading-relaxed">
+  현재 <span className="font-bold">{lifeAge}세</span>{" "}
+  <span className="font-bold">{lifeGender}</span> 기준,
+  예상 기대수명은 약{" "}
+  <span className="font-bold text-blue-600">
+    {expectAge.toFixed(1)}세
+  </span>
+  이며 남은 기대여명은 약{" "}
+  <span className="font-bold text-blue-600">
+    {expectYears.toFixed(1)}년
+  </span>
+  입니다.
+  <br />
+  건강기간은 약{" "}
+  <span className="font-bold text-blue-600">
+    {healthyYears.toFixed(1)}년
+  </span>
+  으로, 약{" "}
+  <span className="font-bold text-blue-600">
+    {sickStartAge.toFixed(1)}세
+  </span>
+  부터 평균{" "}
+  <span className="font-bold text-blue-600">
+    {sickYears.toFixed(1)}년
+  </span>
+  동안 유병기간이 이어질 수 있습니다.
+</p>
     </div>
   </>
 )}

@@ -455,7 +455,7 @@ const [diseaseOpen, setDiseaseOpen] = useState(false);
     hover:-translate-y-0.5
     transition-all
     duration-200
-    cursor-pointer
+    
   "
 >
   <Hospital className="w-6 h-6 text-white" />

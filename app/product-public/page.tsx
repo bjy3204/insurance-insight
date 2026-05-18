@@ -652,7 +652,7 @@ const paginatedPress = filteredPress.slice(
     hover:-translate-y-0.5
     transition-all
     duration-200
-    cursor-pointer
+  
     flex
     items-center
     justify-center
