@@ -982,7 +982,7 @@ const calculateSimple = () => {
               key={item.id}
               onClick={() => setGeneration(item.id)}
               className={`
-  bg-white rounded-2xl border p-4 text-left transition cursor-pointer
+  bg-white rounded-2xl border p-4 text-left transition 
                 ${
                   generation === item.id
                     ? "border-blue-600 shadow-md"
@@ -1406,10 +1406,11 @@ const calculateSimple = () => {
               type="text"
               value={formatNumber(covered)}
               onChange={(e) => setCovered(parseNumber(e.target.value))}
-              className="
-                mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
-                outline-none text-lg font-bold
-              "
+             className="
+  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
+  outline-none text-lg font-bold bg-white
+  focus:ring-2 focus:ring-blue-500 transition
+"
             />
           </div>
 
@@ -1423,9 +1424,10 @@ const calculateSimple = () => {
               value={formatNumber(uncovered)}
               onChange={(e) => setUncovered(parseNumber(e.target.value))}
               className="
-                mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
-                outline-none text-lg font-bold
-              "
+  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
+  outline-none text-lg font-bold bg-white
+  focus:ring-2 focus:ring-blue-500 transition
+"
             />
           </div>
 
@@ -1441,10 +1443,11 @@ const calculateSimple = () => {
               onChange={(e) =>
                 setDays(e.target.value.replace(/[^0-9]/g, ""))
               }
-              className="
-                mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
-                outline-none text-lg font-bold
-              "
+             className="
+  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
+  outline-none text-lg font-bold bg-white
+  focus:ring-2 focus:ring-blue-500 transition
+"
             />
           </div>
 
@@ -1491,9 +1494,10 @@ const calculateSimple = () => {
                   setRoomDiff(parseNumber(e.target.value))
                 }
                 className="
-                  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
-                  outline-none text-lg font-bold
-                "
+  mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px]
+  outline-none text-lg font-bold bg-white
+  focus:ring-2 focus:ring-blue-500 transition
+"
               />
             </div>
           )}
@@ -1724,23 +1728,28 @@ cursor-pointer
 {/* 세대 선택 메뉴 */}
 {dictionaryOpen && (
   <div
-    className="
-      fixed
-      left-10
-      bottom-40
-      z-40
-      bg-white
-      border
-      border-gray-200
-      shadow-xl
-      rounded-2xl
-      p-3
-      flex
-flex-col
-gap-2
-w-62
-    "
+    onClick={() => setDictionaryOpen(false)}
+    className="fixed inset-0 z-40"
   >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="
+        fixed
+        left-10
+        bottom-40
+        z-40
+        bg-white
+        border
+        border-gray-200
+        shadow-xl
+        rounded-2xl
+        p-3
+        flex
+        flex-col
+        gap-2
+        w-62
+      "
+    >
     {[
   { title: "1세대", date: "~2009.09", value: "1세대" },
 { title: "2세대", date: "2009.10~2012.12", value: "2세대 1차" },
@@ -1785,6 +1794,7 @@ w-62
 </div>
   </button>
 ))}
+     </div>
   </div>
 )}
 

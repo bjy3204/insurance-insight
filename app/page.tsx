@@ -679,7 +679,7 @@ setQuickOpen(false);
       )}
 
       {/* 모바일 메세지 버튼 */}
-<div className="max-w-[1500px] mx-auto px-5 -mt-10 mb-16 md:hidden">
+<div className="max-w-[1500px] mx-auto px-5 -mt-10 mb-8 md:hidden">
   <button
     onClick={() => setOpen(true)}
     className="
@@ -734,7 +734,7 @@ cursor-pointer
   )}
 
 </button>
-      {/* PC 메세지 버튼 */}
+    {/* PC 메세지 버튼 */}
 <button
   onClick={() => setOpen(true)}
   className="
@@ -743,7 +743,7 @@ cursor-pointer
     fixed
     right-6
     bottom-20
-    lg:bottom-40
+    lg:bottom-25
     z-40
     bg-blue-600
     text-white

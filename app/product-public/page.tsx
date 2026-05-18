@@ -665,7 +665,29 @@ const paginatedPress = filteredPress.slice(
 
 {/* 메뉴 */}
 {termsOpen && (
-  <div className="fixed left-6 bottom-40 z-40 bg-white border border-gray-200 shadow-xl rounded-2xl p-3 flex flex-col gap-2 w-64">
+  <div
+    onClick={() => setTermsOpen(false)}
+    className="fixed inset-0 z-40"
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="
+        fixed
+        left-6
+        bottom-40
+        z-40
+        bg-white
+        border
+        border-gray-200
+        shadow-xl
+        rounded-2xl
+        p-3
+        flex
+        flex-col
+        gap-2
+        w-64
+      "
+    >
     {termsDictionary.map((item) => (
       <button
         key={item.title}
@@ -675,7 +697,7 @@ const paginatedPress = filteredPress.slice(
 setSelectedItem(0);
 setTermsOpen(false);
         }}
-        className="w-full px-4 py-3 rounded-xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer"
+        className="w-full px-4 py-3 rounded-xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transitionr"
       >
         <p className="text-sm font-bold text-gray-800">{item.title}</p>
         <p className="text-xs text-gray-400 mt-1">{item.subtitle}</p>
@@ -718,8 +740,10 @@ setTermsOpen(false);
     금융위 보도자료 모음
   </p>
 </button>
+      </div>
   </div>
 )}
+
 {/* 보도자료 팝업 */}
 {pressOpen && (
   <div

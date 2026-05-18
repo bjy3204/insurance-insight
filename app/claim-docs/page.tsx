@@ -462,14 +462,36 @@ const [diseaseOpen, setDiseaseOpen] = useState(false);
 </button>
 
 {infoMenuOpen && (
-  <div className="fixed left-6 bottom-40 z-40 bg-white border border-gray-200 shadow-xl rounded-2xl p-3 flex flex-col gap-2 w-64">
+  <div
+    onClick={() => setInfoMenuOpen(false)}
+    className="fixed inset-0 z-40"
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="
+        fixed
+        left-6
+        bottom-40
+        z-40
+        bg-white
+        border
+        border-gray-200
+        shadow-xl
+        rounded-2xl
+        p-3
+        flex
+        flex-col
+        gap-2
+        w-64
+      "
+    >
 
     <button
       onClick={() => {
         setHospitalOpen(true);
         setInfoMenuOpen(false);
       }}
-      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer"
+      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition "
     >
       <p className="text-sm font-bold text-gray-800">
         병원정보 검색
@@ -485,7 +507,7 @@ const [diseaseOpen, setDiseaseOpen] = useState(false);
         setDiseaseOpen(true);
         setInfoMenuOpen(false);
       }}
-      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer"
+      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition "
     >
       <p className="text-sm font-bold text-gray-800">
         상병코드 검색
@@ -496,6 +518,7 @@ const [diseaseOpen, setDiseaseOpen] = useState(false);
       </p>
     </button>
 
+      </div>
   </div>
 )}
 
