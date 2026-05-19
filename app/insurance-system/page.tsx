@@ -701,14 +701,16 @@ export default function InsuranceSystemPage() {
             "
           >
             <div
-              onMouseDown={(e) => {
-                setDragInfo({
-                  startX: e.clientX,
-                  startY: e.clientY,
-                  originX: popupPosition.x,
-                  originY: popupPosition.y,
-                });
-              }}
+             onMouseDown={(e) => {
+  if (window.innerWidth < 768) return;
+
+  setDragInfo({
+    startX: e.clientX,
+    startY: e.clientY,
+    originX: popupPosition.x,
+    originY: popupPosition.y,
+  });
+}}
               className="
                 bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center
                 justify-between cursor-default select-none

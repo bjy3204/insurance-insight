@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 
 import {
@@ -314,6 +314,39 @@ export default function CalculatorPage() {
 const [dictionaryModalOpen, setDictionaryModalOpen] = useState(false);
 const [selectedDictionaryGen, setSelectedDictionaryGen] = useState("1세대");
 const [dictionaryTab, setDictionaryTab] = useState("실손정보");
+const [dictionaryPopupPos, setDictionaryPopupPos] = useState({ x: 0, y: 0 });
+
+const dictionaryDragRef = useRef({
+  isDragging: false,
+  startX: 0,
+  startY: 0,
+  originX: 0,
+  originY: 0,
+});
+
+const moveDictionaryPopup = (e: React.MouseEvent) => {
+  if (!dictionaryDragRef.current.isDragging) return;
+
+  setDictionaryPopupPos({
+    x:
+      dictionaryDragRef.current.originX +
+      e.clientX -
+      dictionaryDragRef.current.startX,
+    y:
+      dictionaryDragRef.current.originY +
+      e.clientY -
+      dictionaryDragRef.current.startY,
+  });
+};
+
+const stopDictionaryPopupMove = () => {
+  dictionaryDragRef.current.isDragging = false;
+};
+
+const closeDictionaryPopup = () => {
+  setDictionaryModalOpen(false);
+  setDictionaryPopupPos({ x: 0, y: 0 });
+};
 
   const [outpatientLimit, setOutpatientLimit] = useState("");
   const [medicineLimit, setMedicineLimit] = useState("");
@@ -1801,16 +1834,35 @@ duration-200
 {/* 실손 사전 팝업 */}
 {dictionaryModalOpen && (
   <div
-  onClick={() => setDictionaryModalOpen(false)}
-  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
->
+    onMouseMove={moveDictionaryPopup}
+    onMouseUp={stopDictionaryPopupMove}
+    onMouseLeave={stopDictionaryPopupMove}
+    className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+  >
+
     <div
   onClick={(e) => e.stopPropagation()}
+  style={{
+    transform: `translate(${dictionaryPopupPos.x}px, ${dictionaryPopupPos.y}px)`,
+  }}
   className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
 >
       
       {/* 팝업 헤더 */}
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+      <div
+  onMouseDown={(e) => {
+    if (window.innerWidth < 768) return;
+
+    dictionaryDragRef.current = {
+      isDragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      originX: dictionaryPopupPos.x,
+      originY: dictionaryPopupPos.y,
+    };
+  }}
+  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+>
         <div className="font-bold flex items-center gap-2">
           <BookOpen className="w-5 h-5" />
           {selectedDictionaryGen.includes("2세대")
@@ -1820,7 +1872,7 @@ duration-200
         </div>
 
         <button
-  onClick={() => setDictionaryModalOpen(false)}
+  onClick={closeDictionaryPopup}
   className="
   cursor-pointer
   w-9

@@ -792,14 +792,16 @@ setTermsOpen(false);
 
       <div
   onMouseDown={(e) => {
-    pressDragRef.current = {
-      isDragging: true,
-      startX: e.clientX,
-      startY: e.clientY,
-      originX: pressPopupPos.x,
-      originY: pressPopupPos.y,
-    };
-  }}
+  if (window.innerWidth < 768) return;
+
+  pressDragRef.current = {
+    isDragging: true,
+    startX: e.clientX,
+    startY: e.clientY,
+    originX: pressPopupPos.x,
+    originY: pressPopupPos.y,
+  };
+}}
   className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
 >
         <div className="font-bold flex items-center gap-2">
@@ -1059,14 +1061,16 @@ setTermsOpen(false);
     >
       <div
   onMouseDown={(e) => {
-    termDragRef.current = {
-      isDragging: true,
-      startX: e.clientX,
-      startY: e.clientY,
-      originX: termPopupPos.x,
-      originY: termPopupPos.y,
-    };
-  }}
+  if (window.innerWidth < 768) return;
+
+  termDragRef.current = {
+    isDragging: true,
+    startX: e.clientX,
+    startY: e.clientY,
+    originX: termPopupPos.x,
+    originY: termPopupPos.y,
+  };
+}}
   className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
 >
         <div className="font-bold flex items-center gap-2">
