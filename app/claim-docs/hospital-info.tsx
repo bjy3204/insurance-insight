@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { hospitalData } from "./hospital-data";
 import {
   Hospital,
@@ -26,6 +26,33 @@ export default function HospitalInfoPopup({ open, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [openedIndex, setOpenedIndex] = useState<number | null>(null);
   const [filterOpen, setFilterOpen] = useState(true);
+  const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
+
+const dragRef = useRef({
+  isDragging: false,
+  startX: 0,
+  startY: 0,
+  originX: 0,
+  originY: 0,
+});
+
+const movePopup = (e: React.MouseEvent) => {
+  if (!dragRef.current.isDragging) return;
+
+  setPopupPos({
+    x: dragRef.current.originX + e.clientX - dragRef.current.startX,
+    y: dragRef.current.originY + e.clientY - dragRef.current.startY,
+  });
+};
+
+const stopPopupMove = () => {
+  dragRef.current.isDragging = false;
+};
+
+const closePopup = () => {
+  setPopupPos({ x: 0, y: 0 });
+  onClose();
+};
 
   const hospitalTypes = ["의원", "종합병원", "상급종합병원"];
   const normalize = (value: any) =>
@@ -112,19 +139,38 @@ const toggleType = (type: string) => {
   setSelectedType(type);
 };
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4">
+    <div
+  onMouseMove={movePopup}
+  onMouseUp={stopPopupMove}
+  onMouseLeave={stopPopupMove}
+  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
+>
      <div
   onClick={(e) => e.stopPropagation()}
+  style={{
+    transform: `translate(${popupPos.x}px, ${popupPos.y}px)`,
+  }}
   className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
 >
-        <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
+        <div
+  onMouseDown={(e) => {
+    dragRef.current = {
+      isDragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      originX: popupPos.x,
+      originY: popupPos.y,
+    };
+  }}
+  className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between"
+>
           <div className="font-bold flex items-center gap-2">
             <Hospital className="w-5 h-5" />
             병원정보 검색
           </div>
 
           <button
-  onClick={onClose}
+  onClick={closePopup}
   className="
     cursor-pointer
     w-9

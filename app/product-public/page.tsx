@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import Link from "next/link";
 
@@ -367,6 +367,35 @@ const [showPressDot, setShowPressDot] = useState(false);
 const [readPressIds, setReadPressIds] = useState<number[]>([]);
 
 const [selectedItem, setSelectedItem] = useState(0);
+const [pressPopupPos, setPressPopupPos] = useState({ x: 0, y: 0 });
+const [termPopupPos, setTermPopupPos] = useState({ x: 0, y: 0 });
+
+const pressDragRef = useRef({ isDragging: false, startX: 0, startY: 0, originX: 0, originY: 0 });
+const termDragRef = useRef({ isDragging: false, startX: 0, startY: 0, originX: 0, originY: 0 });
+
+const movePopup = (
+  e: React.MouseEvent,
+  type: "press" | "term"
+) => {
+  const drag = type === "press" ? pressDragRef.current : termDragRef.current;
+  if (!drag.isDragging) return;
+
+  const nextPos = {
+    x: drag.originX + e.clientX - drag.startX,
+    y: drag.originY + e.clientY - drag.startY,
+  };
+
+  if (type === "press") {
+    setPressPopupPos(nextPos);
+  } else {
+    setTermPopupPos(nextPos);
+  }
+};
+
+const stopPopupMove = () => {
+  pressDragRef.current.isDragging = false;
+  termDragRef.current.isDragging = false;
+};
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("nonlife");
   useEffect(() => {
@@ -747,27 +776,43 @@ setTermsOpen(false);
 {/* 보도자료 팝업 */}
 {pressOpen && (
   <div
-  onClick={() => {
-    setPressOpen(false);
-    setSelectedPress(null);
-  }}
-  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
->
+    onMouseMove={(e) => movePopup(e, "press")}
+    onMouseUp={stopPopupMove}
+    onMouseLeave={stopPopupMove}
+    
+    className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+  >
     <div
-  onClick={(e) => e.stopPropagation()}
-  className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        transform: `translate(${pressPopupPos.x}px, ${pressPopupPos.y}px)`,
+      }}
+      className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
+    >
+
+      <div
+  onMouseDown={(e) => {
+    pressDragRef.current = {
+      isDragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      originX: pressPopupPos.x,
+      originY: pressPopupPos.y,
+    };
+  }}
+  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
 >
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2">
           <Newspaper className="w-5 h-5" />
           보도자료
         </div>
 
         <button
-          onClick={() => {
-            setPressOpen(false);
-            setSelectedPress(null);
-          }}
+  onClick={() => {
+    setPressOpen(false);
+    setSelectedPress(null);
+    setPressPopupPos({ x: 0, y: 0 });
+  }}
           className="
   cursor-pointer
   w-9
@@ -999,21 +1044,41 @@ setTermsOpen(false);
 {/* 팝업 */}
 {selectedTerm && (
   <div
-  onClick={() => setSelectedTerm(null)}
-  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
->
+    onMouseMove={(e) => movePopup(e, "term")}
+    onMouseUp={stopPopupMove}
+    onMouseLeave={stopPopupMove}
+    
+    className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+  >
     <div
-  onClick={(e) => e.stopPropagation()}
-  className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        transform: `translate(${termPopupPos.x}px, ${termPopupPos.y}px)`,
+      }}
+      className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
+    >
+      <div
+  onMouseDown={(e) => {
+    termDragRef.current = {
+      isDragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      originX: termPopupPos.x,
+      originY: termPopupPos.y,
+    };
+  }}
+  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
 >
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2">
           <BookOpen className="w-5 h-5" />
           {selectedTerm.title}
         </div>
 
         <button
-          onClick={() => setSelectedTerm(null)}
+  onClick={() => {
+    setSelectedTerm(null);
+    setTermPopupPos({ x: 0, y: 0 });
+  }}
           className="
   cursor-pointer
   w-9

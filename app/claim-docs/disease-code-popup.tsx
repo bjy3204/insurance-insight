@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Search, X } from "lucide-react";
 
 type DiseaseCode = Record<string, any>;
@@ -16,6 +16,33 @@ export default function DiseaseCodePopup({
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
+
+const dragRef = useRef({
+  isDragging: false,
+  startX: 0,
+  startY: 0,
+  originX: 0,
+  originY: 0,
+});
+
+const movePopup = (e: React.MouseEvent) => {
+  if (!dragRef.current.isDragging) return;
+
+  setPopupPos({
+    x: dragRef.current.originX + e.clientX - dragRef.current.startX,
+    y: dragRef.current.originY + e.clientY - dragRef.current.startY,
+  });
+};
+
+const stopPopupMove = () => {
+  dragRef.current.isDragging = false;
+};
+
+const closePopup = () => {
+  setPopupPos({ x: 0, y: 0 });
+  onClose();
+};
 
   useEffect(() => {
     if (!open) return;
@@ -74,16 +101,37 @@ setItems(rows);
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
-        <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+    <div
+  onMouseMove={movePopup}
+  onMouseUp={stopPopupMove}
+  onMouseLeave={stopPopupMove}
+  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+>
+      <div
+  style={{
+    transform: `translate(${popupPos.x}px, ${popupPos.y}px)`,
+  }}
+  className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
+>
+        <div
+  onMouseDown={(e) => {
+    dragRef.current = {
+      isDragging: true,
+      startX: e.clientX,
+      startY: e.clientY,
+      originX: popupPos.x,
+      originY: popupPos.y,
+    };
+  }}
+  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+>
           <div className="font-bold flex items-center gap-2">
             <FileText className="w-5 h-5" />
             상병코드 검색
           </div>
 
           <button
-            onClick={onClose}
+            onClick={closePopup}
             className="cursor-pointer w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition"
           >
             <X className="w-5 h-5" />

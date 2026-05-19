@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pin } from "lucide-react";
 
 type MemoItem = {
@@ -19,20 +19,41 @@ type MemoItem = {
 export default function MemoStickers() {
   const [memos, setMemos] = useState<MemoItem[]>([]);
 
-  useEffect(() => {
-    const savedMemos = localStorage.getItem("personalMemos");
+  const dragRef = useRef<{
+    id: string;
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+    moved: boolean;
+  } | null>(null);
 
-    if (savedMemos) {
-      setMemos(JSON.parse(savedMemos));
-    }
+  useEffect(() => {
+    const loadMemos = () => {
+      const savedMemos = localStorage.getItem("personalMemos");
+
+      if (savedMemos) {
+        setMemos(JSON.parse(savedMemos));
+      } else {
+        setMemos([]);
+      }
+    };
+
+    loadMemos();
+
+    window.addEventListener("storage", loadMemos);
+    window.addEventListener("memo-storage-updated", loadMemos);
+
+    return () => {
+      window.removeEventListener("storage", loadMemos);
+      window.removeEventListener("memo-storage-updated", loadMemos);
+    };
   }, []);
 
   const saveMemos = (nextMemos: MemoItem[]) => {
     setMemos(nextMemos);
-    localStorage.setItem(
-      "personalMemos",
-      JSON.stringify(nextMemos)
-    );
+    localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
+    window.dispatchEvent(new Event("memo-storage-updated"));
   };
 
   const toggleMemoVisible = (id: string) => {
@@ -49,19 +70,13 @@ export default function MemoStickers() {
     saveMemos(nextMemos);
   };
 
-  const moveMemoSticker = (
-    id: string,
-    x: number,
-    y: number
-  ) => {
-    const maxY = window.innerHeight - 290;
-
+  const moveMemoSticker = (id: string, x: number, y: number) => {
     const nextMemos = memos.map((memo) =>
       memo.id === id
         ? {
             ...memo,
             x,
-            y: Math.min(y, maxY),
+            y,
           }
         : memo
     );
@@ -69,22 +84,16 @@ export default function MemoStickers() {
     saveMemos(nextMemos);
   };
 
-  const getMemoColorClass = (
-    color?: MemoItem["color"]
-  ) => {
+  const getMemoColorClass = (color?: MemoItem["color"]) => {
     switch (color) {
       case "blue":
         return "bg-blue-50/80 border-blue-100";
-
       case "yellow":
         return "bg-yellow-50/80 border-yellow-100";
-
       case "red":
         return "bg-red-50/80 border-red-100";
-
       case "clear":
         return "bg-white/40 border-gray-200";
-
       case "white":
       default:
         return "bg-white border-gray-200";
@@ -92,8 +101,7 @@ export default function MemoStickers() {
   };
 
   const sortedMemos = [...memos].sort((a, b) => {
-    if (a.pinned !== b.pinned)
-      return a.pinned ? -1 : 1;
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
 
     return (
       new Date(b.updatedAt).getTime() -
@@ -101,66 +109,72 @@ export default function MemoStickers() {
     );
   });
 
-  const visibleMemos = sortedMemos.filter(
-    (memo) => memo.visible
-  );
+  const visibleMemos = sortedMemos.filter((memo) => memo.visible);
 
   return (
     <>
       {visibleMemos.map((memo, index) => (
         <div
           key={memo.id}
-          onMouseDown={(e) => {
+          onPointerDown={(e) => {
             const target = e.target as HTMLElement;
 
-            if (target.closest("button")) return;
+            if (target.closest("button, input, textarea, select, a")) return;
+
+            e.preventDefault();
+            e.stopPropagation();
 
             const startX = e.clientX;
             const startY = e.clientY;
-            const startLeft = memo.x ?? 24;
-            const startTop =
-              memo.y ?? 150 + index * 210;
 
-            const handleMouseMove = (
-              moveEvent: MouseEvent
-            ) => {
-              const nextX =
-                startLeft +
-                moveEvent.clientX -
-                startX;
+            const originX = memo.x ?? 24;
+            const originY = memo.y ?? 150 + index * 210;
 
-              const nextY =
-                startTop +
-                moveEvent.clientY -
-                startY;
-
-              moveMemoSticker(
-                memo.id,
-                nextX,
-                nextY
-              );
+            dragRef.current = {
+              id: memo.id,
+              startX,
+              startY,
+              originX,
+              originY,
+              moved: false,
             };
 
-            const handleMouseUp = () => {
-              window.removeEventListener(
-                "mousemove",
-                handleMouseMove
-              );
+            const handleMove = (event: PointerEvent) => {
+              if (!dragRef.current) return;
 
-              window.removeEventListener(
-                "mouseup",
-                handleMouseUp
-              );
+              const drag = dragRef.current;
+
+              const nextX = drag.originX + event.clientX - drag.startX;
+              const nextY = drag.originY + event.clientY - drag.startY;
+
+              if (
+                Math.abs(event.clientX - drag.startX) > 3 ||
+                Math.abs(event.clientY - drag.startY) > 3
+              ) {
+                dragRef.current.moved = true;
+              }
+
+              moveMemoSticker(drag.id, nextX, nextY);
             };
 
-            window.addEventListener(
-              "mousemove",
-              handleMouseMove
-            );
+            const handleUp = () => {
+              dragRef.current = null;
 
-            window.addEventListener(
-              "mouseup",
-              handleMouseUp
+              window.removeEventListener("pointermove", handleMove);
+              window.removeEventListener("pointerup", handleUp);
+            };
+
+            window.addEventListener("pointermove", handleMove);
+            window.addEventListener("pointerup", handleUp);
+          }}
+          onDoubleClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.dispatchEvent(
+              new CustomEvent("open-memo-detail", {
+                detail: memo.id,
+              })
             );
           }}
           style={{
@@ -169,7 +183,7 @@ export default function MemoStickers() {
           }}
           className={`
             fixed
-            z-[70]
+            z-[60]
             hidden
             md:block
             w-[260px]
@@ -178,8 +192,6 @@ export default function MemoStickers() {
             shadow
             p-5
             hover:shadow-xl
-            hover:-translate-y-1
-            transition
             cursor-default
             ${getMemoColorClass(memo.color)}
           `}

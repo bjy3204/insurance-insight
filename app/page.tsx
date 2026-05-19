@@ -1,6 +1,6 @@
 "use client";
 import DiseaseCodePopup from "./claim-docs/disease-code-popup";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   LIFE_DATA_YEAR,
   lifeExpectancyData,
@@ -43,6 +43,7 @@ import {
   Globe,
   Home as HomeIcon,
 } from "lucide-react";
+
 
 import { FaInstagram } from "react-icons/fa";
 import emailjs from "@emailjs/browser";
@@ -234,6 +235,85 @@ const [editIconOpen, setEditIconOpen] = useState(false);
 const [mainMenuManageMode, setMainMenuManageMode] =
   useState<"normal" | "edit" | "delete">("normal");
 
+  type PopupKey =
+  | "message"
+  | "notice"
+  | "memo"
+  | "memoDetail"
+  | "menuAdd"
+  | "menuSort"
+  | "press"
+  | "life"
+  | "nps";
+
+const [popupPositions, setPopupPositions] = useState<
+  Partial<Record<PopupKey, { x: number; y: number }>>
+>({});
+
+const dragPopupRef = useRef<{
+  key: PopupKey;
+  startX: number;
+  startY: number;
+  originX: number;
+  originY: number;
+} | null>(null);
+
+const startPopupDrag = (key: PopupKey, e: any) => {
+  const target = e.target as HTMLElement;
+
+  if (target.closest("button, input, textarea, select, a")) return;
+
+  e.preventDefault();
+
+  const current = popupPositions[key] || { x: 0, y: 0 };
+
+  dragPopupRef.current = {
+    key,
+    startX: e.clientX,
+    startY: e.clientY,
+    originX: current.x,
+    originY: current.y,
+  };
+
+  const handleMove = (event: PointerEvent) => {
+    if (!dragPopupRef.current) return;
+
+    const drag = dragPopupRef.current;
+
+    setPopupPositions((prev) => ({
+      ...prev,
+      [drag.key]: {
+        x: drag.originX + event.clientX - drag.startX,
+        y: drag.originY + event.clientY - drag.startY,
+      },
+    }));
+  };
+
+  const handleUp = () => {
+    dragPopupRef.current = null;
+    window.removeEventListener("pointermove", handleMove);
+    window.removeEventListener("pointerup", handleUp);
+  };
+
+  window.addEventListener("pointermove", handleMove);
+  window.addEventListener("pointerup", handleUp);
+};
+
+const getPopupStyle = (key: PopupKey) => {
+  const pos = popupPositions[key] || { x: 0, y: 0 };
+
+  return {
+    transform: `translate(${pos.x}px, ${pos.y}px)`,
+  };
+};
+
+const resetPopupPosition = (key: PopupKey) => {
+  setPopupPositions((prev) => ({
+    ...prev,
+    [key]: { x: 0, y: 0 },
+  }));
+};
+
 
   const [memos, setMemos] = useState<MemoItem[]>([]);
   const [memoTitle, setMemoTitle] = useState("");
@@ -242,6 +322,8 @@ const [mainMenuManageMode, setMainMenuManageMode] =
   const [memoPage, setMemoPage] = useState(1);
   const [memoAddOpen, setMemoAddOpen] = useState(false);
 const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
+const [deleteMemoConfirmOpen, setDeleteMemoConfirmOpen] = useState(false);
+const [deleteMemoId, setDeleteMemoId] = useState<string | null>(null);
   
   
   const [hospitalOpen, setHospitalOpen] = useState(false);
@@ -271,6 +353,9 @@ const [quickMenuSelectOpen, setQuickMenuSelectOpen] = useState(false);
 const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
 const [saveConfirmType, setSaveConfirmType] =
   useState<"main" | "popup">("main");
+  const [saveConfirmMessage, setSaveConfirmMessage] =
+  useState("변경 내용이 저장되었습니다.");
+  const [menuLinkAlertOpen, setMenuLinkAlertOpen] = useState(false);
 
 
 const [lifeGender, setLifeGender] = useState<"남성" | "여성">("남성");
@@ -350,7 +435,8 @@ const quickMenuOptions = [
     key: "life",
     title: "기대수명 계산기",
     action: () => {
-      setLifeOpen(true);
+      resetPopupPosition("life");
+setLifeOpen(true);
       setQuickOpen(false);
     },
   },
@@ -358,7 +444,8 @@ const quickMenuOptions = [
     key: "press",
     title: "보도자료",
     action: () => {
-      setPressOpen(true);
+      resetPopupPosition("press");
+setPressOpen(true);
       setSelectedPress(null);
       setPressSearch("");
       setPressPage(1);
@@ -377,7 +464,8 @@ const quickMenuOptions = [
     key: "nps",
     title: "국민연금 예상 연금월액표",
     action: () => {
-      setNpsTableOpen(true);
+      resetPopupPosition("nps");
+setNpsTableOpen(true);
       setQuickOpen(false);
     },
   },
@@ -552,6 +640,31 @@ if (savedReadPressIds) {
     handleBeforeInstallPrompt
   );
 };
+}, []);
+
+useEffect(() => {
+  const openMemoDetail = (event: any) => {
+    const memoId = event.detail;
+
+    const savedMemos = localStorage.getItem("personalMemos");
+    if (!savedMemos) return;
+
+    const parsedMemos: MemoItem[] = JSON.parse(savedMemos);
+    const targetMemo = parsedMemos.find((memo) => memo.id === memoId);
+
+    if (!targetMemo) return;
+
+    setMemos(parsedMemos);
+setSelectedMemo(targetMemo);
+setMemoOpen(false);
+resetPopupPosition("memoDetail");
+  };
+
+  window.addEventListener("open-memo-detail", openMemoDetail);
+
+  return () => {
+    window.removeEventListener("open-memo-detail", openMemoDetail);
+  };
 }, []);
 
 useEffect(() => {
@@ -858,20 +971,15 @@ const resetNewMenuForm = () => {
 };
 
 const addPersonalMenu = () => {
-  if (!newMenuTitle.trim()) {
-    alert("메뉴명을 입력해주세요.");
-    return;
-  }
-
   if (!newMenuLink.trim()) {
-    alert("링크를 입력해주세요.");
+    setMenuLinkAlertOpen(true);
     return;
   }
 
   const newMenu: PersonalMenuItem = {
     id: `personal-${crypto.randomUUID()}`,
-    title: newMenuTitle.trim(),
-    desc: newMenuDesc.trim() || "개인 추가 메뉴",
+    title: newMenuTitle.trim() || "",
+    desc: newMenuDesc.trim() || "",
     link: newMenuLink.trim(),
     iconKey: newMenuIcon,
     isPersonal: true,
@@ -888,7 +996,13 @@ const addPersonalMenu = () => {
   if (isTemporaryAdd) {
     setTempPersonalMenus((prev) => [...prev, newMenu]);
     setTempMenus((prev) => [...prev, newMenuWithIcon]);
+
     resetNewMenuForm();
+
+    setSaveConfirmType("popup");
+    setSaveConfirmMessage("메뉴가 추가되었습니다.");
+    setSaveConfirmOpen(true);
+
     return;
   }
 
@@ -907,19 +1021,19 @@ const addPersonalMenu = () => {
   );
 
   resetNewMenuForm();
+
+  setSaveConfirmType("popup");
+  setSaveConfirmMessage("메뉴가 추가되었습니다.");
+  setSaveConfirmOpen(true);
 };
 
 const saveMemos = (nextMemos: MemoItem[]) => {
   setMemos(nextMemos);
   localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
+  window.dispatchEvent(new Event("memo-storage-updated"));
 };
 
 const addMemo = () => {
-  if (!memoTitle.trim() && !memoContent.trim()) {
-    alert("메모 제목 또는 내용을 입력해주세요.");
-    return;
-  }
-
   const now = new Date().toISOString();
 
   const newMemo: MemoItem = {
@@ -986,18 +1100,34 @@ const toggleMemoPinned = (id: string) => {
   saveMemos(nextMemos);
 };
 
-const moveMemoSticker = (id: string, x: number, y: number) => {
-  const nextMemos = memos.map((memo) =>
-    memo.id === id
-      ? {
-          ...memo,
-          x,
-          y,
-        }
-      : memo
-  );
+const handleMemoDragEnd = (event: any) => {
+  const { active, over } = event;
 
-  saveMemos(nextMemos);
+  if (!over || active.id === over.id) return;
+
+  const activeMemo = memos.find((memo) => memo.id === active.id);
+  const overMemo = memos.find((memo) => memo.id === over.id);
+
+  if (!activeMemo || !overMemo) return;
+
+  if (activeMemo.pinned || overMemo.pinned) return;
+
+  const unpinnedMemos = sortedMemos.filter((memo) => !memo.pinned);
+  const pinnedMemos = sortedMemos.filter((memo) => memo.pinned);
+
+  const oldIndex = unpinnedMemos.findIndex((memo) => memo.id === active.id);
+  const newIndex = unpinnedMemos.findIndex((memo) => memo.id === over.id);
+
+  const reorderedUnpinnedMemos = arrayMove(
+    unpinnedMemos,
+    oldIndex,
+    newIndex
+  ).map((memo, index) => ({
+    ...memo,
+    updatedAt: new Date(Date.now() - index).toISOString(),
+  }));
+
+  saveMemos([...pinnedMemos, ...reorderedUnpinnedMemos]);
 };
 
 const changeMemoColor = (id: string, color: MemoItem["color"]) => {
@@ -1015,15 +1145,24 @@ const changeMemoColor = (id: string, color: MemoItem["color"]) => {
 };
 
 const deleteMemo = (id: string) => {
-  if (!confirm("메모를 삭제하시겠습니까?")) return;
+  setDeleteMemoId(id);
+  setDeleteMemoConfirmOpen(true);
+};
 
-  const nextMemos = memos.filter((memo) => memo.id !== id);
+const confirmDeleteMemo = () => {
+  if (!deleteMemoId) return;
+
+  const nextMemos = memos.filter((memo) => memo.id !== deleteMemoId);
 
   saveMemos(nextMemos);
 
   if (memoPage > 1 && pagedMemos.length === 1) {
     setMemoPage((p) => Math.max(1, p - 1));
   }
+
+  setSelectedMemo(null);
+  setDeleteMemoId(null);
+  setDeleteMemoConfirmOpen(false);
 };
 
   const sendMessage = async () => {
@@ -1059,7 +1198,7 @@ const deleteMemo = (id: string) => {
 };
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-56 md:pb-40 lg:pb-18">
+    <main className="min-h-screen bg-gray-100">
       {/* 헤더 */}
       <header className="bg-white border-b shadow-sm">
         <div className="max-w-[1500px] mx-auto px-5 py-6">
@@ -1248,7 +1387,8 @@ const deleteMemo = (id: string) => {
             
           <button
   onClick={() => {
-  setMemoOpen(true);
+  resetPopupPosition("memo");
+setMemoOpen(true);
   setMenuAddOpen(false);
   setMenuSortOpen(false);
   setSelectedPersonalMenuId("");
@@ -1275,7 +1415,8 @@ const deleteMemo = (id: string) => {
 
 <button
   onClick={() => {
-  setMenuAddOpen(true);
+  resetPopupPosition("menuAdd");
+setMenuAddOpen(true);
   setMemoOpen(false);
   setMenuSortOpen(false);
   setSelectedPersonalMenuId("");
@@ -1310,7 +1451,8 @@ const deleteMemo = (id: string) => {
     setSelectedPersonalMenuId("");
     setEditIconOpen(false);
     setMenuManageMode("sort");
-    setMenuSortOpen(true);
+    resetPopupPosition("menuSort");
+setMenuSortOpen(true);
     setMemoOpen(false);
     setMenuAddOpen(false);
     setSettingOpen(false);
@@ -1406,7 +1548,7 @@ const deleteMemo = (id: string) => {
       </header>
       
             {/* 메인 */}
-      <div className="max-w-[1500px] mx-auto px-5 py-8 sm:p-10 md:pb-32 lg:pb-10">
+      <div className="max-w-[1500px] mx-auto px-5 py-8 sm:p-10 md:pb-32 lg:pb-30">
        
         <div
   onClick={() => {
@@ -1690,7 +1832,10 @@ const deleteMemo = (id: string) => {
       );
     })}
     <button
-  onClick={() => setMenuAddOpen(true)}
+  onClick={() => {
+    resetPopupPosition("menuAdd");
+    setMenuAddOpen(true);
+  }}
   className="
     bg-white
     p-7
@@ -1825,7 +1970,7 @@ hover:-translate-y-1
       duration-150
       left-0
       top-[58px]
-      z-[1]
+      z-[40]
       w-full
       max-h-[260px]
       rounded-2xl
@@ -1910,7 +2055,7 @@ hover:-translate-y-1
       {/* 앱처럼 사용하기 */}
 {showInstall &&
   /iPhone|iPad|iPod|Android/i.test(window.navigator.userAgent) && (
-        <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-16 md:hidden">
+        <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-10 md:hidden">
           <button
             onClick={async () => {
   if (deferredPrompt) {
@@ -1954,9 +2099,12 @@ hover:-translate-y-1
       )}
 
       {/* 모바일 메세지 버튼 */}
-<div className="max-w-[1500px] mx-auto px-5 -mt-5 mb-8 md:hidden">
+<div className="max-w-[1500px] mx-auto px-5 -mt-5 mb-4 md:hidden">
   <button
-    onClick={() => setOpen(true)}
+    onClick={() => {
+  resetPopupPosition("message");
+  setOpen(true);
+}}
     className="
       w-full
       h-[50px]
@@ -1977,11 +2125,12 @@ hover:-translate-y-1
 
 <button
   onClick={() => {
-    localStorage.setItem("noticeRead", noticeVersion.toString());
-    setHasUpdate(false);
-    setSelectedNotice(null);
-    setNoticeOpen(true);
-  }}
+  localStorage.setItem("noticeRead", noticeVersion.toString());
+  setHasUpdate(false);
+  setSelectedNotice(null);
+  resetPopupPosition("notice");
+  setNoticeOpen(true);
+}}
   className="
     fixed
     left-6
@@ -2011,7 +2160,10 @@ duration-200
 </button>
     {/* PC 메세지 버튼 */}
 <button
-  onClick={() => setOpen(true)}
+  onClick={() => {
+  resetPopupPosition("message");
+  setOpen(true);
+}}
   className="
     hidden
     md:block
@@ -2136,8 +2288,42 @@ rel="noopener noreferrer"
   </div>
 )}
 
+{menuLinkAlertOpen && (
+  <div className="fixed inset-0 z-[2100] bg-black/40 flex items-center justify-center p-5">
+    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+      <h2 className="text-xl font-black text-gray-900">
+        링크 입력
+      </h2>
+
+      <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
+        메뉴로 연결할 링크를 입력해주세요.
+      </p>
+
+      <div className="flex justify-center mt-6">
+        <button
+          onClick={() => setMenuLinkAlertOpen(false)}
+          className="
+            w-32
+            h-12
+            rounded-2xl
+            bg-gray-800
+            text-white
+            text-sm
+            font-bold
+            hover:bg-gray-700
+            transition
+            cursor-default
+          "
+        >
+          확인
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 {deleteConfirmOpen && (
-  <div className="fixed inset-0 z-[999] bg-black/40 flex items-center justify-center p-5">
+  <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">
     <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
       <h2 className="text-xl font-black text-gray-900">
         메뉴 삭제
@@ -2285,14 +2471,14 @@ rel="noopener noreferrer"
 )}
 
 {saveConfirmOpen && (
-  <div className="fixed inset-0 z-[999] bg-black/40 flex items-center justify-center p-5">
+  <div className="fixed inset-0 z-[2100] bg-black/40 flex items-center justify-center p-5">
     <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
       <h2 className="text-xl font-black text-gray-900">
         저장 완료
       </h2>
 
       <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
-        메뉴 설정이 저장되었습니다.
+        {saveConfirmMessage}
       </p>
 
       <div className="flex justify-center mt-6">
@@ -2321,10 +2507,68 @@ rel="noopener noreferrer"
   </div>
 )}
 
+{deleteMemoConfirmOpen && (
+  <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">
+    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+      <h2 className="text-xl font-black text-gray-900">
+        메모 삭제
+      </h2>
+
+      <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
+        선택한 메모를 삭제하시겠습니까?
+      </p>
+
+      <div className="flex gap-3 mt-6">
+        <button
+          onClick={() => {
+            setDeleteMemoId(null);
+            setDeleteMemoConfirmOpen(false);
+          }}
+          className="
+            flex-1
+            h-12
+            rounded-2xl
+            bg-gray-100
+            text-gray-700
+            text-sm
+            font-bold
+            hover:bg-gray-200
+            transition
+            cursor-default
+          "
+        >
+          취소
+        </button>
+
+        <button
+          onClick={confirmDeleteMemo}
+          className="
+            flex-1
+            h-12
+            rounded-2xl
+            bg-red-500
+            text-white
+            text-sm
+            font-bold
+            hover:bg-red-600
+            transition
+            cursor-default
+          "
+        >
+          삭제
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       {/* 메세지 모달 */}
       {open && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-5">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-md relative">
+          <div
+  style={getPopupStyle("message")}
+  className="bg-white rounded-3xl p-6 w-full max-w-md relative"
+>
             <button
               onClick={() => setOpen(false)}
               className="
@@ -2345,7 +2589,10 @@ rel="noopener noreferrer"
               <X className="w-5 h-5" />
             </button>
 
-            <div className="mb-4">
+            <div
+  onPointerDown={(e) => startPopupDrag("message", e)}
+  className="mb-4"
+>
   <h2 className="text-2xl font-black text-gray-900">
     보험나무에게 메세지 보내기
   </h2>
@@ -2465,11 +2712,15 @@ rel="noopener noreferrer"
   onClick={() => setNoticeOpen(false)}
   className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
 >
-          <div
+         <div
   onClick={(e) => e.stopPropagation()}
+  style={getPopupStyle("notice")}
   className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[70vh] flex flex-col"
 >
-            <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
+            <div
+  onPointerDown={(e) => startPopupDrag("notice", e)}
+  className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between"
+>
               <div className="font-bold flex items-center gap-2">
                 <Megaphone className="w-5 h-5" />
                 공지사항
@@ -2732,11 +2983,15 @@ rel="noopener noreferrer"
   <div
     className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
   >
-    <div
-      onClick={(e) => e.stopPropagation()}
-      className="bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col"
-    >
-     <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
+   <div
+  onClick={(e) => e.stopPropagation()}
+  style={getPopupStyle("menuSort")}
+  className="bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col"
+>
+     <div
+  onPointerDown={(e) => startPopupDrag("menuSort", e)}
+  className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between"
+>
   <div className="font-bold flex items-center gap-2">
     <Settings className="w-5 h-5" />
 메뉴 변경
@@ -2875,7 +3130,10 @@ rel="noopener noreferrer"
   />
 ))}
           <button
-  onClick={() => setMenuAddOpen(true)}
+  onClick={() => {
+  resetPopupPosition("menuAdd");
+  setMenuAddOpen(true);
+}}
   className="
     bg-white
     p-7
@@ -3161,7 +3419,10 @@ sm:pb-4
                 })}
 
         <button
-          onClick={() => setMenuAddOpen(true)}
+          onClick={() => {
+  resetPopupPosition("menuAdd");
+  setMenuAddOpen(true);
+}}
           className="
             bg-white
             p-7
@@ -3363,10 +3624,14 @@ hover:-translate-y-1
     className="fixed inset-0 z-[70] bg-black/40 flex items-center justify-center p-4"
   >
     <div
-      onClick={(e) => e.stopPropagation()}
-      className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6"
-    >
-      <div className="flex items-center justify-between mb-5">
+  onClick={(e) => e.stopPropagation()}
+  style={getPopupStyle("menuAdd")}
+  className="bg-white w-full max-w-md rounded-3xl shadow-xl p-6"
+>
+      <div
+  onPointerDown={(e) => startPopupDrag("menuAdd", e)}
+  className="flex items-center justify-between mb-5"
+>
         <h2 className="text-xl font-black text-gray-900">
           메뉴 추가
         </h2>
@@ -3529,10 +3794,14 @@ hover:-translate-y-1
           className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
         >
           <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col"
-          >
-            <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
+  onClick={(e) => e.stopPropagation()}
+  style={getPopupStyle("memo")}
+  className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col"
+>
+            <div
+  onPointerDown={(e) => startPopupDrag("memo", e)}
+  className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between"
+>
               <div className="font-bold flex items-center gap-2">
                 <NotebookPen className="w-5 h-5" />
                 메모장
@@ -3591,23 +3860,21 @@ hover:-translate-y-1
     <button
       onClick={() => setMemoAddOpen(true)}
       className="
-        h-12
-        rounded-2xl
-        bg-gray-800
-        text-white
-        px-5
-        text-sm
-        font-bold
-        flex
-        items-center
-        justify-center
-        gap-1.5
-        hover:bg-gray-100
-hover:-translate-y-0.5
-hover:shadow-md
-transition
-        cursor-default
-      "
+  h-12
+  rounded-2xl
+  bg-gray-800
+  text-white
+  px-5
+  text-sm
+  font-bold
+  flex
+  items-center
+  justify-center
+  gap-1.5
+  hover:bg-gray-700
+  transition
+  cursor-default
+"
     >
       <Plus className="w-4 h-4" />
       추가
@@ -3619,132 +3886,144 @@ transition
 
             <div className="flex-1 min-h-0 overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
               {pagedMemos.length === 0 ? (
-                <div className="col-span-full h-full flex items-center justify-center text-sm text-gray-400 min-h-[450px]">
-  저장된 메모가 없습니다.
-</div>
-              ) : (
-                pagedMemos.map((memo) => (
-                  <div
-  key={memo.id}
-  onDoubleClick={() => setSelectedMemo(memo)}
-  className={`
-  rounded-2xl
-border
-shadow-sm
-${getMemoColorClass(memo.color)}
-  hover:shadow-md
-  hover:-translate-y-0.5
-  transition-all
-  duration-200
-  cursor-default
-  p-4
-`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="flex-1 min-w-0 flex flex-col min-h-[130px]">
-                        <h3 className="text-sm font-black text-gray-900 mb-2 break-keep">
-  {memo.title}
-</h3>
+  <div className="col-span-full h-full flex items-center justify-center text-sm text-gray-400 min-h-[450px]">
+    저장된 메모가 없습니다.
+  </div>
+) : (
+  <DndContext
+    sensors={sensors}
+    collisionDetection={closestCenter}
+    onDragEnd={handleMemoDragEnd}
+  >
+    <SortableContext
+      items={pagedMemos
+        .filter((memo) => !memo.pinned)
+        .map((memo) => memo.id)}
+      strategy={rectSortingStrategy}
+    >
+      {pagedMemos.map((memo) => (
+        <SortableMemoCard key={memo.id} memo={memo}>
+          <div
+            onDoubleClick={() => setSelectedMemo(memo)}
+            className={`
+              rounded-2xl
+              border
+              shadow-sm
+              ${getMemoColorClass(memo.color)}
+              hover:shadow-md
+              hover:-translate-y-0.5
+              transition-all
+              duration-200
+              cursor-default
+              p-4
+            `}
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex-1 min-w-0 flex flex-col min-h-[130px]">
+                <h3 className="text-sm font-black text-gray-900 mb-2 break-keep">
+                  {memo.title}
+                </h3>
 
-<p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line break-keep">
-  {memo.content}
-</p>
+                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line break-keep">
+                  {memo.content}
+                </p>
 
+                <p className="text-[11px] text-gray-400 mt-auto pt-3">
+                  수정일{" "}
+                  {new Date(memo.updatedAt).toLocaleDateString("ko-KR")}
+                </p>
+              </div>
 
+              <div className="flex flex-col gap-2 shrink-0">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleMemoVisible(memo.id);
+                  }}
+                  className={`
+                    w-10
+                    h-10
+                    rounded-full
+                    flex
+                    items-center
+                    justify-center
+                    border
+                    transition
+                    cursor-default
+                    ${
+                      memo.visible
+                        ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700"
+                        : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+                    }
+                  `}
+                  title="메인 노출"
+                >
+                  {memo.visible ? (
+                    <Eye className="w-4 h-4" />
+                  ) : (
+                    <EyeOff className="w-4 h-4" />
+                  )}
+                </button>
 
-<p className="text-[11px] text-gray-400 mt-auto pt-3">
-  수정일{" "}
-  {new Date(memo.updatedAt).toLocaleDateString("ko-KR")}
-</p>
-                      </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleMemoPinned(memo.id);
+                  }}
+                  className={`
+                    w-10
+                    h-10
+                    rounded-full
+                    flex
+                    items-center
+                    justify-center
+                    border
+                    transition
+                    cursor-default
+                    ${
+                      memo.pinned
+                        ? "bg-gray-800 border-gray-800 text-white hover:bg-gray-700 hover:border-gray-700"
+                        : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+                    }
+                  `}
+                  title="상단 고정"
+                >
+                  <Pin className="w-4 h-4" />
+                </button>
 
-                      <div className="flex flex-col gap-2 shrink-0">
-                        <button
-                          onClick={(e) => {
-  e.stopPropagation();
-  toggleMemoVisible(memo.id);
-}}
-                          className={`
-                            w-10
-                            h-10
-                            rounded-full
-                            flex
-                            items-center
-                            justify-center
-                            border
-                            transition
-                            cursor-default
-                            ${
-                              memo.visible
-                                ? "bg-blue-600 border-blue-600 text-white"
-                                : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50"
-                            }
-                          `}
-                          title="메인 노출"
-                        >
-                          {memo.visible ? (
-                            <Eye className="w-4 h-4" />
-                          ) : (
-                            <EyeOff className="w-4 h-4" />
-                          )}
-                        </button>
-
-                        <button
-                          onClick={(e) => {
-  e.stopPropagation();
-  toggleMemoPinned(memo.id);
-}}
-                          className={`
-                            w-10
-                            h-10
-                            rounded-full
-                            flex
-                            items-center
-                            justify-center
-                            border
-                            transition
-                            cursor-default
-                            ${
-                              memo.pinned
-                                ? "bg-gray-800 border-gray-800 text-white"
-                                : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50"
-                            }
-                          `}
-                          title="상단 고정"
-                        >
-                          <Pin className="w-4 h-4" />
-                        </button>
-
-                        <button
-  onClick={(e) => {
-  e.stopPropagation();
-  setSelectedMemo(memo);
-}}
-  className="
-    w-10
-    h-10
-    rounded-full
-    flex
-    items-center
-    justify-center
-    border
-    border-gray-200
-    bg-white
-    text-gray-400
-    hover:bg-gray-50
-    hover:text-gray-600
-    transition
-    cursor-default
-  "
-  title="수정"
->
-  <Pencil className="w-4 h-4" />
-</button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedMemo(memo);
+                  }}
+                  className="
+                    w-10
+                    h-10
+                    rounded-full
+                    flex
+                    items-center
+                    justify-center
+                    border
+                    border-gray-200
+                    bg-white
+                    text-gray-400
+                    hover:bg-gray-50
+                    hover:text-gray-600
+                    transition
+                    cursor-default
+                  "
+                  title="수정"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </SortableMemoCard>
+      ))}
+    </SortableContext>
+  </DndContext>
+)}
             </div>
 
             <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100 bg-white">
@@ -3752,7 +4031,7 @@ ${getMemoColorClass(memo.color)}
                 <button
                   onClick={() => setMemoPage((p) => Math.max(1, p - 1))}
                   disabled={memoPage === 1}
-                  className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-default"
+                  className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 disabled:text-gray-300 disabled:hover:bg-white disabled:hover:text-gray-300 cursor-default"
                 >
                   이전
                 </button>
@@ -3768,8 +4047,8 @@ ${getMemoColorClass(memo.color)}
                       onClick={() => setMemoPage(page)}
                       className={`px-4 py-2 border-l border-gray-200 cursor-default ${
                         memoPage === page
-                          ? "bg-slate-800 text-white"
-                          : "bg-white text-gray-600 hover:bg-gray-100"
+  ? "bg-slate-800 text-white hover:bg-slate-700"
+  : "bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                       }`}
                     >
                       {page}
@@ -3782,7 +4061,7 @@ ${getMemoColorClass(memo.color)}
                     setMemoPage((p) => Math.min(totalMemoPages, p + 1))
                   }
                   disabled={memoPage === totalMemoPages}
-                  className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-default"
+                  className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 disabled:text-gray-300 disabled:hover:bg-white disabled:hover:text-gray-300 cursor-default"
                 >
                   다음
                 </button>
@@ -3881,10 +4160,13 @@ ${getMemoColorClass(memo.color)}
               </button>
 
               <button
-                onClick={() => {
-                  addMemo();
-                  setMemoAddOpen(false);
-                }}
+  onClick={() => {
+   addMemo();
+setMemoAddOpen(false);
+
+setSaveConfirmMessage("메모가 추가되었습니다.");
+setSaveConfirmOpen(true);
+  }}
                 className="
                   flex-1
                   h-12
@@ -3909,13 +4191,17 @@ ${getMemoColorClass(memo.color)}
       {selectedMemo && (
         <div
           onClick={() => setSelectedMemo(null)}
-          className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[1300] bg-black/40 flex items-center justify-center p-4"
         >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6"
-          >
-            <div className="flex items-center justify-between mb-5">
+         <div
+  onClick={(e) => e.stopPropagation()}
+  style={getPopupStyle("memoDetail")}
+  className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6"
+>
+            <div
+  onPointerDown={(e) => startPopupDrag("memoDetail", e)}
+  className="flex items-center justify-between mb-5"
+>
   <h2 className="text-xl font-black text-gray-900">
     메모 수정
   </h2>
@@ -3952,7 +4238,11 @@ ${getMemoColorClass(memo.color)}
     ))}
 
     <button
-      onClick={() => setSelectedMemo(null)}
+  onClick={() => {
+    setSelectedMemo(null);
+    setSaveConfirmType("popup");
+    setSaveConfirmOpen(true);
+  }}
       className="
         w-9
         h-9
@@ -4024,7 +4314,7 @@ ${getMemoColorClass(memo.color)}
   <button
     onClick={() => {
       deleteMemo(selectedMemo.id);
-      setSelectedMemo(null);
+      
     }}
     className="
       flex-1
@@ -4044,7 +4334,13 @@ ${getMemoColorClass(memo.color)}
   </button>
 
   <button
-    onClick={() => setSelectedMemo(null)}
+  onClick={() => {
+    setSelectedMemo(null);
+
+setSaveConfirmType("popup");
+setSaveConfirmMessage("메모가 수정되었습니다.");
+setSaveConfirmOpen(true);
+  }}
     className="
       flex-1
       h-12
@@ -4083,10 +4379,14 @@ ${getMemoColorClass(memo.color)}
     className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
   >
     <div
-      onClick={(e) => e.stopPropagation()}
-      className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
-    >
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+  onClick={(e) => e.stopPropagation()}
+  style={getPopupStyle("nps")}
+  className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
+>
+      <div
+  onPointerDown={(e) => startPopupDrag("nps", e)}
+  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+>
         <div className="font-bold flex items-center gap-2">
           <FileText className="w-5 h-5" />
           국민연금 예상연금월액표
@@ -4255,8 +4555,14 @@ ${getMemoColorClass(memo.color)}
 
 {lifeOpen && (
   <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+    <div
+  style={getPopupStyle("life")}
+  className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
+>
+      <div
+  onPointerDown={(e) => startPopupDrag("life", e)}
+  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+>
         <div className="font-bold flex items-center gap-2">
           <FileText className="w-5 h-5" />
           기대수명 계산기
@@ -4440,9 +4746,13 @@ ${getMemoColorClass(memo.color)}
 >
     <div
   onClick={(e) => e.stopPropagation()}
+  style={getPopupStyle("press")}
   className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
 >
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+      <div
+  onPointerDown={(e) => startPopupDrag("press", e)}
+  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+>
         <div className="font-bold flex items-center gap-2">
           <Newspaper className="w-5 h-5" />
           보도자료
@@ -4668,6 +4978,7 @@ ${getMemoColorClass(memo.color)}
     </div>
   </div>
 )}
+
     </main>
   );
 }
@@ -4727,6 +5038,46 @@ function SortableMenuSortCard({
       <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
         {menu.desc}
       </p>
+    </div>
+  );
+}
+
+function SortableMemoCard({
+  memo,
+  children,
+}: {
+  memo: MemoItem;
+  children: React.ReactNode;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: memo.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 80 : "auto",
+    opacity: isDragging ? 0.8 : 1,
+  };
+
+  if (memo.pinned) {
+    return <>{children}</>;
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={isDragging ? "scale-[1.01]" : ""}
+    >
+      {children}
     </div>
   );
 }
