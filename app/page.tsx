@@ -2099,7 +2099,7 @@ hover:-translate-y-1
       )}
 
       {/* 모바일 메세지 버튼 */}
-<div className="max-w-[1500px] mx-auto px-5 -mt-5 mb-4 md:hidden">
+<div className="max-w-[1500px] mx-auto px-5 -mt-5 mb-8 md:hidden">
   <button
     onClick={() => {
   resetPopupPosition("message");
