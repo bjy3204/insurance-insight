@@ -696,7 +696,7 @@ const paginatedPress = filteredPress.slice(
 {termsOpen && (
   <div
     onClick={() => setTermsOpen(false)}
-    className="fixed inset-0 z-40"
+    className="fixed inset-0 z-[9999]"
   >
     <div
       onClick={(e) => e.stopPropagation()}

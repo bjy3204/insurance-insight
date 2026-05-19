@@ -1038,7 +1038,7 @@ const addMemo = () => {
 
   const newMemo: MemoItem = {
     id: crypto.randomUUID(),
-    title: memoTitle.trim() || "제목 없는 메모",
+    title: memoTitle.trim() || "",
     content: memoContent.trim(),
     pinned: false,
     visible: false,
@@ -1970,7 +1970,7 @@ hover:-translate-y-1
       duration-150
       left-0
       top-[58px]
-      z-[40]
+      z-[9999]
       w-full
       max-h-[260px]
       rounded-2xl
@@ -1995,9 +1995,10 @@ hover:-translate-y-1
       <button
         key={index}
         onClick={() => {
-          setQuickMenuSelectOpen(true);
-          setQuickOpen(false);
-        }}
+  setTempQuickMenuKeys(quickMenuKeys);
+  setQuickMenuSelectOpen(true);
+  setQuickOpen(false);
+}}
         className={`
           min-h-[62px]
           px-3
@@ -2099,7 +2100,7 @@ hover:-translate-y-1
       )}
 
       {/* 모바일 메세지 버튼 */}
-<div className="max-w-[1500px] mx-auto px-5 -mt-5 mb-15 md:hidden">
+<div className="max-w-[1500px] mx-auto px-5 -mt-5 mb-23 md:hidden">
   <button
     onClick={() => {
   resetPopupPosition("message");
@@ -2383,8 +2384,11 @@ rel="noopener noreferrer"
         </h2>
 
         <button
-          onClick={() => setQuickMenuSelectOpen(false)}
-          className="
+  onClick={() => {
+    setTempQuickMenuKeys(quickMenuKeys);
+    setQuickMenuSelectOpen(false);
+  }}
+  className="
             w-9
             h-9
             rounded-full
@@ -2401,37 +2405,90 @@ rel="noopener noreferrer"
       </div>
 
       <div className="grid grid-cols-1 gap-2">
-        {quickMenuOptions
-          .filter((item) => !tempQuickMenuKeys.includes(item.key))
-          .map((item) => (
-            <button
-              key={item.key}
-              onClick={() => {
-                if (tempQuickMenuKeys.length >= 4) {
-                  setQuickLimitOpen(true);
-                  return;
-                }
+  {quickMenuOptions.map((item) => {
+    const isSelected = tempQuickMenuKeys.includes(item.key);
 
-                setTempQuickMenuKeys((prev) => [...prev, item.key]);
-                setQuickMenuSelectOpen(false);
-              }}
-              className="
-                h-12
-                rounded-2xl
-                border
-                border-gray-200
-                text-sm
-                font-bold
-                text-gray-700
-                hover:bg-gray-50
-                transition
-                cursor-default
-              "
-            >
-              {item.title}
-            </button>
-          ))}
-      </div>
+    return (
+      <button
+        key={item.key}
+        onClick={() => {
+          if (isSelected) {
+            setTempQuickMenuKeys((prev) =>
+              prev.filter((key) => key !== item.key)
+            );
+            return;
+          }
+
+          if (tempQuickMenuKeys.length >= 4) {
+            setQuickLimitOpen(true);
+            return;
+          }
+
+          setTempQuickMenuKeys((prev) => [...prev, item.key]);
+        }}
+        className={`
+          h-12
+          rounded-2xl
+          border
+          text-sm
+          font-bold
+          transition
+          cursor-default
+          ${
+            isSelected
+              ? "border-blue-400 bg-blue-50 text-blue-600"
+              : "border-gray-200 text-gray-700 hover:bg-gray-50"
+          }
+        `}
+      >
+        {item.title}
+      </button>
+    );
+  })}
+</div>
+      <div className="flex gap-3 mt-6">
+  <button
+    onClick={() => {
+      setTempQuickMenuKeys(quickMenuKeys);
+      setQuickMenuSelectOpen(false);
+    }}
+    className="
+      flex-1
+      h-12
+      rounded-2xl
+      bg-gray-100
+      text-gray-700
+      text-sm
+      font-bold
+      hover:bg-gray-200
+      transition
+      cursor-default
+    "
+  >
+    취소
+  </button>
+
+  <button
+    onClick={() => {
+      setQuickMenuKeys(tempQuickMenuKeys);
+      setQuickMenuSelectOpen(false);
+    }}
+    className="
+      flex-1
+      h-12
+      rounded-2xl
+      bg-blue-600
+      text-white
+      text-sm
+      font-bold
+      hover:bg-blue-700
+      transition
+      cursor-default
+    "
+  >
+    저장
+  </button>
+</div>
     </div>
   </div>
 )}
@@ -2997,36 +3054,44 @@ rel="noopener noreferrer"
 메뉴 변경
   </div>
 
-  <button
-    onClick={() => {
-      if (menuManageMode === "sort") {
-        setMenuSortOpen(false);
-        return;
-      }
+ <button
+  onClick={() => {
+    if (menuManageMode === "sort") {
+      setMenuSortOpen(false);
+      return;
+    }
 
-      setMenuManageMode("sort");
-      setSelectedPersonalMenuId("");
-      setSelectedDeleteMenuIds([]);
-      setEditIconOpen(false);
-      setNewMenuTitle("");
-      setNewMenuDesc("");
-      setNewMenuLink("");
-      setNewMenuIcon("globe");
-    }}
-    className="
-      px-4
-      h-9
-      rounded-xl
-      bg-white/10
-      text-sm
-      font-bold
-      hover:bg-white/20
-      transition
-      cursor-default
-    "
-  >
-    {menuManageMode === "sort" ? "닫기" : "뒤로가기"}
-  </button>
+    setMenuManageMode("sort");
+    setSelectedPersonalMenuId("");
+    setSelectedDeleteMenuIds([]);
+    setEditIconOpen(false);
+    setNewMenuTitle("");
+    setNewMenuDesc("");
+    setNewMenuLink("");
+    setNewMenuIcon("globe");
+  }}
+  className={`
+    h-9
+    flex
+    items-center
+    justify-center
+    transition
+    cursor-default
+    ${
+      menuManageMode === "sort"
+        ? "w-9 rounded-full hover:bg-white/10"
+        : "px-4 min-w-[92px] -translate-x-0 rounded-xl border border-white/30 bg-white/10 text-white hover:bg-white/20"
+    }
+  `}
+>
+  {menuManageMode === "sort" ? (
+    <X className="w-5 h-5" />
+  ) : (
+    <span className="text-sm font-bold whitespace-nowrap">
+      뒤로가기
+    </span>
+  )}
+</button>
 </div>
 
 <div className="px-5 py-2.5 border-b border-gray-100 flex items-center justify-between gap-3">
@@ -3287,11 +3352,7 @@ sm:pb-4
       </div>
     </div>
 
-        {tempPersonalMenus.length === 0 ? (
-      <div className="min-h-[380px] flex items-center justify-center pt-16 text-center text-sm text-gray-400">
-        수정할 개인 메뉴가 없습니다.
-      </div>
-    ) : (
+        
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 items-start">
                 {tempPersonalMenus.map((menu) => {
           const Icon = personalMenuIcons[menu.iconKey];
@@ -3446,7 +3507,7 @@ hover:-translate-y-1
           <Plus className="w-10 h-10 text-gray-300" />
         </button>
       </div>
-    )}
+    
   </div>
 )}
 
@@ -3620,8 +3681,7 @@ hover:-translate-y-1
 {/* 메뉴 추가 팝업 */}
 {menuAddOpen && (
   <div
-    onClick={() => setMenuAddOpen(false)}
-    className="fixed inset-0 z-[70] bg-black/40 flex items-center justify-center p-4"
+    className="fixed inset-0 z-[1400] bg-black/40 flex items-center justify-center p-4"
   >
     <div
   onClick={(e) => e.stopPropagation()}
@@ -3648,7 +3708,7 @@ hover:-translate-y-1
             text-gray-400
             hover:bg-gray-100
             transition
-            cursor-default
+            cursor-pointer
           "
         >
           <X className="w-5 h-5" />
@@ -3789,10 +3849,9 @@ hover:-translate-y-1
 
       {/* 메모장 팝업 */}
       {memoOpen && (
-        <div
-          onClick={() => setMemoOpen(false)}
-          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
-        >
+  <div
+    className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4"
+  >
           <div
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("memo")}
@@ -3819,7 +3878,7 @@ hover:-translate-y-1
                   text-white
                   hover:bg-white/10
                   transition
-                  cursor-default
+                  cursor-pointer
                 "
               >
                 <X className="w-5 h-5" />
@@ -4073,10 +4132,10 @@ hover:-translate-y-1
 
               {/* 메모 추가 팝업 */}
       {memoAddOpen && (
-        <div
-          onClick={() => setMemoAddOpen(false)}
-          className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center p-4"
-        >
+  <div
+    onClick={() => setMemoAddOpen(false)}
+    className="fixed inset-0 z-[1400] bg-black/40 flex items-center justify-center p-4"
+  >
           <div
   onClick={(e) => e.stopPropagation()}
   className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6"
@@ -4189,10 +4248,9 @@ setSaveConfirmOpen(true);
 
             {/* 메모 상세 팝업 */}
       {selectedMemo && (
-        <div
-          onClick={() => setSelectedMemo(null)}
-          className="fixed inset-0 z-[1300] bg-black/40 flex items-center justify-center p-4"
-        >
+  <div
+    className="fixed inset-0 z-[1300] bg-black/40 flex items-center justify-center p-4"
+  >
          <div
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("memoDetail")}
@@ -4239,10 +4297,8 @@ setSaveConfirmOpen(true);
 
     <button
   onClick={() => {
-    setSelectedMemo(null);
-    setSaveConfirmType("popup");
-    setSaveConfirmOpen(true);
-  }}
+  setSelectedMemo(null);
+}}
       className="
         w-9
         h-9
@@ -4265,13 +4321,11 @@ setSaveConfirmOpen(true);
             <input
               value={selectedMemo.title}
               onChange={(e) => {
-                updateMemo(selectedMemo.id, "title", e.target.value);
-                setSelectedMemo({
-                  ...selectedMemo,
-                  title: e.target.value,
-                  updatedAt: new Date().toISOString(),
-                });
-              }}
+  setSelectedMemo({
+    ...selectedMemo,
+    title: e.target.value,
+  });
+}}
               className="
                 w-full
                 h-12
@@ -4289,13 +4343,11 @@ setSaveConfirmOpen(true);
             <textarea
   value={selectedMemo.content}
   onChange={(e) => {
-    updateMemo(selectedMemo.id, "content", e.target.value);
-    setSelectedMemo({
-      ...selectedMemo,
-      content: e.target.value,
-      updatedAt: new Date().toISOString(),
-    });
-  }}
+  setSelectedMemo({
+    ...selectedMemo,
+    content: e.target.value,
+  });
+}}
   className="
     w-full
     h-56
@@ -4335,12 +4387,22 @@ setSaveConfirmOpen(true);
 
   <button
   onClick={() => {
-    setSelectedMemo(null);
+  const nextMemos = memos.map((memo) =>
+    memo.id === selectedMemo.id
+      ? {
+          ...selectedMemo,
+          updatedAt: new Date().toISOString(),
+        }
+      : memo
+  );
 
-setSaveConfirmType("popup");
-setSaveConfirmMessage("메모가 수정되었습니다.");
-setSaveConfirmOpen(true);
-  }}
+  saveMemos(nextMemos);
+  setSelectedMemo(null);
+
+  setSaveConfirmType("popup");
+  setSaveConfirmMessage("메모가 수정되었습니다.");
+  setSaveConfirmOpen(true);
+}}
     className="
       flex-1
       h-12
@@ -4782,16 +4844,20 @@ setSaveConfirmOpen(true);
       {!selectedPress ? (
         <>
           <div className="p-4 border-b border-gray-100">
-            <input
-              value={pressSearch}
-              onChange={(e) => {
-                setPressSearch(e.target.value);
-                setPressPage(1);
-              }}
-              placeholder="보도자료 검색"
-              className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none"
-            />
-          </div>
+  <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
+    <Search className="w-5 h-5 text-gray-400" />
+
+    <input
+      value={pressSearch}
+      onChange={(e) => {
+        setPressSearch(e.target.value);
+        setPressPage(1);
+      }}
+      placeholder="보도자료 검색"
+      className="w-full outline-none text-sm bg-transparent"
+    />
+  </div>
+</div>
 
           <div className="flex-1 min-h-0 flex flex-col">
             <div className="overflow-y-auto flex-1 p-4">

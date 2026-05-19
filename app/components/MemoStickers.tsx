@@ -188,6 +188,7 @@ export default function MemoStickers() {
             md:block
             w-[260px]
             min-h-[190px]
+            h-auto
             rounded-3xl
             shadow
             p-5
@@ -227,7 +228,7 @@ export default function MemoStickers() {
             </button>
           </div>
 
-          <p className="text-sm text-gray-600 leading-relaxed line-clamp-5 whitespace-pre-line break-keep">
+          <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line break-keep">
             {memo.content}
           </p>
         </div>

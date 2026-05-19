@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -35,6 +35,58 @@ const [lifeGender, setLifeGender] = useState<LifeGender>("남성");
 const [npsSearch, setNpsSearch] = useState("");
 const [pensionInfoOpen, setPensionInfoOpen] = useState(false);
 const [lifeOpen, setLifeOpen] = useState(false);
+const [npsPopupPos, setNpsPopupPos] = useState({ x: 0, y: 0 });
+const [lifePopupPos, setLifePopupPos] = useState({ x: 0, y: 0 });
+
+const npsDragRef = useRef({
+  isDragging: false,
+  startX: 0,
+  startY: 0,
+  originX: 0,
+  originY: 0,
+});
+
+const lifeDragRef = useRef({
+  isDragging: false,
+  startX: 0,
+  startY: 0,
+  originX: 0,
+  originY: 0,
+});
+
+const movePopup = (
+  e: React.MouseEvent,
+  type: "nps" | "life"
+) => {
+  const drag = type === "nps" ? npsDragRef.current : lifeDragRef.current;
+  if (!drag.isDragging) return;
+
+  const nextPos = {
+    x: drag.originX + e.clientX - drag.startX,
+    y: drag.originY + e.clientY - drag.startY,
+  };
+
+  if (type === "nps") {
+    setNpsPopupPos(nextPos);
+  } else {
+    setLifePopupPos(nextPos);
+  }
+};
+
+const stopPopupMove = () => {
+  npsDragRef.current.isDragging = false;
+  lifeDragRef.current.isDragging = false;
+};
+
+const closeNpsPopup = () => {
+  setNpsTableOpen(false);
+  setNpsPopupPos({ x: 0, y: 0 });
+};
+
+const closeLifePopup = () => {
+  setLifeOpen(false);
+  setLifePopupPos({ x: 0, y: 0 });
+};
 
 const [lifeAge, setLifeAge] = useState("");
 
@@ -686,7 +738,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
     fixed
     left-6
     bottom-24
-    z-40
+   z-[999]
     w-14
     h-14
     rounded-full
@@ -707,7 +759,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
 {pensionInfoOpen && (
   <div
     onClick={() => setPensionInfoOpen(false)}
-    className="fixed inset-0 z-40"
+    className="fixed inset-0 z-[9999]"
   >
     <div
       onClick={(e) => e.stopPropagation()}
@@ -763,21 +815,39 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
 
 {npsTableOpen && (
   <div
-  onClick={() => setNpsTableOpen(false)}
-  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
->
-    <div
+    onMouseMove={(e) => movePopup(e, "nps")}
+    onMouseUp={stopPopupMove}
+    onMouseLeave={stopPopupMove}
+    className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+  >
+   <div
   onClick={(e) => e.stopPropagation()}
+  style={{
+    transform: `translate(${npsPopupPos.x}px, ${npsPopupPos.y}px)`,
+  }}
   className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
 >
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+      <div
+  onMouseDown={(e) => {
+  if (window.innerWidth < 768) return;
+
+  npsDragRef.current = {
+    isDragging: true,
+    startX: e.clientX,
+    startY: e.clientY,
+    originX: npsPopupPos.x,
+    originY: npsPopupPos.y,
+  };
+}}
+  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+>
         <div className="font-bold flex items-center gap-2">
           <FileText className="w-5 h-5" />
           국민연금 예상연금월액표
         </div>
 
         <button
-          onClick={() => setNpsTableOpen(false)}
+  onClick={closeNpsPopup}
           className="
   cursor-pointer
   w-9
@@ -938,21 +1008,39 @@ onChange={(e) =>
 )}
 {lifeOpen && (
   <div
-  onClick={() => setLifeOpen(false)}
-  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
->
+    onMouseMove={(e) => movePopup(e, "life")}
+    onMouseUp={stopPopupMove}
+    onMouseLeave={stopPopupMove}
+    className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+  >
     <div
   onClick={(e) => e.stopPropagation()}
+  style={{
+    transform: `translate(${lifePopupPos.x}px, ${lifePopupPos.y}px)`,
+  }}
   className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
 >
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+      <div
+  onMouseDown={(e) => {
+  if (window.innerWidth < 768) return;
+
+  lifeDragRef.current = {
+    isDragging: true,
+    startX: e.clientX,
+    startY: e.clientY,
+    originX: lifePopupPos.x,
+    originY: lifePopupPos.y,
+  };
+}}
+  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+>
         <div className="font-bold flex items-center gap-2">
           <FileText className="w-5 h-5" />
           기대수명 계산기
         </div>
 
         <button
-          onClick={() => setLifeOpen(false)}
+  onClick={closeLifePopup}
           className="
   cursor-pointer
   w-9

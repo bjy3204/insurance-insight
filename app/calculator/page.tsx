@@ -1762,7 +1762,7 @@ duration-200
 {dictionaryOpen && (
   <div
     onClick={() => setDictionaryOpen(false)}
-    className="fixed inset-0 z-40"
+    className="fixed inset-0 z-[9999]"
   >
     <div
       onClick={(e) => e.stopPropagation()}
