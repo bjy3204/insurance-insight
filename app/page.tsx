@@ -5,6 +5,13 @@ import {
   LIFE_DATA_YEAR,
   lifeExpectancyData,
 } from "./pension-calculator/lifeExpectancyData";
+
+import {
+  npsOldAgeTable,
+  npsDisabilityTable,
+  npsSurvivorTable,
+} from "./pension-calculator/npsTableData";
+
 import {
   FileText,
   Calculator,
@@ -31,9 +38,10 @@ import {
   Trash2,
   Plus,
     Search,
-  Pencil,
+    Pencil,
   User,
   Globe,
+  Home as HomeIcon,
 } from "lucide-react";
 
 import { FaInstagram } from "react-icons/fa";
@@ -161,6 +169,8 @@ const personalMenuIcons = {
   user: User,
 };
 
+type NpsTableTab = "노령연금" | "장애연금" | "유족연금";
+
 type PersonalMenuIconKey = keyof typeof personalMenuIcons;
 
 type PersonalMenuItem = {
@@ -206,6 +216,7 @@ export default function Home() {
 const [tempMenus, setTempMenus] = useState<MenuItem[]>(defaultMenus);
 const [menuAddOpen, setMenuAddOpen] = useState(false);
 const [personalMenus, setPersonalMenus] = useState<PersonalMenuItem[]>([]);
+const [tempPersonalMenus, setTempPersonalMenus] = useState<PersonalMenuItem[]>([]);
 const [newMenuTitle, setNewMenuTitle] = useState("");
 const [newMenuDesc, setNewMenuDesc] = useState("");
 const [newMenuLink, setNewMenuLink] = useState("");
@@ -216,12 +227,14 @@ const [newMenuIcon, setNewMenuIcon] =
 
 const [selectedPersonalMenuId, setSelectedPersonalMenuId] = useState("");
 const [selectedDeleteMenuIds, setSelectedDeleteMenuIds] = useState<string[]>([]);
+const [editingOriginalMenu, setEditingOriginalMenu] =
+  useState<PersonalMenuItem | null>(null);
 const [editIconOpen, setEditIconOpen] = useState(false);
-const [menuEditPopupOpen, setMenuEditPopupOpen] = useState(false);
 
-const selectedPersonalMenu = personalMenus.find(
-  (menu) => menu.id === selectedPersonalMenuId
-);
+const [mainMenuManageMode, setMainMenuManageMode] =
+  useState<"normal" | "edit" | "delete">("normal");
+
+
   const [memos, setMemos] = useState<MemoItem[]>([]);
   const [memoTitle, setMemoTitle] = useState("");
   const [memoContent, setMemoContent] = useState("");
@@ -238,6 +251,28 @@ const [selectedPress, setSelectedPress] = useState<any>(null);
 const [pressSearch, setPressSearch] = useState("");
 const [pressPage, setPressPage] = useState(1);
 const [lifeOpen, setLifeOpen] = useState(false);
+const [npsTableOpen, setNpsTableOpen] = useState(false);
+const [npsTableTab, setNpsTableTab] =
+  useState<NpsTableTab>("노령연금");
+
+const [npsSearch, setNpsSearch] = useState("");
+
+const [quickMenuKeys, setQuickMenuKeys] = useState<string[]>([
+  "hospital",
+  "life",
+  "press",
+  "disease",
+]);
+const [tempQuickMenuKeys, setTempQuickMenuKeys] = useState<string[]>([]);
+
+const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+const [quickLimitOpen, setQuickLimitOpen] = useState(false);
+const [quickMenuSelectOpen, setQuickMenuSelectOpen] = useState(false);
+const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
+const [saveConfirmType, setSaveConfirmType] =
+  useState<"main" | "popup">("main");
+
+
 const [lifeGender, setLifeGender] = useState<"남성" | "여성">("남성");
 const [lifeAge, setLifeAge] = useState("");
 const [noticePage, setNoticePage] = useState(1);
@@ -288,6 +323,66 @@ const expectAge =
   const sickStartAge =
   Number(lifeAge || 0) + healthyYears;
 const [readPressIds, setReadPressIds] = useState<number[]>([]);
+
+const currentNpsTable =
+  npsTableTab === "노령연금"
+    ? npsOldAgeTable
+    : npsTableTab === "장애연금"
+    ? npsDisabilityTable
+    : npsSurvivorTable;
+
+const filteredNpsTable = currentNpsTable.filter((row: any) =>
+  `${row.income} ${row.premium}`
+    .replaceAll(",", "")
+    .includes(npsSearch.replaceAll(",", ""))
+);
+
+const quickMenuOptions = [
+  {
+    key: "hospital",
+    title: "병원정보 검색",
+    action: () => {
+      setHospitalOpen(true);
+      setQuickOpen(false);
+    },
+  },
+  {
+    key: "life",
+    title: "기대수명 계산기",
+    action: () => {
+      setLifeOpen(true);
+      setQuickOpen(false);
+    },
+  },
+  {
+    key: "press",
+    title: "보도자료",
+    action: () => {
+      setPressOpen(true);
+      setSelectedPress(null);
+      setPressSearch("");
+      setPressPage(1);
+      setQuickOpen(false);
+    },
+  },
+  {
+    key: "disease",
+    title: "상병코드 검색",
+    action: () => {
+      setDiseaseOpen(true);
+      setQuickOpen(false);
+    },
+  },
+  {
+    key: "nps",
+    title: "국민연금 예상 연금월액표",
+    action: () => {
+      setNpsTableOpen(true);
+      setQuickOpen(false);
+    },
+  },
+];
+
 const sortedPress = [...PRESS.items].sort(
   (a, b) =>
     new Date(b.date.replace(/\./g, "-")).getTime() -
@@ -551,11 +646,11 @@ const handleMenuSortDragEnd = (event: any) => {
   });
 };
 
-const updatePersonalMenu = () => {
-  if (!selectedPersonalMenu) return;
+const getCommittedTempPersonalMenus = () => {
+  if (!selectedPersonalMenuId) return tempPersonalMenus;
 
-  const nextPersonalMenus = personalMenus.map((menu) =>
-    menu.id === selectedPersonalMenu.id
+  return tempPersonalMenus.map((menu) =>
+    menu.id === selectedPersonalMenuId
       ? {
           ...menu,
           title: newMenuTitle.trim() || menu.title,
@@ -565,22 +660,79 @@ const updatePersonalMenu = () => {
         }
       : menu
   );
+};
+
+const commitEditingMenuToTemp = () => {
+  const nextTempPersonalMenus = getCommittedTempPersonalMenus();
+  setTempPersonalMenus(nextTempPersonalMenus);
+  return nextTempPersonalMenus;
+};
+
+const closeEditingMenu = () => {
+  setSelectedPersonalMenuId("");
+  setNewMenuTitle("");
+  setNewMenuDesc("");
+  setNewMenuLink("");
+  setNewMenuIcon("globe");
+  setEditIconOpen(false);
+};
+
+const startEditPersonalMenu = (menu: PersonalMenuItem) => {
+  commitEditingMenuToTemp();
+
+  setEditingOriginalMenu(menu);
+
+  setSelectedPersonalMenuId(menu.id);
+  setNewMenuTitle(menu.title);
+  setNewMenuDesc(menu.desc);
+  setNewMenuLink(menu.link);
+  setNewMenuIcon(menu.iconKey);
+  setEditIconOpen(false);
+};
+
+const saveEditingMenuAndClose = () => {
+  commitEditingMenuToTemp();
+  setEditingOriginalMenu(null);
+  closeEditingMenu();
+};
+
+const cancelEditingMenu = () => {
+  if (editingOriginalMenu) {
+    const restoredMenus = tempPersonalMenus.map((menu) =>
+      menu.id === editingOriginalMenu.id
+        ? editingOriginalMenu
+        : menu
+    );
+
+    setTempPersonalMenus(restoredMenus);
+  }
+
+  setEditingOriginalMenu(null);
+  setTempQuickMenuKeys(quickMenuKeys);
+
+  closeEditingMenu();
+};
+
+const savePersonalMenuEdits = () => {
+  const nextPersonalMenus = commitEditingMenuToTemp();
 
   savePersonalMenus(nextPersonalMenus);
 
-  const nextMenus = menus.map((menu) =>
-    menu.id === selectedPersonalMenu.id
-      ? {
-          ...menu,
-          title: newMenuTitle.trim() || menu.title,
-          desc: newMenuDesc.trim() || "개인 추가 메뉴",
-          link: newMenuLink.trim() || menu.link,
-          iconKey: newMenuIcon,
-          icon: personalMenuIcons[newMenuIcon],
-          isPersonal: true,
-        }
-      : menu
-  );
+  const nextMenus = menus.map((menu) => {
+    const editedMenu = nextPersonalMenus.find((item) => item.id === menu.id);
+
+    if (!editedMenu) return menu;
+
+    return {
+      ...menu,
+      title: editedMenu.title,
+      desc: editedMenu.desc,
+      link: editedMenu.link,
+      iconKey: editedMenu.iconKey,
+      icon: personalMenuIcons[editedMenu.iconKey],
+      isPersonal: true,
+    };
+  });
 
   setMenus(nextMenus);
   setTempMenus(nextMenus);
@@ -590,11 +742,73 @@ const updatePersonalMenu = () => {
     JSON.stringify(nextMenus.map((menu) => menu.id))
   );
 
+  setEditingOriginalMenu(null);
+  closeEditingMenu();
+};
+
+
+
+const saveMenuManageChanges = (type: "main" | "popup") => {
+  const nextPersonalMenus = commitEditingMenuToTemp();
+
+  savePersonalMenus(nextPersonalMenus);
+
+  const personalMenusWithIcon = nextPersonalMenus.map((menu) => ({
+    ...menu,
+    icon: personalMenuIcons[menu.iconKey],
+  }));
+
+  const defaultMenuIds = defaultMenus.map((menu) => menu.id);
+
+  const nextMenus =
+    type === "popup"
+      ? tempMenus
+          .filter((menu) => defaultMenuIds.includes(menu.id) || menu.isPersonal)
+          .map((menu) => {
+            const editedPersonalMenu = personalMenusWithIcon.find(
+              (item) => item.id === menu.id
+            );
+
+            return editedPersonalMenu || menu;
+          })
+      : menus
+          .filter((menu) => defaultMenuIds.includes(menu.id) || menu.isPersonal)
+          .map((menu) => {
+            const editedPersonalMenu = personalMenusWithIcon.find(
+              (item) => item.id === menu.id
+            );
+
+            return editedPersonalMenu || menu;
+          });
+
+  const missingPersonalMenus = personalMenusWithIcon.filter(
+    (personalMenu) => !nextMenus.some((menu) => menu.id === personalMenu.id)
+  );
+
+  const finalMenus = [...nextMenus, ...missingPersonalMenus];
+
+  setMenus(finalMenus);
+  setTempMenus(finalMenus);
+  setQuickMenuKeys(tempQuickMenuKeys);
+
+  localStorage.setItem(
+    "insurance-menu-order",
+    JSON.stringify(finalMenus.map((menu) => menu.id))
+  );
+
+  setEditingOriginalMenu(null);
+  closeEditingMenu();
+
+  setSaveConfirmType(type);
+  setSaveConfirmOpen(true);
+};
+
+const goBackMainScreen = () => {
+  setMainMenuManageMode("normal");
+  setTempQuickMenuKeys(quickMenuKeys);
   setSelectedPersonalMenuId("");
-  setNewMenuTitle("");
-  setNewMenuDesc("");
-  setNewMenuLink("");
-  setNewMenuIcon("globe");
+  setSelectedDeleteMenuIds([]);
+  setEditingOriginalMenu(null);
   setEditIconOpen(false);
 };
 
@@ -604,7 +818,7 @@ const deletePersonalMenu = () => {
     return;
   }
 
-  if (!confirm("선택한 메뉴를 삭제하시겠습니까?")) return;
+  
 
   const nextPersonalMenus = personalMenus.filter(
     (menu) => !selectedDeleteMenuIds.includes(menu.id)
@@ -624,11 +838,23 @@ const deletePersonalMenu = () => {
   );
 
   setSelectedDeleteMenuIds([]);
+  setDeleteConfirmOpen(false);
+
+  setSelectedPersonalMenuId("");
+setEditIconOpen(false);
 };
 
 const savePersonalMenus = (nextMenus: PersonalMenuItem[]) => {
   setPersonalMenus(nextMenus);
   localStorage.setItem("personalMenus", JSON.stringify(nextMenus));
+};
+
+const resetNewMenuForm = () => {
+  setNewMenuTitle("");
+  setNewMenuDesc("");
+  setNewMenuLink("");
+  setNewMenuIcon("globe");
+  setMenuAddOpen(false);
 };
 
 const addPersonalMenu = () => {
@@ -642,8 +868,6 @@ const addPersonalMenu = () => {
     return;
   }
 
-
-
   const newMenu: PersonalMenuItem = {
     id: `personal-${crypto.randomUUID()}`,
     title: newMenuTitle.trim(),
@@ -653,14 +877,24 @@ const addPersonalMenu = () => {
     isPersonal: true,
   };
 
-  const nextPersonalMenus = [...personalMenus, newMenu];
-
-  savePersonalMenus(nextPersonalMenus);
-
   const newMenuWithIcon = {
     ...newMenu,
     icon: personalMenuIcons[newMenu.iconKey],
   };
+
+  const isTemporaryAdd =
+    mainMenuManageMode === "edit" || menuSortOpen;
+
+  if (isTemporaryAdd) {
+    setTempPersonalMenus((prev) => [...prev, newMenu]);
+    setTempMenus((prev) => [...prev, newMenuWithIcon]);
+    resetNewMenuForm();
+    return;
+  }
+
+  const nextPersonalMenus = [...personalMenus, newMenu];
+
+  savePersonalMenus(nextPersonalMenus);
 
   const nextMenus = [...menus, newMenuWithIcon];
 
@@ -672,11 +906,7 @@ const addPersonalMenu = () => {
     JSON.stringify(nextMenus.map((menu) => menu.id))
   );
 
-  setNewMenuTitle("");
-  setNewMenuDesc("");
-  setNewMenuLink("");
-  setNewMenuIcon("globe");
-  setMenuAddOpen(false);
+  resetNewMenuForm();
 };
 
 const saveMemos = (nextMemos: MemoItem[]) => {
@@ -835,27 +1065,11 @@ const deleteMemo = (id: string) => {
         <div className="max-w-[1500px] mx-auto px-5 py-6">
           <div className="relative flex items-center justify-center md:justify-center">
 
-  {/* 모바일 TODAY */}{showInstall && (
+    {/* PC 좌측 버튼 */}
+{mainMenuManageMode !== "normal" ? (
   <div className="hidden md:flex absolute left-5 top-1/2 -translate-y-1/2">
     <button
-      onClick={async () => {
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-
-          const result = await deferredPrompt.userChoice;
-
-          if (result.outcome === "accepted") {
-            setShowInstall(false);
-            setDeferredPrompt(null);
-          }
-
-          return;
-        }
-
-        alert(
-          "크롬 또는 엣지에서 브라우저 메뉴 → 앱 설치를 눌러주세요."
-        );
-      }}
+      onClick={goBackMainScreen}
       className="
         px-4
         h-12
@@ -866,17 +1080,62 @@ const deleteMemo = (id: string) => {
         flex
         items-center
         justify-center
+        gap-2
         text-sm
         font-semibold
         text-gray-800
         shadow-sm
         hover:bg-gray-50
         transition
+        cursor-default
       "
     >
-      바로가기 만들기
+      <HomeIcon className="w-4 h-4" />
+      메인화면 돌아가기
     </button>
   </div>
+) : (
+  showInstall && (
+    <div className="hidden md:flex absolute left-5 top-1/2 -translate-y-1/2">
+      <button
+        onClick={async () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+
+            const result = await deferredPrompt.userChoice;
+
+            if (result.outcome === "accepted") {
+              setShowInstall(false);
+              setDeferredPrompt(null);
+            }
+
+            return;
+          }
+
+          alert("크롬 또는 엣지에서 브라우저 메뉴 → 앱 설치를 눌러주세요.");
+        }}
+        className="
+          px-4
+          h-12
+          rounded-2xl
+          border
+          border-gray-300
+          bg-white
+          flex
+          items-center
+          justify-center
+          text-sm
+          font-semibold
+          text-gray-800
+          shadow-sm
+          hover:bg-gray-50
+          transition
+        "
+      >
+        바로가기 만들기
+      </button>
+    </div>
+  )
 )}
   <div className="absolute left-0 top-1/2 -translate-y-1/2 md:hidden">
     <div className="text-center">
@@ -915,7 +1174,11 @@ const deleteMemo = (id: string) => {
   </div>
 
     {/* PC 방문자 카운터 + 설정 */}
-  <div className="hidden md:block absolute right-2 top-1/2 -translate-y-1/2 z-[100]">
+  <div
+  className={`hidden md:block absolute right-2 top-1/2 -translate-y-1/2 ${
+    settingOpen ? "z-[1000]" : "z-40"
+  }`}
+>
     <div className="flex items-center gap-10 text-center">
       <div>
         <p className="text-[10px] leading-none text-gray-400 font-bold">
@@ -943,21 +1206,24 @@ const deleteMemo = (id: string) => {
             e.stopPropagation();
             setSettingOpen(!settingOpen);
           }}
-          className="
-            w-10
-            h-10
-            rounded-full
-            border
-            border-gray-200
-            bg-white
-            shadow-sm
-            flex
-            items-center
-            justify-center
-            hover:bg-gray-50
-            transition
-            cursor-default
-          "
+          className={`
+  w-10
+  h-10
+  rounded-full
+  border
+  border-gray-200
+  shadow-sm
+  flex
+  items-center
+  justify-center
+  transition
+  cursor-default
+  ${
+  settingOpen
+    ? "bg-gray-100"
+    : "bg-white hover:bg-gray-50"
+}
+`}
         >
           <Settings className="w-5 h-5 text-gray-400" />
         </button>
@@ -1037,16 +1303,18 @@ const deleteMemo = (id: string) => {
 </button>
 
 <button
-  onClick={() => {
-  setTempMenus(menus);
-  setSelectedPersonalMenuId("");
-  setEditIconOpen(false);
-  setMenuManageMode("sort");
-  setMenuSortOpen(true);
-  setMemoOpen(false);
-  setMenuAddOpen(false);
-  setSettingOpen(false);
-}}
+ onClick={() => {
+    setTempMenus(menus);
+    setTempPersonalMenus(personalMenus);
+    setTempQuickMenuKeys(quickMenuKeys);
+    setSelectedPersonalMenuId("");
+    setEditIconOpen(false);
+    setMenuManageMode("sort");
+    setMenuSortOpen(true);
+    setMemoOpen(false);
+    setMenuAddOpen(false);
+    setSettingOpen(false);
+  }}
   className="
     block
     w-full
@@ -1065,6 +1333,68 @@ const deleteMemo = (id: string) => {
 >
   메뉴 변경
 </button>
+
+<button
+  onClick={() => {
+  setMainMenuManageMode("edit");
+  setTempQuickMenuKeys(quickMenuKeys);
+  setTempPersonalMenus(personalMenus);
+  setMemoOpen(false);
+  setMenuAddOpen(false);
+  setMenuSortOpen(false);
+  setSelectedPersonalMenuId("");
+  setEditIconOpen(false);
+  setSettingOpen(false);
+}}
+  className="
+    block
+    w-full
+    text-left
+    px-4
+    py-3
+    text-sm
+    font-bold
+    text-gray-700
+    hover:bg-blue-50
+    hover:text-blue-600
+    transition
+    border-t
+    border-gray-100
+    cursor-default
+  "
+>
+  메뉴 수정
+</button>
+
+<button
+  onClick={() => {
+  setMainMenuManageMode("delete");
+  setMemoOpen(false);
+  setMenuAddOpen(false);
+  setMenuSortOpen(false);
+  setSelectedPersonalMenuId("");
+  setSelectedDeleteMenuIds([]);
+  setSettingOpen(false);
+}}
+  className="
+    block
+    w-full
+    text-left
+    px-4
+    py-3
+    text-sm
+    font-bold
+    text-gray-700
+    hover:bg-red-50
+    hover:text-red-500
+    transition
+    border-t
+    border-gray-100
+    cursor-default
+  "
+>
+  메뉴 삭제
+</button>
           </div>
         )}
       </div>
@@ -1078,55 +1408,381 @@ const deleteMemo = (id: string) => {
             {/* 메인 */}
       <div className="max-w-[1500px] mx-auto px-5 py-8 sm:p-10 md:pb-32 lg:pb-10">
        
-        <div className="relative grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
-        {menus.map((menu) => {
-  const Icon = menu.icon;
+        <div
+  onClick={() => {
+    if (mainMenuManageMode === "edit" && selectedPersonalMenuId) {
+      saveEditingMenuAndClose();
+    }
+  }}
+  className="relative grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 items-start"
+>
+        {mainMenuManageMode === "normal" &&
+  menus.map((menu) => {
+    const Icon = menu.icon;
 
-  return (
-    <a
-      key={menu.id}
-      href={menu.link}
-      target={
-  menu.title === "보험인사이트 폴더" || menu.isPersonal
-    ? "_blank"
-    : "_self"
-}
-      rel="noopener noreferrer"
-      className={`
-        ${
-          menu.title === "강의일정"
-            ? "bg-white border border-gray-100"
-            : "bg-white"
+    return (
+      <a
+        key={menu.id}
+        href={menu.link}
+        target={
+          menu.title === "보험인사이트 폴더" || menu.isPersonal
+            ? "_blank"
+            : "_self"
         }
-        p-7
-        sm:p-8
-        rounded-3xl
-        shadow
-        hover:shadow-xl
-        hover:-translate-y-1
-        transition
-        min-h-[190px]
-        cursor-default
-      `}
-    >
-      <Icon className="w-10 h-10 mb-4 text-blue-600" />
+        rel="noopener noreferrer"
+        className={`
+          ${
+            menu.title === "강의일정"
+              ? "bg-white border border-gray-100"
+              : "bg-white"
+          }
+          p-7
+          sm:p-8
+          rounded-3xl
+          shadow
+          hover:shadow-xl
+          hover:-translate-y-1
+          transition
+          min-h-[190px]
+          cursor-default
+        `}
+      >
+        <Icon className="w-10 h-10 mb-4 text-blue-600" />
 
-      <h2 className="text-lg font-bold">{menu.title}</h2>
+        <h2 className="text-lg font-bold">{menu.title}</h2>
 
-      <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
-        {menu.desc}
-      </p>
-    </a>
-  );
-})}
+        <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
+          {menu.desc}
+        </p>
+      </a>
+    );
+  })}
+
+
+
+{mainMenuManageMode === "edit" && (
+  <>
+    <div className="col-span-full">
+      <div className="bg-white p-5 sm:p-6 rounded-3xl shadow border border-gray-200 cursor-default">
+        <div>
+          <h2 className="text-lg font-bold text-gray-900">
+            빠른메뉴 실행하기
+          </h2>
+
+          <p className="text-sm text-gray-500 mt-1 leading-relaxed break-keep">
+            메인화면에서 바로 실행할 메뉴를 최대 4개까지 선택할 수 있습니다.
+            추후 기능이 추가되면 선택 가능한 메뉴도 함께 추가됩니다.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+          {Array.from({ length: 4 }).map((_, index) => {
+            const selectedKey = tempQuickMenuKeys[index];
+
+            const selectedMenu = quickMenuOptions.find(
+              (item) => item.key === selectedKey
+            );
+
+            if (!selectedMenu) {
+              return (
+                <button
+                  key={index}
+                  onClick={() => setQuickMenuSelectOpen(true)}
+                  className="
+                    h-[58px]
+                    rounded-2xl
+                    border
+                    border-dashed
+                    border-gray-300
+                    bg-gray-50
+                    flex
+                    items-center
+                    justify-center
+                    gap-2
+                    text-sm
+                    font-bold
+                    text-gray-400
+                    hover:bg-gray-100
+                    hover:-translate-y-0.5
+                    hover:shadow-md
+                    transition
+                    cursor-default
+                  "
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+              );
+            }
+
+            return (
+              <div
+                key={selectedMenu.key}
+                className="
+                  h-[58px]
+                  px-4
+                  rounded-2xl
+                  border
+                  border-blue-200
+                  bg-blue-50
+                  flex
+                  items-center
+                  justify-between
+                  gap-2
+                  hover:-translate-y-0.5
+                  hover:shadow-md
+                  transition
+                "
+              >
+                <span className="flex-1 text-center text-sm font-bold text-blue-600 truncate px-1">
+                  {selectedMenu.title}
+                </span>
+
+                <button
+                  onClick={() => {
+                    setTempQuickMenuKeys((prev) =>
+  prev.filter((key) => key !== selectedMenu.key)
+);
+                  }}
+                  className="
+                    w-7
+                    h-7
+                    rounded-full
+                    flex
+                    items-center
+                    justify-center
+                    text-blue-500
+                    hover:bg-blue-100
+                    transition
+                    hover:scale-105
+                    active:scale-95
+                  "
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+
+            {tempPersonalMenus.map((menu) => {
+      const Icon = personalMenuIcons[menu.iconKey];
+      const isSelected = selectedPersonalMenuId === menu.id;
+
+      return (
+        <div
+          key={menu.id}
+        onClick={(e) => {
+  e.stopPropagation();
+  startEditPersonalMenu(menu);
+}}
+          className="
+            bg-white
+            p-7
+            sm:p-8
+            rounded-3xl
+            shadow
+            border
+            border-gray-200
+            min-h-[190px]
+            cursor-default
+            transition
+            hover:shadow-xl
+            hover:-translate-y-1
+          "
+        >
+          {!isSelected ? (
+            <>
+              <Icon className="w-10 h-10 mb-4 text-blue-600 shrink-0" />
+
+              <h2 className="text-lg font-bold text-gray-900">
+                {menu.title}
+              </h2>
+
+              <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
+                {menu.desc}
+              </p>
+            </>
+          ) : (
+            <div onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setEditIconOpen(!editIconOpen)}
+                className="
+                  w-11
+                  h-11
+                  rounded-2xl
+                  bg-white
+                  border
+                  border-gray-200
+                  flex
+                  items-center
+                  justify-center
+                  mb-3
+                  cursor-pointer
+                  hover:bg-gray-50
+                  transition
+                "
+              >
+                <Icon className="w-5 h-5 text-blue-600 shrink-0" />
+              </button>
+
+              {editIconOpen && (
+                <div className="grid grid-cols-6 gap-2 mb-3">
+                  {Object.entries(personalMenuIcons).map(([key, Icon]) => (
+                    <button
+                      key={key}
+                      onClick={() =>
+                        setNewMenuIcon(key as PersonalMenuIconKey)
+                      }
+                      className="
+                        h-9
+                        rounded-xl
+                        flex
+                        items-center
+                        justify-center
+                        cursor-pointer
+                        transition
+                        group
+                      "
+                    >
+                      <Icon
+                        className={`
+                          w-5
+                          h-5
+                          shrink-0
+                          transition
+                          ${
+                            newMenuIcon === key
+                              ? "text-blue-600"
+                              : "text-gray-400 group-hover:text-gray-500"
+                          }
+                        `}
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <input
+                value={newMenuTitle}
+                onChange={(e) => setNewMenuTitle(e.target.value)}
+                placeholder="메뉴명"
+                className="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none mb-2"
+              />
+
+              <input
+                value={newMenuDesc}
+                onChange={(e) => setNewMenuDesc(e.target.value)}
+                placeholder="설명글"
+                className="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none mb-2"
+              />
+
+              <input
+                value={newMenuLink}
+                onChange={(e) => setNewMenuLink(e.target.value)}
+                placeholder="링크"
+                className="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none mb-3"
+              />
+            </div>
+          )}
+        </div>
+      );
+    })}
+    <button
+  onClick={() => setMenuAddOpen(true)}
+  className="
+    bg-white
+    p-7
+    sm:p-8
+    rounded-3xl
+    shadow
+    border
+    border-dashed
+    border-gray-300
+    min-h-[190px]
+    cursor-default
+    flex
+    items-center
+    justify-center
+    hover:bg-gray-50
+    hover:shadow-xl
+hover:-translate-y-1
+    transition
+  "
+>
+  <Plus className="w-10 h-10 text-gray-300" />
+</button>
+  </>
+)}
+
+{mainMenuManageMode === "delete" &&
+  personalMenus.map((menu) => {
+    const Icon = personalMenuIcons[menu.iconKey];
+    const isSelected = selectedDeleteMenuIds.includes(menu.id);
+
+    return (
+      <button
+        key={menu.id}
+        onClick={() =>
+  setSelectedDeleteMenuIds((prev) =>
+    prev.includes(menu.id)
+      ? prev.filter((id) => id !== menu.id)
+      : [...prev, menu.id]
+  )
+}
+        className={`
+  p-7
+  sm:p-8
+  rounded-3xl
+  shadow
+  border
+  min-h-[190px]
+  text-left
+  cursor-default
+  transition
+  hover:shadow-xl
+  hover:-translate-y-1
+  ${
+    isSelected
+      ? "bg-red-50 border-red-200"
+      : "bg-white border-gray-200 hover:bg-red-50 hover:border-red-200"
+  }
+`}
+      >
+        <Icon className="w-10 h-10 mb-4 text-blue-600 shrink-0" />
+
+        <h2 className="text-lg font-bold text-gray-900">
+          {menu.title}
+        </h2>
+
+        <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
+          {menu.desc}
+        </p>
+      </button>
+    );
+  })}
 
           {/* 빠른 실행 */}
-          <div className="relative">
+          {mainMenuManageMode === "normal" && (
+  <div className={quickOpen ? "relative pb-28" : "relative"}>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setQuickOpen(!quickOpen);
-              }}
+  onClick={(e) => {
+    e.stopPropagation();
+
+    const nextOpen = !quickOpen;
+
+    setQuickOpen(nextOpen);
+
+    if (nextOpen) {
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 100);
+    }
+  }}
               className="
                 w-full
                 h-[50px]
@@ -1158,212 +1814,98 @@ const deleteMemo = (id: string) => {
               )}
             </button>
 
-            {quickOpen && (
-              <div
-                onClick={(e) => e.stopPropagation()}
-                className="
-                  absolute
-                  animate-in
-                  fade-in
-                  zoom-in-95
-                  duration-150
-                  left-0
-                  top-[58px]
-                  z-[1]
-                  w-full
-                  rounded-2xl
-                  bg-white
-                  border
-                  border-gray-200
-                  shadow-xl
-                  overflow-hidden
-                  grid
-                  grid-cols-2
-                "
-              >
-                <button
-                  onClick={() => {
-                    setHospitalOpen(true);
-                    setQuickOpen(false);
-                  }}
-                  className="
-                    min-h-[62px]
-                    px-3
-                    text-center
-                    text-[13px]
-                    font-bold
-                    text-gray-700
-                    hover:bg-gray-50
-                    transition
-                    border-r
-                    border-b
-                    border-gray-100
-                  "
-                >
-                  병원정보 검색
-                </button>
+           {quickOpen && (
+  <div
+    onClick={(e) => e.stopPropagation()}
+    className="
+      absolute
+      animate-in
+      fade-in
+      zoom-in-95
+      duration-150
+      left-0
+      top-[58px]
+      z-[1]
+      w-full
+      max-h-[260px]
+      rounded-2xl
+      bg-white
+      border
+      border-gray-200
+      shadow-xl
+      overflow-y-auto
+      grid
+      grid-cols-2
+    "
+  >
+    {Array.from({ length: 4 }).map((_, index) => {
+  const selectedKey = quickMenuKeys[index];
 
-                <button
-                  onClick={() => {
-                    setLifeOpen(true);
-                    setQuickOpen(false);
-                  }}
-                  className="
-                    min-h-[62px]
-                    px-3
-                    text-center
-                    text-[13px]
-                    font-bold
-                    text-gray-700
-                    hover:bg-gray-50
-                    transition
-                    border-b
-                    border-gray-100
-                  "
-                >
-                  기대수명 계산기
-                </button>
+  const selectedMenu = quickMenuOptions.find(
+    (item) => item.key === selectedKey
+  );
 
-                <button
-                  onClick={() => {
-                    setPressOpen(true);
-                    setSelectedPress(null);
-                    setPressSearch("");
-                    setPressPage(1);
-                    setQuickOpen(false);
-                  }}
-                  className="
-                    relative
-                    min-h-[62px]
-                    px-3
-                    text-center
-                    text-[13px]
-                    font-bold
-                    text-gray-700
-                    hover:bg-gray-50
-                    transition
-                    border-r
-                    border-gray-100
-                  "
-                >
-                  보도자료
-                </button>
+  if (!selectedMenu) {
+    return (
+      <button
+        key={index}
+        onClick={() => {
+          setQuickMenuSelectOpen(true);
+          setQuickOpen(false);
+        }}
+        className={`
+          min-h-[62px]
+          px-3
+          text-center
+          text-[13px]
+          font-bold
+          text-gray-400
+          hover:bg-gray-50
+          transition
+          ${index % 2 === 0 ? "border-r" : ""}
+          ${index < 2 ? "border-b" : ""}
+          border-gray-100
+        `}
+      >
+        <div className="flex items-center justify-center">
+  <Plus className="w-5 h-5" />
+</div>
+      </button>
+    );
+  }
 
-                <button
-                  onClick={() => {
-                    setDiseaseOpen(true);
-                    setQuickOpen(false);
-                  }}
-                  className="
-                    min-h-[62px]
-                    px-3
-                    text-center
-                    text-[13px]
-                    font-bold
-                    text-gray-700
-                    hover:bg-gray-50
-                    transition
-                    flex
-                    items-center
-                    justify-center
-                  "
-                >
-                  상병코드 검색
-                </button>
-              </div>
-            )}
+  return (
+    <button
+      key={selectedMenu.key}
+      onClick={selectedMenu.action}
+      className={`
+        min-h-[62px]
+        px-3
+        text-center
+        text-[13px]
+        font-bold
+        text-gray-700
+        hover:bg-gray-50
+        transition
+        ${index % 2 === 0 ? "border-r" : ""}
+        ${index < 2 ? "border-b" : ""}
+        border-gray-100
+      `}
+    >
+      {selectedMenu.title}
+    </button>
+  );
+})}
+  </div>
+)}
           </div>
+)}
         </div>
       </div>
-{/* 메인 플로팅 메모 */}
-{visibleMemos.map((memo, index) => (
-  <div
-    key={memo.id}
-    onDoubleClick={() => setSelectedMemo(memo)}
-    onMouseDown={(e) => {
-      const target = e.target as HTMLElement;
 
-      if (target.closest("button")) return;
 
-      const startX = e.clientX;
-      const startY = e.clientY;
-      const startLeft = memo.x ?? 24;
-      const startTop = memo.y ?? 150 + index * 210;
 
-      const handleMouseMove = (moveEvent: MouseEvent) => {
-        const nextX = startLeft + moveEvent.clientX - startX;
-        const nextY = startTop + moveEvent.clientY - startY;
 
-        moveMemoSticker(memo.id, nextX, nextY);
-      };
-
-  
-
-      const handleMouseUp = () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("mouseup", handleMouseUp);
-      };
-
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
-    }}
-    style={{
-      left: memo.x ?? 24,
-      top: memo.y ?? 150 + index * 210,
-    }}
-    className={`
-  fixed
-  z-30
-  hidden
-  md:block
-  w-[260px]
-  min-h-[190px]
-  rounded-3xl
-  shadow
-  p-5
-  hover:shadow-xl
-  hover:-translate-y-1
-  transition
-  cursor-default
-  ${getMemoColorClass(memo.color)}
-`}
-  >
-    <div className="flex items-start justify-between gap-2 mb-1">
-      <h3 className="text-sm font-black text-gray-900 break-keep line-clamp-1">
-        {memo.title}
-      </h3>
-
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          toggleMemoVisible(memo.id);
-        }}
-        className="
-          w-8
-          h-8
-          -mt-2
-          rounded-full
-          flex
-          items-center
-          justify-center
-          text-gray-400
-          hover:bg-gray-100
-          hover:text-gray-600
-          transition
-          shrink-0
-          cursor-default
-        "
-        title="메인에서 숨기기"
-      >
-        <Pin className="w-4 h-4" />
-      </button>
-    </div>
-
-    <p className="text-sm text-gray-600 leading-relaxed line-clamp-5 whitespace-pre-line break-keep">
-      {memo.content}
-    </p>
-  </div>
-))}
       {/* 앱처럼 사용하기 */}
       {/* 앱처럼 사용하기 */}
 {showInstall &&
@@ -1412,7 +1954,7 @@ const deleteMemo = (id: string) => {
       )}
 
       {/* 모바일 메세지 버튼 */}
-<div className="max-w-[1500px] mx-auto px-5 -mt-10 mb-8 md:hidden">
+<div className="max-w-[1500px] mx-auto px-5 -mt-5 mb-8 md:hidden">
   <button
     onClick={() => setOpen(true)}
     className="
@@ -1493,7 +2035,8 @@ duration-200
 </button>
 
       {/* 하단 고정 */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg">
+      {mainMenuManageMode === "normal" && (
+  <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a
             href="https://naver.me/xsZ8mk7H"
@@ -1526,6 +2069,257 @@ rel="noopener noreferrer"
           </a>
         </div>
       </div>
+)}
+
+{mainMenuManageMode !== "normal" && (
+  <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg">
+    <div className="max-w-6xl mx-auto py-3 flex justify-center gap-6">
+      <button
+        onClick={() => {
+          if (mainMenuManageMode === "edit") {
+  cancelEditingMenu();
+  return;
+}
+
+          if (mainMenuManageMode === "delete") {
+            setSelectedDeleteMenuIds([]);
+            return;
+          }
+        }}
+        className="
+          w-50
+          h-[50px]
+          rounded-2xl
+          bg-gray-100
+          text-gray-700
+          text-sm
+          font-bold
+          hover:bg-gray-200
+          transition
+          cursor-default
+        "
+      >
+        취소
+      </button>
+
+      <button
+        onClick={() => {
+          if (mainMenuManageMode === "edit") {
+  saveMenuManageChanges("main");
+  return;
+}
+
+          if (mainMenuManageMode === "delete") {
+            setDeleteConfirmOpen(true);
+            return;
+          }
+        }}
+        className={`
+          w-50
+          h-[50px]
+          rounded-2xl
+          text-white
+          text-sm
+          font-bold
+          transition
+          cursor-default
+          ${
+            mainMenuManageMode === "delete"
+              ? "bg-red-500 hover:bg-red-600"
+              : "bg-blue-600 hover:bg-blue-700"
+          }
+        `}
+      >
+        {mainMenuManageMode === "delete" ? "삭제" : "저장"}
+      </button>
+    </div>
+  </div>
+)}
+
+{deleteConfirmOpen && (
+  <div className="fixed inset-0 z-[999] bg-black/40 flex items-center justify-center p-5">
+    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+      <h2 className="text-xl font-black text-gray-900">
+        메뉴 삭제
+      </h2>
+
+      <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
+        선택한 메뉴를 삭제하시겠습니까?
+      </p>
+
+      <div className="flex gap-3 mt-6">
+        <button
+          onClick={() => setDeleteConfirmOpen(false)}
+          className="
+            flex-1
+            h-12
+            rounded-2xl
+            bg-gray-100
+            text-gray-700
+            text-sm
+            font-bold
+            hover:bg-gray-200
+            transition
+            cursor-default
+          "
+        >
+          취소
+        </button>
+
+        <button
+          onClick={deletePersonalMenu}
+          className="
+            flex-1
+            h-12
+            rounded-2xl
+            bg-red-500
+            text-white
+            text-sm
+            font-bold
+            hover:bg-red-600
+            transition
+            cursor-default
+          "
+        >
+          삭제
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{quickMenuSelectOpen && (
+  <div className="fixed inset-0 z-[999] bg-black/40 flex items-center justify-center p-5">
+    <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl">
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-xl font-black text-gray-900">
+          빠른메뉴 선택
+        </h2>
+
+        <button
+          onClick={() => setQuickMenuSelectOpen(false)}
+          className="
+            w-9
+            h-9
+            rounded-full
+            flex
+            items-center
+            justify-center
+            text-gray-400
+            hover:bg-gray-100
+            transition
+          "
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-2">
+        {quickMenuOptions
+          .filter((item) => !tempQuickMenuKeys.includes(item.key))
+          .map((item) => (
+            <button
+              key={item.key}
+              onClick={() => {
+                if (tempQuickMenuKeys.length >= 4) {
+                  setQuickLimitOpen(true);
+                  return;
+                }
+
+                setTempQuickMenuKeys((prev) => [...prev, item.key]);
+                setQuickMenuSelectOpen(false);
+              }}
+              className="
+                h-12
+                rounded-2xl
+                border
+                border-gray-200
+                text-sm
+                font-bold
+                text-gray-700
+                hover:bg-gray-50
+                transition
+                cursor-default
+              "
+            >
+              {item.title}
+            </button>
+          ))}
+      </div>
+    </div>
+  </div>
+)}
+
+{quickLimitOpen && (
+  <div className="fixed inset-0 z-[999] bg-black/40 flex items-center justify-center p-5">
+    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+      <h2 className="text-xl font-black text-gray-900">
+        빠른메뉴 선택
+      </h2>
+
+      <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
+        빠른메뉴는 최대 4개까지 선택할 수 있습니다.
+      </p>
+
+      <div className="flex justify-center mt-6">
+        <button
+          onClick={() => setQuickLimitOpen(false)}
+          className="
+            w-32
+            h-12
+            rounded-2xl
+            bg-gray-800
+            text-white
+            text-sm
+            font-bold
+            hover:bg-gray-700
+            transition
+            cursor-default
+          "
+        >
+          확인
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{saveConfirmOpen && (
+  <div className="fixed inset-0 z-[999] bg-black/40 flex items-center justify-center p-5">
+    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+      <h2 className="text-xl font-black text-gray-900">
+        저장 완료
+      </h2>
+
+      <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
+        메뉴 설정이 저장되었습니다.
+      </p>
+
+      <div className="flex justify-center mt-6">
+        <button
+          onClick={() => setSaveConfirmOpen(false)}
+          className={`
+            w-32
+            h-12
+            rounded-2xl
+            text-white
+            text-sm
+            font-bold
+            transition
+            cursor-default
+            ${
+              saveConfirmType === "main"
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "bg-gray-800 hover:bg-gray-700"
+            }
+          `}
+        >
+          확인
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* 메세지 모달 */}
       {open && (
@@ -1936,97 +2730,90 @@ rel="noopener noreferrer"
 {/* 메뉴 정렬 팝업 */}
 {menuSortOpen && (
   <div
-    onClick={() => setMenuSortOpen(false)}
     className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
   >
     <div
       onClick={(e) => e.stopPropagation()}
       className="bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col"
     >
-      <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
-        <div className="font-bold flex items-center gap-2">
-          <Settings className="w-5 h-5" />
-          메뉴 위치 변경
-        </div>
+     <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
+  <div className="font-bold flex items-center gap-2">
+    <Settings className="w-5 h-5" />
+메뉴 변경
+  </div>
 
-        <button
-          onClick={() => setMenuSortOpen(false)}
-          className="
-            w-9
-            h-9
-            rounded-full
-            flex
-            items-center
-            justify-center
-            text-white
-            hover:bg-white/10
-            transition
-            cursor-default
-          "
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
+  <button
+    onClick={() => {
+      if (menuManageMode === "sort") {
+        setMenuSortOpen(false);
+        return;
+      }
 
-      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between gap-3">
-  <div>
-  {menuManageMode === "sort" && (
-    <>
-      <p className="text-[18px] font-bold text-gray-800 leading-none">
-        메뉴 위치를 수정하시겠습니까?
-      </p>
-
-      <p className="text-[14px] text-gray-500 mt-0.5 leading-relaxed">
-        아래 카드를 드래그해서 원하는 순서로 변경한 뒤 확인 버튼을 눌러주세요.
-      </p>
-    </>
-  )}
-
-  {menuManageMode === "edit" && (
-    <>
-      <p className="text-[18px] font-bold text-gray-800 leading-none">
-        개인 메뉴를 수정하시겠습니까?
-      </p>
-
-      <p className="text-[14px] text-gray-500 mt-0.5 leading-relaxed">
-        수정할 메뉴를 선택 후 내용을 변경한 뒤 확인 버튼을 눌러주세요.
-      </p>
-    </>
-  )}
-
-  {menuManageMode === "delete" && (
-    <>
-      <p className="text-[18px] font-bold text-gray-800 leading-none">
-        개인 메뉴를 삭제하시겠습니까?
-      </p>
-
-      <p className="text-[14px] text-gray-500 mt-0.5 leading-relaxed">
-        삭제할 메뉴를 선택한 뒤 아래 삭제 버튼을 눌러주세요.
-      </p>
-    </>
-  )}
+      setMenuManageMode("sort");
+      setSelectedPersonalMenuId("");
+      setSelectedDeleteMenuIds([]);
+      setEditIconOpen(false);
+      setNewMenuTitle("");
+      setNewMenuDesc("");
+      setNewMenuLink("");
+      setNewMenuIcon("globe");
+    }}
+    className="
+      px-4
+      h-9
+      rounded-xl
+      bg-white/10
+      text-sm
+      font-bold
+      hover:bg-white/20
+      transition
+      cursor-default
+    "
+  >
+    {menuManageMode === "sort" ? "닫기" : "뒤로가기"}
+  </button>
 </div>
 
+<div className="px-5 py-2.5 border-b border-gray-100 flex items-center justify-between gap-3">
+  <div className="min-w-0">
+  <p className="text-base font-black text-gray-900">
+    {menuManageMode === "sort" && "메뉴 위치 변경"}
+    {menuManageMode === "edit" && "메뉴 수정"}
+    {menuManageMode === "delete" && "메뉴 삭제"}
+  </p>
+
+  <p className="text-sm text-gray-500 mt-0. leading-relaxed break-keep">
+    {menuManageMode === "sort" &&
+      "메뉴를 드래그해서 원하는 순서로 변경할 수 있습니다."}
+    {menuManageMode === "edit" &&
+      "직접 추가한 메뉴를 수정하고 빠른메뉴 실행 항목을 설정할 수 있습니다."}
+    {menuManageMode === "delete" &&
+      "직접 추가한 메뉴 중 삭제할 메뉴를 선택할 수 있습니다."}
+  </p>
+</div>
   <div className="flex gap-2 shrink-0">
-    <button
+   <button
       onClick={() => {
+        setTempPersonalMenus(personalMenus);
         setSelectedPersonalMenuId("");
+        setEditIconOpen(false);
+        setTempQuickMenuKeys(quickMenuKeys);
         setMenuManageMode("edit");
       }}
-     className={`
-  h-9
-  px-4
-  rounded-xl
-  text-xs
-  font-bold
-  transition
-  cursor-default
-  ${
-    menuManageMode === "edit"
-      ? "bg-gray-800 text-white"
-      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-  }
-`}
+      className={`
+        h-9
+        px-4
+        rounded-xl
+        text-xs
+        font-bold
+        transition
+        cursor-default
+        ${
+          menuManageMode === "edit"
+            ? "bg-gray-800 text-white"
+            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+        }
+      `}
     >
       수정
     </button>
@@ -2034,30 +2821,30 @@ rel="noopener noreferrer"
     <button
       onClick={() => {
         setSelectedPersonalMenuId("");
-setSelectedDeleteMenuIds([]);
-setMenuManageMode("delete");
+        setSelectedDeleteMenuIds([]);
+        setMenuManageMode("delete");
       }}
       className={`
-  h-9
-  px-4
-  rounded-xl
-  text-xs
-  font-bold
-  transition
-  cursor-default
-  ${
-    menuManageMode === "delete"
-      ? "bg-red-500 text-white"
-      : "bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-500"
-  }
-`}
+        h-9
+        px-4
+        rounded-xl
+        text-xs
+        font-bold
+        transition
+        cursor-default
+        ${
+          menuManageMode === "delete"
+            ? "bg-red-500 text-white"
+            : "bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-500"
+        }
+      `}
     >
       삭제
     </button>
   </div>
 </div>
+<div className="flex-1 overflow-y-auto p-5">
 
-      <div className="flex-1 overflow-y-auto p-5">
   {menuManageMode === "sort" && (
     <DndContext
       sensors={sensors}
@@ -2074,86 +2861,209 @@ setMenuManageMode("delete");
     key={menu.id}
     menu={menu}
     onEdit={() => {
-      if (!menu.isPersonal) return;
+  if (!menu.isPersonal) return;
 
-      setSelectedPersonalMenuId(menu.id);
-      setNewMenuTitle(menu.title);
-      setNewMenuDesc(menu.desc);
-      setNewMenuLink(menu.link);
-      setNewMenuIcon(menu.iconKey || "globe");
-      setMenuEditPopupOpen(true);
-    }}
+  const targetMenu = tempPersonalMenus.find(
+    (item) => item.id === menu.id
+  );
+
+  if (!targetMenu) return;
+
+  startEditPersonalMenu(targetMenu);
+  setMenuManageMode("edit");
+}}
   />
 ))}
           <button
-            onClick={() => setMenuAddOpen(true)}
-            className="
-              bg-white
-              p-7
-              sm:p-8
-              rounded-3xl
-              shadow
-              border
-              border-dashed
-              border-gray-300
-              min-h-[190px]
-              cursor-default
-              flex
-              flex-col
-              items-center
-              justify-center
-              hover:bg-gray-50
-transition
-            "
-          >
-            <Plus className="w-10 h-10 mb-3" />
-            <p className="text-sm font-bold">메뉴 추가</p>
-          </button>
+  onClick={() => setMenuAddOpen(true)}
+  className="
+    bg-white
+    p-7
+    sm:p-8
+    rounded-3xl
+    shadow
+    border
+    border-dashed
+    border-gray-300
+    min-h-[190px]
+    cursor-default
+    flex
+    items-center
+    justify-center
+    hover:bg-gray-50
+    hover:shadow-xl
+    hover:-translate-y-1
+    transition
+  "
+>
+  <Plus className="w-10 h-10 text-gray-300" />
+</button>
         </div>
       </SortableContext>
     </DndContext>
   )}
 
   {menuManageMode === "edit" && (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
-      {personalMenus.length === 0 ? (
-        <div className="col-span-full min-h-[380px] flex items-center justify-center pt-16 text-center text-sm text-gray-400">
-  수정할 개인 메뉴가 없습니다.
-</div>
-      ) : (
-        personalMenus.map((menu) => {
+  <div
+    onClick={() => {
+      if (selectedPersonalMenuId) {
+        saveEditingMenuAndClose();
+      }
+    }}
+    className="space-y-5"
+  >
+    <div
+      className="
+        bg-white
+       p-5
+pb-3
+sm:p-6
+sm:pb-4
+        rounded-3xl
+        shadow
+        border
+        border-gray-200
+        min-h-[180px]
+        cursor-default
+      "
+    >
+      <h2 className="text-lg font-bold text-gray-900">
+        빠른메뉴 실행하기
+      </h2>
+
+      <p className="text-sm text-gray-500 mt-1 leading-relaxed break-keep">
+        메인화면에서 바로 실행할 메뉴를 최대 4개까지 선택할 수 있습니다.
+        추후 기능이 추가되면 선택 가능한 메뉴도 함께 추가됩니다.
+      </p>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+        {Array.from({ length: 4 }).map((_, index) => {
+          const selectedKey = tempQuickMenuKeys[index];
+
+          const selectedMenu = quickMenuOptions.find(
+            (item) => item.key === selectedKey
+          );
+
+          if (!selectedMenu) {
+            return (
+              <button
+                key={index}
+                onClick={() => setQuickMenuSelectOpen(true)}
+                className="
+                  h-[50px]
+                  rounded-2xl
+                  border
+                  border-dashed
+                  border-gray-300
+                  bg-gray-50
+                  flex
+                  items-center
+                  justify-center
+                  gap-2
+                  text-sm
+                  font-bold
+                  text-gray-400
+                  hover:bg-gray-100
+                  hover:-translate-y-0.5
+                  hover:shadow-md
+                  transition
+                  cursor-default
+                "
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+            );
+          }
+
+          return (
+            <div
+              key={selectedMenu.key}
+             className="
+  relative
+  h-[50px]
+  px-4
+  rounded-2xl
+  border
+  border-blue-200
+  bg-blue-50
+  flex
+  items-center
+  justify-center
+                gap-2
+                hover:-translate-y-0.5
+                hover:shadow-md
+                transition
+              "
+            >
+              <span className="flex-1 text-center text-sm font-bold text-blue-600">
+                {selectedMenu.title}
+              </span>
+
+              <button
+                onClick={() => {
+                  setTempQuickMenuKeys((prev) =>
+  prev.filter((key) => key !== selectedMenu.key)
+);
+                }}
+                className="
+  absolute
+  right-3
+  top-1/2
+  -translate-y-1/2
+  w-7
+  h-7
+  rounded-full
+                  flex
+                  items-center
+                  justify-center
+                  text-blue-500
+                  hover:bg-blue-100
+                  transition hover:scale-105 active:scale-95
+                "
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+
+        {tempPersonalMenus.length === 0 ? (
+      <div className="min-h-[380px] flex items-center justify-center pt-16 text-center text-sm text-gray-400">
+        수정할 개인 메뉴가 없습니다.
+      </div>
+    ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 items-start">
+                {tempPersonalMenus.map((menu) => {
           const Icon = personalMenuIcons[menu.iconKey];
           const isSelected = selectedPersonalMenuId === menu.id;
 
           return (
             <div
               key={menu.id}
-              onClick={() => {
-                setSelectedPersonalMenuId(menu.id);
-                setNewMenuTitle(menu.title);
-                setNewMenuDesc(menu.desc);
-                setNewMenuLink(menu.link);
-                setNewMenuIcon(menu.iconKey);
-                setEditIconOpen(false);
+                           onClick={(e) => {
+                e.stopPropagation();
+                startEditPersonalMenu(menu);
               }}
-             className="
-  bg-white
-  p-7
-  sm:p-8
-  rounded-3xl
-  shadow
-  border
-  border-gray-200
-  min-h-[190px]
-  cursor-default
-  transition
-  hover:shadow-xl
-  hover:-translate-y-1
-"
+              className="
+                bg-white
+                p-7
+                sm:p-8
+                rounded-3xl
+                shadow
+                border
+                border-gray-200
+                min-h-[190px]
+                cursor-default
+                transition
+                hover:shadow-xl
+                hover:-translate-y-1
+              "
             >
               {!isSelected ? (
                 <>
-                 <Icon className="w-10 h-10 mb-4 text-blue-600 shrink-0" />
+                  <Icon className="w-10 h-10 mb-4 text-blue-600 shrink-0" />
 
                   <h2 className="text-lg font-bold text-gray-900">
                     {menu.title}
@@ -2168,60 +3078,61 @@ transition
                   <button
                     onClick={() => setEditIconOpen(!editIconOpen)}
                     className="
-  w-11
-  h-11
-  rounded-2xl
-  bg-white
-  border
-  border-gray-200
-  flex
-  items-center
-  justify-center
-  mb-3
-  cursor-pointer
-  hover:bg-gray-50
-  transition
-"
+                      w-11
+                      h-11
+                      rounded-2xl
+                      bg-white
+                      border
+                      border-gray-200
+                      flex
+                      items-center
+                      justify-center
+                      mb-3
+                      cursor-pointer
+                      hover:bg-gray-50
+                      transition
+                    "
                   >
                     <Icon className="w-5 h-5 text-blue-600 shrink-0" />
                   </button>
 
-                 {editIconOpen && (
-  <div className="grid grid-cols-6 gap-2 mb-3">
-    {Object.entries(personalMenuIcons).map(([key, Icon]) => (
-      <button
-        key={key}
-        onClick={() =>
-          setNewMenuIcon(key as PersonalMenuIconKey)
-        }
-        className="
-  h-9
-  rounded-xl
-  flex
-  items-center
-  justify-center
-  cursor-pointer
-  transition
-  group
-"
-      >
-        <Icon
-  className={`
-    w-5
-    h-5
-    shrink-0
-    transition
-    ${
-      newMenuIcon === key
-        ? "text-blue-600"
-        : "text-gray-400 group-hover:text-gray-500"
-    }
-  `}
-/>
-      </button>
-    ))}
-  </div>
-)}
+                  {editIconOpen && (
+                    <div className="grid grid-cols-6 gap-2 mb-3">
+                      {Object.entries(personalMenuIcons).map(([key, Icon]) => (
+                        <button
+                          key={key}
+                          onClick={() =>
+                            setNewMenuIcon(key as PersonalMenuIconKey)
+                          }
+                          className="
+                            h-9
+                            rounded-xl
+                            flex
+                            items-center
+                            justify-center
+                            cursor-pointer
+                            transition
+                            group
+                          "
+                        >
+                          <Icon
+                            className={`
+                              w-5
+                              h-5
+                              shrink-0
+                              transition
+                              ${
+                                newMenuIcon === key
+                                  ? "text-blue-600"
+                                  : "text-gray-400 group-hover:text-gray-500"
+                              }
+                            `}
+                          />
+                        </button>
+                      ))}
+                      
+                    </div>
+                  )}
 
                   <input
                     value={newMenuTitle}
@@ -2247,10 +3158,36 @@ transition
               )}
             </div>
           );
-        })
-      )}
-    </div>
-  )}
+                })}
+
+        <button
+          onClick={() => setMenuAddOpen(true)}
+          className="
+            bg-white
+            p-7
+            sm:p-8
+            rounded-3xl
+            shadow
+            border
+            border-dashed
+            border-gray-300
+            min-h-[190px]
+            cursor-default
+            flex
+            items-center
+            justify-center
+            hover:bg-gray-50
+            hover:shadow-xl
+hover:-translate-y-1
+            transition
+          "
+        >
+          <Plus className="w-10 h-10 text-gray-300" />
+        </button>
+      </div>
+    )}
+  </div>
+)}
 
   {menuManageMode === "delete" && (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
@@ -2311,19 +3248,22 @@ transition
 
       <div className="border-t border-gray-100 bg-white p-4 flex gap-3 justify-center">
   <button
-  onClick={() => {
-    if (menuManageMode !== "sort") {
-      setSelectedPersonalMenuId("");
-      setEditIconOpen(false);
-      setMenuManageMode("sort");
-      return;
-    }
+    onClick={() => {
+      if (menuManageMode === "edit") {
+        cancelEditingMenu();
+        return;
+      }
 
-    setTempMenus(menus);
-    setSelectedPersonalMenuId("");
-    setMenuManageMode("sort");
-    setMenuSortOpen(false);
-  }}
+      if (menuManageMode === "delete") {
+        setSelectedDeleteMenuIds([]);
+        return;
+      }
+
+      setTempMenus(menus);
+      setTempPersonalMenus(personalMenus);
+      setTempQuickMenuKeys(quickMenuKeys);
+      setSelectedPersonalMenuId("");
+    }}
     className="
       w-32
       h-12
@@ -2343,12 +3283,7 @@ transition
   {menuManageMode === "sort" && (
     <button
       onClick={() => {
-        setMenus(tempMenus);
-        localStorage.setItem(
-          "insurance-menu-order",
-          JSON.stringify(tempMenus.map((menu) => menu.id))
-        );
-        setMenuSortOpen(false);
+        saveMenuManageChanges("popup");
       }}
       className="
         w-32
@@ -2363,14 +3298,16 @@ transition
         cursor-default
       "
     >
-      확인
+      저장
     </button>
   )}
 
   {menuManageMode === "edit" && (
     <button
-      onClick={updatePersonalMenu}
-      disabled={!selectedPersonalMenuId}
+      onClick={() => {
+        saveMenuManageChanges("popup");
+      }}
+      disabled={tempPersonalMenus.length === 0}
       className="
         w-32
         h-12
@@ -2386,13 +3323,13 @@ transition
         cursor-default
       "
     >
-      확인
+      저장
     </button>
   )}
 
   {menuManageMode === "delete" && (
     <button
-      onClick={deletePersonalMenu}
+      onClick={() => setDeleteConfirmOpen(true)}
       disabled={selectedDeleteMenuIds.length === 0}
       className="
         w-32
@@ -2417,114 +3354,7 @@ transition
   </div>
 )}
 
-{/* 메뉴 수정 팝업 */}
-{menuEditPopupOpen && selectedPersonalMenu && (
-  <div
-    onClick={() => setMenuEditPopupOpen(false)}
-    className="fixed inset-0 z-[80] bg-black/40 flex items-center justify-center p-4"
-  >
-    <div
-      onClick={(e) => e.stopPropagation()}
-      className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6"
-    >
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-xl font-black text-gray-900">
-          메뉴 수정
-        </h2>
 
-        <button
-          onClick={() => setMenuEditPopupOpen(false)}
-          className="
-            w-9
-            h-9
-            rounded-full
-            flex
-            items-center
-            justify-center
-            text-gray-400
-            hover:bg-gray-100
-            transition
-            cursor-default
-          "
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-
-      <div className="mb-4">
-        <p className="text-sm font-bold text-gray-700 mb-2">
-          아이콘 선택
-        </p>
-
-        <div className="grid grid-cols-6 gap-2">
-          {Object.entries(personalMenuIcons).map(([key, Icon]) => (
-            <button
-              key={key}
-              onClick={() => setNewMenuIcon(key as PersonalMenuIconKey)}
-              className={`
-                h-12
-                rounded-2xl
-                border
-                flex
-                items-center
-                justify-center
-                transition
-                cursor-default
-                ${
-                  newMenuIcon === key
-                    ? "bg-gray-800 border-gray-800 text-white"
-                    : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
-                }
-              `}
-            >
-              <Icon className="w-5 h-5 shrink-0" />
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <input
-        value={newMenuTitle}
-        onChange={(e) => setNewMenuTitle(e.target.value)}
-        placeholder="메뉴명"
-        className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none mb-3"
-      />
-
-      <input
-        value={newMenuDesc}
-        onChange={(e) => setNewMenuDesc(e.target.value)}
-        placeholder="설명글"
-        className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none mb-3"
-      />
-
-      <input
-        value={newMenuLink}
-        onChange={(e) => setNewMenuLink(e.target.value)}
-        placeholder="링크"
-        className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none mb-5"
-      />
-
-      <div className="flex gap-3">
-        <button
-          onClick={() => setMenuEditPopupOpen(false)}
-          className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-default"
-        >
-          취소
-        </button>
-
-        <button
-          onClick={() => {
-            updatePersonalMenu();
-            setMenuEditPopupOpen(false);
-          }}
-          className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-default"
-        >
-          확인
-        </button>
-      </div>
-    </div>
-  </div>
-)}
 
 {/* 메뉴 추가 팝업 */}
 {menuAddOpen && (
@@ -2772,8 +3602,10 @@ transition
         items-center
         justify-center
         gap-1.5
-        hover:bg-gray-700
-        transition
+        hover:bg-gray-100
+hover:-translate-y-0.5
+hover:shadow-md
+transition
         cursor-default
       "
     >
@@ -3233,6 +4065,8 @@ ${getMemoColorClass(memo.color)}
         </div>
       )}
 
+      
+
       <HospitalInfoPopup
   open={hospitalOpen}
   onClose={() => setHospitalOpen(false)}
@@ -3242,6 +4076,182 @@ ${getMemoColorClass(memo.color)}
   open={diseaseOpen}
   onClose={() => setDiseaseOpen(false)}
 />
+
+{npsTableOpen && (
+  <div
+    onClick={() => setNpsTableOpen(false)}
+    className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
+    >
+      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+        <div className="font-bold flex items-center gap-2">
+          <FileText className="w-5 h-5" />
+          국민연금 예상연금월액표
+        </div>
+
+        <button
+          onClick={() => setNpsTableOpen(false)}
+          className="
+            cursor-pointer
+            w-9
+            h-9
+            rounded-full
+            flex
+            items-center
+            justify-center
+            hover:bg-white/10
+            transition
+          "
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="p-5 flex-1 min-h-0 flex flex-col">
+        <div className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-5">
+          {(["노령연금", "장애연금", "유족연금"] as NpsTableTab[]).map((item) => (
+            <button
+              key={item}
+              onClick={() => {
+                setNpsTableTab(item);
+                setNpsSearch("");
+              }}
+              className={`rounded-xl py-3 text-sm font-bold transition ${
+                npsTableTab === item
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600"
+              }`}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
+
+        <div className="relative mb-4">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+          <input
+            value={
+              npsSearch
+                ? Number(npsSearch.replaceAll(",", "")).toLocaleString()
+                : ""
+            }
+            onChange={(e) =>
+              setNpsSearch(
+                e.target.value.replaceAll(",", "").replace(/[^0-9]/g, "")
+              )
+            }
+            placeholder="보험료 또는 기준소득월액 검색"
+            className="w-full rounded-2xl border border-gray-200 pl-11 pr-4 py-3 text-sm outline-none"
+          />
+        </div>
+
+        <div className="overflow-auto flex-1 border border-gray-200 rounded-2xl">
+          <table className="w-full min-w-[900px] text-sm">
+            <thead className="bg-gray-50 text-gray-500 sticky top-0 z-10">
+              <tr>
+                <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">
+                  번호
+                </th>
+
+                <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">
+                  기준소득월액
+                </th>
+
+                <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">
+                  보험료
+                </th>
+
+                {npsTableTab === "노령연금" ? (
+                  <>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">10년</th>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">15년</th>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">20년</th>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">25년</th>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">30년</th>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">35년</th>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">40년</th>
+                  </>
+                ) : npsTableTab === "장애연금" ? (
+                  <>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">장애1급</th>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">장애2급</th>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">장애3급</th>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">장애4급</th>
+                  </>
+                ) : (
+                  <>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">10년 미만</th>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">10~20년</th>
+                    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">20년 이상</th>
+                  </>
+                )}
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredNpsTable.map((row: any, index: number) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap">
+                    {row.no?.toLocaleString()}
+                  </td>
+
+                  <td className="py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap">
+                    {row.income?.toLocaleString()}
+                  </td>
+
+                  <td className="py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap">
+                    {row.premium?.toLocaleString()}
+                  </td>
+
+                  {npsTableTab === "노령연금" ? (
+                    <>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.year10?.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.year15?.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.year20?.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.year25?.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.year30?.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.year35?.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.year40?.toLocaleString()}</td>
+                    </>
+                  ) : npsTableTab === "장애연금" ? (
+                    <>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.grade1?.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.grade2?.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.grade3?.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.grade4Lump?.toLocaleString()}</td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.under10?.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.between10And20?.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-center border-b border-gray-100">{row.year20?.toLocaleString()}</td>
+                    </>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {filteredNpsTable.length === 0 && (
+            <div className="text-center text-sm text-gray-400 py-10">
+              검색 결과가 없습니다
+            </div>
+          )}
+        </div>
+
+        <p className="text-xs text-gray-500 leading-relaxed mt-4 px-1">
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;본 표는 2026년 국민연금 예상연금월액표 기준이며,
+          실제 수령액은 가입이력 · 재평가율 · 연금개시연령 ·
+          부양가족연금액 및 제도 변경 등에 따라 달라질 수 있습니다. (단위 :원)
+        </p>
+      </div>
+    </div>
+  </div>
+)}
 
 {lifeOpen && (
   <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">

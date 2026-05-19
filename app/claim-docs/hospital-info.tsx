@@ -324,8 +324,72 @@ const toggleType = (type: string) => {
     
   </div>
 
-  {/* 정보 박스 */}
-<div className="grid grid-cols-3 gap-3 mt-4">
+ {/* 모바일 정보 박스 */}
+<div className="md:hidden space-y-2 mt-4">
+  <a
+    href={hospital.tel !== "-" ? `tel:${hospital.tel}` : undefined}
+    className="
+      flex
+      items-center
+      gap-2
+      bg-gray-50
+      rounded-2xl
+      px-4
+      py-3
+    "
+  >
+    <span className="text-[12px] font-bold text-gray-400 shrink-0">
+      전화번호
+    </span>
+
+    <span className="text-[15px] font-black text-gray-900">
+      {hospital.tel}
+    </span>
+  </a>
+
+  <div
+    className="
+      flex
+      items-center
+      gap-2
+      bg-gray-50
+      rounded-2xl
+      px-4
+      py-3
+    "
+  >
+    <span className="text-[12px] font-bold text-gray-400 shrink-0">
+      총 의사수
+    </span>
+
+    <span className="text-[15px] font-black text-blue-600">
+      {String(hospital.doctorCount).replace("명", "")}명
+    </span>
+  </div>
+
+  <a
+    href={hospital.homepage}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="
+      flex
+      items-center
+      justify-center
+      bg-gray-800
+      rounded-2xl
+      px-4
+      py-3
+      text-white
+      text-sm
+      font-black
+    "
+  >
+    병원정보 바로가기
+  </a>
+</div>
+
+{/* PC 정보 박스 */}
+<div className="hidden md:grid grid-cols-3 gap-3 mt-4">
   <a
     href={hospital.tel !== "-" ? `tel:${hospital.tel}` : undefined}
     className="
@@ -354,9 +418,9 @@ const toggleType = (type: string) => {
 
     <p className="text-[18px] font-black text-gray-900 mt-1 tracking-tight">
       <span className="text-blue-600">
-  {String(hospital.doctorCount).replace("명", "")}
-</span>{" "}
-명
+        {String(hospital.doctorCount).replace("명", "")}
+      </span>{" "}
+      명
     </p>
   </div>
 
@@ -387,10 +451,9 @@ const toggleType = (type: string) => {
         바로가기
       </p>
     </div>
-
-    
   </a>
 </div>
+
   {/* 상세정보 버튼 */}
   <button
   onClick={() =>
