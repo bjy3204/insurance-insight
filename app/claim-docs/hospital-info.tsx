@@ -154,14 +154,16 @@ const toggleType = (type: string) => {
 >
         <div
   onMouseDown={(e) => {
-    dragRef.current = {
-      isDragging: true,
-      startX: e.clientX,
-      startY: e.clientY,
-      originX: popupPos.x,
-      originY: popupPos.y,
-    };
-  }}
+  if (window.innerWidth < 768) return;
+
+  dragRef.current = {
+    isDragging: true,
+    startX: e.clientX,
+    startY: e.clientY,
+    originX: popupPos.x,
+    originY: popupPos.y,
+  };
+}}
   className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between"
 >
           <div className="font-bold flex items-center gap-2">
