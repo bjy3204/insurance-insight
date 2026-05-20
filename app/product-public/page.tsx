@@ -461,9 +461,7 @@ const [memoAddOpen, setMemoAddOpen] = useState(false);
 const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
 const [deleteMemoConfirmOpen, setDeleteMemoConfirmOpen] = useState(false);
 const [deleteMemoId, setDeleteMemoId] = useState<string | null>(null);
-const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
-const [saveConfirmMessage, setSaveConfirmMessage] =
-  useState("메모가 수정되었습니다.");
+
 
 const [selectedItem, setSelectedItem] = useState(0);
 const [pressPopupPos, setPressPopupPos] = useState({ x: 0, y: 0 });
@@ -785,10 +783,10 @@ const pagedMemos = filteredMemos.slice(
     <main className="min-h-screen bg-gray-50 pb-24">
       <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+          <div className="relative flex items-center justify-center">
             <Link
               href="/"
-              className="w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
+             className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
             >
               <ArrowLeft className="w-5 h-5 text-black" />
             </Link>
@@ -809,6 +807,8 @@ const pagedMemos = filteredMemos.slice(
             <button
   onClick={() => setMemoOpen(true)}
   className="
+  absolute
+  right-0
     hidden
     md:flex
     w-11
@@ -977,26 +977,7 @@ const pagedMemos = filteredMemos.slice(
         </div>
       </section>
 
-      {saveConfirmOpen && (
-  <div className="fixed inset-0 z-[2100] bg-black/40 flex items-center justify-center p-5">
-    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-      <h2 className="text-xl font-black text-gray-900">저장 완료</h2>
-
-      <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
-        {saveConfirmMessage}
-      </p>
-
-      <div className="flex justify-center mt-6">
-        <button
-          onClick={() => setSaveConfirmOpen(false)}
-          className="w-32 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-default"
-        >
-          확인
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      
 
 {memoOpen && (
   <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
@@ -1287,8 +1268,7 @@ const pagedMemos = filteredMemos.slice(
           onClick={() => {
             addMemo();
             setMemoAddOpen(false);
-            setSaveConfirmMessage("메모가 추가되었습니다.");
-            setSaveConfirmOpen(true);
+           
           }}
           className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-default"
         >
@@ -1430,8 +1410,7 @@ originY: memoEditPopupPos.y,
 
             saveMemos(nextMemos);
             setSelectedMemo(null);
-            setSaveConfirmMessage("메모가 수정되었습니다.");
-            setSaveConfirmOpen(true);
+           
           }}
           className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-default"
         >
