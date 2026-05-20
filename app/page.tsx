@@ -1356,13 +1356,13 @@ const nextY =
   pcQuickDragRef.current.originY + dy;
 
 const limitedX = Math.min(
-  Math.max(nextX, -window.innerWidth + 280),
-  -10
+  Math.max(nextX, -window.innerWidth + 260),
+  0
 );
 
 const limitedY = Math.min(
-  Math.max(nextY, -window.innerHeight + 120),
-  window.innerHeight - 160
+  Math.max(nextY, -window.innerHeight + 150),
+  100
 );
 
 setPcQuickPos({
@@ -2641,7 +2641,7 @@ duration-200
       hidden
       md:block
       fixed
-      right-6
+      right-0
       bottom-20
       lg:bottom-25
       z-[60]

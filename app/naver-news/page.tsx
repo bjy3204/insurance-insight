@@ -429,7 +429,10 @@ const fetchTickerNews = async () => {
 
       <section className="bg-[#1f2937] overflow-hidden">
   <div className="max-w-7xl mx-auto px-4 md:px-6 h-11 flex items-center overflow-hidden">
-    <div className="flex whitespace-nowrap animate-[tickerMove_50s_linear_infinite] hover:[animation-play-state:paused]">
+    <div
+  className="flex w-max whitespace-nowrap animate-[tickerMove_50s_linear_infinite] hover:[animation-play-state:paused]"
+  style={{ paddingLeft: "10%" }}
+>
       {breakingNews.length > 0 && (
         <>
           <span className="text-sm font-black text-red-500 mr-3">

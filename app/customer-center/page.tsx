@@ -877,7 +877,7 @@ const pagedMemos = filteredMemos.slice(
     <main className="min-h-screen bg-gray-50 pb-10">
 
      {/* 헤더 */}
-<header className="sticky top-0 z-50 bg-white border-b shadow-sm">
+<header className="bg-white border-b shadow-sm">
   <div className="max-w-7xl mx-auto px-6 py-6">
 
     <div className="relative flex items-center justify-center">
