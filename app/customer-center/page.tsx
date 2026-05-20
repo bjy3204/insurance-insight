@@ -880,11 +880,13 @@ const pagedMemos = filteredMemos.slice(
 <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
   <div className="max-w-7xl mx-auto px-6 py-6">
 
-    <div className="flex items-center justify-between">
+    <div className="relative flex items-center justify-center">
 
       <a
   href="/"
  className="
+  absolute
+  left-0
   w-11
   h-11
   rounded-xl

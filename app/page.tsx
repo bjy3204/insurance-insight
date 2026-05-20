@@ -4582,8 +4582,7 @@ hover:-translate-y-1
    addMemo();
 setMemoAddOpen(false);
 
-setSaveConfirmMessage("메모가 추가되었습니다.");
-setSaveConfirmOpen(true);
+
   }}
                 className="
                   flex-1
@@ -4764,8 +4763,7 @@ setSaveConfirmOpen(true);
   setSelectedMemo(null);
 
   setSaveConfirmType("popup");
-  setSaveConfirmMessage("메모가 수정되었습니다.");
-  setSaveConfirmOpen(true);
+  
 }}
     className="
       flex-1
