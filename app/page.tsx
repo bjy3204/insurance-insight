@@ -1601,7 +1601,7 @@ setMenuSortOpen(true);
       </header>
       
             {/* 메인 */}
-      <div className="max-w-[1500px] mx-auto px-5 py-8 sm:p-10 md:pb-32 lg:pb-30">
+      <div className="max-w-[1500px] mx-auto px-5 py-8 sm:px-10 sm:pt-10 sm:pb-2 md:pb-2 lg:pb-5">
        
         <div
   onClick={() => {
@@ -2412,6 +2412,9 @@ duration-200
 >
   보험나무에게 메세지 보내기
 </button>
+
+<ExchangeIndexBar />
+
 
       {/* 하단 고정 */}
       {mainMenuManageMode === "normal" && (
@@ -5407,7 +5410,53 @@ setMemoAddOpen(false);
   </div>
 )}
 
-    </main>
+       </main>
+  );
+}
+
+function ExchangeIndexBar() {
+  const [exchange, setExchange] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/exchange")
+      .then((res) => res.json())
+      .then((data) => setExchange(data))
+      .catch(() => setExchange(null));
+  }, []);
+
+  if (!exchange?.items) {
+    return (
+      <div className="hidden md:block max-w-[1500px] mx-auto px-5 mb-22">
+        <div className=" rounded-2xl px-4 py-3 text-center text-sm text-block-500">
+          환율 정보를 불러오지 못했습니다.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="hidden md:block max-w-[1500px] mx-auto px-5 mb-22">
+      <div className=" rounded-2xl px-4 py-3 ">
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs sm:text-sm text-gray-600">
+          <span className="font-bold text-gray-800">
+            실시간 환율
+          </span>
+
+          {exchange.items.map((item: any) => (
+            <span key={item.label}>
+              {item.label}{" "}
+              <b className="text-gray-900">
+                {Math.round(item.value).toLocaleString()}원
+              </b>
+            </span>
+          ))}
+
+          <span className="text-[13px] text-gray-400">
+            기준일 {exchange.date}
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -5513,3 +5562,4 @@ function SortableMemoCard({
     </div>
   );
 }
+
