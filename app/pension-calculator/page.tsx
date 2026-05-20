@@ -802,11 +802,23 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
     <main className="min-h-screen bg-gray-100 pb-24">
       <header className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+          <div className="relative flex items-center justify-center">
             <Link
-              href="/"
-              className="w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
-            >
+  href="/"
+  className="
+    absolute
+    left-0
+    w-11
+    h-11
+    rounded-xl
+    border
+    border-gray-300
+    bg-white
+    flex
+    items-center
+    justify-center
+  "
+>
               <ArrowLeft className="w-5 h-5 text-black" />
             </Link>
 
@@ -826,8 +838,10 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
             <button
   onClick={() => setMemoOpen(true)}
   className="
-    hidden
-    md:flex
+  absolute
+  right-0
+  hidden
+  md:flex
     w-11
     h-11
     rounded-full
