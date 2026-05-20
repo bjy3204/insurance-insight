@@ -208,6 +208,27 @@ export default function Home() {
   const [showInstall, setShowInstall] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
+  const WEATHER_REGIONS = [
+  "서울",
+  "부산",
+  "대구",
+  "인천",
+  "광주",
+  "대전",
+  "울산",
+  "세종",
+  "제주",
+];
+
+const [weatherRegion, setWeatherRegion] = useState("서울");
+const [weatherOpen, setWeatherOpen] = useState(false);
+const [weather, setWeather] = useState<{
+  region: string;
+  temp: number;
+  description: string;
+  icon: string;
+} | null>(null);
+
   const [open, setOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
@@ -660,6 +681,35 @@ useEffect(() => {
 }, [memoOpen]);
 
 useEffect(() => {
+  const savedRegion =
+    localStorage.getItem("weather-region") || "서울";
+
+  setWeatherRegion(savedRegion);
+}, []);
+
+useEffect(() => {
+  const fetchWeather = async () => {
+    try {
+      const res = await fetch(
+        `/api/weather?region=${weatherRegion}`
+      );
+
+      const data = await res.json();
+
+console.log("날씨 데이터", data);
+
+      setWeather(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  fetchWeather();
+
+  localStorage.setItem("weather-region", weatherRegion);
+}, [weatherRegion]);
+
+useEffect(() => {
   const syncMemos = () => {
     const savedMemos = localStorage.getItem("personalMemos");
 
@@ -776,16 +826,17 @@ useEffect(() => {
 useEffect(() => {
   const handleClick = () => {
     setSettingOpen(false);
+    setWeatherOpen(false);
   };
 
-  if (settingOpen) {
+  if (settingOpen || weatherOpen) {
     window.addEventListener("click", handleClick);
   }
 
   return () => {
     window.removeEventListener("click", handleClick);
   };
-}, [settingOpen]);
+}, [settingOpen, weatherOpen]);
 
 useEffect(() => {
   const closeContextMenu = () => {
@@ -1253,7 +1304,7 @@ const confirmDeleteMemo = () => {
   return (
     <main className="min-h-screen bg-gray-100">
       {/* 헤더 */}
-      <header className="bg-white border-b shadow-sm">
+      <header className="relative z-[5000] bg-white border-b shadow-sm">
         <div className="max-w-[1500px] mx-auto px-5 py-6">
           <div className="relative flex items-center justify-center md:justify-center">
 
@@ -1288,7 +1339,7 @@ const confirmDeleteMemo = () => {
   </div>
 ) : (
   showInstall && (
-    <div className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2">
+    <div className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 items-center gap-10">
       <button
         onClick={async () => {
           if (deferredPrompt) {
@@ -1326,9 +1377,108 @@ const confirmDeleteMemo = () => {
       >
         바로가기 만들기
       </button>
+
+      {weather && (
+        <div className="relative">
+          <div
+            onContextMenu={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setWeatherOpen(!weatherOpen);
+            }}
+            className="
+              flex
+              items-center
+              gap-2
+              text-black
+              select-none
+              cursor-default
+            "
+          >
+           <span className="text-[22px] leading-none inline-block">
+  {(weather.description || "").includes("맑") ? (
+    <span className="inline-block animate-[weatherSun_10s_linear_infinite]">
+      ☀️
+    </span>
+  ) : (weather.description || "").includes("구름") ? (
+    <span className="inline-block animate-[weatherCloud_5s_ease-in-out_infinite]">
+      ☁️
+    </span>
+  ) : (weather.description || "").includes("비") ? (
+    <span className="inline-block animate-[weatherRain_1.8s_ease-in-out_infinite]">
+      🌧️
+    </span>
+  ) : (weather.description || "").includes("눈") ? (
+    <span className="inline-block animate-[weatherSnow_3s_ease-in-out_infinite]">
+      ❄️
+    </span>
+  ) : (
+    <span className="inline-block animate-[weatherSun_10s_linear_infinite]">
+      ☀️
+    </span>
+  )}
+</span>
+
+            <span className="text-[15px] font-bold">
+              {weather.region || "서울"}
+            </span>
+
+           {weather.temp !== undefined && (
+  <span className="text-[15px] font-black">
+    {weather.temp}°C
+  </span>
+)}
+          </div>
+
+          {weatherOpen && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="
+                absolute
+                left-0
+                top-12
+                w-32
+                rounded-2xl
+                bg-white
+                border
+                border-gray-200
+                shadow-xl
+                overflow-hidden
+                z-[9999]
+              "
+            >
+              {WEATHER_REGIONS.map((region) => (
+                <button
+                  key={region}
+                  onClick={() => {
+                    setWeatherRegion(region);
+                    setWeatherOpen(false);
+                  }}
+                  className="
+                    w-full
+                    px-4
+                    py-3
+                    text-left
+                    text-sm
+                    font-bold
+                    text-gray-700
+                    hover:bg-gray-50
+                    transition
+                    cursor-default
+                  "
+                >
+                  {region}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 )}
+
+    
   <div className="absolute left-0 top-1/2 -translate-y-1/2 md:hidden">
     <div className="text-center">
       <p className="text-[10px] leading-none text-gray-400 font-bold">
@@ -1392,7 +1542,7 @@ const confirmDeleteMemo = () => {
         </p>
       </div>
 
-      <div className="relative">
+      <div className="relative z-[9999]">
         <button
           onClick={(e) => {
             e.stopPropagation();
