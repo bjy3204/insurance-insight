@@ -915,27 +915,29 @@ const pagedMemos = filteredMemos.slice(
         </p>
       </div>
 
-      <button
-  onClick={() => setMemoOpen(true)}
- className="
-  hidden
-  md:flex
-  w-11
-  h-11
-  rounded-full
-  border
-  border-gray-200
-  shadow-sm
-  bg-white
-  hover:bg-gray-50
-  items-center
-  justify-center
-  transition
-  cursor-default
-"
->
-  <StickyNote className="w-5 h-5 text-gray-400" />
-</button>
+      <div className="absolute right-0 top-1/2 -translate-y-1/2">
+  <button
+    onClick={() => setMemoOpen(true)}
+    className="
+      hidden
+      md:flex
+      w-10
+      h-10
+      rounded-full
+      border
+      border-gray-200
+      shadow-sm
+      bg-white
+      hover:bg-gray-50
+      items-center
+      justify-center
+      transition
+      cursor-default
+    "
+  >
+    <StickyNote className="w-5 h-5 text-gray-400" />
+  </button>
+</div>
 
     </div>
 

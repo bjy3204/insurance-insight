@@ -232,6 +232,18 @@ const [weather, setWeather] = useState<{
   const [open, setOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
+  const [pcQuickOpen, setPcQuickOpen] = useState(false);
+const [pcQuickDirection, setPcQuickDirection] = useState<"up" | "down">("up");
+const [pcQuickPos, setPcQuickPos] = useState({ x: 0, y: 0 });
+
+const pcQuickWrapRef = useRef<HTMLDivElement | null>(null);
+const pcQuickDragRef = useRef<{
+  startX: number;
+  startY: number;
+  originX: number;
+  originY: number;
+  moved: boolean;
+} | null>(null);
     const [settingOpen, setSettingOpen] = useState(false);
   const [memoOpen, setMemoOpen] = useState(false);
 const memoOpenRef = useRef(false);
@@ -272,6 +284,21 @@ const [popupPositions, setPopupPositions] = useState<
   Partial<Record<PopupKey, { x: number; y: number }>>
 >({});
 
+const [popupZIndexes, setPopupZIndexes] = useState<
+  Partial<Record<PopupKey, number>>
+>({});
+
+const popupZIndexRef = useRef(1500);
+
+const bringPopupToFront = (key: PopupKey) => {
+  popupZIndexRef.current += 1;
+
+  setPopupZIndexes((prev) => ({
+    ...prev,
+    [key]: popupZIndexRef.current,
+  }));
+};
+
 const dragPopupRef = useRef<{
   key: PopupKey;
   startX: number;
@@ -286,6 +313,7 @@ const startPopupDrag = (key: PopupKey, e: any) => {
   if (target.closest("button, input, textarea, select, a")) return;
 
   e.preventDefault();
+  bringPopupToFront(key);
 
   const current = popupPositions[key] || { x: 0, y: 0 };
 
@@ -326,6 +354,7 @@ const getPopupStyle = (key: PopupKey) => {
 
   return {
     transform: `translate(${pos.x}px, ${pos.y}px)`,
+    zIndex: popupZIndexes[key] || 1500,
   };
 };
 
@@ -685,6 +714,16 @@ useEffect(() => {
     localStorage.getItem("weather-region") || "서울";
 
   setWeatherRegion(savedRegion);
+}, []);
+
+useEffect(() => {
+  const saved = localStorage.getItem("pcQuickPosition");
+
+  if (!saved) return;
+
+  try {
+    setPcQuickPos(JSON.parse(saved));
+  } catch {}
 }, []);
 
 useEffect(() => {
@@ -1096,18 +1135,14 @@ const addPersonalMenu = () => {
   const isTemporaryAdd =
     mainMenuManageMode === "edit" || menuSortOpen;
 
-  if (isTemporaryAdd) {
-    setTempPersonalMenus((prev) => [...prev, newMenu]);
-    setTempMenus((prev) => [...prev, newMenuWithIcon]);
+ if (isTemporaryAdd) {
+  setTempPersonalMenus((prev) => [...prev, newMenu]);
+  setTempMenus((prev) => [...prev, newMenuWithIcon]);
 
-    resetNewMenuForm();
+  resetNewMenuForm();
 
-    setSaveConfirmType("popup");
-    setSaveConfirmMessage("메뉴가 추가되었습니다.");
-    setSaveConfirmOpen(true);
-
-    return;
-  }
+  return;
+}
 
   const nextPersonalMenus = [...personalMenus, newMenu];
 
@@ -1269,6 +1304,90 @@ const confirmDeleteMemo = () => {
   setDeleteMemoConfirmOpen(false);
 };
 
+const openPcQuickMenu = () => {
+  const wrap = pcQuickWrapRef.current;
+  if (!wrap) {
+    setPcQuickOpen((prev) => !prev);
+    return;
+  }
+
+  const rect = wrap.getBoundingClientRect();
+  const menuHeight = 420;
+
+  const spaceTop = rect.top;
+  const spaceBottom = window.innerHeight - rect.bottom;
+
+  if (spaceBottom < menuHeight && spaceTop > spaceBottom) {
+    setPcQuickDirection("up");
+  } else {
+    setPcQuickDirection("down");
+  }
+
+  setPcQuickOpen((prev) => !prev);
+};
+
+const startPcQuickDrag = (e: React.PointerEvent) => {
+  const target = e.target as HTMLElement;
+
+  if (target.closest("[data-pc-quick-menu]")) return;
+
+  pcQuickDragRef.current = {
+    startX: e.clientX,
+    startY: e.clientY,
+    originX: pcQuickPos.x,
+    originY: pcQuickPos.y,
+    moved: false,
+  };
+
+  const handleMove = (event: PointerEvent) => {
+    if (!pcQuickDragRef.current) return;
+
+    const dx = event.clientX - pcQuickDragRef.current.startX;
+    const dy = event.clientY - pcQuickDragRef.current.startY;
+
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      pcQuickDragRef.current.moved = true;
+    }
+
+    const nextX =
+  pcQuickDragRef.current.originX + dx;
+
+const nextY =
+  pcQuickDragRef.current.originY + dy;
+
+const limitedX = Math.min(
+  Math.max(nextX, -window.innerWidth + 280),
+  -10
+);
+
+const limitedY = Math.min(
+  Math.max(nextY, -window.innerHeight + 120),
+  window.innerHeight - 160
+);
+
+setPcQuickPos({
+  x: limitedX,
+  y: limitedY,
+});
+  };
+
+  const handleUp = () => {
+  localStorage.setItem(
+    "pcQuickPosition",
+    JSON.stringify({
+      x: pcQuickPos.x,
+      y: pcQuickPos.y,
+    })
+  );
+
+  window.removeEventListener("pointermove", handleMove);
+  window.removeEventListener("pointerup", handleUp);
+};
+
+  window.addEventListener("pointermove", handleMove);
+  window.addEventListener("pointerup", handleUp);
+};
+
   const sendMessage = async () => {
   if (!fixMessage.trim() && !addMessage.trim()) {
     alert("수정할 내용 또는 추가하고 싶은 내용을 입력해주세요.");
@@ -1304,7 +1423,7 @@ const confirmDeleteMemo = () => {
   return (
     <main className="min-h-screen bg-gray-100">
       {/* 헤더 */}
-      <header className="relative z-[5000] bg-white border-b shadow-sm">
+      <header className="relative z-40 bg-white border-b shadow-sm">
         <div className="max-w-[1500px] mx-auto px-5 py-6">
           <div className="relative flex items-center justify-center md:justify-center">
 
@@ -1444,7 +1563,7 @@ const confirmDeleteMemo = () => {
                 border-gray-200
                 shadow-xl
                 overflow-hidden
-                z-[9999]
+                z-50
               "
             >
               {WEATHER_REGIONS.map((region) => (
@@ -1458,7 +1577,7 @@ const confirmDeleteMemo = () => {
                     w-full
                     px-4
                     py-3
-                    text-left
+                    text-center
                     text-sm
                     font-bold
                     text-gray-700
@@ -1542,7 +1661,7 @@ const confirmDeleteMemo = () => {
         </p>
       </div>
 
-      <div className="relative z-[9999]">
+      <div className="relative z-50">
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -1588,33 +1707,7 @@ const confirmDeleteMemo = () => {
             "
           >
             
-          <button
-  onClick={() => {
-  resetPopupPosition("memo");
-setMemoOpen(true);
-  setMenuAddOpen(false);
-  setMenuSortOpen(false);
-  setSelectedPersonalMenuId("");
-  setEditIconOpen(false);
-  setMenuManageMode("sort");
-  setSettingOpen(false);
-}}
-  className="
-    block
-    w-full
-    text-left
-    px-4
-    py-3
-    text-sm
-    font-bold
-    text-gray-700
-    hover:bg-gray-50
-    transition
-    cursor-default
-  "
->
-  메모장
-</button>
+          
 
 <button
   onClick={() => {
@@ -1630,7 +1723,7 @@ setMenuAddOpen(true);
   className="
     block
     w-full
-    text-left
+    text-center
     px-4
     py-3
     text-sm
@@ -1663,7 +1756,7 @@ setMenuSortOpen(true);
   className="
     block
     w-full
-    text-left
+    text-center
     px-4
     py-3
     text-sm
@@ -1694,7 +1787,7 @@ setMenuSortOpen(true);
   className="
     block
     w-full
-    text-left
+    text-center
     px-4
     py-3
     text-sm
@@ -1724,7 +1817,7 @@ setMenuSortOpen(true);
   className="
     block
     w-full
-    text-left
+    text-center
     px-4
     py-3
     text-sm
@@ -2135,9 +2228,9 @@ hover:-translate-y-1
     );
   })}
 
-          {/* 빠른 실행 */}
-          {mainMenuManageMode === "normal" && (
-  <div className={quickOpen ? "relative pb-28" : "relative"}>
+          {/* 빠른 실행 - 모바일/태블릿 전용 */}
+{mainMenuManageMode === "normal" && (
+  <div className={quickOpen ? "relative pb-28 md:hidden" : "relative md:hidden"}>
             <button
   onClick={(e) => {
     e.stopPropagation();
@@ -2535,35 +2628,259 @@ duration-200
   )}
 
 </button>
-    {/* PC 메세지 버튼 */}
-<button
-  onClick={() => {
-  resetPopupPosition("message");
-  setOpen(true);
-}}
-  className="
-    hidden
-    md:block
-    fixed
-    right-6
-    bottom-20
-    lg:bottom-25
-    z-40
-    bg-blue-600
-     
-    text-white
-    px-5
-    py-4
-    rounded-2xl
-    shadow-lg
-    font-bold
-    
-  "
->
-  보험나무에게 메세지 보내기
-</button>
 
-<ExchangeIndexBar />
+{/* PC 빠른메뉴 실행 버튼 */}
+{mainMenuManageMode === "normal" && (
+  <div
+    ref={pcQuickWrapRef}
+    onPointerDown={startPcQuickDrag}
+    style={{
+      transform: `translate(${pcQuickPos.x}px, ${pcQuickPos.y}px)`,
+    }}
+    className="
+      hidden
+      md:block
+      fixed
+      right-6
+      bottom-20
+      lg:bottom-25
+      z-[60]
+      w-[248px]
+      cursor-default
+      select-none
+      touch-none
+    "
+  >
+    {pcQuickOpen && pcQuickDirection === "up" && (
+      <div
+        data-pc-quick-menu
+        className="
+          absolute
+          left-0
+          z-[61]
+          bottom-[60px]
+          w-full
+          min-w-full
+          max-h-[420px]
+          overflow-y-auto
+          rounded-2xl
+          bg-white
+          border
+          border-gray-200
+          overflow-hidden
+        "
+      >
+        <button
+          onClick={() => {
+            resetPopupPosition("memo");
+            setMemoOpen(true);
+            setPcQuickOpen(false);
+          }}
+          className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition cursor-default flex items-center justify-center"
+        >
+          메모장
+        </button>
+
+       {Array.from({ length: 4 }).map((_, index) => {
+  const selectedKey = quickMenuKeys[index];
+
+  const selectedMenu = quickMenuOptions.find(
+    (item) => item.key === selectedKey
+  );
+
+  if (!selectedMenu) {
+    return (
+      <button
+        key={index}
+        onClick={() => {
+          setTempQuickMenuKeys(quickMenuKeys);
+          setQuickMenuSelectOpen(true);
+          setPcQuickOpen(false);
+        }}
+        className="w-full h-[48px] px-4 text-sm font-bold text-gray-400 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
+      >
+        <Plus className="w-5 h-5" />
+      </button>
+    );
+  }
+
+  return (
+    <button
+      key={selectedMenu.key}
+      onContextMenu={(e) => {
+        e.preventDefault();
+
+        setContextMenu({
+          x: e.clientX,
+          y: e.clientY,
+          type: "quickMenu",
+          id: selectedMenu.key,
+          index,
+        });
+      }}
+      onClick={() => {
+        selectedMenu.action();
+        setPcQuickOpen(false);
+      }}
+      className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
+    >
+      {selectedMenu.title}
+    </button>
+  );
+})}
+
+        
+
+        <button
+          onClick={() => {
+            resetPopupPosition("message");
+            setOpen(true);
+            setPcQuickOpen(false);
+          }}
+          className="w-full h-[48px] px-4 text-sm font-bold text-blue-600 hover:bg-blue-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
+        >
+          보험나무에게 메세지 보내기
+        </button>
+      </div>
+    )}
+
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+
+        if (pcQuickDragRef.current?.moved) {
+          pcQuickDragRef.current = null;
+          return;
+        }
+
+        openPcQuickMenu();
+      }}
+      className={`
+  w-full
+  h-[52px]
+  px-5
+  rounded-2xl
+  border
+  text-sm
+  font-bold
+  flex
+  items-center
+  justify-center
+  gap-2
+  transition
+  hover:-translate-y-0.5
+  cursor-default
+  whitespace-nowrap
+  ${
+  pcQuickOpen
+    ? "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+    : "bg-blue-600 border-blue-600 text-white"
+}
+`}
+    >
+      빠른메뉴 실행하기
+
+      {pcQuickOpen ? (
+  <ChevronUp className="w-4 h-4 text-gray-400" />
+) : (
+  <ChevronDown className="w-4 h-4 text-white" />
+)}
+    </button>
+
+    {pcQuickOpen && pcQuickDirection === "down" && (
+      <div
+        data-pc-quick-menu
+        className="
+          absolute
+          left-0
+          top-[60px]
+          w-full
+          min-w-full
+          max-h-[420px]
+          overflow-y-auto
+          rounded-2xl
+          bg-white
+          border
+          border-gray-200
+          overflow-hidden
+        "
+      >
+        <button
+          onClick={() => {
+            resetPopupPosition("memo");
+            setMemoOpen(true);
+            setPcQuickOpen(false);
+          }}
+          className="w-full h-[48px] px-4 text-left text-sm font-bold text-gray-700 hover:bg-gray-50 transition cursor-default"
+        >
+          메모장
+        </button>
+
+        {Array.from({ length: 4 }).map((_, index) => {
+  const selectedKey = quickMenuKeys[index];
+
+  const selectedMenu = quickMenuOptions.find(
+    (item) => item.key === selectedKey
+  );
+
+  if (!selectedMenu) {
+    return (
+      <button
+        key={index}
+        onClick={() => {
+          setTempQuickMenuKeys(quickMenuKeys);
+          setQuickMenuSelectOpen(true);
+          setPcQuickOpen(false);
+        }}
+        className="w-full h-[48px] px-4 text-sm font-bold text-gray-400 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
+      >
+        <Plus className="w-5 h-5" />
+      </button>
+    );
+  }
+
+  return (
+    <button
+      key={selectedMenu.key}
+      onContextMenu={(e) => {
+        e.preventDefault();
+
+        setContextMenu({
+          x: e.clientX,
+          y: e.clientY,
+          type: "quickMenu",
+          id: selectedMenu.key,
+          index,
+        });
+      }}
+      onClick={() => {
+        selectedMenu.action();
+        setPcQuickOpen(false);
+      }}
+      className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
+    >
+      {selectedMenu.title}
+    </button>
+  );
+})}
+
+        <button
+          onClick={() => {
+            resetPopupPosition("message");
+            setOpen(true);
+            setPcQuickOpen(false);
+          }}
+          className="w-full h-[48px] px-4 text-sm font-bold text-blue-600 hover:bg-blue-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
+        >
+          보험나무에게 메세지 보내기
+        </button>
+      </div>
+    )}
+  </div>
+)}
+    
+
+{mainMenuManageMode === "normal" && <ExchangeIndexBar />}
 
 
       {/* 하단 고정 */}
@@ -2939,12 +3256,18 @@ rel="noopener noreferrer"
 
         <button
           onClick={() => {
+  if (!quickDeleteKey) return;
+
+  setQuickMenuKeys((prev) =>
+    prev.filter((key) => key !== quickDeleteKey)
+  );
+
   setTempQuickMenuKeys((prev) =>
     prev.filter((key) => key !== quickDeleteKey)
   );
 
-  setQuickDeleteConfirmOpen(false);
   setQuickDeleteKey(null);
+  setQuickDeleteConfirmOpen(false);
 }}
           className="
             flex-1

@@ -981,7 +981,7 @@ const pagedMemos = filteredMemos.slice(
                         setSettingOpen(false);
                       }}
                       className="
-                        hidden md:block w-full text-left px-4 py-3 text-sm font-bold
+                        hidden md:block w-full text-center px-4 py-3 text-sm font-bold
                         text-gray-700 hover:bg-gray-50 transition cursor-default
                       "
                     >
@@ -991,7 +991,7 @@ const pagedMemos = filteredMemos.slice(
                     <button
                       onClick={() => openManagePopup("favorite")}
                                            className="
-                        block w-full text-left px-4 py-3 text-sm font-bold
+                        block w-full text-center로 px-4 py-3 text-sm font-bold
                         text-gray-700 hover:bg-gray-50 transition border-t
                         border-gray-100 cursor-default
                       "
@@ -1002,7 +1002,7 @@ const pagedMemos = filteredMemos.slice(
                     <button
                       onClick={() => openManagePopup("sort")}
                       className="
-                        block w-full text-left px-4 py-3 text-sm font-bold
+                        block w-full text-center px-4 py-3 text-sm font-bold
                         text-gray-700 hover:bg-gray-50 transition border-t
                         border-gray-100 cursor-default
                       "
