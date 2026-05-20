@@ -475,7 +475,7 @@ const principal = monthly * months;
       {/* 헤더 */}
       <header className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+          <div className="relative flex items-center justify-center">
             <Link
               href="/"
               className="
