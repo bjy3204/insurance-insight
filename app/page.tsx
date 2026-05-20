@@ -213,7 +213,8 @@ export default function Home() {
   const [quickOpen, setQuickOpen] = useState(false);
     const [settingOpen, setSettingOpen] = useState(false);
   const [memoOpen, setMemoOpen] = useState(false);
-  const [menuSortOpen, setMenuSortOpen] = useState(false);
+const memoOpenRef = useRef(false);
+const [menuSortOpen, setMenuSortOpen] = useState(false);
 const [tempMenus, setTempMenus] = useState<MenuItem[]>(defaultMenus);
 const [menuAddOpen, setMenuAddOpen] = useState(false);
 const [personalMenus, setPersonalMenus] = useState<PersonalMenuItem[]>([]);
@@ -318,6 +319,8 @@ const resetPopupPosition = (key: PopupKey) => {
   const [memos, setMemos] = useState<MemoItem[]>([]);
   const [memoTitle, setMemoTitle] = useState("");
   const [memoContent, setMemoContent] = useState("");
+  const [memoColor, setMemoColor] =
+  useState<MemoItem["color"]>("white");
   const [memoSearch, setMemoSearch] = useState("");
   const [memoPage, setMemoPage] = useState(1);
   const [memoAddOpen, setMemoAddOpen] = useState(false);
@@ -346,10 +349,20 @@ const [quickMenuKeys, setQuickMenuKeys] = useState<string[]>([
   "disease",
 ]);
 const [tempQuickMenuKeys, setTempQuickMenuKeys] = useState<string[]>([]);
+const [contextMenu, setContextMenu] = useState<{
+  x: number;
+  y: number;
+  type: "mainPersonal" | "quickMenu" | "menuManage" | "memo";
+  id: string;
+  index?: number;
+} | null>(null);
 
 const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 const [quickLimitOpen, setQuickLimitOpen] = useState(false);
 const [quickMenuSelectOpen, setQuickMenuSelectOpen] = useState(false);
+const [quickDeleteConfirmOpen, setQuickDeleteConfirmOpen] =
+  useState(false);
+  const [quickDeleteKey, setQuickDeleteKey] = useState<string | null>(null);
 const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
 const [saveConfirmType, setSaveConfirmType] =
   useState<"main" | "popup">("main");
@@ -643,6 +656,30 @@ if (savedReadPressIds) {
 }, []);
 
 useEffect(() => {
+  memoOpenRef.current = memoOpen;
+}, [memoOpen]);
+
+useEffect(() => {
+  const syncMemos = () => {
+    const savedMemos = localStorage.getItem("personalMemos");
+
+    if (savedMemos) {
+      setMemos(JSON.parse(savedMemos));
+    } else {
+      setMemos([]);
+    }
+  };
+
+  window.addEventListener("memo-storage-updated", syncMemos);
+  window.addEventListener("storage", syncMemos);
+
+  return () => {
+    window.removeEventListener("memo-storage-updated", syncMemos);
+    window.removeEventListener("storage", syncMemos);
+  };
+}, []);
+
+useEffect(() => {
   const openMemoDetail = (event: any) => {
     const memoId = event.detail;
 
@@ -656,14 +693,30 @@ useEffect(() => {
 
     setMemos(parsedMemos);
 setSelectedMemo(targetMemo);
-setMemoOpen(false);
+
+if (memoOpenRef.current) {
+  setMemoOpen(true);
+}
+
 resetPopupPosition("memoDetail");
   };
 
+  const openMemoContextMenu = (event: any) => {
+  const { x, y, id } = event.detail;
+
+  setContextMenu({
+    x,
+    y,
+    type: "memo",
+    id,
+  });
+};
   window.addEventListener("open-memo-detail", openMemoDetail);
+  window.addEventListener("open-memo-context-menu", openMemoContextMenu);
 
   return () => {
     window.removeEventListener("open-memo-detail", openMemoDetail);
+    window.removeEventListener("open-memo-context-menu", openMemoContextMenu);
   };
 }, []);
 
@@ -718,19 +771,7 @@ useEffect(() => {
   );
 }, [menus]);
 
-useEffect(() => {
-  const handleClick = () => {
-    setQuickOpen(false);
-  };
 
-  if (quickOpen) {
-    window.addEventListener("click", handleClick);
-  }
-
-  return () => {
-    window.removeEventListener("click", handleClick);
-  };
-}, [quickOpen]);
 
 useEffect(() => {
   const handleClick = () => {
@@ -745,6 +786,18 @@ useEffect(() => {
     window.removeEventListener("click", handleClick);
   };
 }, [settingOpen]);
+
+useEffect(() => {
+  const closeContextMenu = () => {
+    setContextMenu(null);
+  };
+
+  window.addEventListener("pointerdown", closeContextMenu);
+
+  return () => {
+    window.removeEventListener("pointerdown", closeContextMenu);
+  };
+}, []);
 
 const handleMenuSortDragEnd = (event: any) => {
   const { active, over } = event;
@@ -810,20 +863,19 @@ const saveEditingMenuAndClose = () => {
 };
 
 const cancelEditingMenu = () => {
-  if (editingOriginalMenu) {
-    const restoredMenus = tempPersonalMenus.map((menu) =>
-      menu.id === editingOriginalMenu.id
-        ? editingOriginalMenu
-        : menu
-    );
+  setTempMenus(menus);
+setTempPersonalMenus(personalMenus);
+setTempQuickMenuKeys(quickMenuKeys);
 
-    setTempPersonalMenus(restoredMenus);
-  }
-
+  setSelectedPersonalMenuId("");
+  setSelectedDeleteMenuIds([]);
   setEditingOriginalMenu(null);
-  setTempQuickMenuKeys(quickMenuKeys);
+  setEditIconOpen(false);
 
-  closeEditingMenu();
+  setNewMenuTitle("");
+  setNewMenuDesc("");
+  setNewMenuLink("");
+  setNewMenuIcon("globe");
 };
 
 const savePersonalMenuEdits = () => {
@@ -1042,7 +1094,7 @@ const addMemo = () => {
     content: memoContent.trim(),
     pinned: false,
     visible: false,
-    color: "white",
+    color: memoColor,
     createdAt: now,
     updatedAt: now,
   };
@@ -1050,8 +1102,9 @@ const addMemo = () => {
   saveMemos([newMemo, ...memos]);
 
   setMemoTitle("");
-  setMemoContent("");
-  setMemoPage(1);
+setMemoContent("");
+setMemoColor("white");
+setMemoPage(1);
 };
 
 const updateMemo = (
@@ -1078,7 +1131,7 @@ const toggleMemoVisible = (id: string) => {
       ? {
           ...memo,
           visible: !memo.visible,
-          updatedAt: new Date().toISOString(),
+updatedAt: memo.updatedAt,
         }
       : memo
   );
@@ -1552,9 +1605,9 @@ setMenuSortOpen(true);
        
         <div
   onClick={() => {
-    if (mainMenuManageMode === "edit" && selectedPersonalMenuId) {
-      saveEditingMenuAndClose();
-    }
+    if (selectedPersonalMenuId) {
+  saveEditingMenuAndClose();
+}
   }}
   className="relative grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 items-start"
 >
@@ -1565,6 +1618,18 @@ setMenuSortOpen(true);
     return (
       <a
         key={menu.id}
+        onContextMenu={(e) => {
+  if (!menu.isPersonal) return;
+
+  e.preventDefault();
+
+  setContextMenu({
+    x: e.clientX,
+    y: e.clientY,
+    type: "mainPersonal",
+    id: menu.id,
+  });
+}}
         href={menu.link}
         target={
           menu.title === "보험인사이트 폴더" || menu.isPersonal
@@ -1697,6 +1762,7 @@ setMenuSortOpen(true);
                     transition
                     hover:scale-105
                     active:scale-95
+                    cursor-pointer
                   "
                 >
                   <X className="w-4 h-4" />
@@ -1714,11 +1780,22 @@ setMenuSortOpen(true);
 
       return (
         <div
-          key={menu.id}
-        onClick={(e) => {
-  e.stopPropagation();
-  startEditPersonalMenu(menu);
-}}
+  key={menu.id}
+  onContextMenu={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      type: "menuManage",
+      id: menu.id,
+    });
+  }}
+  onClick={(e) => {
+    e.stopPropagation();
+    startEditPersonalMenu(menu);
+  }}
           className="
             bg-white
             p-7
@@ -1970,7 +2047,7 @@ hover:-translate-y-1
       duration-150
       left-0
       top-[58px]
-      z-[9999]
+      z-30
       w-full
       max-h-[260px]
       rounded-2xl
@@ -2023,6 +2100,17 @@ hover:-translate-y-1
   return (
     <button
       key={selectedMenu.key}
+      onContextMenu={(e) => {
+  e.preventDefault();
+
+  setContextMenu({
+    x: e.clientX,
+    y: e.clientY,
+    type: "quickMenu",
+    id: selectedMenu.key,
+    index,
+  });
+}}
       onClick={selectedMenu.action}
       className={`
         min-h-[62px]
@@ -2049,7 +2137,145 @@ hover:-translate-y-1
         </div>
       </div>
 
+{contextMenu && (
+ <div
+  style={{
+    left: contextMenu.x,
+    top: contextMenu.y,
+  }}
+  onPointerDown={(e) => e.stopPropagation()}
+  onClick={(e) => e.stopPropagation()}
+    className="
+      fixed
+      z-[5000]
+      w-36
+      rounded-2xl
+      bg-white
+      border
+      border-gray-200
+      shadow-xl
+      overflow-hidden
+    "
+  >
+    <button
+  onClick={() => {
+  if (contextMenu.type === "memo") {
+    const targetMemo = memos.find(
+      (memo) => memo.id === contextMenu.id
+    );
 
+    if (!targetMemo) return;
+
+    setSelectedMemo(targetMemo);
+    setContextMenu(null);
+    return;
+  }
+
+  if (contextMenu.type === "quickMenu") {
+    setTempQuickMenuKeys(quickMenuKeys);
+    setQuickMenuSelectOpen(true);
+    setContextMenu(null);
+    return;
+  }
+
+  if (contextMenu.type === "menuManage") {
+    const targetMenu = tempPersonalMenus.find(
+      (menu) => menu.id === contextMenu.id
+    );
+
+    if (!targetMenu) return;
+
+    startEditPersonalMenu(targetMenu);
+    setMenuManageMode("edit");
+    setContextMenu(null);
+    return;
+  }
+
+  const targetMenu = personalMenus.find(
+    (menu) => menu.id === contextMenu.id
+  );
+
+  if (!targetMenu) return;
+
+  setTempPersonalMenus(personalMenus);
+  setTempQuickMenuKeys(quickMenuKeys);
+  startEditPersonalMenu(targetMenu);
+  setMainMenuManageMode("edit");
+  setContextMenu(null);
+}}
+      className="
+        block
+        w-full
+        text-left
+        px-4
+        py-3
+        text-sm
+        font-bold
+        text-gray-700
+        hover:bg-blue-50
+        hover:text-blue-600
+        transition
+        cursor-default
+      "
+    >
+      수정
+    </button>
+
+    <button
+      onClick={() => {
+  if (contextMenu.type === "memo") {
+    deleteMemo(contextMenu.id);
+    setContextMenu(null);
+    return;
+  }
+
+  if (contextMenu.type === "quickMenu") {
+    setQuickDeleteKey(contextMenu.id);
+    setQuickDeleteConfirmOpen(true);
+    setContextMenu(null);
+    return;
+  }
+
+  if (contextMenu.type === "menuManage") {
+    setTempMenus((prev) =>
+      prev.filter((menu) => menu.id !== contextMenu.id)
+    );
+
+    setTempPersonalMenus((prev) =>
+      prev.filter((menu) => menu.id !== contextMenu.id)
+    );
+
+    setSelectedPersonalMenuId("");
+    setContextMenu(null);
+    return;
+  }
+
+  setSelectedDeleteMenuIds([contextMenu.id]);
+  setDeleteConfirmOpen(true);
+  setContextMenu(null);
+}}
+
+      className="
+        block
+        w-full
+        text-left
+        px-4
+        py-3
+        text-sm
+        font-bold
+        text-gray-700
+        hover:bg-red-50
+        hover:text-red-500
+        transition
+        border-t
+        border-gray-100
+        cursor-default
+      "
+    >
+      삭제
+    </button>
+  </div>
+)}
 
 
       {/* 앱처럼 사용하기 */}
@@ -2398,6 +2624,7 @@ rel="noopener noreferrer"
             text-gray-400
             hover:bg-gray-100
             transition
+            cursor-pointer
           "
         >
           <X className="w-5 h-5" />
@@ -2527,6 +2754,65 @@ rel="noopener noreferrer"
   </div>
 )}
 
+{quickDeleteConfirmOpen && (
+  <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">
+    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+      <h2 className="text-xl font-black text-gray-900">
+        빠른메뉴 삭제
+      </h2>
+
+      <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
+        빠른메뉴에서 삭제하시겠습니까?
+      </p>
+
+      <div className="flex gap-3 mt-6">
+        <button
+          onClick={() => setQuickDeleteConfirmOpen(false)}
+          className="
+            flex-1
+            h-12
+            rounded-2xl
+            bg-gray-100
+            text-gray-700
+            text-sm
+            font-bold
+            hover:bg-gray-200
+            transition
+            cursor-default
+          "
+        >
+          취소
+        </button>
+
+        <button
+          onClick={() => {
+  setTempQuickMenuKeys((prev) =>
+    prev.filter((key) => key !== quickDeleteKey)
+  );
+
+  setQuickDeleteConfirmOpen(false);
+  setQuickDeleteKey(null);
+}}
+          className="
+            flex-1
+            h-12
+            rounded-2xl
+            bg-red-500
+            text-white
+            text-sm
+            font-bold
+            hover:bg-red-600
+            transition
+            cursor-default
+          "
+        >
+          삭제
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 {saveConfirmOpen && (
   <div className="fixed inset-0 z-[2100] bg-black/40 flex items-center justify-center p-5">
     <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
@@ -2551,10 +2837,10 @@ rel="noopener noreferrer"
             transition
             cursor-default
             ${
-              saveConfirmType === "main"
-                ? "bg-blue-600 hover:bg-blue-700"
-                : "bg-gray-800 hover:bg-gray-700"
-            }
+  saveConfirmType === "popup"
+    ? "bg-gray-800 hover:bg-gray-700"
+    : "bg-blue-600 hover:bg-blue-700"
+}
           `}
         >
           확인
@@ -2641,6 +2927,7 @@ rel="noopener noreferrer"
   text-gray-400
   hover:bg-gray-100
   transition
+  cursor-pointer
 "
             >
               <X className="w-5 h-5" />
@@ -3038,8 +3325,9 @@ rel="noopener noreferrer"
 {/* 메뉴 정렬 팝업 */}
 {menuSortOpen && (
   <div
-    className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
-  >
+  onClick={() => setContextMenu(null)}
+  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
+>
    <div
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("menuSort")}
@@ -3057,9 +3345,16 @@ rel="noopener noreferrer"
  <button
   onClick={() => {
     if (menuManageMode === "sort") {
-      setMenuSortOpen(false);
-      return;
-    }
+  setTempMenus(menus);
+  setTempPersonalMenus(personalMenus);
+  setTempQuickMenuKeys(quickMenuKeys);
+  setSelectedPersonalMenuId("");
+  setSelectedDeleteMenuIds([]);
+  setEditingOriginalMenu(null);
+  setEditIconOpen(false);
+  setMenuSortOpen(false);
+  return;
+}
 
     setMenuManageMode("sort");
     setSelectedPersonalMenuId("");
@@ -3076,7 +3371,7 @@ rel="noopener noreferrer"
     items-center
     justify-center
     transition
-    cursor-default
+    cursor-pointer
     ${
       menuManageMode === "sort"
         ? "w-9 rounded-full hover:bg-white/10"
@@ -3180,6 +3475,19 @@ rel="noopener noreferrer"
   <SortableMenuSortCard
     key={menu.id}
     menu={menu}
+    
+    onContextMenu={(e) => {
+  if (!menu.isPersonal) return;
+
+  e.preventDefault();
+
+  setContextMenu({
+    x: e.clientX,
+    y: e.clientY,
+    type: "menuManage",
+    id: menu.id,
+  });
+}}
     onEdit={() => {
   if (!menu.isPersonal) return;
 
@@ -3360,11 +3668,22 @@ sm:pb-4
 
           return (
             <div
-              key={menu.id}
-                           onClick={(e) => {
-                e.stopPropagation();
-                startEditPersonalMenu(menu);
-              }}
+  key={menu.id}
+  onContextMenu={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      type: "menuManage",
+      id: menu.id,
+    });
+  }}
+  onClick={(e) => {
+    e.stopPropagation();
+    startEditPersonalMenu(menu);
+  }}
               className="
                 bg-white
                 p-7
@@ -3850,8 +4169,9 @@ hover:-translate-y-1
       {/* 메모장 팝업 */}
       {memoOpen && (
   <div
-    className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4"
-  >
+  onClick={() => setContextMenu(null)}
+  className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4"
+>
           <div
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("memo")}
@@ -3963,7 +4283,18 @@ hover:-translate-y-1
       {pagedMemos.map((memo) => (
         <SortableMemoCard key={memo.id} memo={memo}>
           <div
-            onDoubleClick={() => setSelectedMemo(memo)}
+  onContextMenu={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      type: "memo",
+      id: memo.id,
+    });
+  }}
+  onDoubleClick={() => setSelectedMemo(memo)}
             className={`
               rounded-2xl
               border
@@ -4141,28 +4472,52 @@ hover:-translate-y-1
   className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6"
 >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-black text-gray-900">
-                메모 추가
-              </h2>
+  <h2 className="text-xl font-black text-gray-900">
+    메모 추가
+  </h2>
 
-              <button
-                onClick={() => setMemoAddOpen(false)}
-                className="
-                  w-9
-                  h-9
-                  rounded-full
-                  flex
-                  items-center
-                  justify-center
-                  text-gray-400
-                  hover:bg-gray-100
-                  transition
-                  cursor-default
-                "
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+  <div className="flex items-center gap-2">
+    {memoColorOptions.map((color) => (
+      <button
+        key={color.value}
+        type="button"
+        onClick={() => setMemoColor(color.value)}
+        className={`
+          w-7
+          h-7
+          rounded-full
+          border
+          transition
+          hover:scale-105
+          ${
+            memoColor === color.value
+              ? "ring-2 ring-gray-400 ring-offset-2"
+              : ""
+          }
+          ${color.className}
+        `}
+      />
+    ))}
+
+    <button
+      onClick={() => setMemoAddOpen(false)}
+      className="
+        w-9
+        h-9
+        rounded-full
+        flex
+        items-center
+        justify-center
+        text-gray-400
+        hover:bg-gray-100
+        transition
+        cursor-pointer
+      "
+    >
+      <X className="w-5 h-5" />
+    </button>
+  </div>
+</div>
 
             <input
               value={memoTitle}
@@ -4198,6 +4553,10 @@ hover:-translate-y-1
                 mb-5
               "
             />
+
+            <p className="-mt-4 mb-3 text-xs text-gray-400 leading-relaxed break-keep">
+  ※ 메모는 브라우저 캐시 삭제 또는 기기 변경 시 삭제될 수 있습니다.
+</p>
 
             <div className="flex gap-3">
               <button
@@ -4309,7 +4668,7 @@ setSaveConfirmOpen(true);
         text-gray-400
         hover:bg-gray-100
         transition
-        cursor-default
+        cursor-pointer
       "
     >
       <X className="w-5 h-5" />
@@ -4319,35 +4678,36 @@ setSaveConfirmOpen(true);
               
 
             <input
-              value={selectedMemo.title}
-              onChange={(e) => {
-  setSelectedMemo({
-    ...selectedMemo,
-    title: e.target.value,
-  });
-}}
-              className="
-                w-full
-                h-12
-                rounded-2xl
-                border
-                border-gray-200
-                px-4
-                text-sm
-                font-bold
-                outline-none
-                mb-3
-              "
-            />
+  value={selectedMemo.title}
+  onChange={(e) => {
+    setSelectedMemo({
+      ...selectedMemo,
+      title: e.target.value,
+    });
+  }}
+  placeholder="메모 제목"
+  className="
+    w-full
+    h-12
+    rounded-2xl
+    border
+    border-gray-200
+    px-4
+    text-sm
+    outline-none
+    mb-3
+  "
+/>
 
-            <textarea
+<textarea
   value={selectedMemo.content}
   onChange={(e) => {
-  setSelectedMemo({
-    ...selectedMemo,
-    content: e.target.value,
-  });
-}}
+    setSelectedMemo({
+      ...selectedMemo,
+      content: e.target.value,
+    });
+  }}
+  placeholder="메모 내용을 입력하세요"
   className="
     w-full
     h-56
@@ -4361,6 +4721,10 @@ setSaveConfirmOpen(true);
     mb-5
   "
 />
+
+<p className="-mt-4 mb-3 text-xs text-gray-400 leading-relaxed break-keep">
+  ※ 메모는 브라우저 캐시 삭제 또는 기기 변경 시 삭제될 수 있습니다.
+</p>
 
 <div className="flex gap-3">
   <button
@@ -5052,9 +5416,11 @@ setSaveConfirmOpen(true);
 function SortableMenuSortCard({
   menu,
   onEdit,
+  onContextMenu,
 }: {
   menu: any;
   onEdit: () => void;
+  onContextMenu?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }) {
   const {
     attributes,
@@ -5075,37 +5441,39 @@ function SortableMenuSortCard({
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      onDoubleClick={onEdit}
-      {...attributes}
-      {...listeners}
-      className={`
-  bg-white
-  p-7
-  sm:p-8
-  rounded-3xl
-  shadow
-  border
-  border-gray-100
-  transition
-  min-h-[190px]
-  cursor-default
-  hover:shadow-xl
-  hover:-translate-y-1
-  ${isDragging ? "shadow-2xl scale-[1.01]" : ""}
-`}
-    >
-      <Icon className="w-10 h-10 mb-4 text-blue-600 shrink-0" />
+  <div
+    ref={setNodeRef}
+    style={style}
+    {...attributes}
+    {...listeners}
+    onDoubleClick={onEdit}
+    onContextMenu={onContextMenu}
+    className="
+      bg-white
+      p-7
+      sm:p-8
+      rounded-3xl
+      shadow
+      border
+      border-gray-200
+      min-h-[190px]
+      cursor-default
+      transition
+      hover:shadow-xl
+      hover:-translate-y-1
+    "
+  >
+    <Icon className="w-10 h-10 mb-4 text-blue-600 shrink-0" />
 
-      <h2 className="text-lg font-bold">{menu.title}</h2>
+    <h2 className="text-lg font-bold text-gray-900">
+      {menu.title}
+    </h2>
 
-      <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
-        {menu.desc}
-      </p>
-    </div>
-  );
+    <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
+      {menu.desc}
+    </p>
+  </div>
+);
 }
 
 function SortableMemoCard({

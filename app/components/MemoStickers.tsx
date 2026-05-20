@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Pin } from "lucide-react";
+import { X as XIcon } from "lucide-react";
 
 type MemoItem = {
   id: string;
@@ -56,19 +56,18 @@ export default function MemoStickers() {
     window.dispatchEvent(new Event("memo-storage-updated"));
   };
 
-  const toggleMemoVisible = (id: string) => {
-    const nextMemos = memos.map((memo) =>
-      memo.id === id
-        ? {
-            ...memo,
-            visible: !memo.visible,
-            updatedAt: new Date().toISOString(),
-          }
-        : memo
-    );
+ const hideMemoSticker = (id: string) => {
+  const nextMemos = memos.map((memo) =>
+    memo.id === id
+      ? {
+          ...memo,
+          visible: false,
+        }
+      : memo
+  );
 
-    saveMemos(nextMemos);
-  };
+  saveMemos(nextMemos);
+};
 
   const moveMemoSticker = (id: string, x: number, y: number) => {
     const nextMemos = memos.map((memo) =>
@@ -115,8 +114,22 @@ export default function MemoStickers() {
     <>
       {visibleMemos.map((memo, index) => (
         <div
-          key={memo.id}
-          onPointerDown={(e) => {
+  key={memo.id}
+  onContextMenu={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    window.dispatchEvent(
+      new CustomEvent("open-memo-context-menu", {
+        detail: {
+          x: e.clientX,
+          y: e.clientY,
+          id: memo.id,
+        },
+      })
+    );
+  }}
+  onPointerDown={(e) => {
             const target = e.target as HTMLElement;
 
             if (target.closest("button, input, textarea, select, a")) return;
@@ -183,7 +196,7 @@ export default function MemoStickers() {
           }}
           className={`
             fixed
-            z-[60]
+            z-[1400]
             hidden
             md:block
             w-[260px]
@@ -205,7 +218,7 @@ export default function MemoStickers() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                toggleMemoVisible(memo.id);
+                hideMemoSticker(memo.id);
               }}
               className="
                 w-8
@@ -220,11 +233,11 @@ export default function MemoStickers() {
                 hover:text-gray-600
                 transition
                 shrink-0
-                cursor-default
+                cursor-pointer
               "
               title="메인에서 숨기기"
             >
-              <Pin className="w-4 h-4" />
+             <XIcon className="w-4 h-4" />
             </button>
           </div>
 
