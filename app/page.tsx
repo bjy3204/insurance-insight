@@ -2729,7 +2729,30 @@ duration-200
   );
 })}
 
-        
+        <button
+  onClick={() => {
+    window.location.href = "/naver-news";
+    setPcQuickOpen(false);
+  }}
+  className="
+  w-full
+  h-[48px]
+  px-4
+  text-sm
+  font-bold
+  text-gray-700
+  hover:bg-gray-50
+  transition
+  cursor-default
+  flex
+  items-center
+  justify-center
+  border-t
+  border-gray-100
+  "
+>
+  오늘의 뉴스
+</button>
 
         <button
           onClick={() => {
@@ -2811,7 +2834,20 @@ duration-200
             setMemoOpen(true);
             setPcQuickOpen(false);
           }}
-          className="w-full h-[48px] px-4 text-left text-sm font-bold text-gray-700 hover:bg-gray-50 transition cursor-default"
+          className="
+  w-full
+  h-[48px]
+  px-4
+  text-sm
+  font-bold
+  text-gray-700
+  hover:bg-gray-50
+  transition
+  cursor-default
+  flex
+  items-center
+  justify-center
+"
         >
           메모장
         </button>
@@ -2863,6 +2899,31 @@ duration-200
     </button>
   );
 })}
+
+<button
+  onClick={() => {
+    window.location.href = "/naver-news";
+    setPcQuickOpen(false);
+  }}
+  className="
+    w-full
+    h-[48px]
+    px-4
+    text-sm
+    font-bold
+    text-gray-700
+    hover:bg-gray-50
+    transition
+    cursor-default
+    flex
+    items-center
+    justify-center
+    border-t
+    border-gray-100
+  "
+>
+  오늘의 뉴스
+</button>
 
         <button
           onClick={() => {
