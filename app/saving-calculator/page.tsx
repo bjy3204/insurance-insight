@@ -501,8 +501,11 @@ const principal = monthly * months;
             <button
   onClick={() => setMemoOpen(true)}
   className="
+  absolute
+right-0
     hidden
     md:flex
+    
     w-11
     h-11
     rounded-full
