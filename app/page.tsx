@@ -42,6 +42,7 @@ import {
   User,
   Globe,
   Home as HomeIcon,
+  Percent,
 } from "lucide-react";
 
 
@@ -278,7 +279,8 @@ const [mainMenuManageMode, setMainMenuManageMode] =
   | "menuSort"
   | "press"
   | "life"
-  | "nps";
+  | "nps"
+| "bankRate";
 
 const [popupPositions, setPopupPositions] = useState<
   Partial<Record<PopupKey, { x: number; y: number }>>
@@ -392,6 +394,11 @@ const [npsTableTab, setNpsTableTab] =
 
 const [npsSearch, setNpsSearch] = useState("");
 
+const [bankRateOpen, setBankRateOpen] = useState(false);
+const [bankRateMonth, setBankRateMonth] = useState<"12" | "24">("12");
+const [bankRates, setBankRates] = useState<any[]>([]);
+const [bankBaseDate, setBankBaseDate] = useState("");
+
 const [quickMenuKeys, setQuickMenuKeys] = useState<string[]>([
   "hospital",
   "life",
@@ -485,6 +492,34 @@ const filteredNpsTable = currentNpsTable.filter((row: any) =>
     .includes(npsSearch.replaceAll(",", ""))
 );
 
+useEffect(() => {
+  const fetchBankRates = async () => {
+    try {
+      const res = await fetch(
+        `/api/bank-rates?month=${bankRateMonth}`
+      );
+
+      const data = await res.json();
+
+      setBankRates(data);
+
+      if (data.length > 0) {
+        const baseMonth = data[0].baseMonth;
+
+        if (baseMonth?.length === 6) {
+          setBankBaseDate(
+            `${baseMonth.slice(0, 4)}.${baseMonth.slice(4, 6)}`
+          );
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  fetchBankRates();
+}, [bankRateMonth]);
+
 const quickMenuOptions = [
   {
     key: "hospital",
@@ -532,7 +567,21 @@ setNpsTableOpen(true);
       setQuickOpen(false);
     },
   },
+  {
+  key: "bankRate",
+  title: "예금금리 비교",
+  action: () => {
+    resetPopupPosition("bankRate");
+
+    setBankRateOpen(true);
+
+    setQuickOpen(false);
+    setPcQuickOpen(false);
+  },
+},
 ];
+
+
 
 const sortedPress = [...PRESS.items].sort(
   (a, b) =>
@@ -1001,7 +1050,26 @@ const savePersonalMenuEdits = () => {
   closeEditingMenu();
 };
 
+const hasMenuManageChanges = () => {
+  const committedPersonalMenus = getCommittedTempPersonalMenus();
 
+  const normalizePersonalMenus = (list: PersonalMenuItem[]) =>
+    list.map((menu) => ({
+      id: menu.id,
+      title: menu.title,
+      desc: menu.desc,
+      link: menu.link,
+      iconKey: menu.iconKey,
+    }));
+
+  return (
+    JSON.stringify(normalizePersonalMenus(committedPersonalMenus)) !==
+      JSON.stringify(normalizePersonalMenus(personalMenus)) ||
+    JSON.stringify(tempQuickMenuKeys) !== JSON.stringify(quickMenuKeys) ||
+    JSON.stringify(tempMenus.map((menu) => menu.id)) !==
+      JSON.stringify(menus.map((menu) => menu.id))
+  );
+};
 
 const saveMenuManageChanges = (type: "main" | "popup") => {
   const nextPersonalMenus = commitEditingMenuToTemp();
@@ -1043,8 +1111,10 @@ const saveMenuManageChanges = (type: "main" | "popup") => {
   const finalMenus = [...nextMenus, ...missingPersonalMenus];
 
   setMenus(finalMenus);
-  setTempMenus(finalMenus);
-  setQuickMenuKeys(tempQuickMenuKeys);
+setTempMenus(finalMenus);
+setPersonalMenus(nextPersonalMenus);
+setTempPersonalMenus(nextPersonalMenus);
+setQuickMenuKeys(tempQuickMenuKeys);
 
   localStorage.setItem(
     "insurance-menu-order",
@@ -3227,10 +3297,13 @@ rel="noopener noreferrer"
   </button>
 
   <button
-    onClick={() => {
+  onClick={() => {
+    if (mainMenuManageMode === "normal" && !menuSortOpen) {
       setQuickMenuKeys(tempQuickMenuKeys);
-      setQuickMenuSelectOpen(false);
-    }}
+    }
+
+    setQuickMenuSelectOpen(false);
+  }}
     className="
       flex-1
       h-12
@@ -4485,7 +4558,7 @@ hover:-translate-y-1
       onClick={() => {
         saveMenuManageChanges("popup");
       }}
-      disabled={tempPersonalMenus.length === 0}
+      disabled={!hasMenuManageChanges()}
       className="
         w-32
         h-12
@@ -5333,6 +5406,134 @@ setMemoAddOpen(false);
   open={diseaseOpen}
   onClose={() => setDiseaseOpen(false)}
 />
+
+{bankRateOpen && (
+  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div
+      style={getPopupStyle("bankRate")}
+      className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
+    >
+      <div
+        onMouseDown={(e) => startPopupDrag("bankRate", e)}
+        className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+      >
+        <div className="font-bold flex items-center gap-2">
+          <Percent className="w-5 h-5" />
+          주요 은행 {bankRateMonth}개월 예금 금리
+        </div>
+
+        <button
+          onClick={() => setBankRateOpen(false)}
+          className="
+            w-9
+            h-9
+            rounded-full
+            flex
+            items-center
+            justify-center
+            hover:bg-white/10
+            transition
+          "
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="p-5 overflow-y-auto">
+        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
+          <button
+            onClick={() => setBankRateMonth("12")}
+            className={`rounded-xl py-3 text-sm font-bold transition ${
+              bankRateMonth === "12"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600"
+            }`}
+          >
+            12개월
+          </button>
+
+          <button
+            onClick={() => setBankRateMonth("24")}
+            className={`rounded-xl py-3 text-sm font-bold transition ${
+              bankRateMonth === "24"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600"
+            }`}
+          >
+            24개월
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-sm font-bold text-gray-700">
+            은행별 기본금리
+          </p>
+
+          <p className="text-xs font-bold text-gray-400">
+            금리 공시월 · {bankBaseDate}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {bankRates.map((bank) => (
+            <button
+              key={bank.name}
+              type="button"
+              onDoubleClick={() => {
+                if (bank.url) window.open(bank.url, "_blank");
+              }}
+              className={`
+                rounded-2xl
+                border
+                border-gray-200
+                bg-white
+                p-4
+                min-h-[150px]
+                flex
+                flex-col
+                items-center
+                justify-center
+                text-center
+                shadow-sm
+                transition
+                hover:shadow-md
+                ${bank.hover}
+              `}
+            >
+              <img
+                src={`/logos/banks/${bank.logo}.png`}
+                alt={bank.name}
+                className="w-10 h-10 object-contain mb-3"
+              />
+
+              <p className="text-sm font-semibold text-gray-800 break-keep">
+                {bank.name}
+              </p>
+
+              <p className="text-xs font-medium text-gray-400 mt-3">
+                기본금리
+              </p>
+
+              <p className="text-2xl font-black text-gray-900 mt-1">
+                {bank.rate}
+              </p>
+            </button>
+          ))}
+        </div>
+
+       <div className="border-t border-gray-100 mt-5 pt-4">
+  <p className="text-xs text-gray-400 leading-relaxed break-keep">
+    ※ 금리는 변동될 수 있으니 정확한 내용은 각 은행 홈페이지에서 확인해주세요.
+  </p>
+
+  <p className="text-xs text-gray-400 leading-relaxed mt-1 break-keep">
+    ※ 은행 카드 더블클릭 시 해당 은행 홈페이지로 이동합니다.
+  </p>
+</div>
+      </div>
+    </div>
+  </div>
+)}
 
 {npsTableOpen && (
   <div
