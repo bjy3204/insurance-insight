@@ -1288,7 +1288,7 @@ const confirmDeleteMemo = () => {
   </div>
 ) : (
   showInstall && (
-    <div className="hidden md:flex absolute left-5 top-1/2 -translate-y-1/2">
+    <div className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2">
       <button
         onClick={async () => {
           if (deferredPrompt) {
@@ -1367,11 +1367,11 @@ const confirmDeleteMemo = () => {
 
     {/* PC 방문자 카운터 + 설정 */}
   <div
-  className={`hidden md:block absolute right-2 top-1/2 -translate-y-1/2 ${
+  className={`hidden md:block absolute right-6 top-1/2 -translate-y-1/2 ${
     settingOpen ? "z-[1000]" : "z-40"
   }`}
 >
-    <div className="flex items-center gap-10 text-center">
+    <div className="flex items-center gap-12 text-center">
       <div>
         <p className="text-[10px] leading-none text-gray-400 font-bold">
           TODAY
