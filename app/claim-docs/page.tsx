@@ -687,12 +687,14 @@ const visibleMemos = memos.filter((memo) => memo.visible);
       <header className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
 
-          <div className="flex items-center justify-between">
+          <div className="relative flex items-center justify-center">
 
             {/* 뒤로가기 */}
             <Link
               href="/"
               className="
+              absolute
+left-0
                 w-11
                 h-11
                 rounded-xl
@@ -727,6 +729,8 @@ const visibleMemos = memos.filter((memo) => memo.visible);
                         <button
               onClick={() => setMemoOpen(true)}
               className="
+              absolute
+right-0
                 hidden
                 md:flex
                 w-11
