@@ -249,12 +249,13 @@ const handleResetPassword = async () => {
     return;
   }
 
-  const { error } = await supabase.auth.resetPasswordForEmail(
+    const { error } = await supabase.auth.resetPasswordForEmail(
     email.trim(),
     {
-      redirectTo: "http://localhost:3000/reset-password",
+      redirectTo: `${window.location.origin}/reset-password`,
     }
   );
+
 
   if (error) {
     alert("비밀번호 재설정 메일 발송에 실패했습니다.");

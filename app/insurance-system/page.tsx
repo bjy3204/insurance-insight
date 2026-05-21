@@ -20,6 +20,8 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+
 
 
 import {
@@ -323,8 +325,12 @@ function SortableCompanyCard({
 }
 
 export default function InsuranceSystemPage() {
+    const [authUser, setAuthUser] = useState<any>(null);
+  const [authStatus, setAuthStatus] = useState<string | null>(null);
+
   const [tab, setTab] = useState<InsuranceTab>("nonlife");
     const [settingOpen, setSettingOpen] = useState(false);
+
 
   const [memoOpen, setMemoOpen] = useState(false);
   const [memos, setMemos] = useState<MemoItem[]>([]);
@@ -408,55 +414,103 @@ const [memoEditDragInfo, setMemoEditDragInfo] = useState<null | {
     });
   };
 
-  useEffect(() => {
-    const savedNonlifeOrder = localStorage.getItem("nonlife-order");
-    const savedLifeOrder = localStorage.getItem("life-order");
-    const savedNonlifeFavorites = localStorage.getItem("nonlife-favorites");
-    const savedLifeFavorites = localStorage.getItem("life-favorites");
+    useEffect(() => {
+    const loadFromLocalStorage = () => {
+      const savedNonlifeOrder = localStorage.getItem("nonlife-order");
+      const savedLifeOrder = localStorage.getItem("life-order");
+      const savedNonlifeFavorites = localStorage.getItem("nonlife-favorites");
+      const savedLifeFavorites = localStorage.getItem("life-favorites");
 
-    const parsedNonlifeFavorites = savedNonlifeFavorites
-      ? JSON.parse(savedNonlifeFavorites)
-      : [];
+      const parsedNonlifeFavorites = savedNonlifeFavorites ? JSON.parse(savedNonlifeFavorites) : [];
+      const parsedLifeFavorites = savedLifeFavorites ? JSON.parse(savedLifeFavorites) : [];
 
-    const parsedLifeFavorites = savedLifeFavorites
-      ? JSON.parse(savedLifeFavorites)
-      : [];
+      setNonlifeFavorites(parsedNonlifeFavorites);
+      setLifeFavorites(parsedLifeFavorites);
+      setTempNonlifeFavorites(parsedNonlifeFavorites);
+      setTempLifeFavorites(parsedLifeFavorites);
 
-    setNonlifeFavorites(parsedNonlifeFavorites);
-    setLifeFavorites(parsedLifeFavorites);
-    setTempNonlifeFavorites(parsedNonlifeFavorites);
-    setTempLifeFavorites(parsedLifeFavorites);
+      if (savedNonlifeOrder) {
+        const order = JSON.parse(savedNonlifeOrder);
+        const sorted = order.map((id: string) => nonlifeCompanies.find((item) => item.id === id)).filter(Boolean);
+        const missing = nonlifeCompanies.filter((item) => !order.includes(item.id));
+        const nextItems = [...sorted, ...missing] as Company[];
+        setNonlifeItems(nextItems);
+        setTempNonlifeItems(nextItems);
+      }
 
-    if (savedNonlifeOrder) {
-      const order = JSON.parse(savedNonlifeOrder);
+      if (savedLifeOrder) {
+        const order = JSON.parse(savedLifeOrder);
+        const sorted = order.map((id: string) => lifeCompanies.find((item) => item.id === id)).filter(Boolean);
+        const missing = lifeCompanies.filter((item) => !order.includes(item.id));
+        const nextItems = [...sorted, ...missing] as Company[];
+        setLifeItems(nextItems);
+        setTempLifeItems(nextItems);
+      }
+    };
 
-      const sorted = order
-        .map((id: string) => nonlifeCompanies.find((item) => item.id === id))
-        .filter(Boolean);
+    const loadFromDB = async (userId: string) => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("status, insurance_memos, nonlife_order, life_order, nonlife_favorites, life_favorites")
+        .eq("id", userId)
+        .maybeSingle();
 
-      const missing = nonlifeCompanies.filter((item) => !order.includes(item.id));
-      const nextItems = [...sorted, ...missing] as Company[];
+      if (!profile) return;
 
-      setNonlifeItems(nextItems);
-      setTempNonlifeItems(nextItems);
-    }
+      setAuthStatus(profile.status);
 
+      if (profile.nonlife_favorites && Array.isArray(profile.nonlife_favorites)) {
+        setNonlifeFavorites(profile.nonlife_favorites);
+        setTempNonlifeFavorites(profile.nonlife_favorites);
+      }
+      if (profile.life_favorites && Array.isArray(profile.life_favorites)) {
+        setLifeFavorites(profile.life_favorites);
+        setTempLifeFavorites(profile.life_favorites);
+      }
+      if (profile.nonlife_order && Array.isArray(profile.nonlife_order) && profile.nonlife_order.length > 0) {
+        const order = profile.nonlife_order as string[];
+        const sorted = order.map((id) => nonlifeCompanies.find((item) => item.id === id)).filter(Boolean);
+        const missing = nonlifeCompanies.filter((item) => !order.includes(item.id));
+        const nextItems = [...sorted, ...missing] as Company[];
+        setNonlifeItems(nextItems);
+        setTempNonlifeItems(nextItems);
+      }
+      if (profile.life_order && Array.isArray(profile.life_order) && profile.life_order.length > 0) {
+        const order = profile.life_order as string[];
+        const sorted = order.map((id) => lifeCompanies.find((item) => item.id === id)).filter(Boolean);
+        const missing = lifeCompanies.filter((item) => !order.includes(item.id));
+        const nextItems = [...sorted, ...missing] as Company[];
+        setLifeItems(nextItems);
+        setTempLifeItems(nextItems);
+      }
+      if (profile.insurance_memos && Array.isArray(profile.insurance_memos)) {
+        setMemos(profile.insurance_memos as MemoItem[]);
+      }
+    };
 
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setAuthUser(session.user);
+        loadFromDB(session.user.id);
+      } else {
+        loadFromLocalStorage();
+      }
+    });
 
-    if (savedLifeOrder) {
-      const order = JSON.parse(savedLifeOrder);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setAuthUser(session.user);
+        loadFromDB(session.user.id);
+      } else {
+        setAuthUser(null);
+        setAuthStatus(null);
+        loadFromLocalStorage();
+      }
+    });
 
-      const sorted = order
-        .map((id: string) => lifeCompanies.find((item) => item.id === id))
-        .filter(Boolean);
-
-      const missing = lifeCompanies.filter((item) => !order.includes(item.id));
-      const nextItems = [...sorted, ...missing] as Company[];
-
-      setLifeItems(nextItems);
-      setTempLifeItems(nextItems);
-    }
+    return () => subscription.unsubscribe();
   }, []);
+
 
     useEffect(() => {
     const syncMemos = () => {
@@ -475,19 +529,13 @@ const [memoEditDragInfo, setMemoEditDragInfo] = useState<null | {
     };
   }, []);
 
-  useEffect(() => {
+    useEffect(() => {
     const openMemoDetail = (event: any) => {
       const memoId = event.detail;
 
-      const savedMemos = localStorage.getItem("personalMemos");
-      if (!savedMemos) return;
-
-      const parsedMemos: MemoItem[] = JSON.parse(savedMemos);
-      const targetMemo = parsedMemos.find((memo) => memo.id === memoId);
-
+      const targetMemo = memos.find((memo) => memo.id === memoId);
       if (!targetMemo) return;
 
-      setMemos(parsedMemos);
       setSelectedMemo(targetMemo);
     };
 
@@ -496,7 +544,8 @@ const [memoEditDragInfo, setMemoEditDragInfo] = useState<null | {
     return () => {
       window.removeEventListener("open-memo-detail", openMemoDetail);
     };
-  }, []);
+  }, [memos]);
+
 
   useEffect(() => {
     const handleClick = () => {
@@ -645,16 +694,20 @@ useEffect(() => {
     setNonlifeFavorites(tempNonlifeFavorites);
     setLifeFavorites(tempLifeFavorites);
 
-    localStorage.setItem(
-      "nonlife-order",
-      JSON.stringify(tempNonlifeItems.map((item) => item.id))
-    );
-    localStorage.setItem(
-      "life-order",
-      JSON.stringify(tempLifeItems.map((item) => item.id))
-    );
-    localStorage.setItem("nonlife-favorites", JSON.stringify(tempNonlifeFavorites));
-    localStorage.setItem("life-favorites", JSON.stringify(tempLifeFavorites));
+        if (authUser && authStatus === "approved") {
+      supabase.from("profiles").update({
+        nonlife_order: tempNonlifeItems.map((item) => item.id),
+        life_order: tempLifeItems.map((item) => item.id),
+        nonlife_favorites: tempNonlifeFavorites,
+        life_favorites: tempLifeFavorites,
+      }).eq("id", authUser.id).then();
+    } else {
+      localStorage.setItem("nonlife-order", JSON.stringify(tempNonlifeItems.map((item) => item.id)));
+      localStorage.setItem("life-order", JSON.stringify(tempLifeItems.map((item) => item.id)));
+      localStorage.setItem("nonlife-favorites", JSON.stringify(tempNonlifeFavorites));
+      localStorage.setItem("life-favorites", JSON.stringify(tempLifeFavorites));
+    }
+
 
    setManageSaveConfirmOpen(true);
     
@@ -749,11 +802,16 @@ useEffect(() => {
   });
 };
 
-  const saveMemos = (nextMemos: MemoItem[]) => {
+    const saveMemos = (nextMemos: MemoItem[]) => {
     setMemos(nextMemos);
-    localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
+    if (authUser && authStatus === "approved") {
+      supabase.from("profiles").update({ insurance_memos: nextMemos }).eq("id", authUser.id).then();
+    } else {
+      localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
+    }
     window.dispatchEvent(new Event("memo-storage-updated"));
   };
+
 
   const addMemo = () => {
     const now = new Date().toISOString();
@@ -1050,18 +1108,27 @@ const pagedMemos = filteredMemos.slice(
   type={tab}
   showStar={getCurrentFavorites(tab).includes(company.id)}
   favorite={getCurrentFavorites(tab).includes(company.id)}
-  onToggleFavorite={() => {
+   onToggleFavorite={() => {
     if (tab === "nonlife") {
       const next = nonlifeFavorites.filter((id) => id !== company.id);
       setNonlifeFavorites(next);
-      localStorage.setItem("nonlife-favorites", JSON.stringify(next));
+      if (authUser && authStatus === "approved") {
+        supabase.from("profiles").update({ nonlife_favorites: next }).eq("id", authUser.id).then();
+      } else {
+        localStorage.setItem("nonlife-favorites", JSON.stringify(next));
+      }
       return;
     }
 
     const next = lifeFavorites.filter((id) => id !== company.id);
     setLifeFavorites(next);
-    localStorage.setItem("life-favorites", JSON.stringify(next));
+    if (authUser && authStatus === "approved") {
+      supabase.from("profiles").update({ life_favorites: next }).eq("id", authUser.id).then();
+    } else {
+      localStorage.setItem("life-favorites", JSON.stringify(next));
+    }
   }}
+
 />
 ))}
         </div>
