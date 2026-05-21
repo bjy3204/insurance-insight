@@ -1,6 +1,7 @@
 "use client";
 import DiseaseCodePopup from "./claim-docs/disease-code-popup";
 import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import {
   LIFE_DATA_YEAR,
   lifeExpectancyData,
@@ -45,7 +46,7 @@ import {
   Percent,
 } from "lucide-react";
 
-
+import AuthButton from "@/components/AuthButton";
 import { FaInstagram } from "react-icons/fa";
 import emailjs from "@emailjs/browser";
 import { notices, noticeVersion } from "./notice/notices";
@@ -194,8 +195,158 @@ type MenuItem = {
   isPersonal?: boolean;
 };
 
+
+
 export default function Home() {
-    const [menus, setMenus] = useState<MenuItem[]>(defaultMenus);
+  const [authUser, setAuthUser] = useState<any>(null);
+  const [authNickname, setAuthNickname] = useState<string | null>(null);
+  const [authInstagram, setAuthInstagram] = useState<string | null>(null);
+  const [authStatus, setAuthStatus] = useState<string | null>(null);
+  const [authCreatedAt, setAuthCreatedAt] =
+    useState<string | null>(null);
+
+  const [menus, setMenus] = useState<MenuItem[]>(defaultMenus);
+
+    useEffect(() => {
+   const loadProfile = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("nickname, instagram_id, status, created_at, personal_menus, menu_order, quick_menu_keys, read_notice_ids, read_press_ids")
+      .eq("id", userId)
+      .maybeSingle();
+
+    setAuthNickname(profile?.nickname || null);
+    setAuthInstagram(profile?.instagram_id || null);
+    setAuthStatus(profile?.status || null);
+    setAuthCreatedAt(profile?.created_at || null);
+
+    if (profile?.personal_menus && Array.isArray(profile.personal_menus)) {
+      const parsedPersonalMenus = profile.personal_menus as PersonalMenuItem[];
+      setPersonalMenus(parsedPersonalMenus);
+
+      const personalMenusWithIcon = parsedPersonalMenus.map((menu) => ({
+        ...menu,
+        icon: personalMenuIcons[menu.iconKey],
+      }));
+
+      const mergedMenus = [...defaultMenus, ...personalMenusWithIcon];
+
+      if (profile?.menu_order && Array.isArray(profile.menu_order)) {
+        const orderIds = profile.menu_order as string[];
+        const orderedMenus = orderIds
+          .map((id: string) => mergedMenus.find((menu) => menu.id === id))
+          .filter(Boolean) as MenuItem[];
+        const missingMenus = mergedMenus.filter((menu) => !orderIds.includes(menu.id));
+        const nextMenus = [...orderedMenus, ...missingMenus];
+        setMenus(nextMenus);
+        setTempMenus(nextMenus);
+      } else {
+        setMenus(mergedMenus);
+        setTempMenus(mergedMenus);
+      }
+    } else if (profile?.menu_order && Array.isArray(profile.menu_order)) {
+      const orderIds = profile.menu_order as string[];
+      const orderedMenus = orderIds
+        .map((id: string) => defaultMenus.find((menu) => menu.id === id))
+        .filter(Boolean) as MenuItem[];
+      const missingMenus = defaultMenus.filter((menu) => !orderIds.includes(menu.id));
+      const nextMenus = [...orderedMenus, ...missingMenus];
+      setMenus(nextMenus);
+      setTempMenus(nextMenus);
+    }
+
+    if (profile?.quick_menu_keys && Array.isArray(profile.quick_menu_keys)) {
+      setQuickMenuKeys(profile.quick_menu_keys as string[]);
+    }
+
+    if (profile?.read_notice_ids && Array.isArray(profile.read_notice_ids)) {
+      setReadNoticeIds(profile.read_notice_ids as number[]);
+    }
+
+    if (profile?.read_press_ids && Array.isArray(profile.read_press_ids)) {
+      setReadPressIds(profile.read_press_ids as number[]);
+    }
+  };
+
+
+  const initialize = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const user = session?.user;
+
+    if (!user) {
+      setAuthUser(null);
+      return;
+    }
+
+    setAuthUser(user);
+
+    await loadProfile(user.id);
+  };
+
+  initialize();
+
+    const {
+    data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+    async (event, session) => {
+      if (event === "USER_UPDATED") return;
+
+      const user = session?.user;
+
+      if (!user) {
+        setAuthUser(null);
+        setAuthNickname(null);
+        setAuthInstagram(null);
+        setAuthStatus(null);
+        setAuthCreatedAt(null);
+        return;
+      }
+
+      setAuthUser(user);
+      await loadProfile(user.id);
+    }
+  );
+
+
+
+  return () => {
+    subscription.unsubscribe();
+  };
+}, []);
+
+const refreshAuth = async () => {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const user = session?.user;
+
+  if (!user) {
+    setAuthUser(null);
+    setAuthNickname(null);
+    setAuthInstagram(null);
+    setAuthStatus(null);
+    setAuthCreatedAt(null);
+    return;
+  }
+
+  setAuthUser(user);
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("nickname, instagram_id, status, created_at")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  setAuthNickname(profile?.nickname || null);
+  setAuthInstagram(profile?.instagram_id || null);
+  setAuthStatus(profile?.status || null);
+  setAuthCreatedAt(profile?.created_at || null);
+};
+
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -232,6 +383,21 @@ const [weather, setWeather] = useState<{
 
   const [open, setOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [profileSettingOpen, setProfileSettingOpen] = useState(false);
+const [editNickname, setEditNickname] = useState("");
+const [editInstagram, setEditInstagram] = useState("");
+const [newPassword, setNewPassword] = useState("");
+const [currentPassword, setCurrentPassword] = useState("");
+const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
+
+const [passwordResultOpen, setPasswordResultOpen] = useState(false);
+const [passwordResultSuccess, setPasswordResultSuccess] = useState(false);
+const passwordResultRef = useRef(false);
+const passwordResultSuccessRef = useRef(false);
+
+
+
   const [quickOpen, setQuickOpen] = useState(false);
   const [pcQuickOpen, setPcQuickOpen] = useState(false);
 const [pcQuickDirection, setPcQuickDirection] = useState<"up" | "down">("up");
@@ -724,11 +890,6 @@ if (visited !== todayKey) {
 } else {
   fetchVisitor(false);
 }
-const savedMemos = localStorage.getItem("personalMemos");
-
-if (savedMemos) {
-  setMemos(JSON.parse(savedMemos));
-}
 
 
     const savedVersion = localStorage.getItem("noticeRead");
@@ -797,46 +958,48 @@ console.log("날씨 데이터", data);
   localStorage.setItem("weather-region", weatherRegion);
 }, [weatherRegion]);
 
-useEffect(() => {
-  const syncMemos = () => {
+const refreshMemos = async () => {
+  if (!authUser || authStatus !== "approved") {
+    // 비승인 사용자: localStorage에서 불러옴
     const savedMemos = localStorage.getItem("personalMemos");
+    setMemos(savedMemos ? JSON.parse(savedMemos) : []);
+    return;
+  }
+  // 승인회원: Supabase에서 불러옴
+  const { data } = await supabase
+    .from("user_memos")
+    .select("*")
+    .eq("user_id", authUser.id)
+    .order("pinned", { ascending: false })
+    .order("updated_at", { ascending: false });
+  setMemos(
+    (data || []).map((m) => ({
+      id: m.id,
+      title: m.title,
+      content: m.content,
+      pinned: m.pinned,
+      visible: m.visible,
+      color: m.color as MemoItem["color"],
+      createdAt: m.created_at,
+      updatedAt: m.updated_at,
+    }))
+  );
+};
 
-    if (savedMemos) {
-      setMemos(JSON.parse(savedMemos));
-    } else {
-      setMemos([]);
-    }
-  };
-
-  window.addEventListener("memo-storage-updated", syncMemos);
-  window.addEventListener("storage", syncMemos);
-
-  return () => {
-    window.removeEventListener("memo-storage-updated", syncMemos);
-    window.removeEventListener("storage", syncMemos);
-  };
-}, []);
+useEffect(() => {
+  refreshMemos();
+}, [authUser, authStatus]);
 
 useEffect(() => {
   const openMemoDetail = (event: any) => {
     const memoId = event.detail;
-
-    const savedMemos = localStorage.getItem("personalMemos");
-    if (!savedMemos) return;
-
-    const parsedMemos: MemoItem[] = JSON.parse(savedMemos);
-    const targetMemo = parsedMemos.find((memo) => memo.id === memoId);
-
+    const targetMemo = memos.find((memo) => memo.id === memoId);
     if (!targetMemo) return;
-
-    setMemos(parsedMemos);
-setSelectedMemo(targetMemo);
-
-if (memoOpenRef.current) {
-  setMemoOpen(true);
-}
-
-resetPopupPosition("memoDetail");
+    setSelectedMemo(targetMemo);
+    if (memoOpenRef.current) {
+      setMemoOpen(true);
+    }
+    resetPopupPosition("memoDetail");
   };
 
   const openMemoContextMenu = (event: any) => {
@@ -856,7 +1019,7 @@ resetPopupPosition("memoDetail");
     window.removeEventListener("open-memo-detail", openMemoDetail);
     window.removeEventListener("open-memo-context-menu", openMemoContextMenu);
   };
-}, []);
+}, [memos]);
 
 useEffect(() => {
   const savedPersonalMenus = localStorage.getItem("personalMenus");
@@ -915,16 +1078,17 @@ useEffect(() => {
   const handleClick = () => {
     setSettingOpen(false);
     setWeatherOpen(false);
+    setUserMenuOpen(false);
   };
 
-  if (settingOpen || weatherOpen) {
+  if (settingOpen || weatherOpen || userMenuOpen) {
     window.addEventListener("click", handleClick);
   }
 
   return () => {
     window.removeEventListener("click", handleClick);
   };
-}, [settingOpen, weatherOpen]);
+}, [settingOpen, weatherOpen, userMenuOpen]);
 
 useEffect(() => {
   const closeContextMenu = () => {
@@ -1116,10 +1280,15 @@ setPersonalMenus(nextPersonalMenus);
 setTempPersonalMenus(nextPersonalMenus);
 setQuickMenuKeys(tempQuickMenuKeys);
 
-  localStorage.setItem(
-    "insurance-menu-order",
-    JSON.stringify(finalMenus.map((menu) => menu.id))
-  );
+   if (authUser && authStatus === "approved") {
+    supabase.from("profiles").update({
+      menu_order: finalMenus.map((menu) => menu.id),
+      quick_menu_keys: tempQuickMenuKeys,
+    }).eq("id", authUser.id).then();
+  } else {
+    localStorage.setItem("insurance-menu-order", JSON.stringify(finalMenus.map((menu) => menu.id)));
+    localStorage.setItem("quickMenuKeys", JSON.stringify(tempQuickMenuKeys));
+  }
 
   setEditingOriginalMenu(null);
   closeEditingMenu();
@@ -1127,6 +1296,7 @@ setQuickMenuKeys(tempQuickMenuKeys);
   setSaveConfirmType(type);
   setSaveConfirmOpen(true);
 };
+
 
 const goBackMainScreen = () => {
   setMainMenuManageMode("normal");
@@ -1157,13 +1327,17 @@ const deletePersonalMenu = () => {
   setMenus(nextMenus);
   setTempMenus(nextMenus);
 
-  localStorage.setItem(
-    "insurance-menu-order",
-    JSON.stringify(nextMenus.map((menu) => menu.id))
-  );
+    if (authUser && authStatus === "approved") {
+    supabase.from("profiles").update({
+      menu_order: nextMenus.map((menu) => menu.id),
+    }).eq("id", authUser.id).then();
+  } else {
+    localStorage.setItem("insurance-menu-order", JSON.stringify(nextMenus.map((menu) => menu.id)));
+  }
 
   setSelectedDeleteMenuIds([]);
   setDeleteConfirmOpen(false);
+
 
   setSelectedPersonalMenuId("");
 setEditIconOpen(false);
@@ -1171,8 +1345,13 @@ setEditIconOpen(false);
 
 const savePersonalMenus = (nextMenus: PersonalMenuItem[]) => {
   setPersonalMenus(nextMenus);
-  localStorage.setItem("personalMenus", JSON.stringify(nextMenus));
+  if (authUser && authStatus === "approved") {
+    supabase.from("profiles").update({ personal_menus: nextMenus }).eq("id", authUser.id).then();
+  } else {
+    localStorage.setItem("personalMenus", JSON.stringify(nextMenus));
+  }
 };
+
 
 const resetNewMenuForm = () => {
   setNewMenuTitle("");
@@ -1223,10 +1402,13 @@ const addPersonalMenu = () => {
   setMenus(nextMenus);
   setTempMenus(nextMenus);
 
-  localStorage.setItem(
-    "insurance-menu-order",
-    JSON.stringify(nextMenus.map((menu) => menu.id))
-  );
+    if (authUser && authStatus === "approved") {
+    supabase.from("profiles").update({
+      menu_order: nextMenus.map((menu) => menu.id),
+    }).eq("id", authUser.id).then();
+  } else {
+    localStorage.setItem("insurance-menu-order", JSON.stringify(nextMenus.map((menu) => menu.id)));
+  }
 
   resetNewMenuForm();
 
@@ -1235,122 +1417,136 @@ const addPersonalMenu = () => {
   setSaveConfirmOpen(true);
 };
 
+
 const saveMemos = (nextMemos: MemoItem[]) => {
   setMemos(nextMemos);
-  localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
-  window.dispatchEvent(new Event("memo-storage-updated"));
+  if (!authUser || authStatus !== "approved") {
+    localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
+    window.dispatchEvent(new Event("memo-storage-updated"));
+  }
 };
 
-const addMemo = () => {
-  const now = new Date().toISOString();
-
-  const newMemo: MemoItem = {
-    id: crypto.randomUUID(),
-    title: memoTitle.trim() || "",
-    content: memoContent.trim(),
-    pinned: false,
-    visible: false,
-    color: memoColor,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  saveMemos([newMemo, ...memos]);
-
+const addMemo = async () => {
+  if (authUser && authStatus === "approved") {
+    await supabase.from("user_memos").insert([{
+      user_id: authUser.id,
+      title: memoTitle.trim(),
+      content: memoContent.trim(),
+      pinned: false,
+      visible: false,
+      color: memoColor || "white",
+    }]);
+    await refreshMemos();
+  } else {
+    const now = new Date().toISOString();
+    const newMemo: MemoItem = {
+      id: crypto.randomUUID(),
+      title: memoTitle.trim() || "",
+      content: memoContent.trim(),
+      pinned: false,
+      visible: false,
+      color: memoColor,
+      createdAt: now,
+      updatedAt: now,
+    };
+    saveMemos([newMemo, ...memos]);
+  }
   setMemoTitle("");
-setMemoContent("");
-setMemoColor("white");
-setMemoPage(1);
+  setMemoContent("");
+  setMemoColor("white");
+  setMemoPage(1);
 };
 
-const updateMemo = (
-  id: string,
-  field: "title" | "content",
-  value: string
-) => {
-  const nextMemos = memos.map((memo) =>
-    memo.id === id
-      ? {
-          ...memo,
-          [field]: value,
-          updatedAt: new Date().toISOString(),
-        }
-      : memo
-  );
-
-  saveMemos(nextMemos);
+const updateMemo = async (id: string, field: "title" | "content", value: string) => {
+  if (authUser && authStatus === "approved") {
+    await supabase.from("user_memos").update({
+      [field]: value,
+      updated_at: new Date().toISOString(),
+    }).eq("id", id).eq("user_id", authUser.id);
+    await refreshMemos();
+  } else {
+    const nextMemos = memos.map((memo) =>
+      memo.id === id ? { ...memo, [field]: value, updatedAt: new Date().toISOString() } : memo
+    );
+    saveMemos(nextMemos);
+  }
 };
 
-const toggleMemoVisible = (id: string) => {
-  const nextMemos = memos.map((memo) =>
-    memo.id === id
-      ? {
-          ...memo,
-          visible: !memo.visible,
-updatedAt: memo.updatedAt,
-        }
-      : memo
-  );
-
-  saveMemos(nextMemos);
+const toggleMemoVisible = async (id: string) => {
+  if (authUser && authStatus === "approved") {
+    const memo = memos.find((m) => m.id === id);
+    if (!memo) return;
+    await supabase.from("user_memos").update({ visible: !memo.visible })
+      .eq("id", id).eq("user_id", authUser.id);
+    await refreshMemos();
+  } else {
+    const nextMemos = memos.map((memo) =>
+      memo.id === id ? { ...memo, visible: !memo.visible } : memo
+    );
+    saveMemos(nextMemos);
+  }
 };
 
-const toggleMemoPinned = (id: string) => {
-  const nextMemos = memos.map((memo) =>
-    memo.id === id
-      ? {
-          ...memo,
-          pinned: !memo.pinned,
-          updatedAt: new Date().toISOString(),
-        }
-      : memo
-  );
-
-  saveMemos(nextMemos);
+const toggleMemoPinned = async (id: string) => {
+  if (authUser && authStatus === "approved") {
+    const memo = memos.find((m) => m.id === id);
+    if (!memo) return;
+    await supabase.from("user_memos").update({
+      pinned: !memo.pinned,
+      updated_at: new Date().toISOString(),
+    }).eq("id", id).eq("user_id", authUser.id);
+    await refreshMemos();
+  } else {
+    const nextMemos = memos.map((memo) =>
+      memo.id === id ? { ...memo, pinned: !memo.pinned, updatedAt: new Date().toISOString() } : memo
+    );
+    saveMemos(nextMemos);
+  }
 };
 
-const handleMemoDragEnd = (event: any) => {
+const handleMemoDragEnd = async (event: any) => {
   const { active, over } = event;
-
   if (!over || active.id === over.id) return;
-
   const activeMemo = memos.find((memo) => memo.id === active.id);
   const overMemo = memos.find((memo) => memo.id === over.id);
-
   if (!activeMemo || !overMemo) return;
-
   if (activeMemo.pinned || overMemo.pinned) return;
-
   const unpinnedMemos = sortedMemos.filter((memo) => !memo.pinned);
   const pinnedMemos = sortedMemos.filter((memo) => memo.pinned);
-
   const oldIndex = unpinnedMemos.findIndex((memo) => memo.id === active.id);
   const newIndex = unpinnedMemos.findIndex((memo) => memo.id === over.id);
+  const reordered = arrayMove(unpinnedMemos, oldIndex, newIndex);
 
-  const reorderedUnpinnedMemos = arrayMove(
-    unpinnedMemos,
-    oldIndex,
-    newIndex
-  ).map((memo, index) => ({
-    ...memo,
-    updatedAt: new Date(Date.now() - index).toISOString(),
-  }));
-
-  saveMemos([...pinnedMemos, ...reorderedUnpinnedMemos]);
+  if (authUser && authStatus === "approved") {
+    const updates = reordered.map((memo, index) =>
+      supabase.from("user_memos").update({
+        updated_at: new Date(Date.now() - index).toISOString(),
+      }).eq("id", memo.id).eq("user_id", authUser.id)
+    );
+    await Promise.all(updates);
+    await refreshMemos();
+  } else {
+    const reorderedWithTime = reordered.map((memo, index) => ({
+      ...memo,
+      updatedAt: new Date(Date.now() - index).toISOString(),
+    }));
+    saveMemos([...pinnedMemos, ...reorderedWithTime]);
+  }
 };
 
-const changeMemoColor = (id: string, color: MemoItem["color"]) => {
-  const nextMemos = memos.map((memo) =>
-    memo.id === id
-      ? {
-          ...memo,
-          color,
-          updatedAt: new Date().toISOString(),
-        }
-      : memo
-  );
-
-  saveMemos(nextMemos);
+const changeMemoColor = async (id: string, color: MemoItem["color"]) => {
+  if (authUser && authStatus === "approved") {
+    await supabase.from("user_memos").update({
+      color,
+      updated_at: new Date().toISOString(),
+    }).eq("id", id).eq("user_id", authUser.id);
+    await refreshMemos();
+  } else {
+    const nextMemos = memos.map((memo) =>
+      memo.id === id ? { ...memo, color, updatedAt: new Date().toISOString() } : memo
+    );
+    saveMemos(nextMemos);
+  }
 };
 
 const deleteMemo = (id: string) => {
@@ -1358,12 +1554,17 @@ const deleteMemo = (id: string) => {
   setDeleteMemoConfirmOpen(true);
 };
 
-const confirmDeleteMemo = () => {
+const confirmDeleteMemo = async () => {
   if (!deleteMemoId) return;
 
-  const nextMemos = memos.filter((memo) => memo.id !== deleteMemoId);
-
-  saveMemos(nextMemos);
+  if (authUser && authStatus === "approved") {
+    await supabase.from("user_memos").delete()
+      .eq("id", deleteMemoId).eq("user_id", authUser.id);
+    await refreshMemos();
+  } else {
+    const nextMemos = memos.filter((memo) => memo.id !== deleteMemoId);
+    saveMemos(nextMemos);
+  }
 
   if (memoPage > 1 && pagedMemos.length === 1) {
     setMemoPage((p) => Math.max(1, p - 1));
@@ -1456,7 +1657,101 @@ setPcQuickPos({
 
   window.addEventListener("pointermove", handleMove);
   window.addEventListener("pointerup", handleUp);
+
 };
+
+
+const saveProfileSettings = async () => {
+  if (!authUser?.email) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
+
+  if (!editNickname.trim()) {
+    alert("닉네임을 입력해주세요.");
+    return;
+  }
+
+  if (!editInstagram.trim()) {
+    alert("인스타그램 아이디를 입력해주세요.");
+    return;
+  }
+
+  if (newPassword || newPasswordConfirm || currentPassword) {
+    if (!currentPassword.trim()) {
+      alert("현재 비밀번호를 입력해주세요.");
+      return;
+    }
+
+    if (!newPassword.trim()) {
+      alert("새 비밀번호를 입력해주세요.");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      alert("새 비밀번호는 6자 이상 입력해주세요.");
+      return;
+    }
+
+    if (newPassword !== newPasswordConfirm) {
+      alert("새 비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    const { error: checkPasswordError } =
+      await supabase.auth.signInWithPassword({
+        email: authUser.email,
+        password: currentPassword,
+      });
+
+    if (checkPasswordError) {
+      alert("현재 비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    const { error: passwordError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+        if (passwordError) {
+      setPasswordResultSuccess(false);
+      setPasswordResultOpen(true);
+      return;
+    }
+
+  }
+
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .update({
+      nickname: editNickname.trim(),
+      instagram_id: editInstagram.trim(),
+    })
+    .eq("id", authUser.id);
+
+    if (profileError) {
+    setPasswordResultSuccess(false);
+    setPasswordResultOpen(true);
+    return;
+  }
+
+    setAuthNickname(editNickname.trim());
+  setAuthInstagram(editInstagram.trim());
+  setCurrentPassword("");
+  setNewPassword("");
+  setNewPasswordConfirm("");
+      setProfileSettingOpen(false);
+  
+    passwordResultSuccessRef.current = true;
+  passwordResultRef.current = true;
+  setPasswordResultSuccess(true);
+  setPasswordResultOpen(true);
+
+
+
+
+};
+
 
   const sendMessage = async () => {
   if (!fixMessage.trim() && !addMessage.trim()) {
@@ -1585,27 +1880,27 @@ setPcQuickPos({
             "
           >
            <span className="text-[22px] leading-none inline-block">
-  {(weather.description || "").includes("맑") ? (
-    <span className="inline-block animate-[weatherSun_10s_linear_infinite]">
-      ☀️
-    </span>
-  ) : (weather.description || "").includes("구름") ? (
-    <span className="inline-block animate-[weatherCloud_5s_ease-in-out_infinite]">
-      ☁️
-    </span>
-  ) : (weather.description || "").includes("비") ? (
-    <span className="inline-block animate-[weatherRain_1.8s_ease-in-out_infinite]">
-      🌧️
-    </span>
-  ) : (weather.description || "").includes("눈") ? (
-    <span className="inline-block animate-[weatherSnow_3s_ease-in-out_infinite]">
-      ❄️
-    </span>
-  ) : (
-    <span className="inline-block animate-[weatherSun_10s_linear_infinite]">
-      ☀️
-    </span>
-  )}
+ {(weather.description || "").includes("비") ? (
+  <span className="inline-block animate-[weatherRain_1.8s_ease-in-out_infinite]">
+    🌧️
+  </span>
+) : (weather.description || "").includes("눈") ? (
+  <span className="inline-block animate-[weatherSnow_3s_ease-in-out_infinite]">
+    ❄️
+  </span>
+) : (weather.description || "").includes("구름") ? (
+  <span className="inline-block animate-[weatherCloud_5s_ease-in-out_infinite]">
+    ☁️
+  </span>
+) : (weather.description || "").includes("맑") ? (
+  <span className="inline-block animate-[weatherSun_10s_linear_infinite]">
+    ☀️
+  </span>
+) : (
+  <span className="inline-block animate-[weatherCloud_5s_ease-in-out_infinite]">
+    ☁️
+  </span>
+)}
 </span>
 
             <span className="text-[15px] font-bold">
@@ -1710,8 +2005,19 @@ setPcQuickPos({
     settingOpen ? "z-[1000]" : "z-40"
   }`}
 >
-    <div className="flex items-center gap-12 text-center">
-      <div>
+    <div className="flex items-center gap-13 text-center">
+      
+      <div className="flex items-center gap-4 scale-130 mr-6">
+ <AuthButton
+  variant="label"
+  user={authUser}
+  nickname={authNickname}
+  status={authStatus}
+  createdAt={authCreatedAt}
+/>
+</div>
+
+<div>
         <p className="text-[10px] leading-none text-gray-400 font-bold">
           TODAY
         </p>
@@ -1730,6 +2036,7 @@ setPcQuickPos({
           {total.toLocaleString()}
         </p>
       </div>
+
 
       <div className="relative z-50">
         <button
@@ -2450,6 +2757,122 @@ hover:-translate-y-1
         </div>
       </div>
 
+      {profileSettingOpen && (
+  <div
+    className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4"
+    onClick={() => setProfileSettingOpen(false)}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="
+        w-full
+        max-w-sm
+        rounded-3xl
+        bg-white
+        p-6
+        shadow-xl
+        cursor-default
+      "
+    >
+      <div className="mb-5 flex items-center justify-between">
+        <h2 className="text-lg font-bold text-gray-900">
+          개인설정
+        </h2>
+
+        <button
+          onClick={() => setProfileSettingOpen(false)}
+          className="
+    w-9
+    h-9
+    rounded-full
+    flex
+    items-center
+    justify-center
+    text-gray-400
+    hover:bg-gray-100
+    hover:text-gray-600
+    transition
+    cursor-pointer
+  "
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="mb-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+  <div className="flex items-center gap-3">
+    <p className="shrink-0 text-[11px] font-bold text-gray-400">
+      현재 이메일
+    </p>
+
+    <p className="text-sm font-bold text-gray-700 break-all">
+      {authUser?.email}
+    </p>
+  </div>
+</div>
+
+<div className="space-y-3">
+  
+        <input
+          type="text"
+          placeholder="닉네임"
+          value={editNickname}
+          onChange={(e) => setEditNickname(e.target.value)}
+          className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
+        />
+
+        <input
+          type="text"
+          placeholder="인스타그램 아이디"
+          value={editInstagram}
+          onChange={(e) => setEditInstagram(e.target.value)}
+          className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
+        />
+
+        <div className="pt-3 border-t border-gray-100">
+          <p className="mb-2 text-xs font-bold text-gray-500">
+            비밀번호 변경
+          </p>
+
+          <input
+            type="password"
+            placeholder="현재 비밀번호"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            className="mb-3 h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
+          />
+
+          <input
+            type="password"
+            placeholder="새 비밀번호"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="mb-3 h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
+          />
+
+          <input
+            type="password"
+            placeholder="새 비밀번호 확인"
+            value={newPasswordConfirm}
+            onChange={(e) =>
+              setNewPasswordConfirm(e.target.value)
+            }
+            className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
+          />
+        </div>
+
+        <button
+          onClick={saveProfileSettings}
+          className="h-11 w-full rounded-xl bg-gray-900 text-sm font-bold text-white hover:bg-gray-800 cursor-pointer"
+        >
+          저장하기
+        </button>
+        
+      </div>
+    </div>
+  </div>
+)}
+
 {contextMenu && (
  <div
   style={{
@@ -2664,13 +3087,10 @@ hover:-translate-y-1
 </div>
 
 <button
-  onClick={() => {
-  localStorage.setItem("noticeRead", noticeVersion.toString());
-  setHasUpdate(false);
-  setSelectedNotice(null);
-  resetPopupPosition("notice");
-  setNoticeOpen(true);
-}}
+  onClick={(e) => {
+    e.stopPropagation();
+    setUserMenuOpen(!userMenuOpen);
+  }}
   className="
     fixed
     left-6
@@ -2685,19 +3105,135 @@ hover:-translate-y-1
     items-center
     justify-center
     hover:shadow-2xl
-hover:-translate-y-0.5
-transition-all
-duration-200
-
+    hover:-translate-y-0.5
+    transition-all
+    duration-200
   "
 >
-  <Megaphone className="w-6 h-6 text-white" />
+  <User className="w-5 h-5 text-white" />
 
   {hasUpdate && (
-    <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full" />
+    <span className="absolute right-1.5 top-1.5 w-2.5 h-2.5 rounded-full bg-red-500" />
   )}
+</button>
+
+{userMenuOpen && (
+  <div
+    onClick={(e) => e.stopPropagation()}
+    className="
+      fixed
+      left-6
+      bottom-40
+      z-50
+      w-40
+      rounded-2xl
+      bg-white
+      border
+      border-gray-200
+      shadow-xl
+      overflow-hidden
+    "
+  >
+    <AuthButton
+  variant="menu"
+  user={authUser}
+  nickname={authNickname}
+  status={authStatus}
+  createdAt={authCreatedAt}
+  onAuthChange={refreshAuth}
+  onMenuClose={() => setUserMenuOpen(false)}
+/>
+
+{authUser && authStatus === "approved" && (
+  <>
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        resetPopupPosition("memo");
+        setMemoOpen(true);
+        setUserMenuOpen(false);
+      }}
+            className="sm:hidden block w-full px-4 py-3 text-center text-sm font-bold text-gray-700 hover:bg-gray-50 border-t border-gray-100 cursor-default"
+    >
+      메모장
+    </button>
+
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        window.location.href = "/calendar";
+        setUserMenuOpen(false);
+      }}
+      className="sm:hidden block w-full px-4 py-3 text-center text-sm font-bold text-gray-700 hover:bg-gray-50 border-t border-gray-100 cursor-default"
+    >
+      캘린더
+    </button>
+
+  </>
+)}
+
+    <button
+  onClick={(e) => {
+    e.stopPropagation();
+
+    if (!authUser) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    setEditNickname(authNickname || "");
+    setEditInstagram(authInstagram || "");
+
+    setCurrentPassword("");
+    setNewPassword("");
+    setNewPasswordConfirm("");
+
+    setProfileSettingOpen(true);
+    setUserMenuOpen(false);
+  }}
+    className="block w-full px-4 py-3 text-center text-sm font-bold text-gray-700 hover:bg-gray-50 border-t border-gray-100 cursor-default"
+>
+  개인설정
 
 </button>
+
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+
+        localStorage.setItem("noticeRead", noticeVersion.toString());
+        setHasUpdate(false);
+        setSelectedNotice(null);
+        resetPopupPosition("notice");
+        setNoticeOpen(true);
+        setUserMenuOpen(false);
+      }}
+      className="
+        relative
+        block
+        w-full
+        px-4
+        py-3
+        text-center
+        text-sm
+        font-bold
+        text-gray-700
+        hover:bg-gray-50
+        border-t
+        border-gray-100
+        cursor-default
+      "
+    >
+      공지사항
+
+      {hasUpdate && (
+        <span className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-red-500" />
+      )}
+    </button>
+  </div>
+)}
+
+
 
 {/* PC 빠른메뉴 실행 버튼 */}
 {mainMenuManageMode === "normal" && (
@@ -2740,16 +3276,34 @@ duration-200
           overflow-hidden
         "
       >
-        <button
-          onClick={() => {
-            resetPopupPosition("memo");
-            setMemoOpen(true);
-            setPcQuickOpen(false);
-          }}
-          className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition cursor-default flex items-center justify-center"
-        >
-          메모장
-        </button>
+            <div className="flex items-center border-t border-gray-100">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          resetPopupPosition("memo");
+          setMemoOpen(true);
+          setUserMenuOpen(false);
+        }}
+        className="flex-1 px-4 py-3 text-center text-sm font-bold text-gray-700 hover:bg-gray-50 cursor-default"
+      >
+        메모장
+      </button>
+      
+    </div>
+
+        
+                {authStatus === "approved" && (
+          <button
+            onClick={() => {
+              window.location.href = "/calendar";
+              setPcQuickOpen(false);
+            }}
+            className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
+          >
+            캘린더
+          </button>
+        )}
+
 
        {Array.from({ length: 4 }).map((_, index) => {
   const selectedKey = quickMenuKeys[index];
@@ -2921,6 +3475,18 @@ duration-200
         >
           메모장
         </button>
+
+        {authStatus === "approved" && (
+          <button
+            onClick={() => {
+              window.location.href = "/calendar";
+              setPcQuickOpen(false);
+            }}
+            className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
+          >
+            캘린더
+          </button>
+        )}
 
         {Array.from({ length: 4 }).map((_, index) => {
   const selectedKey = quickMenuKeys[index];
@@ -3296,14 +3862,20 @@ rel="noopener noreferrer"
     취소
   </button>
 
-  <button
+    <button
   onClick={() => {
     if (mainMenuManageMode === "normal" && !menuSortOpen) {
       setQuickMenuKeys(tempQuickMenuKeys);
+      if (authUser && authStatus === "approved") {
+        supabase.from("profiles").update({ quick_menu_keys: tempQuickMenuKeys }).eq("id", authUser.id).then();
+      } else {
+        localStorage.setItem("quickMenuKeys", JSON.stringify(tempQuickMenuKeys));
+      }
     }
 
     setQuickMenuSelectOpen(false);
   }}
+
     className="
       flex-1
       h-12
@@ -3515,6 +4087,39 @@ rel="noopener noreferrer"
   </div>
 )}
 
+{(passwordResultOpen || passwordResultRef.current) && (
+    <div className="fixed inset-0 z-[99999] bg-black/40 flex items-center justify-center p-5">
+
+
+    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+            <h2 className="text-xl font-black text-gray-900">
+        {(passwordResultSuccess || passwordResultSuccessRef.current) ? "저장 완료" : "저장 실패"}
+      </h2>
+      <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
+        {(passwordResultSuccess || passwordResultSuccessRef.current)
+          ? "개인설정이 저장되었습니다."
+          : "저장에 실패했습니다. 다시 시도해주세요."}
+      </p>
+
+      <div className="flex gap-3 mt-6">
+        <button
+                    onClick={() => {
+            setPasswordResultOpen(false);
+            setPasswordResultSuccess(false);
+            passwordResultRef.current = false;
+            passwordResultSuccessRef.current = false;
+          }}
+          className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-default"
+        >
+          확인
+
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
       {/* 메세지 모달 */}
       {open && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-5">
@@ -3676,7 +4281,7 @@ rel="noopener noreferrer"
   className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between"
 >
               <div className="font-bold flex items-center gap-2">
-                <Megaphone className="w-5 h-5" />
+                <User className="w-5 h-5" />
                 공지사항
               </div>
 
@@ -3709,15 +4314,17 @@ rel="noopener noreferrer"
           onClick={() => {
   setSelectedNotice(notice);
 
-  const nextReadIds = Array.from(
+    const nextReadIds = Array.from(
     new Set([...readNoticeIds, notice.id])
   );
 
   setReadNoticeIds(nextReadIds);
-  localStorage.setItem(
-    "readNoticeIds",
-    JSON.stringify(nextReadIds)
-  );
+  if (authUser && authStatus === "approved") {
+    supabase.from("profiles").update({ read_notice_ids: nextReadIds }).eq("id", authUser.id).then();
+  } else {
+    localStorage.setItem("readNoticeIds", JSON.stringify(nextReadIds));
+  }
+
 }}
           className="
   w-full
@@ -3785,15 +4392,17 @@ rel="noopener noreferrer"
               onClick={() => {
   setSelectedNotice(notice);
 
-  const nextReadIds = Array.from(
+    const nextReadIds = Array.from(
     new Set([...readNoticeIds, notice.id])
   );
 
   setReadNoticeIds(nextReadIds);
-  localStorage.setItem(
-    "readNoticeIds",
-    JSON.stringify(nextReadIds)
-  );
+  if (authUser && authStatus === "approved") {
+    supabase.from("profiles").update({ read_notice_ids: nextReadIds }).eq("id", authUser.id).then();
+  } else {
+    localStorage.setItem("readNoticeIds", JSON.stringify(nextReadIds));
+  }
+
 }}
               className="
                 border-b
@@ -3853,10 +4462,13 @@ rel="noopener noreferrer"
       이전
     </button>
 
-    {Array.from({
+       {Array.from({
   length: Math.min(totalNoticePages, 10),
 }).map((_, index) => {
       const page = index + 1;
+      const start = Math.max(1, Math.min(noticePage - 2, totalNoticePages - 4));
+      const end = Math.min(totalNoticePages, start + 4);
+      if (page < start || page > end) return null;
 
       return (
         <button
@@ -3872,6 +4484,7 @@ rel="noopener noreferrer"
         </button>
       );
     })}
+
 
     <button
       onClick={() =>
@@ -4776,6 +5389,7 @@ hover:-translate-y-1
 
 
 
+
       {/* 메모장 팝업 */}
       {memoOpen && (
   <div
@@ -4941,22 +5555,23 @@ hover:-translate-y-1
                     toggleMemoVisible(memo.id);
                   }}
                   className={`
-                    w-10
-                    h-10
-                    rounded-full
-                    flex
-                    items-center
-                    justify-center
-                    border
-                    transition
-                    cursor-default
-                    ${
-                      memo.visible
-                        ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700"
-                        : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
-                    }
-                  `}
-                  title="메인 노출"
+  w-10
+  h-10
+  rounded-full
+  hidden
+  sm:flex
+  items-center
+  justify-center
+  border
+  transition
+  cursor-default
+  ${
+    memo.visible
+      ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700"
+      : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+  }
+`}
+title="메인 노출"
                 >
                   {memo.visible ? (
                     <Eye className="w-4 h-4" />
@@ -4970,23 +5585,24 @@ hover:-translate-y-1
                     e.stopPropagation();
                     toggleMemoPinned(memo.id);
                   }}
-                  className={`
-                    w-10
-                    h-10
-                    rounded-full
-                    flex
-                    items-center
-                    justify-center
-                    border
-                    transition
-                    cursor-default
-                    ${
-                      memo.pinned
-                        ? "bg-gray-800 border-gray-800 text-white hover:bg-gray-700 hover:border-gray-700"
-                        : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
-                    }
-                  `}
-                  title="상단 고정"
+                                    className={`
+  w-10
+  h-10
+  rounded-full
+  flex
+  items-center
+  justify-center
+  border
+  transition
+  cursor-default
+  ${
+    memo.pinned
+      ? "bg-gray-800 border-gray-800 text-white hover:bg-gray-700 hover:border-gray-700"
+      : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+  }
+`}
+title="상단 고정"
+
                 >
                   <Pin className="w-4 h-4" />
                 </button>
@@ -5165,7 +5781,9 @@ hover:-translate-y-1
             />
 
             <p className="-mt-4 mb-3 text-xs text-gray-400 leading-relaxed break-keep">
-  ※ 메모는 브라우저 캐시 삭제 또는 기기 변경 시 삭제될 수 있습니다.
+  {authUser && authStatus === "approved"
+    ? "※ 메모는 서버에 저장되어 어디서든 로그인하면 불러올 수 있습니다."
+    : "※ 메모는 브라우저 캐시 삭제 또는 기기 변경 시 삭제될 수 있습니다."}
 </p>
 
             <div className="flex gap-3">
@@ -5332,7 +5950,9 @@ setMemoAddOpen(false);
 />
 
 <p className="-mt-4 mb-3 text-xs text-gray-400 leading-relaxed break-keep">
-  ※ 메모는 브라우저 캐시 삭제 또는 기기 변경 시 삭제될 수 있습니다.
+  {authUser && authStatus === "approved"
+    ? "※ 메모는 서버에 저장되어 어디서든 로그인하면 불러올 수 있습니다."
+    : "※ 메모는 브라우저 캐시 삭제 또는 기기 변경 시 삭제될 수 있습니다."}
 </p>
 
 <div className="flex gap-3">
@@ -5358,23 +5978,27 @@ setMemoAddOpen(false);
     삭제
   </button>
 
-  <button
-  onClick={() => {
-  const nextMemos = memos.map((memo) =>
-    memo.id === selectedMemo.id
-      ? {
-          ...selectedMemo,
-          updatedAt: new Date().toISOString(),
-        }
-      : memo
-  );
-
-  saveMemos(nextMemos);
-  setSelectedMemo(null);
-
-  setSaveConfirmType("popup");
-  
-}}
+ <button
+  onClick={async () => {
+    if (authUser && authStatus === "approved") {
+      await supabase.from("user_memos").update({
+        title: selectedMemo.title,
+        content: selectedMemo.content,
+        color: selectedMemo.color,
+        updated_at: new Date().toISOString(),
+      }).eq("id", selectedMemo.id).eq("user_id", authUser.id);
+      await refreshMemos();
+    } else {
+      const nextMemos = memos.map((memo) =>
+        memo.id === selectedMemo.id
+          ? { ...selectedMemo, updatedAt: new Date().toISOString() }
+          : memo
+      );
+      saveMemos(nextMemos);
+    }
+    setSelectedMemo(null);
+    setSaveConfirmType("popup");
+  }}
     className="
       flex-1
       h-12
@@ -5959,112 +6583,144 @@ setMemoAddOpen(false);
   </div>
 </div>
 
-          <div className="flex-1 min-h-0 flex flex-col">
-            <div className="overflow-y-auto flex-1 p-4">
-              <table className="w-full table-fixed text-sm">
-                <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200 text-gray-500">
-                    <th className="py-3 w-20">번호</th>
-                    <th className="py-3 text-center">제목</th>
-                    <th className="py-3 w-32">출처</th>
-                    <th className="py-3 w-32">날짜</th>
-                  </tr>
-                </thead>
+                                        <div className="flex-1 min-h-0 flex flex-col">
+  {/* 모바일 카드형 */}
+  <div className="overflow-y-auto flex-1 px-4 py-3 space-y-2 md:hidden">
+              {paginatedPress.map((item, index) => (
+                <div
+                  key={item.id}
+                  onClick={() => {
+                    setSelectedPress(item);
+                                        const nextReadPressIds = Array.from(new Set([...readPressIds, item.id]));
+                    setReadPressIds(nextReadPressIds);
+                    if (authUser && authStatus === "approved") {
+                      supabase.from("profiles").update({ read_press_ids: nextReadPressIds }).eq("id", authUser.id).then();
+                    } else {
+                      localStorage.setItem("readPressIds", JSON.stringify(nextReadPressIds));
+                    }
 
-                <tbody>
-                  {paginatedPress.map((item, index) => (
-                    <tr
-                      key={item.id}
-                      onClick={() => {
-  setSelectedPress(item);
-
-  const nextReadPressIds = Array.from(
-    new Set([...readPressIds, item.id])
-  );
-
-  setReadPressIds(nextReadPressIds);
-  localStorage.setItem(
-    "readPressIds",
-    JSON.stringify(nextReadPressIds)
-  );
-}}
-                      className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition"
-                    >
-                      <td className="py-4 text-center text-gray-700 border-b border-gray-100">
-                        {filteredPress.length -
-                          ((pressPage - 1) * PRESS_PER_PAGE + index)}
-                      </td>
-
-                      <td className="py-4 font-medium text-gray-800 border-b border-gray-100 overflow-hidden">
-                        <div className="flex items-center gap-2 overflow-hidden">
-  <span className="truncate">
-    {item.title}
-  </span>
-
-  {!readPressIds.includes(item.id) && (
-    <span className="shrink-0 px-2 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">
-      NEW
-    </span>
-  )}
-</div>
-                      </td>
-
-                      <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">
-                        {item.source}
-                      </td>
-
-                      <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">
-                        {item.date}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                  }}
+                  className="bg-white border border-gray-200 rounded-2xl px-4 py-4 cursor-pointer hover:bg-gray-50 transition"
+                >
+                  <div className="flex items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold text-gray-400">
+                          NO. {filteredPress.length - ((pressPage - 1) * PRESS_PER_PAGE + index)}
+                        </span>
+                        {!readPressIds.includes(item.id) && (
+                          <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">NEW</span>
+                        )}
+                      </div>
+                      <p className="font-bold text-gray-900 text-sm leading-snug break-keep line-clamp-2">
+                        {item.title}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1.5">
+                        {item.source} · {item.date}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            {totalPressPages > 1 && (
-              <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
-                <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
-                  <button
-                    onClick={() => setPressPage((p) => Math.max(1, p - 1))}
-                    disabled={pressPage === 1}
-                    className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-                  >
-                    이전
-                  </button>
-
-                  {Array.from({
-                    length: Math.min(totalPressPages, 10),
-                  }).map((_, index) => {
-                    const page = index + 1;
-
-                    return (
-                      <button
-                        key={page}
-                        onClick={() => setPressPage(page)}
-                        className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
-                          pressPage === page
-                            ? "bg-slate-800 text-white"
-                            : "bg-white text-gray-600 hover:bg-gray-100"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  })}
-
-                  <button
-                    onClick={() =>
-                      setPressPage((p) => Math.min(totalPressPages, p + 1))
+  {/* PC 테이블형 */}
+  <div className="hidden md:block overflow-y-auto flex-1 p-4">
+    <table className="w-full table-fixed text-sm">
+      <thead>
+        <tr className="bg-gray-50 border-b border-gray-200 text-gray-500">
+          <th className="py-3 w-20">번호</th>
+          <th className="py-3 text-center">제목</th>
+          <th className="py-3 w-32">출처</th>
+          <th className="py-3 w-32">날짜</th>
+        </tr>
+      </thead>
+      <tbody>
+        {paginatedPress.map((item, index) => (
+          <tr
+            key={item.id}
+            onClick={() => {
+              setSelectedPress(item);
+                                  const nextReadPressIds = Array.from(new Set([...readPressIds, item.id]));
+                    setReadPressIds(nextReadPressIds);
+                    if (authUser && authStatus === "approved") {
+                      supabase.from("profiles").update({ read_press_ids: nextReadPressIds }).eq("id", authUser.id).then();
+                    } else {
+                      localStorage.setItem("readPressIds", JSON.stringify(nextReadPressIds));
                     }
-                    disabled={pressPage === totalPressPages}
-                    className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-                  >
-                    다음
-                  </button>
-                </div>
+
+            }}
+            className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition"
+          >
+            <td className="py-4 text-center text-gray-700 border-b border-gray-100">
+              {filteredPress.length - ((pressPage - 1) * PRESS_PER_PAGE + index)}
+            </td>
+            <td className="py-4 font-medium text-gray-800 border-b border-gray-100 overflow-hidden">
+              <div className="flex items-center gap-2 overflow-hidden">
+                <span className="truncate">{item.title}</span>
+                {!readPressIds.includes(item.id) && (
+                  <span className="shrink-0 px-2 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">NEW</span>
+                )}
               </div>
-            )}
+            </td>
+            <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">{item.source}</td>
+            <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">{item.date}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+
+
+                                               <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
+              <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+                <button
+                  onClick={() => setPressPage((p) => Math.max(1, p - 1))}
+                  disabled={pressPage === 1}
+                  className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+                >
+                  이전
+                </button>
+
+                               {Array.from({
+                  length: Math.min(totalPressPages, 10),
+                }).map((_, index) => {
+                  const page = index + 1;
+                  const start = Math.max(1, Math.min(pressPage - 2, totalPressPages - 4));
+                  const end = Math.min(totalPressPages, start + 4);
+                  if (page < start || page > end) return null;
+
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setPressPage(page)}
+                      className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
+                        pressPage === page
+                          ? "bg-slate-800 text-white"
+                          : "bg-white text-gray-600 hover:bg-gray-100"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+
+
+                <button
+                  onClick={() =>
+                    setPressPage((p) => Math.min(totalPressPages, p + 1))
+                  }
+                  disabled={pressPage === totalPressPages}
+                  className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+                >
+                  다음
+                </button>
+              </div>
+            </div>
+
+
+
           </div>
         </>
       ) : (

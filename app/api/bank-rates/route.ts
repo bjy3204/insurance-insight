@@ -116,7 +116,7 @@ const targetBaseList = baseList.filter((base: any) =>
         month,
         baseMonth: data.result.baseList?.[0]?.dcls_month || "",
         url: BANK_URLS[bank?.kor_co_nm] || "",
-hover: BANK_HOVERS[bank?.kor_co_nm] || "hover:bg-gray-50",
+        hover: BANK_HOVERS[bank?.kor_co_nm] || "hover:bg-gray-50",
       };
     });
 

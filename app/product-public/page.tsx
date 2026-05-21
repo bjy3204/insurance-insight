@@ -1671,112 +1671,131 @@ setTermsOpen(false);
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 flex flex-col">
-  <div className="overflow-y-auto flex-1 p-4">
+                    <div className="flex-1 min-h-0 flex flex-col">
+  {/* 모바일 카드형 */}
+  <div className="overflow-y-auto flex-1 px-4 py-3 space-y-2 md:hidden">
+    {paginatedPress.map((item, index) => (
+      <div
+        key={item.id}
+        onClick={() => {
+          setSelectedPress(item);
+          const nextReadPressIds = Array.from(new Set([...readPressIds, item.id]));
+          setReadPressIds(nextReadPressIds);
+          localStorage.setItem("readPressIds", JSON.stringify(nextReadPressIds));
+        }}
+        className="bg-white border border-gray-200 rounded-2xl px-4 py-4 cursor-pointer hover:bg-gray-50 transition"
+      >
+        <div className="flex items-start gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold text-gray-400">
+                NO. {filteredPress.length - ((pressPage - 1) * PRESS_PER_PAGE + index)}
+              </span>
+              {!readPressIds.includes(item.id) && (
+                <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">NEW</span>
+              )}
+            </div>
+            <p className="font-bold text-gray-900 text-sm leading-snug break-keep line-clamp-2">
+              {item.title}
+            </p>
+            <p className="text-xs text-gray-400 mt-1.5">
+              {item.source} · {item.date}
+            </p>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  {/* PC 테이블형 */}
+  <div className="hidden md:block overflow-y-auto flex-1 p-4">
     <table className="w-full table-fixed text-sm">
       <thead>
-  <tr className="bg-gray-50 border-b border-gray-200 text-gray-500">
+        <tr className="bg-gray-50 border-b border-gray-200 text-gray-500">
           <th className="py-3 w-20">번호</th>
           <th className="py-3 text-center">제목</th>
           <th className="py-3 w-32">출처</th>
           <th className="py-3 w-32">날짜</th>
         </tr>
       </thead>
-
       <tbody>
         {paginatedPress.map((item, index) => (
           <tr
             key={item.id}
             onClick={() => {
-  setSelectedPress(item);
-
-  const nextReadPressIds = Array.from(
-    new Set([...readPressIds, item.id])
-  );
-
-  setReadPressIds(nextReadPressIds);
-  localStorage.setItem(
-    "readPressIds",
-    JSON.stringify(nextReadPressIds)
-  );
-}}
+              setSelectedPress(item);
+              const nextReadPressIds = Array.from(new Set([...readPressIds, item.id]));
+              setReadPressIds(nextReadPressIds);
+              localStorage.setItem("readPressIds", JSON.stringify(nextReadPressIds));
+            }}
             className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition"
           >
             <td className="py-4 text-center text-gray-700 border-b border-gray-100">
-              {filteredPress.length -
-                ((pressPage - 1) * PRESS_PER_PAGE + index)}
+              {filteredPress.length - ((pressPage - 1) * PRESS_PER_PAGE + index)}
             </td>
-
             <td className="py-4 font-medium text-gray-800 border-b border-gray-100 overflow-hidden">
-  <div className="flex items-center gap-2 overflow-hidden">
-  <span className="truncate">
-    {item.title}
-  </span>
-
-  {!readPressIds.includes(item.id) && (
-    <span className="shrink-0 px-2 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">
-      NEW
-    </span>
-  )}
-</div>
-</td>
-
-            <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">
-              {item.source}
+              <div className="flex items-center gap-2 overflow-hidden">
+                <span className="truncate">{item.title}</span>
+                {!readPressIds.includes(item.id) && (
+                  <span className="shrink-0 px-2 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">NEW</span>
+                )}
+              </div>
             </td>
-
-            <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">
-              {item.date}
-            </td>
+            <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">{item.source}</td>
+            <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">{item.date}</td>
           </tr>
         ))}
       </tbody>
     </table>
   </div>
 
-  {totalPressPages > 1 && (
+
     <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
-      <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
-        <button
-          onClick={() => setPressPage((p) => Math.max(1, p - 1))}
-          disabled={pressPage === 1}
-          className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-        >
-          이전
-        </button>
+    <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+      <button
+        onClick={() => setPressPage((p) => Math.max(1, p - 1))}
+        disabled={pressPage === 1}
+        className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+      >
+        이전
+      </button>
 
-        {Array.from({
-  length: Math.min(totalPressPages, 10),
-}).map((_, index) => {
-          const page = index + 1;
+      {Array.from({
+        length: Math.min(totalPressPages, 10),
+      }).map((_, index) => {
+        const page = index + 1;
+        const start = Math.max(1, Math.min(pressPage - 2, totalPressPages - 4));
+        const end = Math.min(totalPressPages, start + 4);
+        if (page < start || page > end) return null;
 
-          return (
-            <button
-              key={page}
-              onClick={() => setPressPage(page)}
-              className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
-                pressPage === page
-                  ? "bg-slate-800 text-white"
-                  : "bg-white text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              {page}
-            </button>
-          );
-        })}
+        return (
+          <button
+            key={page}
+            onClick={() => setPressPage(page)}
+            className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
+              pressPage === page
+                ? "bg-slate-800 text-white"
+                : "bg-white text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            {page}
+          </button>
+        );
+      })}
 
-        <button
-          onClick={() =>
-            setPressPage((p) => Math.min(totalPressPages, p + 1))
-          }
-          disabled={pressPage === totalPressPages}
-          className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-        >
-          다음
-        </button>
-      </div>
+      <button
+        onClick={() =>
+          setPressPage((p) => Math.min(totalPressPages, p + 1))
+        }
+        disabled={pressPage === totalPressPages}
+        className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+      >
+        다음
+      </button>
     </div>
-  )}
+  </div>
+
+
 </div>
         </>
       ) : (

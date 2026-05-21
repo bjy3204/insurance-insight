@@ -941,7 +941,7 @@ const pagedMemos = filteredMemos.slice(
               </div>
 
               <p className="text-sm text-gray-500 mt-1">
-                오른쪽 상단 설정에서 즐겨찾기와 위치변경을 설정하세요
+                보험사 전산 바로가기
               </p>
             </div>
 
