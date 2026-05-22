@@ -55,6 +55,7 @@ export default function CalendarPage() {
   const [showEventModal, setShowEventModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [deleteEventConfirmOpen, setDeleteEventConfirmOpen] = useState(false);
+const [settingOpen, setSettingOpen] = useState(false);
 
   const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -100,6 +101,21 @@ export default function CalendarPage() {
   };
 
   const todayValue = formatDate(today);
+
+useEffect(() => {
+  const handleClick = () => {
+    setSettingOpen(false);
+  };
+
+  if (settingOpen) {
+    window.addEventListener("click", handleClick);
+  }
+
+  return () => {
+    window.removeEventListener("click", handleClick);
+  };
+}, [settingOpen]);
+
 
   // 인증 확인
   useEffect(() => {

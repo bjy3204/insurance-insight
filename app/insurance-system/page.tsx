@@ -1008,6 +1008,23 @@ const pagedMemos = filteredMemos.slice(
                       메모장
                     </button>
 
+                                        {authStatus === "approved" && (
+                      <button
+                        onClick={() => {
+                          window.dispatchEvent(new CustomEvent("open-calculator"));
+                          setSettingOpen(false);
+                        }}
+                        className="
+                          hidden md:block w-full text-center px-4 py-3 text-sm font-bold
+                          text-gray-700 hover:bg-gray-50 transition border-t
+                          border-gray-100 cursor-default
+                        "
+                      >
+                        계산기
+                      </button>
+                    )}
+
+
                     <button
                       onClick={() => openManagePopup("favorite")}
                                            className="

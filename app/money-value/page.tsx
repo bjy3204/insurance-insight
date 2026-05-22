@@ -110,6 +110,7 @@ const sensors = useSensors(
 );
 
   const [memoOpen, setMemoOpen] = useState(false);
+const [settingOpen, setSettingOpen] = useState(false);
 
 const [memoSearch, setMemoSearch] = useState("");
 const [memoPage, setMemoPage] = useState(1);
@@ -214,6 +215,19 @@ useEffect(() => {
   return () => window.removeEventListener("pointerdown", closeContextMenu);
 }, []);
 
+useEffect(() => {
+  const handleClick = () => {
+    setSettingOpen(false);
+  };
+
+  if (settingOpen) {
+    window.addEventListener("click", handleClick);
+  }
+
+  return () => {
+    window.removeEventListener("click", handleClick);
+  };
+}, [settingOpen]);
 
 
 const openMemoEdit = (memo: MemoItem) => {
@@ -451,29 +465,68 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
               </p>
             </div>
 
-            <button
-              onClick={() => setMemoOpen(true)}
-              className="
-  absolute
-  right-0
-  hidden
-  md:flex
-                w-11
-                h-11
-                rounded-full
-                border
-                border-gray-200
-                shadow-sm
-                bg-white
-                hover:bg-gray-50
-                items-center
-                justify-center
-                transition
-                cursor-default
-              "
+                       <div
+              className={`absolute right-0 top-1/2 -translate-y-1/2 ${
+                settingOpen ? "z-[1000]" : "z-40"
+              }`}
             >
-              <StickyNote className="w-5 h-5 text-gray-400" />
-            </button>
+              <div className="relative">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSettingOpen(!settingOpen);
+                  }}
+                                    className={`
+                    w-10 h-10 rounded-full border border-gray-200 shadow-sm
+                    hidden md:flex items-center justify-center transition cursor-default
+                    ${settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}
+                  `}
+
+                >
+                  <Pencil className="w-5 h-5 text-gray-400" />
+                </button>
+
+                {settingOpen && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="
+                      absolute right-0 top-12 z-[999] w-40 rounded-2xl
+                      bg-white border border-gray-200 shadow-xl overflow-hidden
+                    "
+                  >
+                    <button
+                      onClick={() => {
+                        setMemoOpen(true);
+                        setSettingOpen(false);
+                      }}
+                      className="
+                        block w-full text-center px-4 py-3 text-sm font-bold
+                        text-gray-700 hover:bg-gray-50 transition cursor-default
+                      "
+                    >
+                      메모장
+                    </button>
+
+                    {authStatus === "approved" && (
+                      <button
+                        onClick={() => {
+                          window.dispatchEvent(new CustomEvent("open-calculator"));
+                          setSettingOpen(false);
+                        }}
+                        className="
+                          block w-full text-center px-4 py-3 text-sm font-bold
+                          text-gray-700 hover:bg-gray-50 transition border-t
+                          border-gray-100 cursor-default
+                        "
+                      >
+                        계산기
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
       </header>
