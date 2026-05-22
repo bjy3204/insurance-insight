@@ -623,7 +623,7 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
             </button>
             {isAdmin && (
               <>
-                <button onClick={() => setShowNewFolder(!showNewFolder)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold transition cursor-default">
+                <button onClick={() => setShowNewFolder(!showNewFolder)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold transition cursor-pointer">
                   <FolderPlus className="w-4 h-4" /><span className="hidden sm:inline">폴더 추가</span>
                 </button>
                 <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-green-50 hover:bg-green-100 text-green-600 text-xs font-semibold transition cursor-pointer disabled:opacity-50">
@@ -789,17 +789,17 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
                         )}
                         {/* 폴더 전체 다운로드 버튼 */}
                         {item.isFolder && !selectMode && (
-                          <button onClick={(e) => { e.stopPropagation(); handleFolderDownload(item); }} disabled={isFolderDownloading} className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 items-center justify-center transition hidden group-hover:flex cursor-default disabled:opacity-50" title="폴더 전체 다운로드">
+                          <button onClick={(e) => { e.stopPropagation(); handleFolderDownload(item); }} disabled={isFolderDownloading} className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 items-center justify-center transition hidden group-hover:flex cursor-pointer disabled:opacity-50" title="폴더 전체 다운로드">
                             <ArrowDownToLine className="w-3 h-3" />
                           </button>
                         )}
                         {isAdmin && !selectMode && (
-                          <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(item); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 items-center justify-center transition hidden group-hover:flex cursor-default">
+                          <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(item); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 items-center justify-center transition hidden group-hover:flex cursor-pointer">
                             <Trash2 className="w-3 h-3" />
                           </button>
                         )}
                         {!item.isFolder && !selectMode && (
-                          <button onClick={(e) => { e.stopPropagation(); handleDownload(item); }} className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 items-center justify-center transition hidden group-hover:flex cursor-default">
+                          <button onClick={(e) => { e.stopPropagation(); handleDownload(item); }} className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 items-center justify-center transition hidden group-hover:flex cursor-pointer">
                             <Download className="w-3 h-3" />
                           </button>
                         )}
@@ -884,7 +884,7 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
                       {/* 작업 버튼 */}
                       <div className="w-auto flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                         {item.isFolder && (
-                          <button onClick={() => handleFolderDownload(item)} disabled={isFolderDownloading} className="w-6 h-6 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 flex items-center justify-center transition cursor-default disabled:opacity-50" title="폴더 전체 다운로드">
+                          <button onClick={() => handleFolderDownload(item)} disabled={isFolderDownloading} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 items-center justify-center transition hidden group-hover:flex cursor-pointer" title="폴더 전체 다운로드">
                             {isFolderDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ArrowDownToLine className="w-3.5 h-3.5" />}
                           </button>
                         )}
@@ -894,7 +894,7 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
                           </button>
                         )}
                         {isAdmin && (
-                          <button onClick={() => setDeleteConfirm(item)} className="w-6 h-6 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 flex items-center justify-center transition cursor-default" title="삭제">
+                          <button onClick={() => setDeleteConfirm(item)} className="w-6 h-6 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 flex items-center justify-center transition cursor-pointer" title="삭제">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         )}
@@ -955,8 +955,8 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
               {deleteConfirm.isFolder && <span className="block text-red-400 text-xs mt-1">폴더 안의 모든 파일이 삭제됩니다.</span>}
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-3 rounded-2xl bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200 transition cursor-default">취소</button>
-              <button onClick={() => handleDelete(deleteConfirm)} className="flex-1 py-3 rounded-2xl bg-red-500 text-white font-semibold hover:bg-red-600 transition cursor-default">삭제</button>
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-3 rounded-2xl bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200 transition cursor-pointer">취소</button>
+              <button onClick={() => handleDelete(deleteConfirm)} className="flex-1 py-3 rounded-2xl bg-red-500 text-white font-semibold hover:bg-red-600 transition cursor-pointer">삭제</button>
             </div>
           </div>
         </div>
@@ -973,7 +973,7 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
             </p>
             <div className="flex gap-3">
               <button onClick={() => setBulkDeleteConfirm(false)} className="flex-1 py-3 rounded-2xl bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200 transition cursor-default">취소</button>
-              <button onClick={handleBulkDelete} className="flex-1 py-3 rounded-2xl bg-red-500 text-white font-semibold hover:bg-red-600 transition cursor-default">삭제</button>
+              <button onClick={handleBulkDelete} className="flex-1 py-3 rounded-2xl bg-red-500 text-white font-semibold hover:bg-red-600 transition cursor-pointer">삭제</button>
             </div>
           </div>
         </div>
