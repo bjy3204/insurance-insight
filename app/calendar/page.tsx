@@ -614,7 +614,7 @@ export default function CalendarPage() {
                     rounded-xl
                     border
                     border-gray-200
-                    cursor-pointer
+                    
                     ${
                       selectedDate === fullDate
                         ? "bg-gray-50"

@@ -367,7 +367,7 @@ const handleResetPassword = async () => {
     if (status === "blocked") {
       return (
         <span className="rounded-full bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600 border border-red-100">
-          이용제한
+          승인보류
         </span>
       );
     }

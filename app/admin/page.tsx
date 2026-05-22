@@ -299,7 +299,7 @@ const pagedProfiles = filtered.slice(
 
                 {profile.role === "admin" && (
                   <div className="flex items-center justify-center h-9">
-                    <span className="text-xs font-bold text-blue-500">관리자 계정</span>
+                    <span className="text-sm font-bold text-blue-500">관리자 계정</span>
                   </div>
                 )}
               </div>
