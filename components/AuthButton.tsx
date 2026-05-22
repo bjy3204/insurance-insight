@@ -336,7 +336,7 @@ const handleResetPassword = async () => {
 
 
   const getGradeEmoji = (date: string | null) => {
-    if (!date) return "🫘";
+    if (!date) return "🌰";
 
     const 가입일 = new Date(date);
     const 현재 = new Date();
@@ -347,12 +347,12 @@ const handleResetPassword = async () => {
     );
 
     if (diffDays >= 365 * 3) return "🌳";
-    if (diffDays >= 365 * 2) return "🍎";
-    if (diffDays >= 365) return "🌿";
-    if (diffDays >= 180) return "🍃";
+    if (diffDays >= 365 * 2) return "🍒";
+    if (diffDays >= 365) return "🌾";
+    if (diffDays >= 180) return "🪴";
     if (diffDays >= 90) return "🌱";
 
-    return "🫘";
+    return "🌰";
   };
 
   const renderStatusBadge = () => {
@@ -403,7 +403,25 @@ const handleResetPassword = async () => {
       <div className="hidden md:flex items-center gap-2">
         {userEmail && (
           <>
-            <span className="text-xs font-semibold text-gray-500">
+            <span
+  className="
+    px-3
+    h-8
+    rounded-full
+    bg-sky-50
+    border
+    border-sky-100
+   text-[11px]
+    font-semibold
+    text-sky-700
+    flex
+    items-center
+    justify-center
+    transition
+    hover:-translate-y-[1px]
+    hover:shadow-md
+  "
+>
               {getGradeEmoji(createdAt ?? null)} {nickname || "회원"} 님❤️
             </span>
 
