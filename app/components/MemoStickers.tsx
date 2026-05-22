@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { X as XIcon } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-
+import { useAuth } from "@/app/components/AuthProvider";
 
 type MemoItem = {
   id: string;
@@ -19,10 +18,7 @@ type MemoItem = {
 };
 
 export default function MemoStickers() {
-  const [memos, setMemos] = useState<MemoItem[]>([]);
-  const [authUser, setAuthUser] = useState<any>(null);
-  const [authStatus, setAuthStatus] = useState<string | null>(null);
-
+  const { memos, saveMemos } = useAuth();
 
   const dragRef = useRef<{
     id: string;
@@ -33,103 +29,18 @@ export default function MemoStickers() {
     moved: boolean;
   } | null>(null);
 
-    useEffect(() => {
-    const loadMemos = async (userId?: string, status?: string) => {
-      if (userId && status === "approved") {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("insurance_memos")
-          .eq("id", userId)
-          .maybeSingle();
-        if (profile?.insurance_memos && Array.isArray(profile.insurance_memos)) {
-          setMemos(profile.insurance_memos as MemoItem[]);
-        } else {
-          setMemos([]);
-        }
-      } else {
-        const savedMemos = localStorage.getItem("personalMemos");
-        setMemos(savedMemos ? JSON.parse(savedMemos) : []);
-      }
-    };
+  const hideMemoSticker = (id: string) => {
+    const nextMemos = memos.map((memo) =>
+      memo.id === id
+        ? {
+            ...memo,
+            visible: false,
+          }
+        : memo
+    );
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      const user = session?.user || null;
-      setAuthUser(user);
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("status")
-          .eq("id", user.id)
-          .maybeSingle();
-        const status = profile?.status || null;
-        setAuthStatus(status);
-        loadMemos(user.id, status);
-      } else {
-        loadMemos();
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const user = session?.user || null;
-      setAuthUser(user);
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("status")
-          .eq("id", user.id)
-          .maybeSingle();
-        const status = profile?.status || null;
-        setAuthStatus(status);
-        loadMemos(user.id, status);
-      } else {
-        setAuthStatus(null);
-        loadMemos();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const syncFromStorage = () => {
-      if (authUser && authStatus === "approved") return;
-      const savedMemos = localStorage.getItem("personalMemos");
-      setMemos(savedMemos ? JSON.parse(savedMemos) : []);
-    };
-
-    window.addEventListener("storage", syncFromStorage);
-    window.addEventListener("memo-storage-updated", syncFromStorage);
-
-    return () => {
-      window.removeEventListener("storage", syncFromStorage);
-      window.removeEventListener("memo-storage-updated", syncFromStorage);
-    };
-  }, [authUser, authStatus]);
-
-
-    const saveMemos = (nextMemos: MemoItem[]) => {
-    setMemos(nextMemos);
-    if (authUser && authStatus === "approved") {
-      supabase.from("profiles").update({ insurance_memos: nextMemos }).eq("id", authUser.id).then();
-    } else {
-      localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
-      window.dispatchEvent(new Event("memo-storage-updated"));
-    }
+    saveMemos(nextMemos);
   };
-
-
- const hideMemoSticker = (id: string) => {
-  const nextMemos = memos.map((memo) =>
-    memo.id === id
-      ? {
-          ...memo,
-          visible: false,
-        }
-      : memo
-  );
-
-  saveMemos(nextMemos);
-};
 
   const moveMemoSticker = (id: string, x: number, y: number) => {
     const nextMemos = memos.map((memo) =>
@@ -176,22 +87,22 @@ export default function MemoStickers() {
     <>
       {visibleMemos.map((memo, index) => (
         <div
-  key={memo.id}
-  onContextMenu={(e) => {
-    e.preventDefault();
-    e.stopPropagation();
+          key={memo.id}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
 
-    window.dispatchEvent(
-      new CustomEvent("open-memo-context-menu", {
-        detail: {
-          x: e.clientX,
-          y: e.clientY,
-          id: memo.id,
-        },
-      })
-    );
-  }}
-  onPointerDown={(e) => {
+            window.dispatchEvent(
+              new CustomEvent("open-memo-context-menu", {
+                detail: {
+                  x: e.clientX,
+                  y: e.clientY,
+                  id: memo.id,
+                },
+              })
+            );
+          }}
+          onPointerDown={(e) => {
             const target = e.target as HTMLElement;
 
             if (target.closest("button, input, textarea, select, a")) return;
@@ -299,7 +210,7 @@ export default function MemoStickers() {
               "
               title="메인에서 숨기기"
             >
-             <XIcon className="w-4 h-4" />
+              <XIcon className="w-4 h-4" />
             </button>
           </div>
 

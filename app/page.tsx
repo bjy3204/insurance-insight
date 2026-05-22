@@ -199,7 +199,8 @@ type MenuItem = {
 
 
 export default function Home() {
-  const { authUser, authNickname, authInstagram, authStatus, authCreatedAt, authLoading, refreshAuth } = useAuth();
+    const { authUser, authNickname, authInstagram, authStatus, authCreatedAt, authLoading, refreshAuth, memos, saveMemos } = useAuth();
+
 
   const [menus, setMenus] = useState<MenuItem[]>(defaultMenus);
 
@@ -456,8 +457,8 @@ const resetPopupPosition = (key: PopupKey) => {
 };
 
 
-  const [memos, setMemos] = useState<MemoItem[]>([]);
   const [memoTitle, setMemoTitle] = useState("");
+
   const [memoContent, setMemoContent] = useState("");
   const [memoColor, setMemoColor] =
   useState<MemoItem["color"]>("white");
@@ -880,28 +881,7 @@ console.log("날씨 데이터", data);
   localStorage.setItem("weather-region", weatherRegion);
 }, [weatherRegion]);
 
-const refreshMemos = async () => {
-  if (!authUser || authStatus !== "approved") {
-    const savedMemos = localStorage.getItem("personalMemos");
-    setMemos(savedMemos ? JSON.parse(savedMemos) : []);
-    return;
-  }
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("insurance_memos")
-    .eq("id", authUser.id)
-    .maybeSingle();
-  if (profile?.insurance_memos && Array.isArray(profile.insurance_memos)) {
-    setMemos(profile.insurance_memos as MemoItem[]);
-  } else {
-    setMemos([]);
-  }
-};
 
-
-useEffect(() => {
-  refreshMemos();
-}, [authUser, authStatus]);
 
 useEffect(() => {
   const openMemoDetail = (event: any) => {
@@ -1331,15 +1311,8 @@ const addPersonalMenu = () => {
 };
 
 
-const saveMemos = (nextMemos: MemoItem[]) => {
-  setMemos(nextMemos);
-  if (authUser && authStatus === "approved") {
-    supabase.from("profiles").update({ insurance_memos: nextMemos }).eq("id", authUser.id).then();
-  } else {
-    localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
-    window.dispatchEvent(new Event("memo-storage-updated"));
-  }
-};
+
+
 
 
 const addMemo = async () => {
@@ -5849,26 +5822,22 @@ setMemoAddOpen(false);
   </button>
 
  <button
-  onClick={async () => {
-    if (authUser && authStatus === "approved") {
-      await supabase.from("user_memos").update({
-        title: selectedMemo.title,
-        content: selectedMemo.content,
-        color: selectedMemo.color,
-        updated_at: new Date().toISOString(),
-      }).eq("id", selectedMemo.id).eq("user_id", authUser.id);
-      await refreshMemos();
-    } else {
-      const nextMemos = memos.map((memo) =>
-        memo.id === selectedMemo.id
-          ? { ...selectedMemo, updatedAt: new Date().toISOString() }
-          : memo
-      );
-      saveMemos(nextMemos);
-    }
+ onClick={() => {
+    const nextMemos = memos.map((memo) =>
+      memo.id === selectedMemo.id
+        ? {
+            ...selectedMemo,
+            color: selectedMemo.color,
+            updated_at: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+        : memo
+    );
+    saveMemos(nextMemos);
     setSelectedMemo(null);
     setSaveConfirmType("popup");
   }}
+
     className="
       flex-1
       h-12

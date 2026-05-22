@@ -21,6 +21,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/app/components/AuthProvider";
+
 
 
 
@@ -325,15 +327,15 @@ function SortableCompanyCard({
 }
 
 export default function InsuranceSystemPage() {
-    const [authUser, setAuthUser] = useState<any>(null);
-  const [authStatus, setAuthStatus] = useState<string | null>(null);
+      const { authUser, authStatus, memos, saveMemos } = useAuth();
+
 
   const [tab, setTab] = useState<InsuranceTab>("nonlife");
     const [settingOpen, setSettingOpen] = useState(false);
 
 
   const [memoOpen, setMemoOpen] = useState(false);
-  const [memos, setMemos] = useState<MemoItem[]>([]);
+  
   const [memoSearch, setMemoSearch] = useState("");
   const [memoPage, setMemoPage] = useState(1);
     const [memoTitle, setMemoTitle] = useState("");
@@ -343,6 +345,8 @@ export default function InsuranceSystemPage() {
   const [memoAddOpen, setMemoAddOpen] = useState(false);
   const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
   const [deleteMemoConfirmOpen, setDeleteMemoConfirmOpen] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; id: string } | null>(null);
+
 const [deleteMemoId, setDeleteMemoId] = useState<string | null>(null);
 const [manageSaveConfirmOpen, setManageSaveConfirmOpen] = useState(false);
 
@@ -414,8 +418,8 @@ const [memoEditDragInfo, setMemoEditDragInfo] = useState<null | {
     });
   };
 
-    useEffect(() => {
-    const loadFromLocalStorage = () => {
+      useEffect(() => {
+    if (!authUser) {
       const savedNonlifeOrder = localStorage.getItem("nonlife-order");
       const savedLifeOrder = localStorage.getItem("life-order");
       const savedNonlifeFavorites = localStorage.getItem("nonlife-favorites");
@@ -433,31 +437,28 @@ const [memoEditDragInfo, setMemoEditDragInfo] = useState<null | {
         const order = JSON.parse(savedNonlifeOrder);
         const sorted = order.map((id: string) => nonlifeCompanies.find((item) => item.id === id)).filter(Boolean);
         const missing = nonlifeCompanies.filter((item) => !order.includes(item.id));
-        const nextItems = [...sorted, ...missing] as Company[];
-        setNonlifeItems(nextItems);
-        setTempNonlifeItems(nextItems);
+        setNonlifeItems([...sorted, ...missing] as Company[]);
+        setTempNonlifeItems([...sorted, ...missing] as Company[]);
       }
 
       if (savedLifeOrder) {
         const order = JSON.parse(savedLifeOrder);
         const sorted = order.map((id: string) => lifeCompanies.find((item) => item.id === id)).filter(Boolean);
         const missing = lifeCompanies.filter((item) => !order.includes(item.id));
-        const nextItems = [...sorted, ...missing] as Company[];
-        setLifeItems(nextItems);
-        setTempLifeItems(nextItems);
+        setLifeItems([...sorted, ...missing] as Company[]);
+        setTempLifeItems([...sorted, ...missing] as Company[]);
       }
-    };
+      return;
+    }
 
-    const loadFromDB = async (userId: string) => {
+    const loadFromDB = async () => {
       const { data: profile } = await supabase
         .from("profiles")
-        .select("status, insurance_memos, nonlife_order, life_order, nonlife_favorites, life_favorites")
-        .eq("id", userId)
+        .select("nonlife_order, life_order, nonlife_favorites, life_favorites")
+        .eq("id", authUser.id)
         .maybeSingle();
 
       if (!profile) return;
-
-      setAuthStatus(profile.status);
 
       if (profile.nonlife_favorites && Array.isArray(profile.nonlife_favorites)) {
         setNonlifeFavorites(profile.nonlife_favorites);
@@ -471,62 +472,24 @@ const [memoEditDragInfo, setMemoEditDragInfo] = useState<null | {
         const order = profile.nonlife_order as string[];
         const sorted = order.map((id) => nonlifeCompanies.find((item) => item.id === id)).filter(Boolean);
         const missing = nonlifeCompanies.filter((item) => !order.includes(item.id));
-        const nextItems = [...sorted, ...missing] as Company[];
-        setNonlifeItems(nextItems);
-        setTempNonlifeItems(nextItems);
+        setNonlifeItems([...sorted, ...missing] as Company[]);
+        setTempNonlifeItems([...sorted, ...missing] as Company[]);
       }
       if (profile.life_order && Array.isArray(profile.life_order) && profile.life_order.length > 0) {
         const order = profile.life_order as string[];
         const sorted = order.map((id) => lifeCompanies.find((item) => item.id === id)).filter(Boolean);
         const missing = lifeCompanies.filter((item) => !order.includes(item.id));
-        const nextItems = [...sorted, ...missing] as Company[];
-        setLifeItems(nextItems);
-        setTempLifeItems(nextItems);
-      }
-      if (profile.insurance_memos && Array.isArray(profile.insurance_memos)) {
-        setMemos(profile.insurance_memos as MemoItem[]);
+        setLifeItems([...sorted, ...missing] as Company[]);
+        setTempLifeItems([...sorted, ...missing] as Company[]);
       }
     };
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setAuthUser(session.user);
-        loadFromDB(session.user.id);
-      } else {
-        loadFromLocalStorage();
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setAuthUser(session.user);
-        loadFromDB(session.user.id);
-      } else {
-        setAuthUser(null);
-        setAuthStatus(null);
-        loadFromLocalStorage();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    loadFromDB();
+  }, [authUser]);
 
 
-        useEffect(() => {
-    const syncMemos = () => {
-      if (authUser && authStatus === "approved") return;
-      const savedMemos = localStorage.getItem("personalMemos");
-      setMemos(savedMemos ? JSON.parse(savedMemos) : []);
-    };
 
-    window.addEventListener("memo-storage-updated", syncMemos);
-    window.addEventListener("storage", syncMemos);
-
-    return () => {
-      window.removeEventListener("memo-storage-updated", syncMemos);
-      window.removeEventListener("storage", syncMemos);
-    };
-  }, [authUser, authStatus]);
+    
 
 
     useEffect(() => {
@@ -559,11 +522,18 @@ const [memoEditDragInfo, setMemoEditDragInfo] = useState<null | {
     return () => {
       window.removeEventListener("click", handleClick);
     };
-  }, [settingOpen]);
+    }, [settingOpen]);
+
+  useEffect(() => {
+    const closeContextMenu = () => setContextMenu(null);
+    window.addEventListener("pointerdown", closeContextMenu);
+    return () => window.removeEventListener("pointerdown", closeContextMenu);
+  }, []);
 
   useEffect(() => {
   const handleMouseMove = (e: MouseEvent) => {
     if (!dragInfo) return;
+
 
     setPopupPosition({
       x: dragInfo.originX + e.clientX - dragInfo.startX,
@@ -802,15 +772,7 @@ useEffect(() => {
   });
 };
 
-    const saveMemos = (nextMemos: MemoItem[]) => {
-    setMemos(nextMemos);
-    if (authUser && authStatus === "approved") {
-      supabase.from("profiles").update({ insurance_memos: nextMemos }).eq("id", authUser.id).then();
-    } else {
-      localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
-    }
-    window.dispatchEvent(new Event("memo-storage-updated"));
-  };
+    
 
 
   const addMemo = () => {
@@ -1403,13 +1365,13 @@ const pagedMemos = filteredMemos.slice(
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
-          {filteredMemos.length === 0 ? (
-            <div className="col-span-full h-full flex items-center justify-center text-sm text-gray-400">
-              저장된 메모가 없습니다.
-            </div>
-          ) : (
+            <div className="flex-1 overflow-y-auto p-4">
+        {filteredMemos.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-sm text-gray-400 py-20">
+            저장된 메모가 없습니다.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -1429,6 +1391,12 @@ const pagedMemos = filteredMemos.slice(
                         setMemoEditDragInfo(null);
                         setSelectedMemo(memo);
                       }}
+                                            onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setContextMenu({ x: e.clientX, y: e.clientY, id: memo.id });
+                      }}
+
                       className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition cursor-default"
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -1499,9 +1467,10 @@ const pagedMemos = filteredMemos.slice(
                 ))}
               </SortableContext>
             </DndContext>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+
 
       <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
         <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
@@ -1903,6 +1872,40 @@ setSelectedMemo(null);
           </div>
         </div>
       )}
+
+            {contextMenu && (
+        <div
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          className="fixed z-[2000] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-32"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => {
+              const target = memos.find((m) => m.id === contextMenu.id);
+              if (target) {
+                setMemoEditPopupPosition({ x: 0, y: 0 });
+                setMemoEditDragInfo(null);
+                setSelectedMemo(target);
+              }
+              setContextMenu(null);
+            }}
+            className="w-full px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition cursor-default text-left"
+          >
+            수정
+          </button>
+          <button
+            onClick={() => {
+              deleteMemo(contextMenu.id);
+              setContextMenu(null);
+            }}
+            className="w-full px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 transition cursor-default text-left border-t border-gray-100"
+          >
+            삭제
+          </button>
+        </div>
+      )}
+
+
 
             {deleteMemoConfirmOpen && (
         <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">
