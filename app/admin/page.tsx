@@ -568,6 +568,7 @@ const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage
     return matchSearch && matchStatus;
   });
   const pagedProfiles = filteredProfiles.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PAGE_SIZE));
 
   const activeMonthly = monthlyData.filter(d => d.status === "active" && (d.subscribers.name.includes(subSearch) || d.subscribers.subscriber_id.includes(subSearch)));
   const canceledMonthly = monthlyData.filter(d => d.status === "canceled");
@@ -737,15 +738,95 @@ const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage
                     <p className="text-xs text-gray-400 mb-4">가입일: {formatDate(profile.created_at)}</p>
                     {profile.role !== "admin" && (
                       <div className="flex gap-2">
-                        <button onClick={(e) => { e.stopPropagation(); updateStatus(profile.id, "approved"); }} className="flex-1 h-9 rounded-xl text-xs font-bold bg-green-50 text-green-700 hover:bg-green-100">승인</button>
-                        <button onClick={(e) => { e.stopPropagation(); updateStatus(profile.id, "pending"); }} className="flex-1 h-9 rounded-xl text-xs font-bold bg-yellow-50 text-yellow-700 hover:bg-yellow-100">대기</button>
-                        <button onClick={(e) => { e.stopPropagation(); updateStatus(profile.id, "rejected"); }} className="flex-1 h-9 rounded-xl text-xs font-bold bg-red-50 text-red-500 hover:bg-red-100">거절</button>
+                       <button
+  onClick={(e) => {
+    e.stopPropagation();
+    updateStatus(profile.id, "approved");
+  }}
+  disabled={profile.status === "approved"}
+  className={`flex-1 h-9 rounded-xl text-xs font-bold transition ${
+    profile.status === "approved"
+      ? "bg-green-100 text-green-700 cursor-default"
+      : "bg-green-50 text-green-700 hover:bg-green-100 cursor-pointer"
+  }`}
+>
+  승인
+</button>
+
+<button
+  onClick={(e) => {
+    e.stopPropagation();
+    updateStatus(profile.id, "pending");
+  }}
+  disabled={profile.status === "pending"}
+  className={`flex-1 h-9 rounded-xl text-xs font-bold transition ${
+    profile.status === "pending"
+      ? "bg-yellow-100 text-yellow-700 cursor-default"
+      : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 cursor-pointer"
+  }`}
+>
+  대기
+</button>
+
+<button
+  onClick={(e) => {
+    e.stopPropagation();
+    updateStatus(profile.id, "rejected");
+  }}
+  disabled={profile.status === "rejected"}
+  className={`flex-1 h-9 rounded-xl text-xs font-bold transition ${
+    profile.status === "rejected"
+      ? "bg-red-100 text-red-500 cursor-default"
+      : "bg-red-50 text-red-500 hover:bg-red-100 cursor-pointer"
+  }`}
+>
+  거절
+</button>
                       </div>
                     )}
                   </div>
                 ))}
               </div>
             )}
+            {totalPages > 1 && (
+  <div className="sticky bottom-6 z-20 flex justify-center mt-6">
+    <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm bg-white">
+      <button
+        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+        disabled={currentPage === 1}
+        className="px-4 py-2 text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+      >
+        이전
+      </button>
+
+      {Array.from({ length: totalPages }).map((_, index) => {
+        const page = index + 1;
+
+        return (
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
+            className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
+              currentPage === page
+                ? "bg-slate-800 text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            {page}
+          </button>
+        );
+      })}
+
+      <button
+        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+        disabled={currentPage === totalPages}
+        className="px-4 py-2 border-l border-gray-200 text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+      >
+        다음
+      </button>
+    </div>
+  </div>
+)}
           </>
         )}
 
