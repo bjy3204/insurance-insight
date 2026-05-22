@@ -737,7 +737,7 @@ const handleFolderDownload = async (item: DisplayItem) => {
           </div>
           <div className="flex-1 flex justify-center px-4">
   <span className="text-red-500 font-semibold text-sm text-center">
-    ⭐ 구독자료는 무단배포, 공유, SNS게시 절대 불가능 합니다. 상담, 교육용으로 이용해 주세요 !
+    ⭐ 구독자료는 무단배포, 공유, SNS게시 절대 불가능 합니다. 상담, 교육용으로 이용해 주세요 ! 
   </span>
 </div>
 
