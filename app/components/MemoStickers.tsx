@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { X as XIcon } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+
 
 type MemoItem = {
   id: string;
@@ -18,6 +20,9 @@ type MemoItem = {
 
 export default function MemoStickers() {
   const [memos, setMemos] = useState<MemoItem[]>([]);
+  const [authUser, setAuthUser] = useState<any>(null);
+  const [authStatus, setAuthStatus] = useState<string | null>(null);
+
 
   const dragRef = useRef<{
     id: string;
@@ -28,33 +33,90 @@ export default function MemoStickers() {
     moved: boolean;
   } | null>(null);
 
-  useEffect(() => {
-    const loadMemos = () => {
-      const savedMemos = localStorage.getItem("personalMemos");
-
-      if (savedMemos) {
-        setMemos(JSON.parse(savedMemos));
+    useEffect(() => {
+    const loadMemos = async (userId?: string, status?: string) => {
+      if (userId && status === "approved") {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("insurance_memos")
+          .eq("id", userId)
+          .maybeSingle();
+        if (profile?.insurance_memos && Array.isArray(profile.insurance_memos)) {
+          setMemos(profile.insurance_memos as MemoItem[]);
+        } else {
+          setMemos([]);
+        }
       } else {
-        setMemos([]);
+        const savedMemos = localStorage.getItem("personalMemos");
+        setMemos(savedMemos ? JSON.parse(savedMemos) : []);
       }
     };
 
-    loadMemos();
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      const user = session?.user || null;
+      setAuthUser(user);
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("status")
+          .eq("id", user.id)
+          .maybeSingle();
+        const status = profile?.status || null;
+        setAuthStatus(status);
+        loadMemos(user.id, status);
+      } else {
+        loadMemos();
+      }
+    });
 
-    window.addEventListener("storage", loadMemos);
-    window.addEventListener("memo-storage-updated", loadMemos);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const user = session?.user || null;
+      setAuthUser(user);
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("status")
+          .eq("id", user.id)
+          .maybeSingle();
+        const status = profile?.status || null;
+        setAuthStatus(status);
+        loadMemos(user.id, status);
+      } else {
+        setAuthStatus(null);
+        loadMemos();
+      }
+    });
 
-    return () => {
-      window.removeEventListener("storage", loadMemos);
-      window.removeEventListener("memo-storage-updated", loadMemos);
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
-  const saveMemos = (nextMemos: MemoItem[]) => {
+  useEffect(() => {
+    const syncFromStorage = () => {
+      if (authUser && authStatus === "approved") return;
+      const savedMemos = localStorage.getItem("personalMemos");
+      setMemos(savedMemos ? JSON.parse(savedMemos) : []);
+    };
+
+    window.addEventListener("storage", syncFromStorage);
+    window.addEventListener("memo-storage-updated", syncFromStorage);
+
+    return () => {
+      window.removeEventListener("storage", syncFromStorage);
+      window.removeEventListener("memo-storage-updated", syncFromStorage);
+    };
+  }, [authUser, authStatus]);
+
+
+    const saveMemos = (nextMemos: MemoItem[]) => {
     setMemos(nextMemos);
-    localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
-    window.dispatchEvent(new Event("memo-storage-updated"));
+    if (authUser && authStatus === "approved") {
+      supabase.from("profiles").update({ insurance_memos: nextMemos }).eq("id", authUser.id).then();
+    } else {
+      localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
+      window.dispatchEvent(new Event("memo-storage-updated"));
+    }
   };
+
 
  const hideMemoSticker = (id: string) => {
   const nextMemos = memos.map((memo) =>

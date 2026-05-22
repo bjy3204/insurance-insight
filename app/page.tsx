@@ -960,31 +960,22 @@ console.log("날씨 데이터", data);
 
 const refreshMemos = async () => {
   if (!authUser || authStatus !== "approved") {
-    // 비승인 사용자: localStorage에서 불러옴
     const savedMemos = localStorage.getItem("personalMemos");
     setMemos(savedMemos ? JSON.parse(savedMemos) : []);
     return;
   }
-  // 승인회원: Supabase에서 불러옴
-  const { data } = await supabase
-    .from("user_memos")
-    .select("*")
-    .eq("user_id", authUser.id)
-    .order("pinned", { ascending: false })
-    .order("updated_at", { ascending: false });
-  setMemos(
-    (data || []).map((m) => ({
-      id: m.id,
-      title: m.title,
-      content: m.content,
-      pinned: m.pinned,
-      visible: m.visible,
-      color: m.color as MemoItem["color"],
-      createdAt: m.created_at,
-      updatedAt: m.updated_at,
-    }))
-  );
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("insurance_memos")
+    .eq("id", authUser.id)
+    .maybeSingle();
+  if (profile?.insurance_memos && Array.isArray(profile.insurance_memos)) {
+    setMemos(profile.insurance_memos as MemoItem[]);
+  } else {
+    setMemos([]);
+  }
 };
+
 
 useEffect(() => {
   refreshMemos();
@@ -1420,91 +1411,62 @@ const addPersonalMenu = () => {
 
 const saveMemos = (nextMemos: MemoItem[]) => {
   setMemos(nextMemos);
-  if (!authUser || authStatus !== "approved") {
+  if (authUser && authStatus === "approved") {
+    supabase.from("profiles").update({ insurance_memos: nextMemos }).eq("id", authUser.id).then();
+  } else {
     localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
     window.dispatchEvent(new Event("memo-storage-updated"));
   }
 };
 
+
 const addMemo = async () => {
-  if (authUser && authStatus === "approved") {
-    await supabase.from("user_memos").insert([{
-      user_id: authUser.id,
-      title: memoTitle.trim(),
-      content: memoContent.trim(),
-      pinned: false,
-      visible: false,
-      color: memoColor || "white",
-    }]);
-    await refreshMemos();
-  } else {
-    const now = new Date().toISOString();
-    const newMemo: MemoItem = {
-      id: crypto.randomUUID(),
-      title: memoTitle.trim() || "",
-      content: memoContent.trim(),
-      pinned: false,
-      visible: false,
-      color: memoColor,
-      createdAt: now,
-      updatedAt: now,
-    };
-    saveMemos([newMemo, ...memos]);
-  }
+  const now = new Date().toISOString();
+  const newMemo: MemoItem = {
+    id: crypto.randomUUID(),
+    title: memoTitle.trim() || "",
+    content: memoContent.trim(),
+    pinned: false,
+    visible: false,
+    color: memoColor,
+    createdAt: now,
+    updatedAt: now,
+  };
+  saveMemos([newMemo, ...memos]);
   setMemoTitle("");
   setMemoContent("");
   setMemoColor("white");
   setMemoPage(1);
 };
 
+
 const updateMemo = async (id: string, field: "title" | "content", value: string) => {
-  if (authUser && authStatus === "approved") {
-    await supabase.from("user_memos").update({
-      [field]: value,
-      updated_at: new Date().toISOString(),
-    }).eq("id", id).eq("user_id", authUser.id);
-    await refreshMemos();
-  } else {
-    const nextMemos = memos.map((memo) =>
-      memo.id === id ? { ...memo, [field]: value, updatedAt: new Date().toISOString() } : memo
-    );
-    saveMemos(nextMemos);
-  }
+  const nextMemos = memos.map((memo) =>
+    memo.id === id ? { ...memo, [field]: value, updatedAt: new Date().toISOString() } : memo
+  );
+  saveMemos(nextMemos);
 };
 
-const toggleMemoVisible = async (id: string) => {
-  if (authUser && authStatus === "approved") {
-    const memo = memos.find((m) => m.id === id);
-    if (!memo) return;
-    await supabase.from("user_memos").update({ visible: !memo.visible })
-      .eq("id", id).eq("user_id", authUser.id);
-    await refreshMemos();
-  } else {
-    const nextMemos = memos.map((memo) =>
-      memo.id === id ? { ...memo, visible: !memo.visible } : memo
-    );
-    saveMemos(nextMemos);
-  }
+
+const toggleMemoVisible = (id: string) => {
+  const nextMemos = memos.map((memo) =>
+    memo.id === id ? { ...memo, visible: !memo.visible } : memo
+  );
+  saveMemos(nextMemos);
 };
 
-const toggleMemoPinned = async (id: string) => {
-  if (authUser && authStatus === "approved") {
-    const memo = memos.find((m) => m.id === id);
-    if (!memo) return;
-    await supabase.from("user_memos").update({
-      pinned: !memo.pinned,
-      updated_at: new Date().toISOString(),
-    }).eq("id", id).eq("user_id", authUser.id);
-    await refreshMemos();
-  } else {
-    const nextMemos = memos.map((memo) =>
-      memo.id === id ? { ...memo, pinned: !memo.pinned, updatedAt: new Date().toISOString() } : memo
-    );
-    saveMemos(nextMemos);
-  }
+
+const toggleMemoPinned = (id: string) => {
+  const nextMemos = memos.map((memo) =>
+    memo.id === id
+      ? { ...memo, pinned: !memo.pinned, updatedAt: new Date().toISOString() }
+      : memo
+  );
+  saveMemos(nextMemos);
 };
 
-const handleMemoDragEnd = async (event: any) => {
+
+const handleMemoDragEnd = (event: any) => {
   const { active, over } = event;
   if (!over || active.id === over.id) return;
   const activeMemo = memos.find((memo) => memo.id === active.id);
@@ -1516,55 +1478,32 @@ const handleMemoDragEnd = async (event: any) => {
   const oldIndex = unpinnedMemos.findIndex((memo) => memo.id === active.id);
   const newIndex = unpinnedMemos.findIndex((memo) => memo.id === over.id);
   const reordered = arrayMove(unpinnedMemos, oldIndex, newIndex);
-
-  if (authUser && authStatus === "approved") {
-    const updates = reordered.map((memo, index) =>
-      supabase.from("user_memos").update({
-        updated_at: new Date(Date.now() - index).toISOString(),
-      }).eq("id", memo.id).eq("user_id", authUser.id)
-    );
-    await Promise.all(updates);
-    await refreshMemos();
-  } else {
-    const reorderedWithTime = reordered.map((memo, index) => ({
-      ...memo,
-      updatedAt: new Date(Date.now() - index).toISOString(),
-    }));
-    saveMemos([...pinnedMemos, ...reorderedWithTime]);
-  }
+  const reorderedWithTime = reordered.map((memo, index) => ({
+    ...memo,
+    updatedAt: new Date(Date.now() - index).toISOString(),
+  }));
+  saveMemos([...pinnedMemos, ...reorderedWithTime]);
 };
 
-const changeMemoColor = async (id: string, color: MemoItem["color"]) => {
-  if (authUser && authStatus === "approved") {
-    await supabase.from("user_memos").update({
-      color,
-      updated_at: new Date().toISOString(),
-    }).eq("id", id).eq("user_id", authUser.id);
-    await refreshMemos();
-  } else {
-    const nextMemos = memos.map((memo) =>
-      memo.id === id ? { ...memo, color, updatedAt: new Date().toISOString() } : memo
-    );
-    saveMemos(nextMemos);
-  }
+
+const changeMemoColor = (id: string, color: MemoItem["color"]) => {
+  const nextMemos = memos.map((memo) =>
+    memo.id === id ? { ...memo, color, updatedAt: new Date().toISOString() } : memo
+  );
+  saveMemos(nextMemos);
 };
+
 
 const deleteMemo = (id: string) => {
   setDeleteMemoId(id);
   setDeleteMemoConfirmOpen(true);
 };
 
-const confirmDeleteMemo = async () => {
+const confirmDeleteMemo = () => {
   if (!deleteMemoId) return;
 
-  if (authUser && authStatus === "approved") {
-    await supabase.from("user_memos").delete()
-      .eq("id", deleteMemoId).eq("user_id", authUser.id);
-    await refreshMemos();
-  } else {
-    const nextMemos = memos.filter((memo) => memo.id !== deleteMemoId);
-    saveMemos(nextMemos);
-  }
+  const nextMemos = memos.filter((memo) => memo.id !== deleteMemoId);
+  saveMemos(nextMemos);
 
   if (memoPage > 1 && pagedMemos.length === 1) {
     setMemoPage((p) => Math.max(1, p - 1));
@@ -1574,6 +1513,7 @@ const confirmDeleteMemo = async () => {
   setDeleteMemoId(null);
   setDeleteMemoConfirmOpen(false);
 };
+
 
 const openPcQuickMenu = () => {
   const wrap = pcQuickWrapRef.current;
