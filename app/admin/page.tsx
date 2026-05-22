@@ -144,6 +144,20 @@ export default function AdminPage() {
   const [missingData, setMissingData] = useState<Subscriber[]>([]);
   const [subSearch, setSubSearch] = useState("");
   
+const csvInputRef = useRef<HTMLInputElement>(null);
+const [csvUploading, setCsvUploading] = useState(false);
+const [csvMonth, setCsvMonth] = useState<string | null>(null);
+
+
+// 전체 구독자 팝업 필터/정렬
+const [allSubPayFilter, setAllSubPayFilter] = useState(false);
+const [allSubSort, setAllSubSort] = useState<"name" | "date">("date");
+
+// 월별 리스트 필터/정렬
+const [monthlyPayFilter, setMonthlyPayFilter] = useState(false);
+const [monthlySort, setMonthlySort] = useState<"name" | "date">("date");
+
+
   // 팝업 상태
   const [isSubPopupOpen, setIsSubPopupOpen] = useState(false);
   const [isAllSubPopupOpen, setIsAllSubPopupOpen] = useState(false);
@@ -385,6 +399,84 @@ useEffect(() => {
     fetchSubscribers();
   };
 
+const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file || !csvMonth) return;
+  setCsvUploading(true);
+
+  const text = await file.text();
+  const lines = text.split("\n").filter(l => l.trim());
+  // 헤더 행 건너뜀
+  const rows = lines.slice(1).map(line => {
+    const cols = line.split(",");
+    return {
+      instagram_id: (cols[1] || "").trim().replace(/^"|"$/g, ""),
+      name: (cols[2] || "").trim().replace(/^"|"$/g, ""),
+      data_room: (cols[3] || "").trim().replace(/^"|"$/g, ""),
+      video_room: (cols[4] || "").trim().replace(/^"|"$/g, ""),
+      pay_app_raw: (cols[5] || "").trim().replace(/^"|"$/g, ""),
+    };
+  }).filter(r => r.instagram_id && r.name);
+
+  let added = 0;
+  let skipped = 0;
+
+  for (const row of rows) {
+    // 마스터에 이미 있는지 확인
+    const { data: existing } = await supabase
+      .from("subscribers")
+      .select("id")
+      .eq("subscriber_id", row.instagram_id)
+      .maybeSingle();
+
+    let subId = existing?.id;
+
+    if (!subId) {
+      // 마스터에 없으면 새로 추가
+      const { data: inserted } = await supabase.from("subscribers").insert({
+        subscriber_id: row.instagram_id,
+        name: row.name,
+        data_room: row.data_room,
+        video_room: row.video_room,
+        pay_app: !!row.pay_app_raw,
+        pay_app_code: row.pay_app_raw || "",
+        status: "active",
+        memo: "",
+      }).select("id").single();
+      subId = inserted?.id;
+      added++;
+    } else {
+      skipped++;
+    }
+
+    if (subId) {
+      // 월별 리스트에 추가 (중복 방지)
+      const { data: monthExisting } = await supabase
+        .from("subscriber_monthly")
+        .select("id")
+        .eq("subscriber_id", subId)
+        .eq("month_key", csvMonth)
+        .maybeSingle();
+
+      if (!monthExisting) {
+        await supabase.from("subscriber_monthly").insert({
+          subscriber_id: subId,
+          month_key: csvMonth,
+          status: "active",
+        });
+      }
+    }
+  }
+
+  setCsvUploading(false);
+  setCsvMonth(null);
+  if (csvInputRef.current) csvInputRef.current.value = "";
+  await fetchAllSubscribers();
+  await fetchSubscribers();
+  alert(`완료! 신규 추가: ${added}명 / 기존 존재: ${skipped}명`);
+};
+
+
   const addToMonthly = async (subId: string) => {
     const { data: existing } = await supabase
       .from("subscriber_monthly")
@@ -570,14 +662,26 @@ const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage
   const pagedProfiles = filteredProfiles.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
   const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PAGE_SIZE));
 
-  const activeMonthly = monthlyData.filter(d => d.status === "active" && (d.subscribers.name.includes(subSearch) || d.subscribers.subscriber_id.includes(subSearch)));
+  const activeMonthly = monthlyData
+  .filter(d => d.status === "active" && (d.subscribers.name.includes(subSearch) || d.subscribers.subscriber_id.includes(subSearch)) && (!monthlyPayFilter || d.subscribers.pay_app))
+  .sort((a, b) => {
+    if (monthlySort === "name") return a.subscribers.name.localeCompare(b.subscribers.name, "ko", { numeric: true });
+    return new Date(b.subscribers.created_at).getTime() - new Date(a.subscribers.created_at).getTime();
+  });
   const canceledMonthly = monthlyData.filter(d => d.status === "canceled");
 
-  const filteredAllSubs = allSubscribers.filter(s => {
+  const filteredAllSubs = allSubscribers
+  .filter(s => {
     const matchTab = allSubTab === "all" || s.status === allSubTab;
     const matchSearch = s.name.includes(allSubSearch) || s.subscriber_id.includes(allSubSearch);
-    return matchTab && matchSearch;
+    const matchPay = !allSubPayFilter || s.pay_app;
+    return matchTab && matchSearch && matchPay;
+  })
+  .sort((a, b) => {
+    if (allSubSort === "name") return a.name.localeCompare(b.name, "ko", { numeric: true });
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
+
 
   // 선택 팝업용 필터링 (현재 달에 이미 등록된 사람은 제외, 해지자 제외)
   const currentMonthlySubIds = new Set(monthlyData.map(d => d.subscriber_id));
@@ -885,25 +989,40 @@ const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage
 
               {/* 한 줄 리스트 형식 (테이블 스타일) */}
               <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-                  <h3 className="font-bold text-gray-800">현재 구독자 ({activeMonthly.length}명)</h3>
-                </div>
+               <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between flex-wrap gap-2">
+  <h3 className="font-bold text-gray-800">현재 구독자 ({activeMonthly.length}명)</h3>
+  <div className="flex items-center gap-2">
+    <button
+      onClick={() => setMonthlyPayFilter(v => !v)}
+      className={`text-xs font-bold px-3 py-1.5 rounded-lg transition ${monthlyPayFilter ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+    >
+      P 페이앱만
+    </button>
+    <button
+      onClick={() => setMonthlySort(v => v === "name" ? "date" : "name")}
+      className="text-xs font-bold px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition"
+    >
+      {monthlySort === "name" ? "이름순" : "등록순"}
+    </button>
+  </div>
+</div>
+
                 
                {/* 리스트 헤더 */}
 <div className="hidden md:flex items-center py-3 px-5 border-b border-gray-200 bg-gray-50/80 text-xs font-bold text-gray-500">
-  <div style={{minWidth: "220px"}} className="flex items-center gap-1.5">
-  <span className="opacity-0 text-[10px] px-1.5 py-0.5 rounded font-bold">P</span>
-  <span className="opacity-0 text-[10px] px-1.5 py-0.5 rounded font-bold">N</span>
-  <span className="ml-6">
-  아이디
-</span> <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.subscriber_id).length}</span>
+ <div style={{minWidth: "180px", maxWidth: "180px"}} className="flex items-center gap-1.5">
+  <span className="opacity-0 text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">P</span>
+  <span className="opacity-0 text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">N</span>
+  <span>아이디</span>
+  <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.subscriber_id).length}</span>
 </div>
-<div style={{minWidth: "160px"}}>이름 <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.name).length}</span></div>
+
+<div style={{minWidth: "180px"}}>이름 <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.name).length}</span></div>
 
   <div style={{minWidth: "150px"}}>자료방 <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.data_room).length}</span></div>
-  <div style={{minWidth: "150px"}}>영상방 <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.video_room).length}</span></div>
+  <div style={{minWidth: "160px"}}>영상방 <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.video_room).length}</span></div>
   <div style={{minWidth: "110px"}}>등록날짜</div>
-  <div className="flex-1 text-right">관리</div>
+  <div className="flex-1 text-center">관리</div>
 </div>
 
 
@@ -917,16 +1036,17 @@ const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage
                      <div key={item.id} className="flex flex-col md:flex-row md:items-center py-3 px-5 hover:bg-blue-50/30 transition gap-2 md:gap-0">
                       <div
   style={{ minWidth: "180px", maxWidth: "180px" }}
-  className="text-sm text-gray-500 overflow-hidden flex items-center gap-1.5"
+  className="text-sm text-gray-500 flex items-center gap-1.5"
   title={item.subscribers.subscriber_id}
 >
-  {item.subscribers.pay_app && <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold shrink-0">P</span>}
-  {isNewThisMonth(item.subscribers.created_at) && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded font-bold shrink-0">N</span>}
-  <span className="truncate block max-w-[110px]">{item.subscribers.subscriber_id}</span>
+  <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 ${item.subscribers.pay_app ? "bg-blue-100 text-blue-600" : "opacity-0"}`}>P</span>
+  <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 ${isNewThisMonth(item.subscribers.created_at) ? "bg-red-500 text-white" : "opacity-0"}`}>N</span>
+  <span className="truncate">{item.subscribers.subscriber_id}</span>
 </div>
+
 <div
   style={{ minWidth: "190px", maxWidth: "190px" }}
-  className="font-bold text-gray-900 overflow-hidden"
+  className="font-medium text-gray-900 overflow-hidden"
 >
   <span className="truncate block max-w-[150px]" title={item.subscribers.name}>{item.subscribers.name}</span>
 </div>
@@ -978,7 +1098,7 @@ const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage
                 </div>
                 <p className="text-xs text-yellow-700 mb-4">저번 달에는 있었으나 이번 달에 아직 등록되지 않은 목록입니다.</p>
                 
-                <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                <div className="space-y-2 max-h-[1000px] overflow-y-auto pr-1">
                   {missingData.length === 0 ? (
                     <div className="text-center py-6 text-sm text-yellow-600/70">누락된 구독자가 없습니다.</div>
                   ) : (
@@ -1002,13 +1122,14 @@ const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage
       </section>
 
       {/* 구독자 전체 보기 플로팅 버튼 */}
-      {adminTab === "subscribers" && (
-        <button
-          onClick={() => { fetchAllSubscribers(); setIsAllSubPopupOpen(true); }}
-          className="fixed bottom-8 left-8 z-40 bg-slate-800 text-white px-5 py-3 rounded-full shadow-xl flex items-center gap-2 hover:bg-slate-700 transition hover:-translate-y-1"
-        >
-          <List className="w-5 h-5" />
-          <span className="font-bold text-sm">구독자 전체 보기</span>
+{(adminTab === "subscribers" || adminTab === "members") && (
+  <button
+    onClick={() => { fetchAllSubscribers(); setIsAllSubPopupOpen(true); }}
+    className="fixed bottom-8 left-8 z-40 bg-slate-800 text-white px-5 py-3 rounded-full shadow-xl flex items-center gap-2 hover:bg-slate-700 transition hover:-translate-y-1"
+  >
+    <List className="w-5 h-5" />
+    <span className="font-bold text-sm">구독자 전체 보기</span>
+
         </button>
       )}
 
@@ -1143,6 +1264,32 @@ const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage
                 <List className="w-5 h-5 text-gray-700" />
                 <h2 className="text-lg font-bold text-gray-900">구독자 전체 목록 (마스터)</h2>
               </div>
+             
+             {/* CSV 업로드 버튼 */}
+<div className="flex items-center gap-2">
+  <select
+    value={csvMonth || ""}
+    onChange={(e) => setCsvMonth(e.target.value)}
+    className="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none bg-white"
+  >
+    <option value="">월 선택</option>
+    {Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(new Date().getFullYear(), new Date().getMonth() - 6 + i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      return <option key={key} value={key}>{d.getFullYear()}년 {d.getMonth() + 1}월</option>;
+    })}
+  </select>
+  <button
+    onClick={() => { if (!csvMonth) { alert("먼저 월을 선택해주세요."); return; } csvInputRef.current?.click(); }}
+    disabled={csvUploading}
+    className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-green-700 transition disabled:opacity-50"
+  >
+    {csvUploading ? "업로드 중..." : "CSV 업로드"}
+  </button>
+  <input ref={csvInputRef} type="file" accept=".csv" className="hidden" onChange={handleCsvUpload} />
+</div>
+
+             
               <div className="flex items-center gap-3">
                 <button onClick={() => openSubPopup()} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 transition">
                   <UserPlus className="w-4 h-4" />
@@ -1173,19 +1320,35 @@ const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage
                 <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-2.5 flex items-center gap-2">
                   <Search className="w-4 h-4 text-gray-400" />
                   <input placeholder="이름 또는 아이디 검색" value={allSubSearch} onChange={(e) => setAllSubSearch(e.target.value)} className="w-full outline-none text-sm" />
+                                </div>
+                {/* 필터/정렬 버튼 */}
+                <div className="flex items-center gap-2 mt-2">
+                  <button
+                    onClick={() => setAllSubPayFilter(v => !v)}
+                    className={`text-xs font-bold px-3 py-1.5 rounded-lg transition ${allSubPayFilter ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                  >
+                    P 페이앱만
+                  </button>
+                  <button
+                    onClick={() => setAllSubSort(v => v === "name" ? "date" : "name")}
+                    className="text-xs font-bold px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition"
+                  >
+                    {allSubSort === "name" ? "이름순" : "등록순"}
+                  </button>
                 </div>
               </div>
 
               {/* 한 줄 리스트 형식 (테이블 스타일) */}
+
               <div className="flex-1 overflow-hidden flex flex-col border border-gray-200 rounded-2xl">
                 {/* 리스트 헤더 */}
                 <div className="hidden md:flex items-center py-3 px-5 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-500">
-                  <div className="w-36">아이디</div>
-                  <div className="w-36">이름</div>
+                  <div className="w-30">아이디</div>
+                  <div className="w-50">이름</div>
                   <div className="w-40">자료방</div>
                   <div className="w-40">영상방</div>
-                  <div className="w-32">등록날짜</div>
-                  <div className="flex-1 text-right">관리</div>
+                  <div className="w-30">등록날짜</div>
+                  <div className="flex-1 text-center">관리</div>
                 </div>
 
                 {/* 리스트 바디 */}
@@ -1195,14 +1358,14 @@ const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage
                   ) : (
                     filteredAllSubs.map((sub) => (
                       <div key={sub.id} className={`flex flex-col md:flex-row md:items-center py-3 px-5 hover:bg-gray-50 transition gap-2 md:gap-0 ${sub.status === "canceled" ? "opacity-60 bg-gray-50/50" : ""}`}>
-                        <div className="w-36 text-sm text-gray-500 truncate" title={sub.subscriber_id}>{sub.subscriber_id}</div>
-                        <div className="w-36 font-bold text-gray-900 flex items-center gap-1.5">
+                        <div className="w-30 text-sm text-gray-500 truncate" title={sub.subscriber_id}>{sub.subscriber_id}</div>
+                        <div className="w-50 font-medium text-gray-900 flex items-center gap-1.5">
                           <span className={`truncate ${sub.status === "canceled" ? "line-through" : ""}`} title={sub.name}>{sub.name}</span>
                           {sub.pay_app && <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold">P</span>}
                         </div>
                         <div className="w-40 text-sm text-gray-600 truncate" title={sub.data_room}>{sub.data_room || "-"}</div>
                         <div className="w-40 text-sm text-gray-600 truncate" title={sub.video_room}>{sub.video_room || "-"}</div>
-                        <div className="w-32 text-xs text-gray-400">{formatDate(sub.created_at)}</div>
+                        <div className="w-30 text-xs text-gray-400">{formatDate(sub.created_at)}</div>
                         
                         <div className="flex-1 flex items-center justify-end gap-1.5 mt-2 md:mt-0">
                           <button onClick={() => openSubPopup(sub)} className="text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">수정</button>
