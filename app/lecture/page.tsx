@@ -3,6 +3,8 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+
 
 import { lectureFormLinks } from "./formLinks";
 import {
@@ -95,8 +97,11 @@ function SortableMemoCard({
 
 function LecturePageContent() {
   const searchParams = useSearchParams();
+  const [authUser, setAuthUser] = useState<any>(null);
+  const [authStatus, setAuthStatus] = useState<string | null>(null);
 
   const [instructors, setInstructors] = useState<any[]>([]);
+
   const [lectures, setLectures] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [search, setSearch] = useState("");
@@ -177,12 +182,33 @@ const stopMemoPopupMove = () => {
 };
 
 useEffect(() => {
-  const syncMemos = () => {
+  const loadMemos = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+    if (user) {
+      setAuthUser(user);
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("status, insurance_memos")
+        .eq("id", user.id)
+        .maybeSingle();
+      setAuthStatus(profile?.status || null);
+      if (profile?.insurance_memos && Array.isArray(profile.insurance_memos)) {
+        setMemos(profile.insurance_memos as MemoItem[]);
+        return;
+      }
+    }
     const savedMemos = localStorage.getItem("personalMemos");
     setMemos(savedMemos ? JSON.parse(savedMemos) : []);
   };
 
-  syncMemos();
+  loadMemos();
+
+  const syncMemos = () => {
+    if (authUser && authStatus === "approved") return;
+    const savedMemos = localStorage.getItem("personalMemos");
+    setMemos(savedMemos ? JSON.parse(savedMemos) : []);
+  };
 
   window.addEventListener("memo-storage-updated", syncMemos);
   window.addEventListener("storage", syncMemos);
@@ -193,19 +219,12 @@ useEffect(() => {
   };
 }, []);
 
+
 useEffect(() => {
   const openMemoDetail = (event: any) => {
     const memoId = event.detail;
-
-    const savedMemos = localStorage.getItem("personalMemos");
-    if (!savedMemos) return;
-
-    const parsedMemos: MemoItem[] = JSON.parse(savedMemos);
-    const targetMemo = parsedMemos.find((memo) => memo.id === memoId);
-
+    const targetMemo = memos.find((memo) => memo.id === memoId);
     if (!targetMemo) return;
-
-    setMemos(parsedMemos);
     openMemoEdit(targetMemo);
   };
 
@@ -214,13 +233,19 @@ useEffect(() => {
   return () => {
     window.removeEventListener("open-memo-detail", openMemoDetail);
   };
-}, []);
+}, [memos]);
+
 
 const saveMemos = (nextMemos: MemoItem[]) => {
   setMemos(nextMemos);
-  localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
+  if (authUser && authStatus === "approved") {
+    supabase.from("profiles").update({ insurance_memos: nextMemos }).eq("id", authUser.id).then();
+  } else {
+    localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
+  }
   window.dispatchEvent(new Event("memo-storage-updated"));
 };
+
 
 const openMemoEdit = (memo: MemoItem) => {
   setSelectedMemo(null);
@@ -549,7 +574,7 @@ const calendarDays = [
   <a
     href="/lecture/schedule"
     className="
-  bg-white
+    bg-white
   rounded-3xl
   border
   border-gray-200
@@ -563,17 +588,20 @@ const calendarDays = [
   justify-center
   text-center
   hover:shadow-md
+  hover:-translate-y-1
   transition
+  cursor-default
 "
   >
     <CalendarDays className="w-8 h-8 text-blue-600 mx-auto mb-4" />
    <p className="text-base font-black text-gray-900">캘린더 보기</p>
+
   </a>
 
   <a
     href="/lecture/instructor"
     className="
-  bg-white
+    bg-white
   rounded-3xl
   border
   border-gray-200
@@ -587,17 +615,20 @@ const calendarDays = [
   justify-center
   text-center
   hover:shadow-md
+  hover:-translate-y-1
   transition
+  cursor-default
 "
   >
     <User className="w-8 h-8 text-blue-600 mx-auto mb-4" />
    <p className="text-base font-black text-gray-900">강사소개 보기</p>
+
   </a>
 
   <a
     href="/lecture/review"
     className="
-  bg-white
+    bg-white
   rounded-3xl
   border
   border-gray-200
@@ -611,17 +642,20 @@ const calendarDays = [
   justify-center
   text-center
   hover:shadow-md
+  hover:-translate-y-1
   transition
+  cursor-default
 "
   >
     <BadgeCheck className="w-8 h-8 text-blue-600 mx-auto mb-4" />
     <p className="text-base font-black text-gray-900">강의후기 보기</p>
+
   </a>
 
   <a
     href="/lecture/category"
     className="
-  bg-white
+    bg-white
   rounded-3xl
   border
   border-gray-200
@@ -635,11 +669,14 @@ const calendarDays = [
   justify-center
   text-center
   hover:shadow-md
+  hover:-translate-y-1
   transition
+  cursor-default
 "
   >
     <Search className="w-8 h-8 text-blue-600 mx-auto mb-4" />
     <p className="text-base font-black text-gray-900">분야별 강의</p>
+
   </a>
 </section>
 <p className="text-[13px] text-gray-400 mb-3 px-1 break-keep">

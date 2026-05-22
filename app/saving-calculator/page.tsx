@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+
 
 import {
   ArrowLeft,
@@ -93,7 +95,10 @@ function SortableMemoCard({
 }
 
 export default function SavingCalculatorPage() {
+  const [authUser, setAuthUser] = useState<any>(null);
+  const [authStatus, setAuthStatus] = useState<string | null>(null);
   const [type, setType] = useState<CalcType>("saving");
+
   const [interestType, setInterestType] = useState<InterestType>("simple");
   const [taxRate, setTaxRate] = useState(15.4);
   const [bankRateMonth, setBankRateMonth] =
@@ -203,12 +208,33 @@ const stopMemoPopupMove = () => {
 };
 
 useEffect(() => {
-  const syncMemos = () => {
+  const loadMemos = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+    if (user) {
+      setAuthUser(user);
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("status, insurance_memos")
+        .eq("id", user.id)
+        .maybeSingle();
+      setAuthStatus(profile?.status || null);
+      if (profile?.insurance_memos && Array.isArray(profile.insurance_memos)) {
+        setMemos(profile.insurance_memos as MemoItem[]);
+        return;
+      }
+    }
     const savedMemos = localStorage.getItem("personalMemos");
     setMemos(savedMemos ? JSON.parse(savedMemos) : []);
   };
 
-  syncMemos();
+  loadMemos();
+
+  const syncMemos = () => {
+    if (authUser && authStatus === "approved") return;
+    const savedMemos = localStorage.getItem("personalMemos");
+    setMemos(savedMemos ? JSON.parse(savedMemos) : []);
+  };
 
   window.addEventListener("memo-storage-updated", syncMemos);
   window.addEventListener("storage", syncMemos);
@@ -219,19 +245,12 @@ useEffect(() => {
   };
 }, []);
 
+
 useEffect(() => {
   const openMemoDetail = (event: any) => {
     const memoId = event.detail;
-
-    const savedMemos = localStorage.getItem("personalMemos");
-    if (!savedMemos) return;
-
-    const parsedMemos: MemoItem[] = JSON.parse(savedMemos);
-    const targetMemo = parsedMemos.find((memo) => memo.id === memoId);
-
+    const targetMemo = memos.find((memo) => memo.id === memoId);
     if (!targetMemo) return;
-
-    setMemos(parsedMemos);
     openMemoEdit(targetMemo);
   };
 
@@ -240,13 +259,19 @@ useEffect(() => {
   return () => {
     window.removeEventListener("open-memo-detail", openMemoDetail);
   };
-}, []);
+}, [memos]);
+
 
 const saveMemos = (nextMemos: MemoItem[]) => {
   setMemos(nextMemos);
-  localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
+  if (authUser && authStatus === "approved") {
+    supabase.from("profiles").update({ insurance_memos: nextMemos }).eq("id", authUser.id).then();
+  } else {
+    localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
+  }
   window.dispatchEvent(new Event("memo-storage-updated"));
 };
+
 
 const openMemoEdit = (memo: MemoItem) => {
   setSelectedMemo(null);
