@@ -422,7 +422,7 @@ const handleResetPassword = async () => {
     hover:shadow-md
   "
 >
-              {getGradeEmoji(createdAt ?? null)} {nickname || "회원"} 님❤️
+              {getGradeEmoji(createdAt ?? null)} {nickname || "회원"} 님
             </span>
 
             {renderStatusBadge()}

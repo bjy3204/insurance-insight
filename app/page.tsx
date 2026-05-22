@@ -3018,8 +3018,9 @@ hover:-translate-y-1
     >
       메모장
     </button>
+    
 
-    <button
+   <button
       onClick={(e) => {
         e.stopPropagation();
         window.location.href = "/calendar";
@@ -3028,6 +3029,18 @@ hover:-translate-y-1
       className="sm:hidden block w-full px-4 py-3 text-center text-sm font-bold text-gray-700 hover:bg-gray-50 border-t border-gray-100 cursor-default"
     >
       캘린더
+    </button>
+
+    <button
+            onClick={(e) => {
+        e.stopPropagation();
+        window.dispatchEvent(new CustomEvent("open-calculator"));
+        setUserMenuOpen(false);
+      }}
+
+      className="sm:hidden block w-full px-4 py-3 text-center text-sm font-bold text-gray-700 hover:bg-gray-50 border-t border-gray-100 cursor-default"
+    >
+      계산기
     </button>
 
   </>
@@ -3128,9 +3141,7 @@ hover:-translate-y-1
           bottom-[60px]
           w-full
           min-w-full
-          max-h-[420px]
-          overflow-y-auto
-          rounded-2xl
+                    rounded-2xl
           bg-white
           border
           border-gray-200
@@ -3138,6 +3149,7 @@ hover:-translate-y-1
         "
       >
             <div className="flex items-center border-t border-gray-100">
+
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -3153,7 +3165,7 @@ hover:-translate-y-1
     </div>
 
         
-                {authStatus === "approved" && (
+                       {authStatus === "approved" && (
           <button
             onClick={() => {
               window.location.href = "/calendar";
@@ -3165,8 +3177,22 @@ hover:-translate-y-1
           </button>
         )}
 
+        {authStatus === "approved" && (
+          <button
+                       onClick={() => {
+              window.dispatchEvent(new CustomEvent("open-calculator"));
+              setPcQuickOpen(false);
+            }}
+
+            className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
+          >
+            계산기
+          </button>
+        )}
+
 
        {Array.from({ length: 4 }).map((_, index) => {
+
   const selectedKey = quickMenuKeys[index];
 
   const selectedMenu = quickMenuOptions.find(
@@ -3304,9 +3330,7 @@ hover:-translate-y-1
           top-[60px]
           w-full
           min-w-full
-          max-h-[420px]
-          overflow-y-auto
-          rounded-2xl
+                   rounded-2xl
           bg-white
           border
           border-gray-200
@@ -3316,6 +3340,7 @@ hover:-translate-y-1
         <button
           onClick={() => {
             resetPopupPosition("memo");
+
             setMemoOpen(true);
             setPcQuickOpen(false);
           }}
@@ -3336,8 +3361,9 @@ hover:-translate-y-1
         >
           메모장
         </button>
+        
 
-        {authStatus === "approved" && (
+                {authStatus === "approved" && (
           <button
             onClick={() => {
               window.location.href = "/calendar";
@@ -3349,7 +3375,21 @@ hover:-translate-y-1
           </button>
         )}
 
+        {authStatus === "approved" && (
+          <button
+                       onClick={() => {
+              window.dispatchEvent(new CustomEvent("open-calculator"));
+              setPcQuickOpen(false);
+            }}
+
+            className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
+          >
+            계산기
+          </button>
+        )}
+
         {Array.from({ length: 4 }).map((_, index) => {
+
   const selectedKey = quickMenuKeys[index];
 
   const selectedMenu = quickMenuOptions.find(

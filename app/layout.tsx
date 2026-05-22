@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import MemoStickers from "./components/MemoStickers";
+import Calculator from "./components/Calculator";
 import AuthProvider from "./components/AuthProvider";
 
 
@@ -62,6 +63,7 @@ export default function RootLayout({
   <AuthProvider>
     {children}
     <MemoStickers />
+    <Calculator />
   </AuthProvider>
 </body>
 
