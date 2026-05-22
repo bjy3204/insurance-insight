@@ -449,27 +449,18 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
   };
 
   // 파일 Blob 다운로드 헬퍼 (새 탭 열림 방지)
-  const downloadBlob = async (signedUrl: string, fileName: string) => {
-    try {
-      const res = await fetch(signedUrl);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch {
-      // fetch 실패 시 fallback
-      const a = document.createElement("a");
-      a.href = signedUrl;
-      a.download = fileName;
-      a.target = "_blank";
-      a.click();
-    }
+ const downloadBlob = async (signedUrl: string, fileName: string) => {
+    const url = signedUrl.includes("?")
+      ? `${signedUrl}&download=${encodeURIComponent(fileName)}`
+      : `${signedUrl}?download=${encodeURIComponent(fileName)}`;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
+
 
   // 단일 다운로드
   const handleDownload = async (item: DisplayItem) => {
