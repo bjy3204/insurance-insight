@@ -346,11 +346,11 @@ const handleResetPassword = async () => {
         (1000 * 60 * 60 * 24)
     );
 
-    if (diffDays >= 365 * 3) return "🌳";
-    if (diffDays >= 365 * 2) return "🍒";
-    if (diffDays >= 365) return "🌾";
-    if (diffDays >= 180) return "🪴";
-    if (diffDays >= 90) return "🌱";
+    if (diffDays >= 365 * 2) return "🌳";
+    if (diffDays >= 365) return "🍒";
+    if (diffDays >= 180) return "🌾";
+    if (diffDays >= 90) return "🪴";
+    if (diffDays >= 30) return "🌱";
 
     return "🌰";
   };
