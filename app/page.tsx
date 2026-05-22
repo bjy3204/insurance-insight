@@ -47,6 +47,10 @@ import {
 } from "lucide-react";
 
 import AuthButton from "@/components/AuthButton";
+import ResourceExplorer from "./components/ResourceExplorer";
+
+
+
 import { useAuth } from "@/app/components/AuthProvider";
 import { FaInstagram } from "react-icons/fa";
 import emailjs from "@emailjs/browser";
@@ -338,7 +342,9 @@ const pcQuickDragRef = useRef<{
   moved: boolean;
 } | null>(null);
     const [settingOpen, setSettingOpen] = useState(false);
-  const [memoOpen, setMemoOpen] = useState(false);
+    const [memoOpen, setMemoOpen] = useState(false);
+  const [resourceOpen, setResourceOpen] = useState(false);
+
 const memoOpenRef = useRef(false);
 const [menuSortOpen, setMenuSortOpen] = useState(false);
 const [tempMenus, setTempMenus] = useState<MenuItem[]>(defaultMenus);
@@ -1624,6 +1630,7 @@ const saveProfileSettings = async () => {
 };
 
   return (
+    <>
     <main className="min-h-screen bg-gray-100">
       {/* 헤더 */}
       <header className="relative z-40 bg-white border-b shadow-sm">
@@ -1849,13 +1856,21 @@ const saveProfileSettings = async () => {
 {authLoading ? (
   <div className="h-4 w-20 rounded bg-gray-100 animate-pulse" />
 ) : (
- <AuthButton
-  variant="label"
-  user={authUser}
-  nickname={authNickname}
-  status={authStatus}
-  createdAt={authCreatedAt}
-/>
+  <div
+  onClick={() => {
+    if (authStatus === "approved") setResourceOpen(true);
+  }}
+  className={authStatus === "approved" ? "cursor-pointer hover:opacity-80 transition" : ""}
+>
+  <AuthButton
+    variant="label"
+    user={authUser}
+    nickname={authNickname}
+    status={authStatus}
+    createdAt={authCreatedAt}
+  />
+</div>
+
 )}
 </div>
 
@@ -3031,7 +3046,7 @@ hover:-translate-y-1
       캘린더
     </button>
 
-    <button
+        <button
             onClick={(e) => {
         e.stopPropagation();
         window.dispatchEvent(new CustomEvent("open-calculator"));
@@ -3042,6 +3057,18 @@ hover:-translate-y-1
     >
       계산기
     </button>
+
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setResourceOpen(true);
+        setUserMenuOpen(false);
+      }}
+      className="sm:hidden block w-full px-4 py-3 text-center text-sm font-bold text-gray-700 hover:bg-gray-50 border-t border-gray-100 cursor-default"
+    >
+      구독자료
+    </button>
+
     
         <button
       onClick={(e) => {
@@ -6709,9 +6736,19 @@ setMemoAddOpen(false);
   </div>
 )}
 
-       </main>
-  );
+                                        </main>
+
+          {resourceOpen && (
+        <ResourceExplorer onClose={() => setResourceOpen(false)} authStatus={authStatus} authRole={authRole} />
+      )}
+
+    </>
+    );
+
 }
+
+
+
 
 function ExchangeIndexBar() {
   const [exchange, setExchange] = useState<any>(null);

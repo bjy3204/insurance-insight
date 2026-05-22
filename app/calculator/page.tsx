@@ -2194,15 +2194,21 @@ const pagedMemos = filteredMemos.slice(
                       className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition cursor-default"
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
+                        <div className="min-w-0 flex-1 flex flex-col min-h-[130px]">
                           <h3 className="text-sm font-black text-gray-900 break-keep">
                             {memo.title || ""}
                           </h3>
 
-                          <p className="text-sm text-gray-600 mt-2 leading-relaxed whitespace-pre-line break-keep">
+                                                  <p className="text-sm text-gray-600 mt-2 leading-relaxed whitespace-pre-line break-keep">
                             {memo.content}
                           </p>
+
+                          <p className="text-[11px] text-gray-400 mt-auto pt-3">
+                            수정일{" "}
+                            {new Date(memo.updatedAt).toLocaleDateString("ko-KR")}
+                          </p>
                         </div>
+
 
                         <div className="flex flex-col gap-2">
                           <button

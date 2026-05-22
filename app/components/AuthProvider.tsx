@@ -74,12 +74,27 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     setAuthCreatedAt(profile?.created_at || null);
 
         if (profile?.status === "approved") {
-      const { data: dbMemos } = await supabase
+            const { data: dbMemos } = await supabase
         .from("user_memos")
         .select("*")
         .eq("user_id", userId)
-        .order("created_at", { ascending: true });
-      setMemos((dbMemos as MemoItem[]) || []);
+        .order("pinned", { ascending: false })
+        .order("updated_at", { ascending: false });
+      setMemos(
+        (dbMemos || []).map((m: any) => ({
+          id: m.id,
+          title: m.title || "",
+          content: m.content || "",
+          pinned: m.pinned || false,
+          visible: m.visible || false,
+          color: m.color as MemoItem["color"],
+          x: m.x,
+          y: m.y,
+          createdAt: m.created_at || new Date().toISOString(),
+          updatedAt: m.updated_at || m.created_at || new Date().toISOString(),
+        }))
+      );
+
     } else {
       const savedMemos = localStorage.getItem("personalMemos");
       setMemos(savedMemos ? JSON.parse(savedMemos) : []);
