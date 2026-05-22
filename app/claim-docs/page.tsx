@@ -955,57 +955,48 @@ right-0
             </DndContext>
           </div>
         )}
-      </div>
+            </div>
 
-
-
-      {totalMemoPages > 1 && (
-  <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
-    <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
-      <button
-        onClick={() => setMemoPage((p) => Math.max(1, p - 1))}
-        disabled={memoPage === 1}
-        className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-      >
-        이전
-      </button>
-
-      {Array.from({
-        length: Math.min(totalMemoPages, 10),
-      }).map((_, index) => {
-        const page = index + 1;
-
-        return (
+      <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
+        <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
           <button
-            key={page}
-            onClick={() => setMemoPage(page)}
-            className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
-              memoPage === page
-                ? "bg-slate-800 text-white"
-                : "bg-white text-gray-600 hover:bg-gray-100"
-            }`}
+            onClick={() => setMemoPage((p) => Math.max(1, p - 1))}
+            disabled={memoPage === 1}
+            className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
           >
-            {page}
+            이전
           </button>
-        );
-      })}
 
-      <button
-        onClick={() =>
-          setMemoPage((p) => Math.min(totalMemoPages, p + 1))
-        }
-        disabled={memoPage === totalMemoPages}
-        className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-      >
-        다음
-      </button>
+          {Array.from({ length: Math.min(totalMemoPages, 10) }).map((_, index) => {
+            const page = index + 1;
+            return (
+              <button
+                key={page}
+                onClick={() => setMemoPage(page)}
+                className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
+                  memoPage === page
+                    ? "bg-slate-800 text-white"
+                    : "bg-white text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                {page}
+              </button>
+            );
+          })}
+
+          <button
+            onClick={() => setMemoPage((p) => Math.min(totalMemoPages, p + 1))}
+            disabled={memoPage === totalMemoPages}
+            className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+          >
+            다음
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 )}
-             
-    </div>
-  </div>
-)}
+
 
 {memoAddOpen && (
   <div
