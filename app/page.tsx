@@ -161,7 +161,9 @@ const defaultMenus = [
     icon: Briefcase,
     link: "/job",
   },
+  
 ];
+
 
 
 const personalMenuIcons = {
@@ -199,7 +201,8 @@ type MenuItem = {
 
 
 export default function Home() {
-    const { authUser, authNickname, authInstagram, authStatus, authCreatedAt, authLoading, refreshAuth, memos, saveMemos } = useAuth();
+   const { authUser, authNickname, authInstagram, authStatus, authRole, authCreatedAt, authLoading, refreshAuth, memos, saveMemos } = useAuth();
+ 
 
 
   const [menus, setMenus] = useState<MenuItem[]>(defaultMenus);
@@ -2122,13 +2125,28 @@ setMenuSortOpen(true);
         <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
           {menu.desc}
         </p>
-      </a>
+            </a>
     );
   })}
 
 
 
+{mainMenuManageMode === "normal" && authRole === "admin" && (
+  <a
+    href="/admin"
+    className="bg-blue-600 p-7 sm:p-8 rounded-3xl shadow hover:shadow-xl hover:-translate-y-1 transition min-h-[190px] cursor-default"
+  >
+    <Settings className="w-10 h-10 mb-4 text-white" />
+    <h2 className="text-lg font-bold text-white">관리자 페이지</h2>
+    <p className="text-sm text-blue-100 mt-2 leading-relaxed break-keep">
+      회원 승인 및 관리
+    </p>
+  </a>
+)}
+
+
 {mainMenuManageMode === "edit" && (
+
   <>
     <div className="col-span-full">
       <div className="bg-white p-5 sm:p-6 rounded-3xl shadow border border-gray-200 cursor-default">

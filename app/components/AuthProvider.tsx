@@ -21,6 +21,7 @@ type AuthContextType = {
   authNickname: string | null;
   authInstagram: string | null;
   authStatus: string | null;
+  authRole: string | null;
   authCreatedAt: string | null;
   authLoading: boolean;
   refreshAuth: () => Promise<void>;
@@ -28,19 +29,18 @@ type AuthContextType = {
   saveMemos: (nextMemos: MemoItem[]) => void;
 };
 
-
 const AuthContext = createContext<AuthContextType>({
   authUser: null,
   authNickname: null,
   authInstagram: null,
   authStatus: null,
+  authRole: null,
   authCreatedAt: null,
   authLoading: true,
   refreshAuth: async () => {},
   memos: [],
   saveMemos: () => {},
 });
-
 
 export function useAuth() {
   return useContext(AuthContext);
@@ -51,21 +51,25 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const [authNickname, setAuthNickname] = useState<string | null>(null);
   const [authInstagram, setAuthInstagram] = useState<string | null>(null);
   const [authStatus, setAuthStatus] = useState<string | null>(null);
+  const [authRole, setAuthRole] = useState<string | null>(null);
   const [authCreatedAt, setAuthCreatedAt] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [memos, setMemos] = useState<MemoItem[]>([]);
 
-
-    const loadProfile = async (userId: string) => {
-    const { data: profile } = await supabase
+  const loadProfile = async (userId: string) => {
+       const { data: profile, error } = await supabase
       .from("profiles")
-      .select("nickname, instagram_id, status, created_at, insurance_memos")
+      .select("nickname, instagram_id, status, role, created_at, insurance_memos")
       .eq("id", userId)
       .maybeSingle();
+
+    console.log("loadProfile result:", profile, "error:", error);
+
 
     setAuthNickname(profile?.nickname || null);
     setAuthInstagram(profile?.instagram_id || null);
     setAuthStatus(profile?.status || null);
+    setAuthRole(profile?.role || null);
     setAuthCreatedAt(profile?.created_at || null);
 
     if (profile?.status === "approved") {
@@ -79,6 +83,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     }
   };
 
+
+  
   const saveMemos = (nextMemos: MemoItem[]) => {
     setMemos(nextMemos);
     if (authUser && authStatus === "approved") {
@@ -88,7 +94,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       window.dispatchEvent(new Event("memo-storage-updated"));
     }
   };
-
 
   const refreshAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -100,6 +105,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       setAuthNickname(null);
       setAuthInstagram(null);
       setAuthStatus(null);
+      setAuthRole(null);
       setAuthCreatedAt(null);
     }
   };
@@ -128,6 +134,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
           setAuthNickname(null);
           setAuthInstagram(null);
           setAuthStatus(null);
+          setAuthRole(null);
           setAuthCreatedAt(null);
         }
       }
@@ -137,7 +144,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ authUser, authNickname, authInstagram, authStatus, authCreatedAt, authLoading, refreshAuth, memos, saveMemos }}>
+    <AuthContext.Provider value={{ authUser, authNickname, authInstagram, authStatus, authRole, authCreatedAt, authLoading, refreshAuth, memos, saveMemos }}>
       {children}
     </AuthContext.Provider>
   );
