@@ -858,7 +858,7 @@ right-0
         </button>
       </div>
 
-                 <div className="flex-1 overflow-y-auto p-4">
+                      <div className="flex-1 overflow-y-auto p-4">
         {filteredMemos.length === 0 ? (
           <div className="h-full flex items-center justify-center text-sm text-gray-400 py-20">
             저장된 메모가 없습니다.
@@ -879,22 +879,17 @@ right-0
                 {pagedMemos.map((memo) => (
                   <SortableMemoCard key={memo.id} memo={memo}>
                     <div
-                      onDoubleClick={() => openMemoEdit(memo)}
+                      onDoubleClick={() => {
+                        setMemoEditPopupPos({ x: 0, y: 0 });
+                        stopMemoPopupMove();
+                        setSelectedMemo(memo);
+                      }}
                       onContextMenu={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         setContextMenu({ x: e.clientX, y: e.clientY, id: memo.id });
                       }}
-                      className={`
-                        rounded-2xl
-                        border
-                        p-4
-                        shadow-sm
-                        hover:shadow-md
-                        transition
-                        cursor-default
-                        ${getMemoColorClass(memo.color)}
-                      `}
+                      className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition cursor-default"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
@@ -913,14 +908,11 @@ right-0
                               e.stopPropagation();
                               toggleMemoVisible(memo.id);
                             }}
-                            className={`
-                              w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default
-                              ${
-                                memo.visible
-                                  ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700"
-                                  : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
-                              }
-                            `}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${
+                              memo.visible
+                                ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700"
+                                : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+                            }`}
                           >
                             {memo.visible ? (
                               <Eye className="w-4 h-4" />
@@ -934,14 +926,11 @@ right-0
                               e.stopPropagation();
                               toggleMemoPinned(memo.id);
                             }}
-                            className={`
-                              w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default
-                              ${
-                                memo.pinned
-                                  ? "bg-gray-800 border-gray-800 text-white hover:bg-gray-700 hover:border-gray-700"
-                                  : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
-                              }
-                            `}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${
+                              memo.pinned
+                                ? "bg-gray-800 border-gray-800 text-white hover:bg-gray-700 hover:border-gray-700"
+                                : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+                            }`}
                           >
                             <Pin className="w-4 h-4" />
                           </button>
@@ -949,7 +938,9 @@ right-0
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              openMemoEdit(memo);
+                              setMemoEditPopupPos({ x: 0, y: 0 });
+                              stopMemoPopupMove();
+                              setSelectedMemo(memo);
                             }}
                             className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 bg-white text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition cursor-default"
                           >
@@ -965,6 +956,7 @@ right-0
           </div>
         )}
       </div>
+
 
 
       {totalMemoPages > 1 && (

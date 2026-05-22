@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/app/components/AuthProvider";
+
 
 import {
   ArrowLeft,
@@ -103,8 +105,8 @@ function SortableMemoCard({
 }
 
 export default function PensionCalculatorPage() {
-  const [authUser, setAuthUser] = useState<any>(null);
-  const [authStatus, setAuthStatus] = useState<string | null>(null);
+  const { authUser, authStatus, memos, saveMemos } = useAuth();
+
   const [tab, setTab] = useState<TabType>("retire");
 
   const [npsTableOpen, setNpsTableOpen] = useState(false);
@@ -180,44 +182,9 @@ const sensors = useSensors(
 
 
 
-function SortableMemoCard({
-  memo,
-  children,
-}: {
-  memo: MemoItem;
-  children: React.ReactNode;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: memo.id,
-    disabled: memo.pinned,
-  });
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.55 : 1,
-      }}
-      {...attributes}
-      {...listeners}
-      className={memo.pinned ? "" : "touch-none"}
-    >
-      {children}
-    </div>
-  );
-}
 
 const [memoOpen, setMemoOpen] = useState(false);
-const [memos, setMemos] = useState<MemoItem[]>([]);
+
 const [memoSearch, setMemoSearch] = useState("");
 const [memoPage, setMemoPage] = useState(1);
 const [memoTitle, setMemoTitle] = useState("");
@@ -236,6 +203,7 @@ const [deleteMemoConfirmOpen, setDeleteMemoConfirmOpen] =
 const [deleteMemoId, setDeleteMemoId] =
   useState<string | null>(null);
 
+const [contextMenu, setContextMenu] = useState<{ x: number; y: number; id: string } | null>(null);
 
 
 const [memoAddPopupPos, setMemoAddPopupPos] = useState({
@@ -292,43 +260,7 @@ const stopMemoPopupMove = () => {
   memoEditDragRef.current.isDragging = false;
 };
 
-useEffect(() => {
-  const loadMemos = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const user = session?.user;
-    if (user) {
-      setAuthUser(user);
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("status, insurance_memos")
-        .eq("id", user.id)
-        .maybeSingle();
-      setAuthStatus(profile?.status || null);
-      if (profile?.insurance_memos && Array.isArray(profile.insurance_memos)) {
-        setMemos(profile.insurance_memos as MemoItem[]);
-        return;
-      }
-    }
-    const savedMemos = localStorage.getItem("personalMemos");
-    setMemos(savedMemos ? JSON.parse(savedMemos) : []);
-  };
 
-  loadMemos();
-
-  const syncMemos = () => {
-    if (authUser && authStatus === "approved") return;
-    const savedMemos = localStorage.getItem("personalMemos");
-    setMemos(savedMemos ? JSON.parse(savedMemos) : []);
-  };
-
-  window.addEventListener("memo-storage-updated", syncMemos);
-  window.addEventListener("storage", syncMemos);
-
-  return () => {
-    window.removeEventListener("memo-storage-updated", syncMemos);
-    window.removeEventListener("storage", syncMemos);
-  };
-}, []);
 
 
 useEffect(() => {
@@ -346,16 +278,12 @@ useEffect(() => {
   };
 }, [memos]);
 
+useEffect(() => {
+  const closeContextMenu = () => setContextMenu(null);
+  window.addEventListener("pointerdown", closeContextMenu);
+  return () => window.removeEventListener("pointerdown", closeContextMenu);
+}, []);
 
-const saveMemos = (nextMemos: MemoItem[]) => {
-  setMemos(nextMemos);
-  if (authUser && authStatus === "approved") {
-    supabase.from("profiles").update({ insurance_memos: nextMemos }).eq("id", authUser.id).then();
-  } else {
-    localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
-  }
-  window.dispatchEvent(new Event("memo-storage-updated"));
-};
 
 
 const openMemoEdit = (memo: MemoItem) => {
@@ -1774,13 +1702,13 @@ onChange={(e) =>
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
-          {filteredMemos.length === 0 ? (
-            <div className="col-span-full h-full flex items-center justify-center text-sm text-gray-400">
-              저장된 메모가 없습니다.
-            </div>
-          ) : (
+           <div className="flex-1 overflow-y-auto p-4">
+        {filteredMemos.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-sm text-gray-400 py-20">
+            저장된 메모가 없습니다.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -1796,72 +1724,33 @@ onChange={(e) =>
                   <SortableMemoCard key={memo.id} memo={memo}>
                     <div
                       onDoubleClick={() => openMemoEdit(memo)}
-                      className={`
-                        rounded-2xl
-                        border
-                        p-4
-                        shadow-sm
-                        hover:shadow-md
-                        transition
-                        cursor-default
-                        ${getMemoColorClass(memo.color)}
-                      `}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setContextMenu({ x: e.clientX, y: e.clientY, id: memo.id });
+                      }}
+                      className={`rounded-2xl border p-4 shadow-sm hover:shadow-md transition cursor-default ${getMemoColorClass(memo.color)}`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <h3 className="text-sm font-black text-gray-900 break-keep">
-  {memo.title || ""}
-</h3>
-
-<p className="text-sm text-gray-600 mt-2 leading-relaxed whitespace-pre-line break-keep">
-  {memo.content}
-</p>
+                          <h3 className="text-sm font-black text-gray-900 break-keep">{memo.title || ""}</h3>
+                          <p className="text-sm text-gray-600 mt-2 leading-relaxed whitespace-pre-line break-keep">{memo.content}</p>
                         </div>
-
                         <div className="flex flex-col gap-2">
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleMemoVisible(memo.id);
-                            }}
-                            className={`
-                              w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default
-                              ${
-                                memo.visible
-                                  ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700"
-                                  : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
-                              }
-                            `}
+                            onClick={(e) => { e.stopPropagation(); toggleMemoVisible(memo.id); }}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.visible ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}
                           >
-                            {memo.visible ? (
-                              <Eye className="w-4 h-4" />
-                            ) : (
-                              <EyeOff className="w-4 h-4" />
-                            )}
+                            {memo.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                           </button>
-
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleMemoPinned(memo.id);
-                            }}
-                            className={`
-                              w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default
-                              ${
-                                memo.pinned
-                                  ? "bg-gray-800 border-gray-800 text-white hover:bg-gray-700 hover:border-gray-700"
-                                  : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
-                              }
-                            `}
+                            onClick={(e) => { e.stopPropagation(); toggleMemoPinned(memo.id); }}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.pinned ? "bg-gray-800 border-gray-800 text-white hover:bg-gray-700 hover:border-gray-700" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}
                           >
                             <Pin className="w-4 h-4" />
                           </button>
-
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openMemoEdit(memo);
-                            }}
+                            onClick={(e) => { e.stopPropagation(); openMemoEdit(memo); }}
                             className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 bg-white text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition cursor-default"
                           >
                             <Pencil className="w-4 h-4" />
@@ -1873,9 +1762,10 @@ onChange={(e) =>
                 ))}
               </SortableContext>
             </DndContext>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+
 
       <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
         <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
@@ -2167,6 +2057,36 @@ onChange={(e) =>
     </div>
   </div>
 )}
+
+{contextMenu && (
+  <div
+    style={{ top: contextMenu.y, left: contextMenu.x }}
+    className="fixed z-[2000] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-32"
+    onPointerDown={(e) => e.stopPropagation()}
+  >
+    <button
+      onClick={() => {
+        const target = memos.find((m) => m.id === contextMenu.id);
+        if (target) openMemoEdit(target);
+        setContextMenu(null);
+      }}
+      className="w-full px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition cursor-default text-left"
+    >
+      수정
+    </button>
+    <button
+      onClick={() => {
+        deleteMemo(contextMenu.id);
+        setContextMenu(null);
+      }}
+      className="w-full px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 transition cursor-default text-left border-t border-gray-100"
+    >
+      삭제
+    </button>
+  </div>
+)}
+
+
 
 {deleteMemoConfirmOpen && (
   <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">

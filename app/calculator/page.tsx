@@ -2107,13 +2107,13 @@ const pagedMemos = filteredMemos.slice(
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
-          {filteredMemos.length === 0 ? (
-            <div className="col-span-full h-full flex items-center justify-center text-sm text-gray-400">
-              저장된 메모가 없습니다.
-            </div>
-          ) : (
+            <div className="flex-1 overflow-y-auto p-4">
+        {filteredMemos.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-sm text-gray-400 py-20">
+            저장된 메모가 없습니다.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -2132,6 +2132,11 @@ const pagedMemos = filteredMemos.slice(
                         setMemoEditPopupPos({ x: 0, y: 0 });
                         stopMemoPopupMove();
                         setSelectedMemo(memo);
+                      }}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setContextMenu({ x: e.clientX, y: e.clientY, id: memo.id });
                       }}
                       className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition cursor-default"
                     >
@@ -2197,9 +2202,10 @@ const pagedMemos = filteredMemos.slice(
                 ))}
               </SortableContext>
             </DndContext>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+
 
       <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
         <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
@@ -2487,6 +2493,40 @@ const pagedMemos = filteredMemos.slice(
     </div>
   </div>
 )}
+
+{contextMenu && (
+  <div
+    style={{ top: contextMenu.y, left: contextMenu.x }}
+    className="fixed z-[2000] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-32"
+    onPointerDown={(e) => e.stopPropagation()}
+  >
+    <button
+      onClick={() => {
+        const target = memos.find((m) => m.id === contextMenu.id);
+        if (target) {
+          setMemoEditPopupPos({ x: 0, y: 0 });
+          stopMemoPopupMove();
+          setSelectedMemo(target);
+        }
+        setContextMenu(null);
+      }}
+      className="w-full px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition cursor-default text-left"
+    >
+      수정
+    </button>
+    <button
+      onClick={() => {
+        deleteMemo(contextMenu.id);
+        setContextMenu(null);
+      }}
+      className="w-full px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 transition cursor-default text-left border-t border-gray-100"
+    >
+      삭제
+    </button>
+  </div>
+)}
+
+
 
 {deleteMemoConfirmOpen && (
   <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">
