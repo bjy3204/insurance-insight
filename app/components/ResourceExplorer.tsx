@@ -21,6 +21,8 @@ import {
   LayoutGrid,
   List,
   XCircle,
+  ArrowDownToLine,
+  ArrowUpDown,
 } from "lucide-react";
 
 interface DisplayItem {
@@ -55,6 +57,8 @@ interface ResourceExplorerProps {
 }
 
 type ViewMode = "grid" | "list";
+type SortKey = "name" | "size" | "type";
+type SortDir = "asc" | "desc";
 
 export default function ResourceExplorer({ onClose, authStatus, authRole }: ResourceExplorerProps) {
   const isAdmin = authRole === "admin";
@@ -83,8 +87,10 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
   const [searchResults, setSearchResults] = useState<DisplayItem[] | null>(null);
   const [searching, setSearching] = useState(false);
 
-  // 뷰 모드
+  // 뷰 모드 + 정렬
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   // 선택 / 미리보기 / 삭제
   const [selectedFile, setSelectedFile] = useState<DisplayItem | null>(null);
@@ -96,6 +102,8 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
   const [selectMode, setSelectMode] = useState(false);
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
   const [bulkDownloading, setBulkDownloading] = useState(false);
+  const [folderDownloading, setFolderDownloading] = useState<string | null>(null);
+  const [allDownloading, setAllDownloading] = useState(false);
 
   // 초기 위치 설정
   useEffect(() => {
@@ -154,6 +162,24 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
     return currentPath.map(p => p.path).join("/");
   }, [currentPath]);
 
+  // 정렬
+  const sortItems = useCallback((list: DisplayItem[]): DisplayItem[] => {
+    return [...list].sort((a, b) => {
+      if (a.isFolder && !b.isFolder) return -1;
+      if (!a.isFolder && b.isFolder) return 1;
+      let cmp = 0;
+      if (sortKey === "name") cmp = a.displayName.localeCompare(b.displayName, "ko", { numeric: true, sensitivity: "base" });
+      else if (sortKey === "size") cmp = (a.size || 0) - (b.size || 0);
+      else if (sortKey === "type") cmp = getFileType(a).localeCompare(getFileType(b), "ko");
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [sortKey, sortDir]);
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSortKey(key); setSortDir("asc"); }
+  };
+
   // DB 레코드 로드
   const loadRecords = useCallback(async () => {
     const [{ data: folders }, { data: files }] = await Promise.all([
@@ -210,7 +236,6 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
     setSearching(true);
     const q = query.trim().toLowerCase();
 
-    // 폴더 검색
     const matchedFolders: DisplayItem[] = folderRecords
       .filter(f => f.display_name.toLowerCase().includes(q))
       .map(f => ({
@@ -220,11 +245,9 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
         folderPath: f.parent_path || "홈",
       }));
 
-    // 파일 검색
     const matchedFiles: DisplayItem[] = fileRecords
       .filter(f => f.display_name.toLowerCase().includes(q))
       .map(f => {
-        // 파일이 속한 폴더의 한글 표시명 찾기
         const folderRecord = folderRecords.find(fr => fr.path === f.folder_path);
         const folderDisplayName = folderRecord ? folderRecord.display_name : (f.folder_path ? f.folder_path : "홈");
         return {
@@ -358,27 +381,94 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
     await loadRecords();
   };
 
-  // 다중 다운로드
+  // 다중 다운로드 (선택된 파일들)
   const handleBulkDownload = async () => {
     setBulkDownloading(true);
     const prefix = getCurrentStoragePrefix();
     const displayItems = searchResults || items;
     const toDownload = displayItems.filter(item => selectedItems.has(item.storageName) && !item.isFolder);
     for (const item of toDownload) {
-      // 검색 결과인 경우 fileRecords에서 실제 storage_path 찾기
       const fileRec = fileRecords.find(f => f.display_name === item.displayName && f.storage_path.endsWith(item.storageName));
       const filePath = fileRec ? fileRec.storage_path : prefix + item.storageName;
       const { data } = await supabase.storage.from("resources").createSignedUrl(filePath, 60);
       if (data?.signedUrl) {
-        const a = document.createElement("a");
-        a.href = data.signedUrl;
-        a.download = item.displayName;
-        a.target = "_blank";
-        a.click();
-        await new Promise(r => setTimeout(r, 300));
+        await downloadBlob(data.signedUrl, item.displayName);
+        await new Promise(r => setTimeout(r, 400));
       }
     }
     setBulkDownloading(false);
+  };
+
+  // 현재 폴더 전체 파일 다운로드 (리스트 헤더 버튼)
+  const handleAllDownload = async () => {
+    setAllDownloading(true);
+    const prefix = getCurrentStoragePrefix();
+    const parentPath = getCurrentParentPath();
+    // 현재 폴더의 파일만 (하위 폴더 제외)
+    const filesToDownload = fileRecords.filter(f => f.folder_path === parentPath);
+    if (filesToDownload.length === 0) {
+      alert("다운로드할 파일이 없습니다.");
+      setAllDownloading(false);
+      return;
+    }
+    for (const file of filesToDownload) {
+      const { data } = await supabase.storage.from("resources").createSignedUrl(file.storage_path, 60);
+      if (data?.signedUrl) {
+        await downloadBlob(data.signedUrl, file.display_name);
+        await new Promise(r => setTimeout(r, 400));
+      }
+    }
+    setAllDownloading(false);
+  };
+
+  // 폴더 전체 다운로드 (폴더 버튼)
+  const handleFolderDownload = async (item: DisplayItem) => {
+    const parentPath = getCurrentParentPath();
+    const fullPath = parentPath ? `${parentPath}/${item.storageName}` : item.storageName;
+    setFolderDownloading(item.storageName);
+
+    const allFiles = fileRecords.filter(f =>
+      f.folder_path === fullPath || f.folder_path.startsWith(fullPath + "/")
+    );
+
+    if (allFiles.length === 0) {
+      alert("폴더에 다운로드할 파일이 없습니다.");
+      setFolderDownloading(null);
+      return;
+    }
+
+    for (const file of allFiles) {
+      const { data } = await supabase.storage.from("resources").createSignedUrl(file.storage_path, 60);
+      if (data?.signedUrl) {
+        await downloadBlob(data.signedUrl, file.display_name);
+        await new Promise(r => setTimeout(r, 400));
+      }
+    }
+
+    setFolderDownloading(null);
+  };
+
+  // 파일 Blob 다운로드 헬퍼 (새 탭 열림 방지)
+  const downloadBlob = async (signedUrl: string, fileName: string) => {
+    try {
+      const res = await fetch(signedUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      // fetch 실패 시 fallback
+      const a = document.createElement("a");
+      a.href = signedUrl;
+      a.download = fileName;
+      a.target = "_blank";
+      a.click();
+    }
   };
 
   // 단일 다운로드
@@ -388,22 +478,16 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
     const filePath = fileRec ? fileRec.storage_path : prefix + item.storageName;
     const { data } = await supabase.storage.from("resources").createSignedUrl(filePath, 60);
     if (!data?.signedUrl) { alert("다운로드 링크 생성 실패"); return; }
-    const a = document.createElement("a");
-    a.href = data.signedUrl;
-    a.download = item.displayName;
-    a.target = "_blank";
-    a.click();
+    await downloadBlob(data.signedUrl, item.displayName);
   };
 
   // 미리보기 / 폴더 이동
   const handlePreview = async (item: DisplayItem) => {
     if (selectMode) { toggleSelect(item.storageName); return; }
     if (item.isFolder) {
-      // 검색 결과에서 폴더 클릭 시 해당 폴더로 이동
       if (searchResults) {
         const folderRec = folderRecords.find(f => f.display_name === item.displayName);
         if (folderRec) {
-          // 경로 재구성
           const pathParts = folderRec.path.split("/");
           const newPath: { path: string; displayName: string }[] = [];
           let accumulated = "";
@@ -465,13 +549,6 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
     return <File className={`${cls} text-gray-400`} />;
   };
 
-  const formatSize = (bytes?: number) => {
-    if (!bytes) return "-";
-    if (bytes < 1024) return bytes + "B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + "KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + "MB";
-  };
-
   const getFileType = (item: DisplayItem) => {
     const name = item.displayName.toLowerCase();
     const mime = item.mimetype || "";
@@ -485,10 +562,36 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
     return "파일";
   };
 
+  const formatSize = (bytes?: number) => {
+    if (!bytes) return "-";
+    if (bytes < 1024) return bytes + "B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + "KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + "MB";
+  };
+
+  const getFolderFileCount = (item: DisplayItem) => {
+    const parentPath = getCurrentParentPath();
+    const fullPath = parentPath ? `${parentPath}/${item.storageName}` : item.storageName;
+    return fileRecords.filter(f => f.folder_path === fullPath || f.folder_path.startsWith(fullPath + "/")).length;
+  };
+
   const rootFolders = folderRecords.filter(f => f.parent_path === "");
-  const displayItems = searchResults !== null ? searchResults : items;
+  const rawDisplayItems = searchResults !== null ? searchResults : items;
+  const displayItems = sortItems(rawDisplayItems);
   const selectedFileCount = displayItems.filter(i => selectedItems.has(i.storageName) && !i.isFolder).length;
   const selectedCount = selectedItems.size;
+  const currentFolderFileCount = fileRecords.filter(f => f.folder_path === getCurrentParentPath()).length;
+
+  const SortButton = ({ label, k }: { label: string; k: SortKey }) => (
+    <button
+      onClick={() => toggleSort(k)}
+      className={`flex items-center gap-0.5 text-xs font-semibold cursor-default hover:text-blue-600 transition ${sortKey === k ? "text-blue-600" : "text-gray-500"}`}
+    >
+      {label}
+      <ArrowUpDown className={`w-3 h-3 ${sortKey === k ? "text-blue-500" : "text-gray-300"}`} />
+      {sortKey === k && <span className="text-[10px]">{sortDir === "asc" ? "↑" : "↓"}</span>}
+    </button>
+  );
 
   if (authStatus !== "approved") return null;
 
@@ -564,7 +667,7 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
             <span className="text-xs text-gray-500">{selectedCount}개 선택됨</span>
             <div className="ml-auto flex items-center gap-2">
               {selectedFileCount > 0 && (
-                <button onClick={handleBulkDownload} disabled={bulkDownloading} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600 transition cursor-default disabled:opacity-50">
+                <button onClick={handleBulkDownload} disabled={bulkDownloading} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600 transition cursor-pointer disabled:opacity-50">
                   {bulkDownloading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
                   {selectedFileCount}개 다운로드
                 </button>
@@ -589,7 +692,6 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
 
         {/* ── 경로 표시 + 뷰 전환 ── */}
         <div className="flex items-center justify-between px-5 py-2 border-b border-gray-100 bg-gray-50 shrink-0 no-drag">
-          {/* 경로 */}
           <div className="flex items-center gap-1 text-sm overflow-x-auto">
             {searchResults !== null ? (
               <span className="text-gray-500 text-xs">
@@ -609,20 +711,11 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
               </>
             )}
           </div>
-          {/* 뷰 전환 버튼 */}
           <div className="flex items-center gap-1 ml-3 shrink-0">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-default ${viewMode === "grid" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-500"}`}
-              title="그리드 보기"
-            >
+            <button onClick={() => setViewMode("grid")} className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-default ${viewMode === "grid" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-500"}`} title="그리드 보기">
               <LayoutGrid className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-default ${viewMode === "list" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-500"}`}
-              title="리스트 보기"
-            >
+            <button onClick={() => setViewMode("list")} className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-default ${viewMode === "list" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-500"}`} title="리스트 보기">
               <List className="w-4 h-4" />
             </button>
           </div>
@@ -650,75 +743,115 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
             ) : displayItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-gray-400">
                 {searchResults !== null ? (
-                  <>
-                    <Search className="w-12 h-12 mb-2 opacity-40" />
-                    <p className="text-sm">검색 결과가 없습니다.</p>
-                  </>
+                  <><Search className="w-12 h-12 mb-2 opacity-40" /><p className="text-sm">검색 결과가 없습니다.</p></>
                 ) : (
-                  <>
-                    <FolderOpen className="w-12 h-12 mb-2 opacity-40" />
-                    <p className="text-sm">{isAdmin ? "파일을 업로드하거나 폴더를 만들어 보세요." : "아직 자료가 없습니다."}</p>
-                  </>
+                  <><FolderOpen className="w-12 h-12 mb-2 opacity-40" /><p className="text-sm">{isAdmin ? "파일을 업로드하거나 폴더를 만들어 보세요." : "아직 자료가 없습니다."}</p></>
                 )}
               </div>
             ) : viewMode === "grid" ? (
               /* ── 그리드 보기 ── */
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 p-4">
-                {displayItems.map((item) => {
-                  const isSelected = selectedItems.has(item.storageName);
-                  return (
-                    <div
-                      key={item.storageName}
-                      className={`relative group flex flex-col items-center gap-2 p-3 rounded-2xl border transition cursor-pointer select-none ${
-                        isSelected ? "border-blue-400 bg-blue-50 ring-2 ring-blue-300" : "border-gray-100 bg-white hover:bg-blue-50 hover:border-blue-200"
-                      }`}
-                      onClick={() => handlePreview(item)}
-                    >
-                      {(selectMode || isSelected) && (
-                        <div className={`absolute top-2 left-2 w-5 h-5 rounded-full border-2 flex items-center justify-center transition ${isSelected ? "bg-blue-500 border-blue-500" : "bg-white border-gray-300"}`}>
-                          {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+              <div className="p-4">
+                {/* 정렬 옵션 */}
+                <div className="flex items-center gap-3 mb-3 px-1">
+                  <span className="text-xs text-gray-400">정렬:</span>
+                  <SortButton label="이름" k="name" />
+                  <SortButton label="크기" k="size" />
+                  <SortButton label="종류" k="type" />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {displayItems.map((item) => {
+                    const isSelected = selectedItems.has(item.storageName);
+                    const isFolderDownloading = folderDownloading === item.storageName;
+                    return (
+                      <div
+                        key={item.storageName}
+                        className={`relative group flex flex-col items-center gap-2 p-3 rounded-2xl border transition cursor-default select-none ${
+                          isSelected ? "border-blue-400 bg-blue-50 ring-2 ring-blue-300" : "border-gray-100 bg-white hover:bg-blue-50 hover:border-blue-200"
+                        }`}
+                        onClick={() => handlePreview(item)}
+                      >
+                        {(selectMode || isSelected) && (
+                          <div className={`absolute top-2 left-2 w-5 h-5 rounded-full border-2 flex items-center justify-center transition ${isSelected ? "bg-blue-500 border-blue-500" : "bg-white border-gray-300"}`}>
+                            {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                          </div>
+                        )}
+                        <div className="w-14 h-14 flex items-center justify-center">
+                          {item.isFolder
+                            ? (isFolderDownloading ? <Loader2 className="w-12 h-12 text-blue-400 animate-spin" /> : <FolderOpen className="w-12 h-12 text-yellow-400" />)
+                            : getFileIcon(item, true)}
                         </div>
-                      )}
-                      <div className="w-14 h-14 flex items-center justify-center">
-                        {item.isFolder ? <FolderOpen className="w-12 h-12 text-yellow-400" /> : getFileIcon(item, true)}
+                        <span className="text-xs text-center text-gray-700 font-medium leading-tight line-clamp-2 w-full break-all">{item.displayName}</span>
+                        {!item.isFolder && item.size && <span className="text-[10px] text-gray-400">{formatSize(item.size)}</span>}
+                        {item.isFolder && <span className="text-[10px] text-gray-400">{getFolderFileCount(item)}개 파일</span>}
+                        {searchResults !== null && item.folderPath && (
+                          <span className="text-[10px] text-blue-400 truncate w-full text-center">{item.folderPath}</span>
+                        )}
+                        {/* 폴더 전체 다운로드 버튼 */}
+                        {item.isFolder && !selectMode && (
+                          <button onClick={(e) => { e.stopPropagation(); handleFolderDownload(item); }} disabled={isFolderDownloading} className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 items-center justify-center transition hidden group-hover:flex cursor-default disabled:opacity-50" title="폴더 전체 다운로드">
+                            <ArrowDownToLine className="w-3 h-3" />
+                          </button>
+                        )}
+                        {isAdmin && !selectMode && (
+                          <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(item); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 items-center justify-center transition hidden group-hover:flex cursor-default">
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
+                        {!item.isFolder && !selectMode && (
+                          <button onClick={(e) => { e.stopPropagation(); handleDownload(item); }} className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 items-center justify-center transition hidden group-hover:flex cursor-default">
+                            <Download className="w-3 h-3" />
+                          </button>
+                        )}
                       </div>
-                      <span className="text-xs text-center text-gray-700 font-medium leading-tight line-clamp-2 w-full break-all">{item.displayName}</span>
-                      {!item.isFolder && item.size && <span className="text-[10px] text-gray-400">{formatSize(item.size)}</span>}
-                      {/* 검색 결과에서 폴더 위치 표시 */}
-                      {searchResults !== null && item.folderPath && (
-                        <span className="text-[10px] text-blue-400 truncate w-full text-center">{item.folderPath}</span>
-                      )}
-                      {isAdmin && !selectMode && (
-                        <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(item); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 items-center justify-center transition hidden group-hover:flex cursor-default">
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      )}
-                      {!item.isFolder && !selectMode && (
-                        <button onClick={(e) => { e.stopPropagation(); handleDownload(item); }} className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 items-center justify-center transition hidden group-hover:flex cursor-default">
-                          <Download className="w-3 h-3" />
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             ) : (
               /* ── 리스트 보기 ── */
               <div className="bg-white">
                 {/* 헤더 행 */}
-                <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-3 px-4 py-2 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 select-none">
+                <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-3 px-4 py-2 bg-gray-50 border-b border-gray-100 select-none">
                   <span className="w-8"></span>
-                  <span className="pl-2">이름</span>
-                  <span className="w-20 text-right hidden sm:block">종류</span>
-                  <span className="w-20 text-right hidden sm:block">크기</span>
-                  <span className="w-16 text-right">작업</span>
+                  <div className="pl-2"><SortButton label="이름" k="name" /></div>
+                  <div className="w-20 text-right hidden sm:block"><SortButton label="종류" k="type" /></div>
+                  <div className="w-20 text-right hidden sm:block"><SortButton label="크기" k="size" /></div>
+                  {/* 작업 헤더: 전체 다운로드 + 선택 다운로드 버튼 */}
+                  <div className="w-auto flex items-center justify-end gap-1.5 no-drag">
+                    {/* 선택 다운로드 (선택 모드 + 파일 선택됐을 때) */}
+                    {selectMode && selectedFileCount > 0 && (
+                      <button
+                        onClick={handleBulkDownload}
+                        disabled={bulkDownloading}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600 transition cursor-pointer disabled:opacity-50"
+                        title="선택 파일 다운로드"
+                      >
+                        {bulkDownloading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+                        <span className="hidden sm:inline">{selectedFileCount}개</span>
+                      </button>
+                    )}
+                    {/* 전체 다운로드 */}
+                    {!selectMode && currentFolderFileCount > 0 && searchResults === null && (
+                      <button
+                        onClick={handleAllDownload}
+                        disabled={allDownloading}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs font-semibold transition cursor-pointer disabled:opacity-50"
+                        title="현재 폴더 전체 다운로드"
+                      >
+                        {allDownloading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ArrowDownToLine className="w-3 h-3" />}
+                        <span className="hidden sm:inline">전체</span>
+                      </button>
+                    )}
+                    <span className="text-xs font-semibold text-gray-500">작업</span>
+                  </div>
                 </div>
                 {displayItems.map((item, idx) => {
                   const isSelected = selectedItems.has(item.storageName);
+                  const isFolderDownloading = folderDownloading === item.storageName;
                   return (
                     <div
                       key={item.storageName}
-                      className={`grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-3 px-4 py-2.5 transition cursor-pointer select-none border-b border-gray-50 last:border-0 ${
+                      className={`grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-3 px-4 py-2.5 transition cursor-default select-none border-b border-gray-50 last:border-0 ${
                         isSelected ? "bg-blue-50" : idx % 2 === 0 ? "bg-white hover:bg-blue-50" : "bg-gray-50/50 hover:bg-blue-50"
                       }`}
                       onClick={() => handlePreview(item)}
@@ -730,12 +863,15 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
                             {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                           </div>
                         ) : (
-                          item.isFolder ? <Folder className="w-5 h-5 text-yellow-400" /> : getFileIcon(item)
+                          item.isFolder
+                            ? (isFolderDownloading ? <Loader2 className="w-5 h-5 text-blue-400 animate-spin" /> : <Folder className="w-5 h-5 text-yellow-400" />)
+                            : getFileIcon(item)
                         )}
                       </div>
                       {/* 파일명 */}
                       <div className="min-w-0 pl-2">
                         <span className="text-sm text-gray-700 font-medium truncate block">{item.displayName}</span>
+                        {item.isFolder && <span className="text-[11px] text-gray-400">{getFolderFileCount(item)}개 파일</span>}
                         {searchResults !== null && item.folderPath && (
                           <span className="text-[11px] text-blue-400">{item.folderPath}</span>
                         )}
@@ -743,11 +879,16 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
                       {/* 종류 */}
                       <span className="w-20 text-right text-xs text-gray-400 hidden sm:block">{getFileType(item)}</span>
                       {/* 크기 */}
-                      <span className="w-20 text-right text-xs text-gray-400 hidden sm:block">{item.isFolder ? "-" : formatSize(item.size)}</span>
+                      <span className="w-20 text-right text-xs text-gray-400 hidden sm:block">{item.isFolder ? `${getFolderFileCount(item)}개` : formatSize(item.size)}</span>
                       {/* 작업 버튼 */}
-                      <div className="w-16 flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                      <div className="w-auto flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                        {item.isFolder && (
+                          <button onClick={() => handleFolderDownload(item)} disabled={isFolderDownloading} className="w-6 h-6 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 flex items-center justify-center transition cursor-default disabled:opacity-50" title="폴더 전체 다운로드">
+                            {isFolderDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ArrowDownToLine className="w-3.5 h-3.5" />}
+                          </button>
+                        )}
                         {!item.isFolder && (
-                          <button onClick={() => handleDownload(item)} className="w-6 h-6 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 flex items-center justify-center transition cursor-default" title="다운로드">
+                          <button onClick={() => handleDownload(item)} className="w-6 h-6 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 flex items-center justify-center transition cursor-pointer" title="다운로드">
                             <Download className="w-3.5 h-3.5" />
                           </button>
                         )}
@@ -791,10 +932,10 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
             <div className="flex-1 overflow-auto flex items-center justify-center px-0 py-7 bg-gray-50">
               {(selectedFile.mimetype?.startsWith("image/") || /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(selectedFile.displayName)) ? (
                 <img
-  src={previewUrl}
-  alt={selectedFile.displayName}
-  className="max-w-[90%] max-h-[80vh] rounded-2xl shadow object-contain"
-/>
+                  src={previewUrl}
+                  alt={selectedFile.displayName}
+                  className="max-w-[90%] max-h-[80vh] rounded-2xl shadow object-contain"
+                />
               ) : (
                 <iframe src={previewUrl} className="w-full h-[70vh] rounded-2xl border-0" title={selectedFile.displayName} />
               )}
