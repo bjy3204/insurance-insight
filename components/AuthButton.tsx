@@ -420,6 +420,7 @@ const handleResetPassword = async () => {
     transition
     hover:-translate-y-[1px]
     hover:shadow-md
+    cursor-default
   "
 >
               {getGradeEmoji(createdAt ?? null)} {nickname || "회원"} 님
