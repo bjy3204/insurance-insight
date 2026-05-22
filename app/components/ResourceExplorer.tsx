@@ -735,17 +735,20 @@ const handleFolderDownload = async (item: DisplayItem) => {
               </>
             )}
           </div>
-          <div className="flex items-center gap-2 ml-3 shrink-0">
-             <span className="text-red-500 font-semibold text-sm mr-8">
+          <div className="flex-1 flex justify-center px-4">
+  <span className="text-red-500 font-semibold text-sm text-center">
     ⭐ 구독자료는 무단배포, 공유, SNS게시 절대 불가능 합니다. 상담, 교육용으로 이용해 주세요 !
   </span>
-            <button onClick={() => setViewMode("grid")} className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-default ${viewMode === "grid" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-500"}`} title="그리드 보기">
-              <LayoutGrid className="w-4 h-4" />
-            </button>
-            <button onClick={() => setViewMode("list")} className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-default ${viewMode === "list" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-500"}`} title="리스트 보기">
-              <List className="w-4 h-4" />
-            </button>
-          </div>
+</div>
+
+<div className="flex items-center gap-2 shrink-0">
+  <button onClick={() => setViewMode("grid")} className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-default ${viewMode === "grid" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-500"}`} title="그리드 보기">
+    <LayoutGrid className="w-4 h-4" />
+  </button>
+  <button onClick={() => setViewMode("list")} className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-default ${viewMode === "list" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-500"}`} title="리스트 보기">
+    <List className="w-4 h-4" />
+  </button>
+</div>
         </div>
 
         {/* ── 본문 ── */}
