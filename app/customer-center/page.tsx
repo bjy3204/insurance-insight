@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/app/components/AuthProvider";
 
 import {
   DndContext,
@@ -567,8 +568,8 @@ function SortableMemoCard({
 }
 
 export default function CustomerCenterPage() {
-  const [authUser, setAuthUser] = useState<any>(null);
-  const [authStatus, setAuthStatus] = useState<string | null>(null);
+  const { authUser, authStatus, memos, saveMemos } = useAuth();
+
   const [search, setSearch] = useState("");
 const [tab, setTab] = useState("nonlife");
 const [selectedCompany, setSelectedCompany] = useState<any>(null);
@@ -584,7 +585,7 @@ const sensors = useSensors(
 );
 
 const [memoOpen, setMemoOpen] = useState(false);
-const [memos, setMemos] = useState<MemoItem[]>([]);
+
 const [memoSearch, setMemoSearch] = useState("");
 const [memoPage, setMemoPage] = useState(1);
 const [memoTitle, setMemoTitle] = useState("");
@@ -595,6 +596,8 @@ const [memoAddOpen, setMemoAddOpen] = useState(false);
 const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
 const [deleteMemoConfirmOpen, setDeleteMemoConfirmOpen] = useState(false);
 const [deleteMemoId, setDeleteMemoId] = useState<string | null>(null);
+const [contextMenu, setContextMenu] = useState<{ x: number; y: number; id: string } | null>(null);
+
 
 
   const [claimPopupPos, setClaimPopupPos] = useState({ x: 0, y: 0 });
@@ -683,42 +686,7 @@ const filteredCompanies =
       )
     : currentCompanies;
 
-useEffect(() => {
-  const loadMemos = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      setAuthUser(session.user);
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("status, insurance_memos")
-        .eq("id", session.user.id)
-        .maybeSingle();
-      setAuthStatus(profile?.status || null);
-      if (profile?.insurance_memos && Array.isArray(profile.insurance_memos)) {
-        setMemos(profile.insurance_memos as MemoItem[]);
-      }
-    } else {
-      const savedMemos = localStorage.getItem("personalMemos");
-      setMemos(savedMemos ? JSON.parse(savedMemos) : []);
-    }
-  };
 
-  loadMemos();
-
-  const syncMemos = () => {
-    if (authUser) return;
-    const savedMemos = localStorage.getItem("personalMemos");
-    setMemos(savedMemos ? JSON.parse(savedMemos) : []);
-  };
-
-  window.addEventListener("memo-storage-updated", syncMemos);
-  window.addEventListener("storage", syncMemos);
-
-  return () => {
-    window.removeEventListener("memo-storage-updated", syncMemos);
-    window.removeEventListener("storage", syncMemos);
-  };
-}, []);
 
 
 useEffect(() => {
@@ -736,16 +704,12 @@ useEffect(() => {
   };
 }, [memos]);
 
+useEffect(() => {
+  const closeContextMenu = () => setContextMenu(null);
+  window.addEventListener("pointerdown", closeContextMenu);
+  return () => window.removeEventListener("pointerdown", closeContextMenu);
+}, []);
 
-const saveMemos = (nextMemos: MemoItem[]) => {
-  setMemos(nextMemos);
-  if (authUser && authStatus === "approved") {
-    supabase.from("profiles").update({ insurance_memos: nextMemos }).eq("id", authUser.id).then();
-  } else {
-    localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
-  }
-  window.dispatchEvent(new Event("memo-storage-updated"));
-};
 
 
 const addMemo = () => {
@@ -1246,13 +1210,13 @@ const pagedMemos = filteredMemos.slice(
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
-          {filteredMemos.length === 0 ? (
-            <div className="col-span-full h-full flex items-center justify-center text-sm text-gray-400">
-              저장된 메모가 없습니다.
-            </div>
-          ) : (
+              <div className="flex-1 overflow-y-auto p-4">
+        {filteredMemos.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-sm text-gray-400 py-20">
+            저장된 메모가 없습니다.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -1266,11 +1230,16 @@ const pagedMemos = filteredMemos.slice(
               >
                 {pagedMemos.map((memo) => (
                   <SortableMemoCard key={memo.id} memo={memo}>
-                    <div
+                   <div
                       onDoubleClick={() => {
                         setMemoEditPopupPos({ x: 0, y: 0 });
                         stopPopupMove();
                         setSelectedMemo(memo);
+                      }}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setContextMenu({ x: e.clientX, y: e.clientY, id: memo.id });
                       }}
                       className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition cursor-default"
                     >
@@ -1342,9 +1311,10 @@ const pagedMemos = filteredMemos.slice(
                 ))}
               </SortableContext>
             </DndContext>
-          )}
+          </div>
+        )}
         </div>
-      </div>
+
 
       <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
         <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
@@ -1765,6 +1735,40 @@ stopPopupMove();
     </div>
   </div>
 )}
+
+{contextMenu && (
+  <div
+    style={{ top: contextMenu.y, left: contextMenu.x }}
+    className="fixed z-[2000] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-32"
+    onPointerDown={(e) => e.stopPropagation()}
+  >
+    <button
+      onClick={() => {
+        const target = memos.find((m) => m.id === contextMenu.id);
+        if (target) {
+          setMemoEditPopupPos({ x: 0, y: 0 });
+          stopPopupMove();
+          setSelectedMemo(target);
+        }
+        setContextMenu(null);
+      }}
+      className="w-full px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition cursor-default text-left"
+    >
+      수정
+    </button>
+    <button
+      onClick={() => {
+        deleteMemo(contextMenu.id);
+        setContextMenu(null);
+      }}
+      className="w-full px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 transition cursor-default text-left border-t border-gray-100"
+    >
+      삭제
+    </button>
+  </div>
+)}
+
+
 
 {deleteMemoConfirmOpen && (
   <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">
