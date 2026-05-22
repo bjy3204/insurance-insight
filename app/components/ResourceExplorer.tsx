@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import JSZip from "jszip";
+
 import {
   X,
   FolderOpen,
@@ -399,54 +401,84 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
     setBulkDownloading(false);
   };
 
-  // 현재 폴더 전체 파일 다운로드 (리스트 헤더 버튼)
-  const handleAllDownload = async () => {
-    setAllDownloading(true);
-    const prefix = getCurrentStoragePrefix();
-    const parentPath = getCurrentParentPath();
-    // 현재 폴더의 파일만 (하위 폴더 제외)
-    const filesToDownload = fileRecords.filter(f => f.folder_path === parentPath);
-    if (filesToDownload.length === 0) {
-      alert("다운로드할 파일이 없습니다.");
-      setAllDownloading(false);
-      return;
-    }
-    for (const file of filesToDownload) {
-      const { data } = await supabase.storage.from("resources").createSignedUrl(file.storage_path, 60);
-      if (data?.signedUrl) {
-        await downloadBlob(data.signedUrl, file.display_name);
-        await new Promise(r => setTimeout(r, 400));
-      }
-    }
+  // 현재 폴더 전체 파일 다운로드 → ZIP
+const handleAllDownload = async () => {
+  setAllDownloading(true);
+  const parentPath = getCurrentParentPath();
+  const filesToDownload = fileRecords.filter(f => f.folder_path === parentPath);
+
+  if (filesToDownload.length === 0) {
+    alert("다운로드할 파일이 없습니다.");
     setAllDownloading(false);
-  };
+    return;
+  }
 
-  // 폴더 전체 다운로드 (폴더 버튼)
-  const handleFolderDownload = async (item: DisplayItem) => {
-    const parentPath = getCurrentParentPath();
-    const fullPath = parentPath ? `${parentPath}/${item.storageName}` : item.storageName;
-    setFolderDownloading(item.storageName);
+  const zip = new JSZip();
 
-    const allFiles = fileRecords.filter(f =>
-      f.folder_path === fullPath || f.folder_path.startsWith(fullPath + "/")
-    );
-
-    if (allFiles.length === 0) {
-      alert("폴더에 다운로드할 파일이 없습니다.");
-      setFolderDownloading(null);
-      return;
+  for (const file of filesToDownload) {
+    const { data } = await supabase.storage.from("resources").createSignedUrl(file.storage_path, 60);
+    if (data?.signedUrl) {
+      const res = await fetch(data.signedUrl);
+      const blob = await res.blob();
+      zip.file(file.display_name, blob);
     }
+  }
 
-    for (const file of allFiles) {
-      const { data } = await supabase.storage.from("resources").createSignedUrl(file.storage_path, 60);
-      if (data?.signedUrl) {
-        await downloadBlob(data.signedUrl, file.display_name);
-        await new Promise(r => setTimeout(r, 400));
-      }
-    }
+  const folderName = currentPath.length > 0 ? currentPath[currentPath.length - 1].displayName : "자료실";
+  const zipBlob = await zip.generateAsync({ type: "blob" });
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${folderName}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 
+  setAllDownloading(false);
+};
+
+
+  // 폴더 전체 다운로드 → ZIP으로 묶어서 다운로드
+const handleFolderDownload = async (item: DisplayItem) => {
+  const parentPath = getCurrentParentPath();
+  const fullPath = parentPath ? `${parentPath}/${item.storageName}` : item.storageName;
+  setFolderDownloading(item.storageName);
+
+  const allFiles = fileRecords.filter(f =>
+    f.folder_path === fullPath || f.folder_path.startsWith(fullPath + "/")
+  );
+
+  if (allFiles.length === 0) {
+    alert("폴더에 다운로드할 파일이 없습니다.");
     setFolderDownloading(null);
-  };
+    return;
+  }
+
+  const zip = new JSZip();
+
+  for (const file of allFiles) {
+    const { data } = await supabase.storage.from("resources").createSignedUrl(file.storage_path, 60);
+    if (data?.signedUrl) {
+      const res = await fetch(data.signedUrl);
+      const blob = await res.blob();
+      zip.file(file.display_name, blob);
+    }
+  }
+
+  const zipBlob = await zip.generateAsync({ type: "blob" });
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${item.displayName}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+  setFolderDownloading(null);
+};
+
 
   // 파일 Blob 다운로드 헬퍼 (새 탭 열림 방지)
  const downloadBlob = async (signedUrl: string, fileName: string) => {
