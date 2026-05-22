@@ -234,13 +234,12 @@ const handleLogin = async () => {
     return;
   }
 
-  setAuthOpen(false);
+    setAuthOpen(false);
   setEmail("");
   setPassword("");
   onMenuClose?.();
-
-  await onAuthChange?.();
 };
+
  
 
 const handleResetPassword = async () => {
@@ -327,15 +326,14 @@ const handleResetPassword = async () => {
     return;
   }
 
-  setAuthOpen(false);
+    setAuthOpen(false);
   setEmail("");
   setPassword("");
   setSignupNickname("");
   setSignupInstagram("");
   onMenuClose?.();
-
-  await onAuthChange?.();
 };
+
 
   const getGradeEmoji = (date: string | null) => {
     if (!date) return "🫘";

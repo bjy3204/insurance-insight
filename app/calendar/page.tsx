@@ -103,10 +103,9 @@ export default function CalendarPage() {
 
   // 인증 확인
   useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user || null;
       setAuthUser(user);
 
       if (user) {
@@ -114,11 +113,14 @@ export default function CalendarPage() {
           .from("profiles")
           .select("status")
           .eq("id", user.id)
-          .single();
+          .maybeSingle();
 
         setAuthStatus(profile?.status || "pending");
+      } else {
+        setAuthStatus("none");
       }
     };
+
 
     checkAuth();
   }, []);
@@ -459,9 +461,18 @@ export default function CalendarPage() {
     )
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-  if (!authStatus || authStatus !== "approved") {
+    if (authStatus === null) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (authStatus !== "approved") {
     return null;
   }
+
 
   return (
     <main className="min-h-screen bg-gray-100 pb-24">

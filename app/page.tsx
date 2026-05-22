@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 
 import AuthButton from "@/components/AuthButton";
+import { useAuth } from "@/app/components/AuthProvider";
 import { FaInstagram } from "react-icons/fa";
 import emailjs from "@emailjs/browser";
 import { notices, noticeVersion } from "./notice/notices";
@@ -198,29 +199,21 @@ type MenuItem = {
 
 
 export default function Home() {
-  const [authUser, setAuthUser] = useState<any>(null);
-  const [authNickname, setAuthNickname] = useState<string | null>(null);
-  const [authInstagram, setAuthInstagram] = useState<string | null>(null);
-  const [authStatus, setAuthStatus] = useState<string | null>(null);
-  const [authCreatedAt, setAuthCreatedAt] =
-    useState<string | null>(null);
+  const { authUser, authNickname, authInstagram, authStatus, authCreatedAt, authLoading, refreshAuth } = useAuth();
 
   const [menus, setMenus] = useState<MenuItem[]>(defaultMenus);
 
     useEffect(() => {
-   const loadProfile = async (userId: string) => {
+      const loadProfile = async (userId: string) => {
+
     const { data: profile } = await supabase
       .from("profiles")
-      .select("nickname, instagram_id, status, created_at, personal_menus, menu_order, quick_menu_keys, read_notice_ids, read_press_ids")
+      .select("personal_menus, menu_order, quick_menu_keys, read_notice_ids, read_press_ids")
       .eq("id", userId)
       .maybeSingle();
 
-    setAuthNickname(profile?.nickname || null);
-    setAuthInstagram(profile?.instagram_id || null);
-    setAuthStatus(profile?.status || null);
-    setAuthCreatedAt(profile?.created_at || null);
-
-    if (profile?.personal_menus && Array.isArray(profile.personal_menus)) {
+    if (profile?.personal_menus
+ && Array.isArray(profile.personal_menus)) {
       const parsedPersonalMenus = profile.personal_menus as PersonalMenuItem[];
       setPersonalMenus(parsedPersonalMenus);
 
@@ -263,89 +256,18 @@ export default function Home() {
       setReadNoticeIds(profile.read_notice_ids as number[]);
     }
 
-    if (profile?.read_press_ids && Array.isArray(profile.read_press_ids)) {
+      if (profile?.read_press_ids && Array.isArray(profile.read_press_ids)) {
       setReadPressIds(profile.read_press_ids as number[]);
     }
   };
 
-
-  const initialize = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    const user = session?.user;
-
-    if (!user) {
-      setAuthUser(null);
-      return;
-    }
-
-    setAuthUser(user);
-
-    await loadProfile(user.id);
-  };
-
-  initialize();
-
-    const {
-    data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-    async (event, session) => {
-      if (event === "USER_UPDATED") return;
-
-      const user = session?.user;
-
-      if (!user) {
-        setAuthUser(null);
-        setAuthNickname(null);
-        setAuthInstagram(null);
-        setAuthStatus(null);
-        setAuthCreatedAt(null);
-        return;
-      }
-
-      setAuthUser(user);
-      await loadProfile(user.id);
-    }
-  );
-
-
-
-  return () => {
-    subscription.unsubscribe();
-  };
-}, []);
-
-const refreshAuth = async () => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  const user = session?.user;
-
-  if (!user) {
-    setAuthUser(null);
-    setAuthNickname(null);
-    setAuthInstagram(null);
-    setAuthStatus(null);
-    setAuthCreatedAt(null);
-    return;
+  if (authUser) {
+    loadProfile(authUser.id);
   }
+}, [authUser]);
+ 
 
-  setAuthUser(user);
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("nickname, instagram_id, status, created_at")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  setAuthNickname(profile?.nickname || null);
-  setAuthInstagram(profile?.instagram_id || null);
-  setAuthStatus(profile?.status || null);
-  setAuthCreatedAt(profile?.created_at || null);
-};
 
 
   const sensors = useSensors(
@@ -1675,9 +1597,9 @@ const saveProfileSettings = async () => {
     return;
   }
 
-    setAuthNickname(editNickname.trim());
-  setAuthInstagram(editInstagram.trim());
+      refreshAuth();
   setCurrentPassword("");
+
   setNewPassword("");
   setNewPasswordConfirm("");
       setProfileSettingOpen(false);
@@ -1947,7 +1869,10 @@ const saveProfileSettings = async () => {
 >
     <div className="flex items-center gap-13 text-center">
       
-      <div className="flex items-center gap-4 scale-130 mr-6">
+                 <div className="flex items-center gap-4 scale-130 mr-6">
+{authLoading ? (
+  <div className="h-4 w-20 rounded bg-gray-100 animate-pulse" />
+) : (
  <AuthButton
   variant="label"
   user={authUser}
@@ -1955,7 +1880,10 @@ const saveProfileSettings = async () => {
   status={authStatus}
   createdAt={authCreatedAt}
 />
+)}
 </div>
+
+
 
 <div>
         <p className="text-[10px] leading-none text-gray-400 font-bold">
@@ -3074,7 +3002,7 @@ hover:-translate-y-1
       overflow-hidden
     "
   >
-    <AuthButton
+       <AuthButton
   variant="menu"
   user={authUser}
   nickname={authNickname}
@@ -3083,6 +3011,8 @@ hover:-translate-y-1
   onAuthChange={refreshAuth}
   onMenuClose={() => setUserMenuOpen(false)}
 />
+
+
 
 {authUser && authStatus === "approved" && (
   <>
