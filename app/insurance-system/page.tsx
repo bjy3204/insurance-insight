@@ -512,13 +512,12 @@ const [memoEditDragInfo, setMemoEditDragInfo] = useState<null | {
   }, []);
 
 
-    useEffect(() => {
+        useEffect(() => {
     const syncMemos = () => {
+      if (authUser && authStatus === "approved") return;
       const savedMemos = localStorage.getItem("personalMemos");
       setMemos(savedMemos ? JSON.parse(savedMemos) : []);
     };
-
-    syncMemos();
 
     window.addEventListener("memo-storage-updated", syncMemos);
     window.addEventListener("storage", syncMemos);
@@ -527,7 +526,8 @@ const [memoEditDragInfo, setMemoEditDragInfo] = useState<null | {
       window.removeEventListener("memo-storage-updated", syncMemos);
       window.removeEventListener("storage", syncMemos);
     };
-  }, []);
+  }, [authUser, authStatus]);
+
 
     useEffect(() => {
     const openMemoDetail = (event: any) => {
