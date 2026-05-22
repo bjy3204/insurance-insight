@@ -626,7 +626,7 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
                 <button onClick={() => setShowNewFolder(!showNewFolder)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold transition cursor-default">
                   <FolderPlus className="w-4 h-4" /><span className="hidden sm:inline">폴더 추가</span>
                 </button>
-                <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-green-50 hover:bg-green-100 text-green-600 text-xs font-semibold transition cursor-default disabled:opacity-50">
+                <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-green-50 hover:bg-green-100 text-green-600 text-xs font-semibold transition cursor-pointer disabled:opacity-50">
                   {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                   <span className="hidden sm:inline">{uploading ? "업로드 중..." : "파일 업로드"}</span>
                 </button>
@@ -671,6 +671,7 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
                   {bulkDownloading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
                   {selectedFileCount}개 다운로드
                 </button>
+                
               )}
               {isAdmin && selectedCount > 0 && (
                 <button onClick={() => setBulkDeleteConfirm(true)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition cursor-default">
@@ -921,7 +922,7 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <span className="font-bold text-gray-800 truncate text-sm">{selectedFile.displayName}</span>
               <div className="flex items-center gap-2">
-                <button onClick={() => handleDownload(selectedFile)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold transition cursor-default">
+                <button onClick={() => handleDownload(selectedFile)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold transition cursor-pointer">
                   <Download className="w-4 h-4" />다운로드
                 </button>
                 <button onClick={() => setPreviewOpen(false)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition cursor-pointer">
