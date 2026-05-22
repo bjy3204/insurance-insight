@@ -3042,6 +3042,17 @@ hover:-translate-y-1
     >
       계산기
     </button>
+    
+        <button
+      onClick={(e) => {
+        e.stopPropagation();
+        window.location.href = "/naver-news";
+        setUserMenuOpen(false);
+      }}
+      className="sm:hidden block w-full px-4 py-3 text-center text-sm font-bold text-gray-700 hover:bg-gray-50 border-t border-gray-100 cursor-default"
+    >
+      뉴스
+    </button>
 
   </>
 )}

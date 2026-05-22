@@ -477,31 +477,54 @@ const fetchTickerNews = async () => {
 
       {/* 지역별 날씨 */}
 <section className="mb-4 -mt-2">
-  <div
-  className="
-    px-0
-    py-0
-    overflow-hidden
-  "
->
+  <div className="px-0 py-0 overflow-hidden">
     {weatherItems.length === 0 ? (
       <div className="text-sm text-gray-400 text-center py-1">
         날씨 정보를 불러오지 못했습니다.
       </div>
     ) : (
-      <DndContext
-  sensors={sensors}
-  collisionDetection={closestCenter}
-  onDragEnd={handleWeatherDragEnd}
->
-  <SortableContext items={weatherOrder} strategy={rectSortingStrategy}>
-    <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-4">
-      {sortedWeatherItems.map((item) => (
-        <SortableWeatherCard key={item.region} item={item} />
-      ))}
-    </div>
-  </SortableContext>
-</DndContext>
+      <>
+       {/* 모바일 전용 날씨 티커 */}
+<div className="md:hidden bg-white border border-gray-200 rounded-2xl overflow-hidden h-11 flex items-center">
+  <div className="flex w-max min-w-max whitespace-nowrap animate-[weatherTickerMove_28s_linear_infinite] active:[animation-play-state:paused]">
+    {[...sortedWeatherItems, ...sortedWeatherItems].map((item, index) => (
+      <div
+        key={`${item.region}-${index}`}
+        className="inline-flex shrink-0 items-center gap-1.5 px-5 text-sm font-bold text-gray-700"
+      >
+        <span className="text-gray-500">{item.region}</span>
+
+        <span
+          className={`inline-block text-[16px] leading-none ${getWeatherAnimation(
+            item.description || ""
+          )}`}
+        >
+          {getWeatherIcon(item.description || "")}
+        </span>
+
+        <span className="font-black text-gray-900">{item.temp}°</span>
+      </div>
+    ))}
+  </div>
+</div>
+
+        {/* PC 전용 기존 날씨 카드 */}
+        <div className="hidden md:block">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleWeatherDragEnd}
+          >
+            <SortableContext items={weatherOrder} strategy={rectSortingStrategy}>
+              <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-4">
+                {sortedWeatherItems.map((item) => (
+                  <SortableWeatherCard key={item.region} item={item} />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        </div>
+      </>
     )}
   </div>
 </section>

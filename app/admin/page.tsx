@@ -1,6 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+
+import { CSS } from "@dnd-kit/utilities";
+
+import MemoStickers from "@/app/components/MemoStickers";
+
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 import { useRouter } from "next/navigation";
@@ -14,8 +34,23 @@ import {
   XCircle,
   Shield,
   X,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  List,
+  Calendar,
+  AlertCircle,
+  CheckSquare,
+  Square,
+  UserPlus,
+  Pencil,
+  NotebookPen,
+  Eye,
+  EyeOff,
+  Pin,
 } from "lucide-react";
 
+// --- 기존 회원 타입 ---
 type Profile = {
   id: string;
   nickname: string | null;
@@ -23,6 +58,29 @@ type Profile = {
   status: string | null;
   role: string | null;
   created_at: string | null;
+};
+
+// --- 구독자 타입 ---
+type Subscriber = {
+  id: string;
+  subscriber_id: string;
+  name: string;
+  data_room: string;
+  video_room: string;
+  pay_app: boolean;
+  pay_app_code: string;
+  memo: string;
+  status: string;
+  created_at: string;
+};
+
+type SubscriberMonthly = {
+  id: string;
+  subscriber_id: string;
+  month_key: string;
+  status: string;
+  created_at: string;
+  subscribers: Subscriber;
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -37,67 +95,204 @@ const STATUS_COLOR: Record<string, string> = {
   rejected: "bg-red-100 text-red-600",
 };
 
+function SortableMemoCard({ memo, children }: { memo: MemoItem; children: React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: memo.id, disabled: memo.pinned });
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.55 : 1 }} {...attributes} {...listeners} className={memo.pinned ? "" : "touch-none"}>
+      {children}
+    </div>
+  );
+}
+
+
+type MemoItem = {
+  id: string;
+  title: string;
+  content: string;
+  pinned: boolean;
+  visible: boolean;
+  color?: "white" | "blue" | "yellow" | "red" | "clear";
+  x?: number;
+  y?: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+
 
 
 export default function AdminPage() {
-  const { authUser, authLoading } = useAuth();
-
-
+  const { authUser, authLoading, authStatus, memos, saveMemos } = useAuth();
   const router = useRouter();
 
+  // --- 탭 상태 ---
+  const [adminTab, setAdminTab] = useState<"members" | "subscribers">("members");
+
+  // --- 기존 회원 관리 상태 ---
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
-  
-
   const [currentPage, setCurrentPage] = useState(1);
-const PAGE_SIZE = 12;
+  const PAGE_SIZE = 12;
 
-  // 관리자 접근 제한
- useEffect(() => {
-  if (authLoading) return;
+  // --- 구독자 관리 상태 ---
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [monthlyData, setMonthlyData] = useState<SubscriberMonthly[]>([]);
+  const [missingData, setMissingData] = useState<Subscriber[]>([]);
+  const [subSearch, setSubSearch] = useState("");
+  
+  // 팝업 상태
+  const [isSubPopupOpen, setIsSubPopupOpen] = useState(false);
+  const [isAllSubPopupOpen, setIsAllSubPopupOpen] = useState(false);
+  const [isSelectPopupOpen, setIsSelectPopupOpen] = useState(false);
+  
+  // 삭제 확인 팝업 상태
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [targetToDelete, setTargetToDelete] = useState<string | null>(null);
+  
+  // 폼 상태
+  const [subForm, setSubForm] = useState({
+    id: "",
+    subscriber_id: "",
+    name: "",
+    data_room: "",
+    video_room: "",
+    pay_app: false,
+    pay_app_code: "",
+    memo: "",
+  });
 
-  if (!authUser) {
-    router.replace("/");
-    return;
-  }
+  // 전체 구독자 팝업 상태
+  const [allSubscribers, setAllSubscribers] = useState<Subscriber[]>([]);
+  const [allSubTab, setAllSubTab] = useState<"all" | "active" | "canceled">("all");
+  const [allSubSearch, setAllSubSearch] = useState("");
 
-  const checkAdmin = async () => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", authUser.id)
-      .maybeSingle();
+  // 월별 추가 선택 팝업 검색
+  const [selectSearch, setSelectSearch] = useState("");
 
-    if (data?.role !== "admin") {
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+
+const handleMemoDragEnd = (event: any) => {
+  const { active, over } = event;
+  if (!over || active.id === over.id) return;
+  const activeMemo = memos.find(m => m.id === active.id);
+  const overMemo = memos.find(m => m.id === over.id);
+  if (!activeMemo || !overMemo) return;
+  if (activeMemo.pinned || overMemo.pinned) return;
+  const pinnedMemos = memos.filter(m => m.pinned);
+  const normalMemos = memos.filter(m => !m.pinned);
+  const oldIndex = normalMemos.findIndex(m => m.id === active.id);
+  const newIndex = normalMemos.findIndex(m => m.id === over.id);
+  saveMemos([...pinnedMemos, ...arrayMove(normalMemos, oldIndex, newIndex)]);
+};
+
+
+
+const [isMemoOpen, setIsMemoOpen] = useState(false);
+const [isPencilOpen, setIsPencilOpen] = useState(false);
+const [memoSearch, setMemoSearch] = useState("");
+const [memoPage, setMemoPage] = useState(1);
+const [memoTitle, setMemoTitle] = useState("");
+const [memoContent, setMemoContent] = useState("");
+const [memoColor, setMemoColor] = useState<MemoItem["color"]>("white");
+const [memoAddOpen, setMemoAddOpen] = useState(false);
+const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
+const [deleteMemoConfirmOpen, setDeleteMemoConfirmOpen] = useState(false);
+const [deleteMemoId, setDeleteMemoId] = useState<string | null>(null);
+const [contextMenu, setContextMenu] = useState<{ x: number; y: number; id: string } | null>(null);
+
+
+const [memoAddPopupPos, setMemoAddPopupPos] = useState({ x: 0, y: 0 });
+const [memoEditPopupPos, setMemoEditPopupPos] = useState({ x: 0, y: 0 });
+const memoAddDragRef = useRef({ isDragging: false, startX: 0, startY: 0, originX: 0, originY: 0 });
+const memoEditDragRef = useRef({ isDragging: false, startX: 0, startY: 0, originX: 0, originY: 0 });
+
+
+
+  // 드래그 이동 state
+const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
+const [isDragging, setIsDragging] = useState(false);
+const dragStart = useRef({ x: 0, y: 0 });
+
+
+  // --- 날짜 계산 ---
+  const monthKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}`;
+  const prevMonthDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+  const prevMonthKey = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, "0")}`;
+
+useEffect(() => {
+  const handleClick = () => setIsPencilOpen(false);
+  if (isPencilOpen) window.addEventListener("click", handleClick);
+  return () => window.removeEventListener("click", handleClick);
+}, [isPencilOpen]);
+
+useEffect(() => {
+  const handleMemoContext = (e: Event) => {
+    const { x, y, id } = (e as CustomEvent).detail;
+    setContextMenu({ x, y, id });
+  };
+  const handleMemoDetail = (e: Event) => {
+    const id = (e as CustomEvent).detail;
+    const target = memos.find((m: MemoItem) => m.id === id);
+    if (target) openMemoEdit(target);
+  };
+  window.addEventListener("open-memo-context-menu", handleMemoContext);
+  window.addEventListener("open-memo-detail", handleMemoDetail);
+  return () => {
+    window.removeEventListener("open-memo-context-menu", handleMemoContext);
+    window.removeEventListener("open-memo-detail", handleMemoDetail);
+  };
+}, [memos]);
+
+useEffect(() => {
+  const closeContextMenu = () => setContextMenu(null);
+  window.addEventListener("pointerdown", closeContextMenu);
+  return () => window.removeEventListener("pointerdown", closeContextMenu);
+}, []);
+
+
+  // --- 관리자 체크 및 데이터 로드 ---
+  useEffect(() => {
+    if (authLoading) return;
+    if (!authUser) {
       router.replace("/");
       return;
     }
 
-    await fetchProfiles();
-    setLoading(false);
-  };
+    const checkAdmin = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", authUser.id)
+        .maybeSingle();
+
+      if (data?.role !== "admin") {
+        router.replace("/");
+        return;
+      }
+
+                 Promise.all([fetchProfiles(), fetchSubscribers(), fetchAllSubscribers()]).then(() => setLoading(false));
+
+
+
+
+      
+    };
 
     checkAdmin();
-}, [authUser, authLoading]);
+  }, [authUser, authLoading, currentMonth]);
 
-
-
- const fetchProfiles = async () => {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, nickname, instagram_id, status, role, created_at")
-    .order("created_at", { ascending: false });
-
-  console.log("fetchProfiles data:", data);
-  console.log("fetchProfiles error:", error);
-
-  setProfiles((data as Profile[]) || []);
-};
-
+  // --- 기존 회원 관리 함수 ---
+  const fetchProfiles = async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, nickname, instagram_id, status, role, created_at")
+      .order("created_at", { ascending: false });
+    setProfiles((data as Profile[]) || []);
+  };
 
   const updateStatus = async (id: string, newStatus: string) => {
     setUpdating(id);
@@ -111,35 +306,294 @@ const PAGE_SIZE = 12;
     setUpdating(null);
   };
 
-  const filtered = profiles.filter((p) => {
-    const matchSearch =
-      !search ||
-      (p.nickname || "").toLowerCase().includes(search.toLowerCase()) ||
-      (p.instagram_id || "").toLowerCase().includes(search.toLowerCase());
+  // --- 구독자 관리 함수 ---
+  const fetchSubscribers = async () => {
+    const { data: currentData } = await supabase
+      .from("subscriber_monthly")
+      .select("*, subscribers(*)")
+      .eq("month_key", monthKey)
+      .order("created_at", { ascending: false });
+
+    const { data: prevData } = await supabase
+      .from("subscriber_monthly")
+      .select("*, subscribers(*)")
+      .eq("month_key", prevMonthKey)
+      .eq("status", "active");
+
+    const currentSubIds = new Set(currentData?.map((d) => d.subscriber_id));
+    const missing = prevData
+      ?.filter((d) => !currentSubIds.has(d.subscriber_id))
+      .map((d) => d.subscribers as unknown as Subscriber) || [];
+
+    setMonthlyData((currentData as unknown as SubscriberMonthly[]) || []);
+    setMissingData(missing);
+  };
+
+  const fetchAllSubscribers = async () => {
+    const { data } = await supabase
+      .from("subscribers")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setAllSubscribers((data as Subscriber[]) || []);
+  };
+
+  const openSubPopup = (sub?: Subscriber) => {
+    if (sub) {
+      setSubForm({
+        id: sub.id,
+        subscriber_id: sub.subscriber_id,
+        name: sub.name,
+        data_room: sub.data_room || "",
+        video_room: sub.video_room || "",
+        pay_app: sub.pay_app,
+        pay_app_code: sub.pay_app_code || "",
+        memo: sub.memo || "",
+      });
+    } else {
+      setSubForm({ id: "", subscriber_id: "", name: "", data_room: "", video_room: "", pay_app: false, pay_app_code: "", memo: "" });
+
+    }
+    setIsSubPopupOpen(true);
+  };
+
+  const saveSubscriber = async () => {
+    if (!subForm.subscriber_id || !subForm.name) return alert("아이디와 이름을 입력해주세요.");
+
+    if (!subForm.id) {
+      await supabase.from("subscribers").insert({
+        subscriber_id: subForm.subscriber_id,
+        name: subForm.name,
+        data_room: subForm.data_room,
+        video_room: subForm.video_room,
+        pay_app: subForm.pay_app,
+        memo: subForm.memo,
+        status: "active",
+      });
+    } else {
+      await supabase.from("subscribers").update({
+        subscriber_id: subForm.subscriber_id,
+        name: subForm.name,
+        data_room: subForm.data_room,
+        video_room: subForm.video_room,
+        pay_app: subForm.pay_app,
+        memo: subForm.memo,
+      }).eq("id", subForm.id);
+    }
+
+    setIsSubPopupOpen(false);
+    fetchAllSubscribers();
+    fetchSubscribers();
+  };
+
+  const addToMonthly = async (subId: string) => {
+    const { data: existing } = await supabase
+      .from("subscriber_monthly")
+      .select("id")
+      .eq("subscriber_id", subId)
+      .eq("month_key", monthKey)
+      .maybeSingle();
+
+    if (!existing) {
+      await supabase.from("subscriber_monthly").insert({
+        subscriber_id: subId,
+        month_key: monthKey,
+        status: "active",
+      });
+    } else {
+      await supabase.from("subscriber_monthly").update({ status: "active" }).eq("id", existing.id);
+    }
+    
+    setIsSelectPopupOpen(false);
+    fetchSubscribers();
+  };
+
+  const addMissingToCurrent = async (sub: Subscriber) => {
+    await addToMonthly(sub.id);
+  };
+
+  // [취소] - 이번 달 명단에서만 제거
+  const deleteFromMonthly = async (monthlyId: string) => {
+    await supabase.from("subscriber_monthly").delete().eq("id", monthlyId);
+    fetchSubscribers();
+  };
+
+  // [해지] - 구독 취소 처리 (마스터 상태 변경)
+  const cancelSubscriber = async (subId: string) => {
+    await supabase.from("subscribers").update({ status: "canceled" }).eq("id", subId);
+    await supabase.from("subscriber_monthly").update({ status: "canceled" }).eq("subscriber_id", subId).eq("month_key", monthKey);
+    fetchSubscribers();
+    fetchAllSubscribers();
+  };
+
+  // [복구] - 해지된 구독자 다시 활성화
+  const restoreSubscriber = async (subId: string) => {
+    await supabase.from("subscribers").update({ status: "active" }).eq("id", subId);
+    fetchAllSubscribers();
+    fetchSubscribers();
+  };
+
+  // [삭제] - DB에서 완전 삭제 (팝업 열기)
+  const confirmDelete = (subId: string) => {
+    setTargetToDelete(subId);
+    setDeleteConfirmOpen(true);
+  };
+
+  // [삭제] - 실제 삭제 실행
+  const executeDelete = async () => {
+    if (!targetToDelete) return;
+    await supabase.from("subscribers").delete().eq("id", targetToDelete);
+    setDeleteConfirmOpen(false);
+    setTargetToDelete(null);
+    fetchAllSubscribers();
+    fetchSubscribers();
+  };
+
+  const handleDragStart = (e: React.MouseEvent) => {
+  setIsDragging(true);
+  dragStart.current = { x: e.clientX - popupPos.x, y: e.clientY - popupPos.y };
+};
+const handleDragMove = (e: React.MouseEvent) => {
+  if (!isDragging) return;
+  setPopupPos({ x: e.clientX - dragStart.current.x, y: e.clientY - dragStart.current.y });
+};
+const handleDragEnd = () => setIsDragging(false);
+
+
+
+
+const getMemoColorClass = (color: MemoItem["color"]) => {
+  if (color === "blue") return "bg-blue-50 border-blue-100";
+  if (color === "yellow") return "bg-yellow-50 border-yellow-100";
+  if (color === "red") return "bg-red-50 border-red-100";
+  if (color === "clear") return "bg-white/40 border-gray-200";
+  return "bg-white border-gray-200";
+};
+
+const memoColorOptions: { value: MemoItem["color"]; className: string }[] = [
+  { value: "white", className: "bg-white border-gray-300 hover:bg-gray-50" },
+  { value: "blue", className: "bg-blue-50 border-blue-100 hover:bg-blue-100" },
+  { value: "yellow", className: "bg-yellow-50 border-yellow-100 hover:bg-yellow-100" },
+  { value: "red", className: "bg-red-50 border-red-100 hover:bg-red-100" },
+  { value: "clear", className: "border-gray-300 bg-[length:10px_10px] bg-[position:0_0,5px_5px] bg-[image:linear-gradient(45deg,#e5e7eb_25%,transparent_25%,transparent_75%,#e5e7eb_75%,#e5e7eb),linear-gradient(45deg,#e5e7eb_25%,white_25%,white_75%,#e5e7eb_75%,#e5e7eb)] hover:brightness-95" },
+];
+
+const changeMemoColor = (id: string, color: MemoItem["color"]) => {
+  saveMemos(memos.map(m => m.id === id ? { ...m, color, updatedAt: new Date().toISOString() } : m));
+};
+
+const addMemo = () => {
+  const now = new Date().toISOString();
+  const newMemo: MemoItem = {
+    id: crypto.randomUUID(),
+    title: memoTitle.trim(),
+    content: memoContent.trim(),
+    pinned: false,
+    visible: false,
+    color: memoColor,
+    createdAt: now,
+    updatedAt: now,
+  };
+  saveMemos([newMemo, ...memos]);
+  setMemoPage(1); setMemoTitle(""); setMemoContent(""); setMemoColor("white"); setMemoAddOpen(false);
+};
+
+
+
+
+const updateMemo = () => {
+  if (!selectedMemo) return;
+  saveMemos(memos.map(m => m.id === selectedMemo.id ? { ...m, title: memoTitle, content: memoContent, updatedAt: new Date().toISOString() } : m));
+  setSelectedMemo(null); setMemoTitle(""); setMemoContent("");
+};
+
+const deleteMemo = (id: string) => {
+  setDeleteMemoId(id);
+  setDeleteMemoConfirmOpen(true);
+};
+
+const confirmDeleteMemo = () => {
+  if (!deleteMemoId) return;
+  saveMemos(memos.filter(m => m.id !== deleteMemoId));
+  setSelectedMemo(null); setDeleteMemoId(null); setDeleteMemoConfirmOpen(false);
+};
+
+
+const toggleMemoVisible = (id: string) => {
+  saveMemos(memos.map(m => m.id === id ? { ...m, visible: !m.visible } : m));
+};
+
+const toggleMemoPinned = (id: string) => {
+  saveMemos(memos.map(m => m.id === id ? { ...m, pinned: !m.pinned, updatedAt: new Date().toISOString() } : m));
+};
+
+
+const moveMemoPopup = (e: React.MouseEvent, type: "memoAdd" | "memoEdit") => {
+  const drag = type === "memoAdd" ? memoAddDragRef.current : memoEditDragRef.current;
+  if (!drag.isDragging) return;
+  const next = { x: drag.originX + e.clientX - drag.startX, y: drag.originY + e.clientY - drag.startY };
+  if (type === "memoAdd") setMemoAddPopupPos(next); else setMemoEditPopupPos(next);
+};
+
+const stopMemoPopupMove = () => {
+  memoAddDragRef.current.isDragging = false;
+  memoEditDragRef.current.isDragging = false;
+};
+
+const openMemoEdit = (memo: MemoItem) => {
+  setSelectedMemo(null);
+  memoEditDragRef.current = { isDragging: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+  setMemoEditPopupPos({ x: 0, y: 0 });
+  requestAnimationFrame(() => { setSelectedMemo(memo); });
+};
+
+const filteredMemos = memos
+  .filter(memo => `${memo.title} ${memo.content}`.toLowerCase().includes(memoSearch.toLowerCase()))
+  .sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    return memos.findIndex(m => m.id === a.id) - memos.findIndex(m => m.id === b.id);
+  });
+
+
+const MEMOS_PER_PAGE = 6;
+const totalMemoPages = Math.max(1, Math.ceil(filteredMemos.length / MEMOS_PER_PAGE));
+const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage * MEMOS_PER_PAGE);
+
+
+
+
+  // --- 렌더링용 데이터 필터링 ---
+  const filteredProfiles = profiles.filter((p) => {
+    const matchSearch = !search || (p.nickname || "").toLowerCase().includes(search.toLowerCase()) || (p.instagram_id || "").toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === "all" || p.status === filterStatus;
     return matchSearch && matchStatus;
   });
+  const pagedProfiles = filteredProfiles.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-const pagedProfiles = filtered.slice(
-  (currentPage - 1) * PAGE_SIZE,
-  currentPage * PAGE_SIZE
-);
+  const activeMonthly = monthlyData.filter(d => d.status === "active" && (d.subscribers.name.includes(subSearch) || d.subscribers.subscriber_id.includes(subSearch)));
+  const canceledMonthly = monthlyData.filter(d => d.status === "canceled");
 
+  const filteredAllSubs = allSubscribers.filter(s => {
+    const matchTab = allSubTab === "all" || s.status === allSubTab;
+    const matchSearch = s.name.includes(allSubSearch) || s.subscriber_id.includes(allSubSearch);
+    return matchTab && matchSearch;
+  });
 
-  const counts = {
-    all: profiles.length,
-    pending: profiles.filter((p) => p.status === "pending").length,
-    approved: profiles.filter((p) => p.status === "approved").length,
-    rejected: profiles.filter((p) => p.status === "rejected").length,
-  };
+  // 선택 팝업용 필터링 (현재 달에 이미 등록된 사람은 제외, 해지자 제외)
+  const currentMonthlySubIds = new Set(monthlyData.map(d => d.subscriber_id));
+  const availableToSelect = allSubscribers.filter(s => 
+    s.status !== "canceled" && 
+    !currentMonthlySubIds.has(s.id) &&
+    (s.name.includes(selectSearch) || s.subscriber_id.includes(selectSearch))
+  );
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "-";
     const d = new Date(dateStr);
-    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
-      d.getDate()
-    ).padStart(2, "0")}`;
+    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  };
+
+  const isNewThisMonth = (dateStr: string) => {
+    return dateStr.startsWith(monthKey);
   };
 
   if (loading) {
@@ -151,300 +605,727 @@ const pagedProfiles = filtered.slice(
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 pb-24">
+    <main className="min-h-screen bg-gray-50 pb-24 relative">
       {/* 헤더 */}
-      <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
+      <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="relative flex items-center justify-center">
-            <Link
-              href="/"
-              className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
-            >
-              <ArrowLeft className="w-5 h-5 text-black" />
-            </Link>
+         <div className="relative flex items-center justify-center">
+  <Link href="/" className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center">
+    <ArrowLeft className="w-5 h-5 text-black" />
+  </Link>
+  <div className="text-center">
+    <div className="flex items-center justify-center gap-2">
+      <Shield className="w-7 h-7 text-blue-600" />
+      <h1 className="text-2xl font-black text-gray-900">관리자</h1>
+    </div>
+    <p className="text-sm text-gray-500 mt-1">회원 및 구독자 관리</p>
+  </div>
 
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2">
-                <Shield className="w-7 h-7 text-blue-600" />
-                <h1 className="text-2xl font-black text-gray-900">관리자</h1>
-              </div>
-              <p className="text-sm text-gray-500 mt-1">회원 관리 및 승인 처리</p>
-            </div>
-          </div>
+  {/* 연필 아이콘 + 드롭다운 */}
+  <div className={`absolute right-0 top-1/2 -translate-y-1/2 ${isPencilOpen ? "z-[1000]" : "z-40"}`}>
+    <div className="relative">
+      <button
+        onClick={(e) => { e.stopPropagation(); setIsPencilOpen(!isPencilOpen); }}
+        className={`w-10 h-10 rounded-full border border-gray-200 shadow-sm hidden md:flex items-center justify-center transition cursor-default ${isPencilOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}`}
+      >
+        <Pencil className="w-5 h-5 text-gray-400" />
+      </button>
+
+      {isPencilOpen && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute right-0 top-12 z-[999] w-40 rounded-2xl bg-white border border-gray-200 shadow-xl overflow-hidden"
+        >
+           <button
+            onClick={() => { setIsMemoOpen(true); setIsPencilOpen(false); }}
+            className="block w-full text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition cursor-default"
+          >
+            메모장
+          </button>
+          <button
+            onClick={() => { window.dispatchEvent(new CustomEvent("open-calculator")); setIsPencilOpen(false); }}
+            className="block w-full text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default"
+          >
+            계산기
+          </button>
+        </div>
+
+      )}
+    </div>
+  </div>
+</div>
+
         </div>
       </header>
 
       <section className="max-w-7xl mx-auto px-5 py-6">
-        {/* 통계 카드 */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          {[
-            { key: "all", label: "전체", icon: Users, color: "text-gray-700" },
-            { key: "pending", label: "대기", icon: Clock, color: "text-yellow-600" },
-            { key: "approved", label: "승인", icon: CheckCircle, color: "text-green-600" },
-            { key: "rejected", label: "거절", icon: XCircle, color: "text-red-500" },
-          ].map(({ key, label, icon: Icon, color }) => (
-            <button
-              key={key}
-              onClick={() => { setFilterStatus(key); setCurrentPage(1); }}
-              className={`bg-white rounded-2xl border p-4 flex items-center gap-3 transition cursor-default hover:shadow-md ${
-                filterStatus === key ? "border-blue-400 shadow-md" : "border-gray-200"
-              }`}
-            >
-              <Icon className={`w-6 h-6 ${color}`} />
-              <div className="text-left">
-                <p className="text-xs font-bold text-gray-400">{label}</p>
-                <p className="text-xl font-black text-gray-900">
-                  {counts[key as keyof typeof counts]}
-                </p>
-              </div>
-            </button>
-          ))}
+        {/* 꽉 차는 탭 메뉴 */}
+        <div className="w-full flex bg-gray-200 p-1 rounded-2xl mb-7">
+          <button
+            onClick={() => setAdminTab("members")}
+            className={`flex-1 py-3.5 text-sm md:text-base font-bold rounded-xl transition ${
+              adminTab === "members" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-800"
+            }`}
+          >
+            보험인사이트 회원 관리
+          </button>
+          <button
+            onClick={() => setAdminTab("subscribers")}
+            className={`flex-1 py-3.5 text-sm md:text-base font-bold rounded-xl transition ${
+              adminTab === "subscribers" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-800"
+            }`}
+          >
+            구독자 관리
+          </button>
         </div>
 
-        {/* 검색 */}
-        <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3 mb-5">
-          <Search className="w-5 h-5 text-gray-400 shrink-0" />
-          <input
-            placeholder="닉네임 또는 인스타그램 아이디로 검색"
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-            className="w-full outline-none text-sm bg-transparent"
-          />
-          {search && (
-            <button
-             onClick={() => { setSearch(""); setCurrentPage(1); }}
-              className="text-gray-400 hover:text-gray-600 cursor-default shrink-0"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-
-        {/* 회원 목록 */}
-        {filtered.length === 0 ? (
-          <div className="flex justify-center items-center py-20 text-sm text-gray-400">
-            회원이 없습니다.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {pagedProfiles.map((profile) => (
-              <div
-                key={profile.id}
-                onClick={() => setSelectedProfile(profile)}
-                className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition cursor-default"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="text-base font-black text-gray-900">
-                      {profile.nickname || "(닉네임 없음)"}
-                    </p>
-                    <p className="text-sm text-gray-400 mt-0.5">
-                      {profile.instagram_id ? `@${profile.instagram_id}` : "인스타 없음"}
+        {/* ==================== 회원 관리 탭 ==================== */}
+        {adminTab === "members" && (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+              {[
+                { key: "all", label: "전체", icon: Users, color: "text-gray-700" },
+                { key: "pending", label: "대기", icon: Clock, color: "text-yellow-600" },
+                { key: "approved", label: "승인", icon: CheckCircle, color: "text-green-600" },
+                { key: "rejected", label: "거절", icon: XCircle, color: "text-red-500" },
+              ].map(({ key, label, icon: Icon, color }) => (
+                <button
+                  key={key}
+                  onClick={() => { setFilterStatus(key); setCurrentPage(1); }}
+                  className={`bg-white rounded-2xl border p-4 flex items-center gap-3 transition cursor-default hover:shadow-md ${
+                    filterStatus === key ? "border-blue-400 shadow-md" : "border-gray-200"
+                  }`}
+                >
+                  <Icon className={`w-6 h-6 ${color}`} />
+                  <div className="text-left">
+                    <p className="text-xs font-bold text-gray-400">{label}</p>
+                    <p className="text-xl font-black text-gray-900">
+                      {key === "all" ? profiles.length : profiles.filter((p) => p.status === key).length}
                     </p>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <span
-                      className={`text-xs font-bold px-3 py-1 rounded-full ${
-                        STATUS_COLOR[profile.status || ""] || "bg-gray-100 text-gray-500"
-                      }`}
-                    >
-                      {STATUS_LABEL[profile.status || ""] || profile.status || "-"}
-                    </span>
-                    {profile.role === "admin" && (
-                      <span className="text-xs font-bold px-3 py-1 rounded-full bg-gray-800 text-white">
-                        관리자
-                      </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3 mb-5">
+              <Search className="w-5 h-5 text-gray-400 shrink-0" />
+              <input
+                placeholder="닉네임 또는 인스타그램 아이디로 검색"
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                className="w-full outline-none text-sm bg-transparent"
+              />
+            </div>
+
+            {filteredProfiles.length === 0 ? (
+              <div className="flex justify-center items-center py-20 text-sm text-gray-400">회원이 없습니다.</div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {pagedProfiles.map((profile) => (
+                  <div key={profile.id} onClick={() => setSelectedProfile(profile)} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition cursor-default">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <p className="text-base font-black text-gray-900">{profile.nickname || "(닉네임 없음)"}</p>
+                        <p className="text-sm text-gray-400 mt-0.5">{profile.instagram_id ? `@${profile.instagram_id}` : "인스타 없음"}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className={`text-xs font-bold px-3 py-1 rounded-full ${STATUS_COLOR[profile.status || ""] || "bg-gray-100 text-gray-500"}`}>
+                          {STATUS_LABEL[profile.status || ""] || profile.status || "-"}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 mb-4">가입일: {formatDate(profile.created_at)}</p>
+                    {profile.role !== "admin" && (
+                      <div className="flex gap-2">
+                        <button onClick={(e) => { e.stopPropagation(); updateStatus(profile.id, "approved"); }} className="flex-1 h-9 rounded-xl text-xs font-bold bg-green-50 text-green-700 hover:bg-green-100">승인</button>
+                        <button onClick={(e) => { e.stopPropagation(); updateStatus(profile.id, "pending"); }} className="flex-1 h-9 rounded-xl text-xs font-bold bg-yellow-50 text-yellow-700 hover:bg-yellow-100">대기</button>
+                        <button onClick={(e) => { e.stopPropagation(); updateStatus(profile.id, "rejected"); }} className="flex-1 h-9 rounded-xl text-xs font-bold bg-red-50 text-red-500 hover:bg-red-100">거절</button>
+                      </div>
                     )}
                   </div>
-                </div>
-
-                <p className="text-xs text-gray-400 mb-4">
-                  가입일: {formatDate(profile.created_at)}
-                </p>
-
-                {profile.role !== "admin" && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateStatus(profile.id, "approved");
-                      }}
-                      disabled={profile.status === "approved" || updating === profile.id}
-                      className="flex-1 h-9 rounded-xl text-xs font-bold bg-green-50 text-green-700 hover:bg-green-100 disabled:opacity-40 transition cursor-default"
-                    >
-                      승인
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateStatus(profile.id, "pending");
-                      }}
-                      disabled={profile.status === "pending" || updating === profile.id}
-                      className="flex-1 h-9 rounded-xl text-xs font-bold bg-yellow-50 text-yellow-700 hover:bg-yellow-100 disabled:opacity-40 transition cursor-default"
-                    >
-                      대기
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        updateStatus(profile.id, "rejected");
-                      }}
-                      disabled={profile.status === "rejected" || updating === profile.id}
-                      className="flex-1 h-9 rounded-xl text-xs font-bold bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-40 transition cursor-default"
-                    >
-                      거절
-                    </button>
-                  </div>
-                )}
-
-                {profile.role === "admin" && (
-                  <div className="flex items-center justify-center h-9">
-                    <span className="text-sm font-bold text-blue-500">관리자 계정</span>
-                  </div>
-                )}
+                ))}
               </div>
-            ))}
-                   </div>
+            )}
+          </>
         )}
 
-        {(
-
-          <div className="flex justify-center  pt-80 pb-10">
-            <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-default"
-              >
-                이전
-              </button>
-              {Array.from({ length: Math.min(totalPages, 10) }).map((_, i) => {
-                const page = i + 1;
-                return (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-4 py-2 border-l border-gray-200 cursor-default ${
-                      currentPage === page
-                        ? "bg-slate-800 text-white"
-                        : "bg-white text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    {page}
+        {/* ==================== 구독자 관리 탭 ==================== */}
+        {adminTab === "subscribers" && (
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* 왼쪽: 메인 구독자 리스트 */}
+            <div className="flex-1">
+              {/* 꽉 차는 월 이동 및 검색 헤더 */}
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
+                <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50/50">
+                  <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="p-2 hover:bg-gray-200 rounded-full transition">
+                    <ChevronLeft className="w-6 h-6 text-gray-600" />
                   </button>
-                );
-              })}
-              <button
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-default"
-              >
-                다음
-              </button>
+                  <div className="flex items-center gap-2">
+  <Calendar className="w-5 h-5 text-blue-600" />
+  <select
+    value={currentMonth.getFullYear()}
+    onChange={(e) => setCurrentMonth(new Date(Number(e.target.value), currentMonth.getMonth(), 1))}
+    className="text-xl font-black text-gray-900 bg-transparent outline-none cursor-pointer hover:text-blue-600 transition"
+  >
+    {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
+      <option key={year} value={year}>{year}년</option>
+    ))}
+  </select>
+  <select
+    value={currentMonth.getMonth() + 1}
+    onChange={(e) => setCurrentMonth(new Date(currentMonth.getFullYear(), Number(e.target.value) - 1, 1))}
+    className="text-xl font-black text-gray-900 bg-transparent outline-none cursor-pointer hover:text-blue-600 transition"
+  >
+    {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+      <option key={month} value={month}>{month}월</option>
+    ))}
+  </select>
+</div>
+
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setIsSelectPopupOpen(true)} className="p-2 border border-gray-200 bg-white text-gray-300 hover:bg-gray-100 hover:text-gray-500 rounded-full transition cursor-pointer" title="이번 달 명단에 추가">
+                      <Plus className="w-6 h-6" />
+                    </button>
+                    <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="p-2 hover:bg-gray-200 rounded-full transition">
+                      <ChevronRight className="w-6 h-6 text-gray-600" />
+                    </button>
+                  </div>
+                </div>
+                <div className="mx-4 my-3 bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
+                  <Search className="w-5 h-5 text-gray-400 shrink-0" />
+                  <input
+                    placeholder="이번 달 구독자 이름 또는 아이디 검색"
+                    value={subSearch}
+                    onChange={(e) => setSubSearch(e.target.value)}
+                    className="w-full outline-none text-sm bg-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* 한 줄 리스트 형식 (테이블 스타일) */}
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                  <h3 className="font-bold text-gray-800">현재 구독자 ({activeMonthly.length}명)</h3>
+                </div>
+                
+               {/* 리스트 헤더 */}
+<div className="hidden md:flex items-center py-3 px-5 border-b border-gray-200 bg-gray-50/80 text-xs font-bold text-gray-500">
+  <div style={{minWidth: "220px"}} className="flex items-center gap-1.5">
+  <span className="opacity-0 text-[10px] px-1.5 py-0.5 rounded font-bold">P</span>
+  <span className="opacity-0 text-[10px] px-1.5 py-0.5 rounded font-bold">N</span>
+  <span className="ml-6">
+  아이디
+</span> <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.subscriber_id).length}</span>
+</div>
+<div style={{minWidth: "160px"}}>이름 <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.name).length}</span></div>
+
+  <div style={{minWidth: "150px"}}>자료방 <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.data_room).length}</span></div>
+  <div style={{minWidth: "150px"}}>영상방 <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.video_room).length}</span></div>
+  <div style={{minWidth: "110px"}}>등록날짜</div>
+  <div className="flex-1 text-right">관리</div>
+</div>
+
+
+
+                {/* 리스트 바디 */}
+                <div className="divide-y divide-gray-100">
+                  {activeMonthly.length === 0 ? (
+                    <div className="p-10 text-center text-gray-400 text-sm">등록된 구독자가 없습니다.</div>
+                  ) : (
+                    activeMonthly.map((item) => (
+                     <div key={item.id} className="flex flex-col md:flex-row md:items-center py-3 px-5 hover:bg-blue-50/30 transition gap-2 md:gap-0">
+                      <div
+  style={{ minWidth: "180px", maxWidth: "180px" }}
+  className="text-sm text-gray-500 overflow-hidden flex items-center gap-1.5"
+  title={item.subscribers.subscriber_id}
+>
+  {item.subscribers.pay_app && <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold shrink-0">P</span>}
+  {isNewThisMonth(item.subscribers.created_at) && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded font-bold shrink-0">N</span>}
+  <span className="truncate block max-w-[110px]">{item.subscribers.subscriber_id}</span>
+</div>
+<div
+  style={{ minWidth: "190px", maxWidth: "190px" }}
+  className="font-bold text-gray-900 overflow-hidden"
+>
+  <span className="truncate block max-w-[150px]" title={item.subscribers.name}>{item.subscribers.name}</span>
+</div>
+
+
+<div style={{minWidth: "150px"}} className="text-sm text-gray-600 truncate" title={item.subscribers.data_room}>{item.subscribers.data_room || "-"}</div>
+<div style={{minWidth: "150px"}} className="text-sm text-gray-600 truncate" title={item.subscribers.video_room}>{item.subscribers.video_room || "-"}</div>
+<div style={{minWidth: "110px"}} className="text-xs text-gray-400">{formatDate(item.subscribers.created_at)}</div>
+
+                        
+                        <div className="shrink-0 flex items-center justify-end gap-1.5 mt-2 md:mt-0 ml-auto">
+  <button onClick={() => openSubPopup(item.subscribers)} className="whitespace-nowrap text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">수정</button>
+  <button onClick={() => deleteFromMonthly(item.id)} className="whitespace-nowrap text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">취소</button>
+  <button onClick={() => cancelSubscriber(item.subscribers.id)} className="whitespace-nowrap text-xs font-bold px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition cursor-pointer">해지</button>
+</div>
+
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* 해지자 리스트 */}
+              {canceledMonthly.length > 0 && (
+                <div className="mt-6 bg-white rounded-2xl border border-red-100 overflow-hidden shadow-sm">
+                  <div className="p-4 border-b border-red-100 bg-red-50/50">
+                    <h3 className="font-bold text-red-500">이번 달 해지자 ({canceledMonthly.length}명)</h3>
+                  </div>
+                  <div className="divide-y divide-red-50">
+                    {canceledMonthly.map((item) => (
+                      <div key={item.id} className="flex items-center py-3 px-5 bg-red-50/20 opacity-70">
+                        <div className="w-28 text-sm text-gray-500 truncate">{item.subscribers.subscriber_id}</div>
+                        <div className="w-28 font-bold text-gray-900 line-through truncate">{item.subscribers.name}</div>
+                        <div className="flex-1 text-right text-xs font-bold text-red-500">해지됨</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 오른쪽: 누락된 구독자 카드 */}
+            <div className="w-full lg:w-64 shrink-0">
+
+              <div className="bg-yellow-50 rounded-3xl border border-yellow-200 p-5 sticky top-28">
+                <div className="flex items-center gap-2 mb-4">
+                  <AlertCircle className="w-5 h-5 text-yellow-600" />
+                  <h3 className="font-bold text-yellow-800">이번 달 누락된 구독자</h3>
+                </div>
+                <p className="text-xs text-yellow-700 mb-4">저번 달에는 있었으나 이번 달에 아직 등록되지 않은 목록입니다.</p>
+                
+                <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
+                  {missingData.length === 0 ? (
+                    <div className="text-center py-6 text-sm text-yellow-600/70">누락된 구독자가 없습니다.</div>
+                  ) : (
+                    missingData.map((sub) => (
+                      <div key={sub.id} className="bg-white rounded-xl p-3 shadow-sm border border-yellow-100 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-bold text-gray-800">{sub.name}</p>
+                          <p className="text-[10px] text-gray-400">{sub.subscriber_id}</p>
+                        </div>
+                        <button onClick={() => addMissingToCurrent(sub)} className="text-xs font-bold bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-lg hover:bg-yellow-200 transition">
+                          추가
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
       </section>
 
-
-      
-
-      {/* 회원 상세 팝업 */}
-      {selectedProfile && (
-        <div
-          className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4"
-          onClick={() => setSelectedProfile(null)}
+      {/* 구독자 전체 보기 플로팅 버튼 */}
+      {adminTab === "subscribers" && (
+        <button
+          onClick={() => { fetchAllSubscribers(); setIsAllSubPopupOpen(true); }}
+          className="fixed bottom-8 left-8 z-40 bg-slate-800 text-white px-5 py-3 rounded-full shadow-xl flex items-center gap-2 hover:bg-slate-700 transition hover:-translate-y-1"
         >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-xl cursor-default"
-          >
+          <List className="w-5 h-5" />
+          <span className="font-bold text-sm">구독자 전체 보기</span>
+        </button>
+      )}
+
+      {/* ==================== 팝업 1: 월별 리스트에 추가할 사람 선택 ==================== */}
+      {isSelectPopupOpen && (
+        <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4" onClick={() => setIsSelectPopupOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl flex flex-col max-h-[80vh]">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900">회원 정보</h2>
-              <button
-                onClick={() => setSelectedProfile(null)}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition cursor-default"
-              >
+              <h2 className="text-lg font-bold text-gray-900">이번 달 명단에 추가</h2>
+              <button onClick={() => setIsSelectPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3 mb-5">
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
-                <p className="text-[11px] font-bold text-gray-400 mb-1">닉네임</p>
-                <p className="text-sm font-bold text-gray-700">
-                  {selectedProfile.nickname || "(없음)"}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
-                <p className="text-[11px] font-bold text-gray-400 mb-1">인스타그램</p>
-                <p className="text-sm font-bold text-gray-700">
-                  {selectedProfile.instagram_id
-                    ? `@${selectedProfile.instagram_id}`
-                    : "(없음)"}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
-                <p className="text-[11px] font-bold text-gray-400 mb-1">가입일</p>
-                <p className="text-sm font-bold text-gray-700">
-                  {formatDate(selectedProfile.created_at)}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
-                <p className="text-[11px] font-bold text-gray-400 mb-1">현재 상태</p>
-                <span
-                  className={`text-xs font-bold px-3 py-1 rounded-full ${
-                    STATUS_COLOR[selectedProfile.status || ""] ||
-                    "bg-gray-100 text-gray-500"
-                  }`}
-                >
-                  {STATUS_LABEL[selectedProfile.status || ""] ||
-                    selectedProfile.status ||
-                    "-"}
-                </span>
-              </div>
+            <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-2.5 flex items-center gap-2 mb-4">
+              <Search className="w-4 h-4 text-gray-400" />
+              <input placeholder="이름 또는 아이디 검색" value={selectSearch} onChange={(e) => setSelectSearch(e.target.value)} className="w-full outline-none text-sm bg-transparent" />
             </div>
 
-            {selectedProfile.role !== "admin" && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => updateStatus(selectedProfile.id, "approved")}
-                  disabled={
-                    selectedProfile.status === "approved" ||
-                    updating === selectedProfile.id
-                  }
-                  className="flex-1 h-11 rounded-xl text-sm font-bold bg-green-50 text-green-700 hover:bg-green-100 disabled:opacity-40 transition cursor-default"
-                >
-                  승인
-                </button>
-                <button
-                  onClick={() => updateStatus(selectedProfile.id, "pending")}
-                  disabled={
-                    selectedProfile.status === "pending" ||
-                    updating === selectedProfile.id
-                  }
-                  className="flex-1 h-11 rounded-xl text-sm font-bold bg-yellow-50 text-yellow-700 hover:bg-yellow-100 disabled:opacity-40 transition cursor-default"
-                >
-                  대기
-                </button>
-                <button
-                  onClick={() => updateStatus(selectedProfile.id, "rejected")}
-                  disabled={
-                    selectedProfile.status === "rejected" ||
-                    updating === selectedProfile.id
-                  }
-                  className="flex-1 h-11 rounded-xl text-sm font-bold bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-40 transition cursor-default"
-                >
-                  거절
-                </button>
-              </div>
-            )}
+            <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+              {availableToSelect.length === 0 ? (
+                <div className="text-center py-10 text-sm text-gray-400">추가할 수 있는 구독자가 없습니다.  
+</div>
+              ) : (
+                availableToSelect.map((sub) => (
+                  <div key={sub.id} className="bg-white border border-gray-200 rounded-xl p-3 flex items-center justify-between hover:border-blue-300 transition cursor-pointer" onClick={() => addToMonthly(sub.id)}>
+                    <div className="flex items-center gap-2 min-w-0">
+  <p className="font-bold text-gray-900 text-sm truncate">
+    {sub.name}
+  </p>
+
+  <p className="text-xs text-gray-400 truncate">
+    {sub.subscriber_id}
+  </p>
+</div>
+                    <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                      <Plus className="w-4 h-4" />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}
+
+      {/* ==================== 팝업 2: 구독자 마스터 정보 등록/수정 ==================== */}
+      {isSubPopupOpen && (
+        <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4" onClick={() => setIsSubPopupOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">{subForm.id ? "구독자 정보 수정" : "새 구독자 마스터 등록"}</h2>
+              <button onClick={() => setIsSubPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">아이디</label>
+                  <input value={subForm.subscriber_id} onChange={(e) => setSubForm({...subForm, subscriber_id: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="아이디 입력" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">이름</label>
+                  <input value={subForm.name} onChange={(e) => setSubForm({...subForm, name: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="이름 입력" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">자료방</label>
+                  <input value={subForm.data_room} onChange={(e) => setSubForm({...subForm, data_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="자료방 이름" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">영상방</label>
+                  <input value={subForm.video_room} onChange={(e) => setSubForm({...subForm, video_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="영상방 이름" />
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSubForm({...subForm, pay_app: !subForm.pay_app})}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl border transition ${subForm.pay_app ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-gray-50 border-gray-200 text-gray-600"}`}
+              >
+                {subForm.pay_app ? <CheckSquare className="w-5 h-5 text-blue-500" /> : <Square className="w-5 h-5 text-gray-400" />}
+                <span className="font-bold text-sm">페이앱 결제</span>
+              </button>
+
+              {subForm.pay_app && (
+  <div>
+    <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">페이앱 코드</label>
+    <input
+      value={subForm.pay_app_code}
+      onChange={(e) => setSubForm({...subForm, pay_app_code: e.target.value})}
+      className="w-full bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400"
+      placeholder="페이앱 코드 입력"
+    />
+  </div>
+)}
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">메모</label>
+                <textarea value={subForm.memo} onChange={(e) => setSubForm({...subForm, memo: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 resize-none h-24" placeholder="메모를 입력하세요" />
+              </div>
+
+              <button onClick={saveSubscriber} className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-sm">
+                저장하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== 팝업 3: 구독자 전체 목록 (마스터 관리) ==================== */}
+      {isAllSubPopupOpen && (
+        <div
+  className="fixed inset-0 z-[9998] bg-black/40 flex items-center justify-center p-4"
+  onMouseMove={handleDragMove}
+  onMouseUp={handleDragEnd}
+  onClick={(e) => { if (e.target === e.currentTarget) setIsAllSubPopupOpen(false); }}
+>
+          <div
+  onClick={(e) => e.stopPropagation()}
+  style={{ transform: `translate(${popupPos.x}px, ${popupPos.y}px)` }}
+  className="w-full max-w-5xl h-[85vh] rounded-3xl bg-white shadow-xl flex flex-col overflow-hidden"
+>
+            <div
+  className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50 select-none"
+  onMouseDown={handleDragStart}
+>
+              <div className="flex items-center gap-2">
+                <List className="w-5 h-5 text-gray-700" />
+                <h2 className="text-lg font-bold text-gray-900">구독자 전체 목록 (마스터)</h2>
+              </div>
+              <div className="flex items-center gap-3">
+                <button onClick={() => openSubPopup()} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 transition">
+                  <UserPlus className="w-4 h-4" />
+                  새 구독자 등록
+                </button>
+                <button onClick={() => setIsAllSubPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-white border border-gray-200 hover:bg-gray-100 text-gray-500 transition  cursor-pointer">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 flex-1 flex flex-col overflow-hidden bg-white">
+                
+              {/* 탭 3개 및 검색창 */}
+              <div className="mb-6">
+                <div className="flex bg-gray-200 p-1 rounded-xl w-full  mb-3">
+  <button onClick={() => setAllSubTab("all")} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${allSubTab === "all" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
+    전체목록 <span className="text-xs font-black ml-1">{allSubscribers.length}</span>
+  </button>
+  <button onClick={() => setAllSubTab("active")} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${allSubTab === "active" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"}`}>
+    구독중 <span className="text-xs font-black ml-1">{allSubscribers.filter(s => s.status === "active").length}</span>
+  </button>
+  <button onClick={() => setAllSubTab("canceled")} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${allSubTab === "canceled" ? "bg-white text-red-500 shadow-sm" : "text-gray-500"}`}>
+    해지 <span className="text-xs font-black ml-1">{allSubscribers.filter(s => s.status === "canceled").length}</span>
+  </button>
+</div>
+
+                <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-2.5 flex items-center gap-2">
+                  <Search className="w-4 h-4 text-gray-400" />
+                  <input placeholder="이름 또는 아이디 검색" value={allSubSearch} onChange={(e) => setAllSubSearch(e.target.value)} className="w-full outline-none text-sm" />
+                </div>
+              </div>
+
+              {/* 한 줄 리스트 형식 (테이블 스타일) */}
+              <div className="flex-1 overflow-hidden flex flex-col border border-gray-200 rounded-2xl">
+                {/* 리스트 헤더 */}
+                <div className="hidden md:flex items-center py-3 px-5 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-500">
+                  <div className="w-36">아이디</div>
+                  <div className="w-36">이름</div>
+                  <div className="w-40">자료방</div>
+                  <div className="w-40">영상방</div>
+                  <div className="w-32">등록날짜</div>
+                  <div className="flex-1 text-right">관리</div>
+                </div>
+
+                {/* 리스트 바디 */}
+                <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+                  {filteredAllSubs.length === 0 ? (
+                    <div className="p-10 text-center text-gray-400 text-sm">데이터가 없습니다.</div>
+                  ) : (
+                    filteredAllSubs.map((sub) => (
+                      <div key={sub.id} className={`flex flex-col md:flex-row md:items-center py-3 px-5 hover:bg-gray-50 transition gap-2 md:gap-0 ${sub.status === "canceled" ? "opacity-60 bg-gray-50/50" : ""}`}>
+                        <div className="w-36 text-sm text-gray-500 truncate" title={sub.subscriber_id}>{sub.subscriber_id}</div>
+                        <div className="w-36 font-bold text-gray-900 flex items-center gap-1.5">
+                          <span className={`truncate ${sub.status === "canceled" ? "line-through" : ""}`} title={sub.name}>{sub.name}</span>
+                          {sub.pay_app && <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold">P</span>}
+                        </div>
+                        <div className="w-40 text-sm text-gray-600 truncate" title={sub.data_room}>{sub.data_room || "-"}</div>
+                        <div className="w-40 text-sm text-gray-600 truncate" title={sub.video_room}>{sub.video_room || "-"}</div>
+                        <div className="w-32 text-xs text-gray-400">{formatDate(sub.created_at)}</div>
+                        
+                        <div className="flex-1 flex items-center justify-end gap-1.5 mt-2 md:mt-0">
+                          <button onClick={() => openSubPopup(sub)} className="text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">수정</button>
+                          {sub.status === "active" ? (
+                            <button onClick={() => cancelSubscriber(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition cursor-pointer">해지</button>
+                          ) : (
+                            <button onClick={() => restoreSubscriber(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition cursor-pointer">복구</button>
+                          )}
+                          <button onClick={() => confirmDelete(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-gray-800 text-white hover:bg-gray-900 rounded-lg transition cursor-pointer">삭제</button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== 팝업 4: 삭제 확인 팝업 ==================== */}
+      {deleteConfirmOpen && (
+        <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-5">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200">
+            <h2 className="text-xl font-black text-gray-900">
+              구독자 삭제
+            </h2>
+
+            <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
+              선택한 구독자를 완전히 삭제하시겠습니까?  
+
+              (이 작업은 되돌릴 수 없습니다)
+            </p>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                  setTargetToDelete(null);
+                }}
+                className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-default"
+              >
+                취소
+              </button>
+
+              <button
+                onClick={executeDelete}
+                className="flex-1 h-12 rounded-2xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition cursor-default"
+              >
+                삭제
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+{/* 메모장 팝업 */}
+{isMemoOpen && (
+  <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
+    <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
+      <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
+        <div className="font-bold flex items-center gap-2"><NotebookPen className="w-5 h-5" />메모장</div>
+        <button onClick={() => setIsMemoOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"><X className="w-5 h-5" /></button>
+      </div>
+      <div className="p-4 flex gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input value={memoSearch} onChange={(e) => setMemoSearch(e.target.value)} placeholder="메모 검색" className="w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm outline-none focus:border-gray-400" />
+        </div>
+        <button onClick={() => { setMemoTitle(""); setMemoContent(""); setMemoAddPopupPos({ x: 0, y: 0 }); setMemoAddOpen(true); }} className="h-12 px-5 rounded-2xl bg-gray-800 text-white text-sm font-bold flex items-center gap-2 cursor-default">
+          <Plus className="w-4 h-4" />추가
+        </button>
+      </div>
+            <div className="flex-1 overflow-y-auto p-4">
+        {filteredMemos.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-sm text-gray-400 py-20">저장된 메모가 없습니다.</div>
+        ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleMemoDragEnd}>
+              <SortableContext items={pagedMemos.filter(m => !m.pinned).map(m => m.id)} strategy={rectSortingStrategy}>
+                {pagedMemos.map((memo) => (
+                  <SortableMemoCard key={memo.id} memo={memo}>
+                    <div onDoubleClick={() => openMemoEdit(memo)} onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, id: memo.id }); }} className={`rounded-2xl border p-4 shadow-sm hover:shadow-md transition cursor-default ${getMemoColorClass(memo.color)}`}>
+
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-black text-gray-900 break-keep">{memo.title || ""}</h3>
+                    <p className="text-sm text-gray-600 mt-2 leading-relaxed whitespace-pre-line break-keep">{memo.content}</p>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <button onClick={(e) => { e.stopPropagation(); toggleMemoVisible(memo.id); }} className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.visible ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}>
+                      {memo.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); toggleMemoPinned(memo.id); }} className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.pinned ? "bg-gray-800 border-gray-800 text-white hover:bg-gray-700 hover:border-gray-700" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}>
+                      <Pin className="w-4 h-4" />
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); openMemoEdit(memo); }} className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 bg-white text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition cursor-default">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                                 </div>
+                  </SortableMemoCard>
+                ))}
+              </SortableContext>
+            </DndContext>
+          </div>
+
+        )}
+      </div>
+      <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
+        <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+          <button onClick={() => setMemoPage((p) => Math.max(1, p - 1))} disabled={memoPage === 1} className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer">이전</button>
+          {Array.from({ length: Math.min(totalMemoPages, 10) }).map((_, index) => {
+            const page = index + 1;
+            return (
+              <button key={page} onClick={() => setMemoPage(page)} className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${memoPage === page ? "bg-slate-800 text-white" : "bg-white text-gray-600 hover:bg-gray-100"}`}>{page}</button>
+            );
+          })}
+          <button onClick={() => setMemoPage((p) => Math.min(totalMemoPages, p + 1))} disabled={memoPage === totalMemoPages} className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer">다음</button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+
+{memoAddOpen && (
+  <div onMouseMove={(e) => moveMemoPopup(e, "memoAdd")} onMouseUp={stopMemoPopupMove} onMouseLeave={stopMemoPopupMove} onClick={() => setMemoAddOpen(false)} className="fixed inset-0 z-[1400] bg-black/40 flex items-center justify-center p-4">
+    <div style={{ transform: `translate(${memoAddPopupPos.x}px, ${memoAddPopupPos.y}px)` }} onMouseDown={(e) => { if (window.innerWidth < 768) return; const target = e.target as HTMLElement; if (target.closest("button") || target.closest("input") || target.closest("textarea")) return; memoAddDragRef.current = { isDragging: true, startX: e.clientX, startY: e.clientY, originX: memoAddPopupPos.x, originY: memoAddPopupPos.y }; }} onClick={(e) => e.stopPropagation()} className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6 cursor-default">
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-xl font-black text-gray-900">메모 추가</h2>
+        <div className="flex items-center gap-2">
+          {memoColorOptions.map((color) => (
+            <button key={color.value} type="button" onClick={() => setMemoColor(color.value)} className={`w-7 h-7 rounded-full border transition hover:scale-105 ${memoColor === color.value ? "ring-2 ring-gray-400 ring-offset-2" : ""} ${color.className}`} />
+          ))}
+          <button onClick={() => setMemoAddOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"><X className="w-5 h-5" /></button>
+        </div>
+      </div>
+      <input value={memoTitle} onChange={(e) => setMemoTitle(e.target.value)} placeholder="메모 제목" className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none mb-3" />
+      <textarea value={memoContent} onChange={(e) => setMemoContent(e.target.value)} placeholder="메모 내용을 입력하세요" className="w-full h-56 rounded-2xl border border-gray-200 p-4 text-sm outline-none resize-none mb-5" />
+      <div className="flex gap-3">
+        <button onClick={() => setMemoAddOpen(false)} className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-default">취소</button>
+        <button onClick={addMemo} className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-default">저장</button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+{/* 메모 수정 팝업 */}
+{selectedMemo && (
+  <div onMouseMove={(e) => moveMemoPopup(e, "memoEdit")} onMouseUp={stopMemoPopupMove} onMouseLeave={stopMemoPopupMove} className="fixed inset-0 z-[1300] bg-black/40 flex items-center justify-center p-4">
+    <div style={{ transform: `translate(${memoEditPopupPos.x}px, ${memoEditPopupPos.y}px)` }} onMouseDown={(e) => { if (window.innerWidth < 768) return; const target = e.target as HTMLElement; if (target.closest("button") || target.closest("input") || target.closest("textarea")) return; memoEditDragRef.current = { isDragging: true, startX: e.clientX, startY: e.clientY, originX: memoEditPopupPos.x, originY: memoEditPopupPos.y }; }} onClick={(e) => e.stopPropagation()} className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6 cursor-default">
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-xl font-black text-gray-900">메모 수정</h2>
+        <div className="flex items-center gap-2">
+          {memoColorOptions.map((color) => (
+            <button key={color.value} type="button" onClick={() => { changeMemoColor(selectedMemo.id, color.value); setSelectedMemo({ ...selectedMemo, color: color.value }); }} className={`w-7 h-7 rounded-full border transition hover:scale-105 ${selectedMemo.color === color.value ? "ring-2 ring-gray-400 ring-offset-2" : ""} ${color.className}`} />
+          ))}
+          <button onClick={() => { setSelectedMemo(null); setMemoEditPopupPos({ x: 0, y: 0 }); memoEditDragRef.current = { isDragging: false, startX: 0, startY: 0, originX: 0, originY: 0 }; }} className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"><X className="w-5 h-5" /></button>
+        </div>
+      </div>
+      <input value={selectedMemo.title} onChange={(e) => setSelectedMemo({ ...selectedMemo, title: e.target.value })} placeholder="메모 제목" className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm font-bold outline-none mb-3" />
+      <textarea value={selectedMemo.content} onChange={(e) => setSelectedMemo({ ...selectedMemo, content: e.target.value })} placeholder="메모 내용을 입력하세요" className="w-full h-56 rounded-2xl border border-gray-200 p-4 text-sm outline-none resize-none mb-5" />
+      <div className="flex gap-3">
+        <button onClick={() => deleteMemo(selectedMemo.id)} className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-600 text-sm font-bold hover:bg-red-50 hover:text-red-500 transition cursor-default">삭제</button>
+        <button onClick={() => { saveMemos(memos.map(m => m.id === selectedMemo.id ? { ...m, title: selectedMemo.title, content: selectedMemo.content, updatedAt: new Date().toISOString() } : m)); setSelectedMemo(null); }} className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-default">완료</button>
+      </div>
+    </div>
+  </div>
+)}
+
+{contextMenu && (
+  <>
+    <div className="fixed inset-0 z-[1999]" onClick={() => setContextMenu(null)} />
+    <div style={{ top: contextMenu.y, left: contextMenu.x }} className="fixed z-[2000] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-32" onPointerDown={(e) => e.stopPropagation()}>
+
+             <button onClick={() => { const target = memos.find((m: MemoItem) => m.id === contextMenu!.id); if (target) openMemoEdit(target); setContextMenu(null); }} className="w-full px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition cursor-default text-left">수정</button>
+        <button onClick={() => { deleteMemo(contextMenu!.id); setContextMenu(null); }} className="w-full px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 transition cursor-default text-left border-t border-gray-100">삭제</button>
+    </div>
+  </>
+)}
+
+
+{deleteMemoConfirmOpen && (
+  <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">
+    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+      <h2 className="text-xl font-black text-gray-900">메모 삭제</h2>
+      <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">선택한 메모를 삭제하시겠습니까?</p>
+      <div className="flex gap-3 mt-6">
+        <button onClick={() => { setDeleteMemoId(null); setDeleteMemoConfirmOpen(false); }} className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-default">취소</button>
+        <button onClick={confirmDeleteMemo} className="flex-1 h-12 rounded-2xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition cursor-default">삭제</button>
+      </div>
+       </div>
+  </div>
+)}
+
+
+
+
+
+
+         <MemoStickers />
     </main>
   );
 }
+

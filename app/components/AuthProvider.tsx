@@ -59,11 +59,12 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const loadProfile = async (userId: string) => {
        const { data: profile, error } = await supabase
       .from("profiles")
-      .select("nickname, instagram_id, status, role, created_at, insurance_memos")
+            .select("nickname, instagram_id, status, role, created_at")
+
       .eq("id", userId)
       .maybeSingle();
 
-    console.log("loadProfile result:", profile, "error:", error);
+    
 
 
     setAuthNickname(profile?.nickname || null);
@@ -72,28 +73,56 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     setAuthRole(profile?.role || null);
     setAuthCreatedAt(profile?.created_at || null);
 
-    if (profile?.status === "approved") {
-      const dbMemos = profile?.insurance_memos;
-      if (dbMemos && Array.isArray(dbMemos)) {
-        setMemos(dbMemos as MemoItem[]);
-      }
+        if (profile?.status === "approved") {
+      const { data: dbMemos } = await supabase
+        .from("user_memos")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true });
+      setMemos((dbMemos as MemoItem[]) || []);
     } else {
       const savedMemos = localStorage.getItem("personalMemos");
       setMemos(savedMemos ? JSON.parse(savedMemos) : []);
     }
+
   };
 
 
   
-  const saveMemos = (nextMemos: MemoItem[]) => {
+    const saveMemos = (nextMemos: MemoItem[]) => {
     setMemos(nextMemos);
     if (authUser && authStatus === "approved") {
-      supabase.from("profiles").update({ insurance_memos: nextMemos }).eq("id", authUser.id).then();
+      const prev = nextMemos;
+      // 삭제된 메모 처리
+      supabase.from("user_memos").select("id").eq("user_id", authUser.id).then(({ data: existing }) => {
+        const existingIds = (existing || []).map((r: any) => r.id);
+        const nextIds = prev.map(m => m.id);
+        const toDelete = existingIds.filter((id: string) => !nextIds.includes(id));
+        if (toDelete.length > 0) {
+          supabase.from("user_memos").delete().in("id", toDelete).then();
+        }
+      });
+      // upsert
+      prev.forEach(memo => {
+        supabase.from("user_memos").upsert({
+          id: memo.id,
+          user_id: authUser.id,
+          title: memo.title,
+          content: memo.content,
+          pinned: memo.pinned,
+          visible: memo.visible,
+          color: memo.color,
+          x: memo.x,
+          y: memo.y,
+          updated_at: new Date().toISOString(),
+        }).then();
+      });
     } else {
       localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
       window.dispatchEvent(new Event("memo-storage-updated"));
     }
   };
+
 
   const refreshAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
