@@ -92,9 +92,9 @@ onResetPassword,
         </div>
 
         <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs leading-relaxed text-gray-500">
-          로그인하지 않아도 기본 기능은 이용할 수 있습니다.
+          로그인기능은 보험나무 구독자만 이용가능합니다 !
           <br />
-          현재 개발 테스트 중입니다 ! 🚨 회원가입 X
+          회원가입 하신 후 DM 또는 카카오톡으로 인스타그램 아이디를 보내 주세요 😄
         </div>
 
         <div className="space-y-3">

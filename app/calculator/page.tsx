@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/app/components/AuthProvider";
 import {
   DndContext,
   closestCenter,
@@ -382,6 +384,8 @@ function SortableMemoCard({
 }
 
 export default function CalculatorPage() {
+    const { authUser, authStatus, memos, saveMemos } = useAuth();
+
   const [generation, setGeneration] = useState("gen1");
   const [type, setType] = useState("outpatient");
   const [hospitalType, setHospitalType] = useState("clinic");
@@ -394,7 +398,7 @@ const [memoAddPopupPos, setMemoAddPopupPos] = useState({ x: 0, y: 0 });
 const [memoEditPopupPos, setMemoEditPopupPos] = useState({ x: 0, y: 0 });
 
 const [memoOpen, setMemoOpen] = useState(false);
-const [memos, setMemos] = useState<MemoItem[]>([]);
+
 const [memoSearch, setMemoSearch] = useState("");
 const [memoPage, setMemoPage] = useState(1);
 const [memoTitle, setMemoTitle] = useState("");
@@ -405,6 +409,8 @@ const [memoAddOpen, setMemoAddOpen] = useState(false);
 const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
 const [deleteMemoConfirmOpen, setDeleteMemoConfirmOpen] = useState(false);
 const [deleteMemoId, setDeleteMemoId] = useState<string | null>(null);
+const [contextMenu, setContextMenu] = useState<{ x: number; y: number; id: string } | null>(null);
+
 
 
 const dictionaryDragRef = useRef({
@@ -1100,36 +1106,13 @@ const calculateSimple = () => {
   };
 };
 
-useEffect(() => {
-  const syncMemos = () => {
-    const savedMemos = localStorage.getItem("personalMemos");
-    setMemos(savedMemos ? JSON.parse(savedMemos) : []);
-  };
 
-  syncMemos();
-
-  window.addEventListener("memo-storage-updated", syncMemos);
-  window.addEventListener("storage", syncMemos);
-
-  return () => {
-    window.removeEventListener("memo-storage-updated", syncMemos);
-    window.removeEventListener("storage", syncMemos);
-  };
-}, []);
 
 useEffect(() => {
   const openMemoDetail = (event: any) => {
     const memoId = event.detail;
-
-    const savedMemos = localStorage.getItem("personalMemos");
-    if (!savedMemos) return;
-
-    const parsedMemos: MemoItem[] = JSON.parse(savedMemos);
-    const targetMemo = parsedMemos.find((memo) => memo.id === memoId);
-
+    const targetMemo = memos.find((memo) => memo.id === memoId);
     if (!targetMemo) return;
-
-    setMemos(parsedMemos);
     setSelectedMemo(targetMemo);
   };
 
@@ -1138,13 +1121,15 @@ useEffect(() => {
   return () => {
     window.removeEventListener("open-memo-detail", openMemoDetail);
   };
+}, [memos]);
+
+useEffect(() => {
+  const closeContextMenu = () => setContextMenu(null);
+  window.addEventListener("pointerdown", closeContextMenu);
+  return () => window.removeEventListener("pointerdown", closeContextMenu);
 }, []);
 
-const saveMemos = (nextMemos: MemoItem[]) => {
-  setMemos(nextMemos);
-  localStorage.setItem("personalMemos", JSON.stringify(nextMemos));
-  window.dispatchEvent(new Event("memo-storage-updated"));
-};
+
 
 const addMemo = () => {
   const now = new Date().toISOString();
