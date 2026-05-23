@@ -92,13 +92,16 @@ onResetPassword,
         </div>
 
         <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs leading-relaxed text-gray-500">
-          로그인기능은 보험나무 구독자만 이용가능합니다 😄
-          <br />
-          구독 회원은 메모, 캘린더 등 모든 입력값들이 저장되며
-          <br />pc-모바일 연동, 구독자료 다운, 히든 기능 사용 가능합니다
-          <br />
-          🚨 구독하신 인스타그램 아이디를 정확히 입력해 주세요 !
-        </div>
+  로그인기능은 보험나무 구독자만 이용가능합니다 😄
+  <br />
+  구독 회원은 메모, 캘린더 등 모든 입력값들이 저장되며
+  <br />
+  PC-모바일 연동, 구독자료 다운, 히든 기능 사용 가능합니다
+  <br />
+  <span className="text-blue-500 font-bold">
+    구독하신 인스타그램 아이디를 정확히 입력해 주세요 !
+  </span>
+</div>
 
         <div className="space-y-3">
           {mode === "signup" && (
