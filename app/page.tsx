@@ -49,7 +49,7 @@ import {
 import AuthButton from "@/components/AuthButton";
 import ResourceExplorer from "./components/ResourceExplorer";
 
-
+import CurrencyConverter from "@/app/components/CurrencyConverter";
 
 import { useAuth } from "@/app/components/AuthProvider";
 import { FaInstagram } from "react-icons/fa";
@@ -665,18 +665,26 @@ setNpsTableOpen(true);
       setQuickOpen(false);
     },
   },
-  {
-  key: "bankRate",
-  title: "예금금리 비교",
-  action: () => {
-    resetPopupPosition("bankRate");
-
-    setBankRateOpen(true);
-
-    setQuickOpen(false);
-    setPcQuickOpen(false);
+      {
+    key: "bankRate",
+    title: "예금금리 비교",
+    action: () => {
+      resetPopupPosition("bankRate");
+      setBankRateOpen(true);
+      setQuickOpen(false);
+      setPcQuickOpen(false);
+    },
   },
-},
+  // 승인 구독자 전용 - 환율 변환기
+  ...(authStatus === "approved" ? [{
+    key: "currencyConverter",
+    title: "환율 변환기",
+    action: () => {
+      window.dispatchEvent(new CustomEvent("open-currency-converter"));
+      setQuickOpen(false);
+      setPcQuickOpen(false);
+    },
+  }] : []),
 ];
 
 
@@ -3216,20 +3224,21 @@ hover:-translate-y-1
         )}
 
         {authStatus === "approved" && (
-          <button
-                       onClick={() => {
-              window.dispatchEvent(new CustomEvent("open-calculator"));
-              setPcQuickOpen(false);
-            }}
+  <button
+    onClick={() => {
+      window.dispatchEvent(new CustomEvent("open-calculator"));
+      setPcQuickOpen(false);
+    }}
+    className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
+  >
+    계산기
+  </button>
+)}
 
-            className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
-          >
-            계산기
-          </button>
-        )}
 
 
-       {Array.from({ length: 4 }).map((_, index) => {
+
+{Array.from({ length: 4 }).map((_, index) => {
 
   const selectedKey = quickMenuKeys[index];
 
@@ -3414,19 +3423,20 @@ hover:-translate-y-1
         )}
 
         {authStatus === "approved" && (
-          <button
-                       onClick={() => {
-              window.dispatchEvent(new CustomEvent("open-calculator"));
-              setPcQuickOpen(false);
-            }}
+  <button
+    onClick={() => {
+      window.dispatchEvent(new CustomEvent("open-calculator"));
+      setPcQuickOpen(false);
+    }}
+    className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
+  >
+    계산기
+  </button>
+)}
 
-            className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
-          >
-            계산기
-          </button>
-        )}
 
-        {Array.from({ length: 4 }).map((_, index) => {
+
+{Array.from({ length: 4 }).map((_, index) => {
 
   const selectedKey = quickMenuKeys[index];
 
@@ -6094,6 +6104,8 @@ setMemoAddOpen(false);
   </div>
 )}
 
+
+
 {npsTableOpen && (
   <div
     onClick={() => setNpsTableOpen(false)}
@@ -6742,6 +6754,9 @@ setMemoAddOpen(false);
         <ResourceExplorer onClose={() => setResourceOpen(false)} authStatus={authStatus} authRole={authRole} />
       )}
 
+ {/* 환율 변환기 (승인 구독자 전용 - 컴포넌트 내부에서 권한 체크) */}
+        <CurrencyConverter />
+
     </>
     );
 
@@ -6787,9 +6802,19 @@ function ExchangeIndexBar() {
             </span>
           ))}
 
+          
+
           <span className="text-[13px] text-gray-400">
-            기준일 {exchange.date}
-          </span>
+  기준일 {exchange.date
+    ? (() => {
+        const d = new Date(exchange.date);
+        return isNaN(d.getTime())
+          ? exchange.date
+          : d.toLocaleString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+      })()
+    : "-"}
+</span>
+
         </div>
       </div>
     </div>

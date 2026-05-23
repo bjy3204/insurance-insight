@@ -21,6 +21,9 @@ import {
   X,
 } from "lucide-react";
 
+import CurrencyConverter from "@/app/components/CurrencyConverter";
+
+
 import { FaInstagram } from "react-icons/fa";
 
 import {
@@ -427,6 +430,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
   };
 
   return (
+    <>
     <main className="min-h-screen bg-gray-100 pb-24">
       {/* 헤더 */}
       <header className="bg-white border-b border-black shadow-sm">
@@ -507,21 +511,23 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                       메모장
                     </button>
 
-                    {authStatus === "approved" && (
-                      <button
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent("open-calculator"));
-                          setSettingOpen(false);
-                        }}
-                        className="
-                          block w-full text-center px-4 py-3 text-sm font-bold
-                          text-gray-700 hover:bg-gray-50 transition border-t
-                          border-gray-100 cursor-default
-                        "
-                      >
-                        계산기
-                      </button>
-                    )}
+                   {authStatus === "approved" && (
+  <button
+    onClick={() => {
+      window.dispatchEvent(new CustomEvent("open-calculator"));
+      setSettingOpen(false);
+    }}
+    className="
+      block w-full text-center px-4 py-3 text-sm font-bold
+      text-gray-700 hover:bg-gray-50 transition border-t
+      border-gray-100 cursor-default
+    "
+  >
+    계산기
+  </button>
+)}
+
+
                   </div>
                 )}
               </div>
@@ -1305,6 +1311,68 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
   </div>
 )}
 
+    {/* 환율 변환기 버튼 (승인 구독자 전용) */}
+
+{authStatus === "approved" && (
+
+  <button
+
+    onClick={() => window.dispatchEvent(new CustomEvent("open-currency-converter"))}
+
+    className="
+
+      fixed
+
+      left-6
+
+      bottom-24
+
+      z-40
+
+      w-14
+
+      h-14
+
+      rounded-full
+
+      bg-gray-800
+
+      shadow-lg
+
+      flex
+
+      items-center
+
+      justify-center
+
+      hover:shadow-2xl
+
+      hover:-translate-y-0.5
+
+      transition-all
+
+      duration-200
+
+    "
+
+  >
+
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+
+      <path d="M8 3L4 7l4 4"/>
+
+      <path d="M4 7h16"/>
+
+      <path d="M16 21l4-4-4-4"/>
+
+      <path d="M20 17H4"/>
+
+    </svg>
+
+  </button>
+
+ )}
+
 
       {/* 하단 고정 메뉴 */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
@@ -1334,6 +1402,15 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
           </a>
         </div>
       </div>
-    </main>
+
+
+
+                   </main>
+
+      {/* 환율 변환기 */}
+      <CurrencyConverter />
+
+    </>
   );
 }
+

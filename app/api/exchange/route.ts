@@ -1,35 +1,47 @@
 import { NextResponse } from "next/server";
 
-const API_URL =
-  "https://api.frankfurter.app/latest?from=USD&to=KRW,JPY,EUR,CNY";
+// 메인 페이지 ExchangeIndexBar에 표시할 통화
+const DISPLAY_LABELS = ["USD", "JPY", "EUR", "CNY"];
 
-const makeItems = (data: any, prevData?: any) => {
-  const current = {
-    USD: data.rates.KRW,
-    JPY: (data.rates.KRW / data.rates.JPY) * 100,
-    EUR: data.rates.KRW / data.rates.EUR,
-    CNY: data.rates.KRW / data.rates.CNY,
-  };
+// 환율 변환기에서 지원할 전체 통화
+const ALL_CURRENCIES = [
+  "KRW", "PHP", "USD", "JPY", "VND", "EUR", "THB", "CNY",
+  "RUB", "TWD", "HKD", "GBP", "AUD", "CAD", "CHF", "SGD",
+  "MYR", "IDR", "INR", "NZD",
+];
 
-  const previous = prevData
-    ? {
-        USD: prevData.rates.KRW,
-        JPY: (prevData.rates.KRW / prevData.rates.JPY) * 100,
-        EUR: prevData.rates.KRW / prevData.rates.EUR,
-        CNY: prevData.rates.KRW / prevData.rates.CNY,
-      }
-    : null;
+// open.er-api.com: 무료, API 키 불필요, 전 세계 모든 통화 지원
+// KRW 기준으로 직접 조회 가능
+const API_URL = "https://open.er-api.com/v6/latest/KRW";
 
-  return Object.entries(current).map(([label, value]) => {
-    const prevValue = previous
-      ? previous[label as keyof typeof previous]
-      : Number(value);
+// KRW 기준 환율 계산
+// data.rates는 KRW 기준: { USD: 0.00066, JPY: 0.105, ... }
+// 1 CODE = 1/rates[CODE] KRW
+const toKrwRate = (rates: Record<string, number>, code: string): number => {
+  if (code === "KRW") return 1;
+  const r = rates[code];
+  if (!r) return 0;
+  let rate = 1 / r;
+  // JPY는 100엔 기준으로 표시
+  if (code === "JPY") rate = rate * 100;
+  return rate;
+};
 
-    const change = Number(value) - Number(prevValue);
+const makeItems = (
+  rates: Record<string, number>,
+  prevRates: Record<string, number> | null,
+  labelFilter?: string[]
+) => {
+  const codes = labelFilter ?? ALL_CURRENCIES.filter((c) => c !== "KRW");
+
+  return codes.map((code) => {
+    const value = toKrwRate(rates, code);
+    const prevValue = prevRates ? toKrwRate(prevRates, code) : value;
+    const change = value - prevValue;
 
     return {
-      label,
-      value: Number(value),
+      label: code,
+      value,
       change,
       direction: change > 0 ? "up" : change < 0 ? "down" : "same",
     };
@@ -42,37 +54,33 @@ export async function GET() {
       next: { revalidate: 3600 },
     });
 
-    if (!res.ok) {
-      throw new Error("exchange api error");
-    }
+    if (!res.ok) throw new Error("exchange api error");
 
     const data = await res.json();
+    const rates: Record<string, number> = data.rates;
 
-    const latestDate = new Date(data.date);
-    const prevDate = new Date(latestDate);
-    prevDate.setDate(prevDate.getDate() - 1);
-
-    const prevDateText = prevDate.toISOString().slice(0, 10);
-
-    let prevData = null;
-
+    // 전날 데이터 (변동 계산용)
+    let prevRates: Record<string, number> | null = null;
     try {
       const prevRes = await fetch(
-        `https://api.frankfurter.app/${prevDateText}?from=USD&to=KRW,JPY,EUR,CNY`,
-        { next: { revalidate: 3600 } }
+        "https://open.er-api.com/v6/latest/KRW",
+        { next: { revalidate: 86400 } }
       );
-
+      // open.er-api 무료 플랜은 과거 날짜 조회 불가 → 변동값 0으로 처리
       if (prevRes.ok) {
-        prevData = await prevRes.json();
+        // 동일 API라 변동값은 0이 됨 (과거 데이터 없음)
+        prevRates = null;
       }
     } catch {
-      prevData = null;
+      prevRates = null;
     }
 
     return NextResponse.json({
-      date: data.date,
-      previousDate: prevData?.date || "",
-      items: makeItems(data, prevData),
+      date: data.time_last_update_utc ?? "",
+      // 메인 페이지 ExchangeIndexBar용
+      items: makeItems(rates, prevRates, DISPLAY_LABELS),
+      // 환율 변환기용 전체 통화
+      allItems: makeItems(rates, prevRates),
     });
   } catch {
     return NextResponse.json(

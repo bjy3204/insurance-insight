@@ -110,6 +110,19 @@ const formatDate = (date: string) => {
   });
 };
 
+const formatExchangeDate = (dateStr: string) => {
+  const parsed = new Date(dateStr);
+  if (Number.isNaN(parsed.getTime())) return dateStr;
+  return parsed.toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+
 const formatExchange = (label: string, value: number) => {
   if (label === "JPY") {
     return value.toLocaleString("ko-KR", {
@@ -813,7 +826,7 @@ const fetchTickerNews = async () => {
   </h2>
 
   <p className="text-xs text-gray-400 font-bold">
-    기준일 {exchangeDate || "-"}
+    기준일 {exchangeDate ? formatExchangeDate(exchangeDate) : "-"}
   </p>
 </div>
 
