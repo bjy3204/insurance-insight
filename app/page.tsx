@@ -685,6 +685,24 @@ setNpsTableOpen(true);
       setPcQuickOpen(false);
     },
   }] : []),
+  ...(authStatus === "approved" ? [{
+  key: "calculator",
+  title: "계산기",
+  action: () => {
+    window.dispatchEvent(new CustomEvent("open-calculator"));
+    setQuickOpen(false);
+    setPcQuickOpen(false);
+  },
+}] : []),
+...(authStatus === "approved" ? [{
+  key: "insuranceCode",
+  title: "보험사 코드",
+  action: () => {
+    window.dispatchEvent(new CustomEvent("open-insurance-code"));
+    setQuickOpen(false);
+    setPcQuickOpen(false);
+  },
+}] : []),
 ];
 
 
@@ -3223,17 +3241,8 @@ hover:-translate-y-1
           </button>
         )}
 
-        {authStatus === "approved" && (
-  <button
-    onClick={() => {
-      window.dispatchEvent(new CustomEvent("open-calculator"));
-      setPcQuickOpen(false);
-    }}
-    className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
-  >
-    계산기
-  </button>
-)}
+       
+
 
 
 
@@ -3422,17 +3431,8 @@ hover:-translate-y-1
           </button>
         )}
 
-        {authStatus === "approved" && (
-  <button
-    onClick={() => {
-      window.dispatchEvent(new CustomEvent("open-calculator"));
-      setPcQuickOpen(false);
-    }}
-    className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
-  >
-    계산기
-  </button>
-)}
+       
+ 
 
 
 

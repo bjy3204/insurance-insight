@@ -241,6 +241,7 @@ export default function InsuranceCodePopup() {
     return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
   }, []);
 
+
   // ── 저장 ─────────────────────────────────────────────────
   const save = async () => {
     setCodes(tempCodes);
@@ -282,6 +283,12 @@ export default function InsuranceCodePopup() {
     setSearch("");
     setOpen(true);
   };
+
+    useEffect(() => {
+  const handler = () => handleOpen();
+  window.addEventListener("open-insurance-code", handler);
+  return () => window.removeEventListener("open-insurance-code", handler);
+}, []);
 
   // ── 현재 탭 데이터 ────────────────────────────────────────
   const currentOrder = editMode
@@ -409,7 +416,7 @@ export default function InsuranceCodePopup() {
                 <button
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={() => { cancelEdit(); setOpen(false); }}
-                  className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition"
+                  className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
