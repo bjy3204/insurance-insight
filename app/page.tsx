@@ -2992,7 +2992,7 @@ hover:-translate-y-1
     duration-200
   "
 >
-  <User className="w-5 h-5 text-white" />
+  <User className="w-6 h-6 text-white" />
 
   {hasUpdate && (
     <span className="absolute right-1.5 top-1.5 w-2.5 h-2.5 rounded-full bg-red-500" />

@@ -137,6 +137,8 @@ export default function AdminPage() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 12;
+  const [subCurrentPage, setSubCurrentPage] = useState(1);
+const SUB_PAGE_SIZE = 50;
 
   // --- 구독자 관리 상태 ---
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -668,6 +670,16 @@ const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage
     if (monthlySort === "name") return a.subscribers.name.localeCompare(b.subscribers.name, "ko", { numeric: true });
     return new Date(b.subscribers.created_at).getTime() - new Date(a.subscribers.created_at).getTime();
   });
+const pagedActiveMonthly = activeMonthly.slice(
+  (subCurrentPage - 1) * SUB_PAGE_SIZE,
+  subCurrentPage * SUB_PAGE_SIZE
+);
+
+const subTotalPages = Math.max(
+  1,
+  Math.ceil(activeMonthly.length / SUB_PAGE_SIZE)
+);
+
   const canceledMonthly = monthlyData.filter(d => d.status === "canceled");
 
   const filteredAllSubs = allSubscribers
@@ -1032,7 +1044,7 @@ const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage
                   {activeMonthly.length === 0 ? (
                     <div className="p-10 text-center text-gray-400 text-sm">등록된 구독자가 없습니다.</div>
                   ) : (
-                    activeMonthly.map((item) => (
+                    pagedActiveMonthly.map((item: SubscriberMonthly) => (
                      <div key={item.id} className="flex flex-col md:flex-row md:items-center py-3 px-5 hover:bg-blue-50/30 transition gap-2 md:gap-0">
                       <div
   style={{ minWidth: "180px", maxWidth: "180px" }}
@@ -1068,6 +1080,46 @@ const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage
                   )}
                 </div>
               </div>
+
+{subTotalPages > 1 && (
+  <div className="sticky bottom-6 z-20 flex justify-center mt-6">
+    <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm bg-white">
+      <button
+        onClick={() => setSubCurrentPage((p) => Math.max(1, p - 1))}
+        disabled={subCurrentPage === 1}
+        className="px-4 py-2 text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+      >
+        이전
+      </button>
+
+      {Array.from({ length: subTotalPages }).map((_, index) => {
+        const page = index + 1;
+
+        return (
+          <button
+            key={page}
+            onClick={() => setSubCurrentPage(page)}
+            className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
+              subCurrentPage === page
+                ? "bg-slate-800 text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            {page}
+          </button>
+        );
+      })}
+
+      <button
+        onClick={() => setSubCurrentPage((p) => Math.min(subTotalPages, p + 1))}
+        disabled={subCurrentPage === subTotalPages}
+        className="px-4 py-2 border-l border-gray-200 text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+      >
+        다음
+      </button>
+    </div>
+  </div>
+)}
 
               {/* 해지자 리스트 */}
               {canceledMonthly.length > 0 && (

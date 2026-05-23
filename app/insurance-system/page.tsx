@@ -22,6 +22,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
+import InsuranceCodePopup from "@/app/components/InsuranceCodePopup";
 
 
 
@@ -2002,6 +2003,8 @@ setSelectedMemo(null);
           </a>
         </div>
       </div>
+      <InsuranceCodePopup />
+
     </main>
   );
 }
