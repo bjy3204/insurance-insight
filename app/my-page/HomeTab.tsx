@@ -829,7 +829,8 @@ const diaryEndPage = Math.min(
 </div>
 
 {/* ── 날씨 / D-Day / BGM 위젯 ── */}
-<div className="grid grid-cols-3 gap-3">
+<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+
 
   {/* 날씨 */}
   <div
@@ -897,10 +898,10 @@ const diaryEndPage = Math.min(
 />
 
 
-    <div
-      className="fixed z-[9999] bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden w-28"
-      style={{ left: weatherContextMenu.x, top: weatherContextMenu.y }}
+        <div
+      className="absolute left-0 top-full mt-2 z-[9999] bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden w-28"
     >
+
 
 
           {WEATHER_REGIONS.map((r) => (
