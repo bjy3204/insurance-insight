@@ -1593,7 +1593,7 @@ const diaryEndPage = Math.min(
 
       {/* ── 메모 | 일기 반반 ── */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
 
         {/* 메모 목록 */}
         <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
