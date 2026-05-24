@@ -44,6 +44,7 @@ import {
   Globe,
   Home as HomeIcon,
   Percent,
+  Users,
 } from "lucide-react";
 
 import AuthButton from "@/components/AuthButton";
@@ -165,7 +166,14 @@ const defaultMenus = [
     icon: Briefcase,
     link: "/job",
   },
-  
+  {
+  id: "customer-manage",
+  title: "개인공간",
+  desc: "메모 · 일정 관리",
+  icon: User,
+  link: "/my-page",
+  isDefault: true,
+},
 ];
 
 
@@ -317,6 +325,9 @@ const [weather, setWeather] = useState<{
   const [profileSettingOpen, setProfileSettingOpen] = useState(false);
 const [editNickname, setEditNickname] = useState("");
 const [editInstagram, setEditInstagram] = useState("");
+const [pinCheckPassword, setPinCheckPassword] = useState("");
+const [pinCheckResult, setPinCheckResult] = useState("");
+
 const [newPassword, setNewPassword] = useState("");
 const [currentPassword, setCurrentPassword] = useState("");
 const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
@@ -496,6 +507,16 @@ const [bankRateOpen, setBankRateOpen] = useState(false);
 const [bankRateMonth, setBankRateMonth] = useState<"12" | "24">("12");
 const [bankRates, setBankRates] = useState<any[]>([]);
 const [bankBaseDate, setBankBaseDate] = useState("");
+
+// ─── 개인공간 PIN 팝업 ───
+const [cmPinOpen, setCmPinOpen] = useState(false);
+const [cmPinState, setCmPinState] = useState<"not-approved" | "no-pin" | "locked">("locked");
+const [cmPinStep, setCmPinStep] = useState<"enter" | "confirm">("enter");
+const [cmPinInput, setCmPinInput] = useState("");
+const [cmPinConfirm, setCmPinConfirm] = useState("");
+const [cmPinError, setCmPinError] = useState("");
+const cmPinInputRef = useRef("");
+const cmPinStepRef = useRef<"enter" | "confirm">("enter");
 
 const [quickMenuKeys, setQuickMenuKeys] = useState<string[]>([
   "hospital",
@@ -1445,6 +1466,148 @@ const confirmDeleteMemo = () => {
 };
 
 
+// ─── 개인공간 PIN 해시 함수 ───
+async function hashPinLocal(pin: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pin + "insurance-namu-salt");
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+const openCmPinPopup = async () => {
+  if (!authUser || authStatus !== "approved") {
+    setCmPinState("not-approved");
+    setCmPinOpen(true);
+    return;
+  }
+  const { data } = await supabase
+    .from("customer_settings")
+    .select("pin_hash")
+    .eq("user_id", authUser.id)
+    .maybeSingle();
+  cmPinInputRef.current = "";
+  cmPinStepRef.current = "enter";
+  setCmPinInput("");
+  setCmPinConfirm("");
+  setCmPinError("");
+  setCmPinStep("enter");
+  if (!data?.pin_hash) {
+    setCmPinState("no-pin");
+  } else {
+    setCmPinState("locked");
+  }
+  setCmPinOpen(true);
+};
+
+const handleCmKeypad = async (val: string) => {
+  if (cmPinState === "not-approved") return;
+  if (cmPinState === "no-pin") {
+    if (cmPinStepRef.current === "enter") {
+      if (val === "del") {
+        const next = cmPinInputRef.current.slice(0, -1);
+        cmPinInputRef.current = next;
+        setCmPinInput(next);
+      } else if (cmPinInputRef.current.length < 4) {
+        const next = cmPinInputRef.current + val;
+        cmPinInputRef.current = next;
+        setCmPinInput(next);
+        if (next.length === 4) {
+          setTimeout(() => {
+            cmPinStepRef.current = "confirm";
+            setCmPinStep("confirm");
+            setCmPinConfirm("");
+            setCmPinError("");
+          }, 200);
+        }
+      }
+    } else {
+      if (val === "del") {
+        setCmPinConfirm((p) => p.slice(0, -1));
+      } else {
+        setCmPinConfirm((prev) => {
+          if (prev.length >= 4) return prev;
+          const next = prev + val;
+          if (next.length === 4) {
+            setTimeout(async () => {
+              if (cmPinInputRef.current !== next) {
+                setCmPinError("PIN이 일치하지 않습니다. 다시 시도해주세요.");
+                cmPinInputRef.current = "";
+                cmPinStepRef.current = "enter";
+                setCmPinStep("enter");
+                setCmPinInput("");
+                setCmPinConfirm("");
+                return;
+              }
+              const hash = await hashPinLocal(cmPinInputRef.current);
+              const { error } = await supabase.from("customer_settings").upsert(
+                { user_id: authUser!.id, pin_hash: hash, pin_changed_at: new Date().toISOString() },
+                { onConflict: "user_id" }
+              );
+              if (error) {
+                setCmPinError("저장 오류: " + error.message);
+                cmPinInputRef.current = "";
+                cmPinStepRef.current = "enter";
+                setCmPinStep("enter");
+                setCmPinInput("");
+                setCmPinConfirm("");
+                return;
+              }
+              setCmPinOpen(false);
+              window.location.href = "/my-page";
+            }, 200);
+          }
+          return next;
+        });
+      }
+    }
+  } else {
+    if (val === "del") {
+      const next = cmPinInputRef.current.slice(0, -1);
+      cmPinInputRef.current = next;
+      setCmPinInput(next);
+    } else if (cmPinInputRef.current.length < 4) {
+      const next = cmPinInputRef.current + val;
+      cmPinInputRef.current = next;
+      setCmPinInput(next);
+      if (next.length === 4) {
+        setTimeout(async () => {
+          const hash = await hashPinLocal(next);
+          const { data } = await supabase
+            .from("customer_settings")
+            .select("pin_hash")
+            .eq("user_id", authUser!.id)
+            .maybeSingle();
+          if (hash !== data?.pin_hash) {
+            setCmPinError("PIN이 올바르지 않습니다.");
+            cmPinInputRef.current = "";
+            setCmPinInput("");
+            return;
+          }
+          setCmPinOpen(false);
+          window.location.href = "/my-page";
+        }, 200);
+      }
+    }
+  }
+};
+
+// ─── 개인공간 PIN 키보드 입력 ───
+useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (!cmPinOpen) return;
+    if (cmPinState === "not-approved") return;
+    if (e.key >= "0" && e.key <= "9") {
+      handleCmKeypad(e.key);
+    } else if (e.key === "Backspace") {
+      handleCmKeypad("del");
+    }
+  };
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [cmPinOpen, cmPinState]);
+
+
 const openPcQuickMenu = () => {
   const wrap = pcQuickWrapRef.current;
   if (!wrap) {
@@ -1529,6 +1692,30 @@ setPcQuickPos({
   window.addEventListener("pointerup", handleUp);
 
 };
+
+const handleCheckPin = async () => {
+  if (!authUser || !pinCheckPassword) return;
+  const { error } = await supabase.auth.signInWithPassword({
+    email: authUser.email!,
+    password: pinCheckPassword,
+  });
+  if (error) {
+    setPinCheckResult("비밀번호가 올바르지 않습니다.");
+    return;
+  }
+  const { data } = await supabase
+  .from("customer_settings")
+  .select("pin_plain")
+  .eq("user_id", authUser.id)
+  .maybeSingle();
+if (!data?.pin_plain) {
+  setPinCheckResult("설정된 PIN이 없습니다.");
+  return;
+}
+setPinCheckResult(`비밀번호: ${data.pin_plain}`);
+
+};
+
 
 
 const saveProfileSettings = async () => {
@@ -2116,6 +2303,20 @@ setMenuSortOpen(true);
   }}
   className="relative grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 items-start"
 >
+{mainMenuManageMode === "normal" && authRole === "admin" && (
+  <a
+    href="/admin"
+    className="bg-blue-600 p-7 sm:p-8 rounded-3xl shadow hover:shadow-xl hover:-translate-y-1 transition min-h-[190px] cursor-default"
+  >
+    <Settings className="w-10 h-10 mb-4 text-white" />
+    <h2 className="text-lg font-bold text-white">관리자 페이지</h2>
+    <p className="text-sm text-blue-100 mt-2 leading-relaxed break-keep">
+      회원 승인 및 관리
+    </p>
+  </a>
+)}
+
+
         {mainMenuManageMode === "normal" &&
   menus.map((menu) => {
     const Icon = menu.icon;
@@ -2135,7 +2336,8 @@ setMenuSortOpen(true);
     id: menu.id,
   });
 }}
-        href={menu.link}
+        href={menu.id === "customer-manage" ? undefined : menu.link}
+        onClick={menu.id === "customer-manage" ? (e) => { e.preventDefault(); openCmPinPopup(); } : undefined}
         target={
           menu.title === "보험인사이트 폴더" || menu.isPersonal
             ? "_blank"
@@ -2172,18 +2374,6 @@ setMenuSortOpen(true);
 
 
 
-{mainMenuManageMode === "normal" && authRole === "admin" && (
-  <a
-    href="/admin"
-    className="bg-blue-600 p-7 sm:p-8 rounded-3xl shadow hover:shadow-xl hover:-translate-y-1 transition min-h-[190px] cursor-default"
-  >
-    <Settings className="w-10 h-10 mb-4 text-white" />
-    <h2 className="text-lg font-bold text-white">관리자 페이지</h2>
-    <p className="text-sm text-blue-100 mt-2 leading-relaxed break-keep">
-      회원 승인 및 관리
-    </p>
-  </a>
-)}
 
 
 {mainMenuManageMode === "edit" && (
@@ -2727,11 +2917,36 @@ hover:-translate-y-1
           value={editInstagram}
           onChange={(e) => setEditInstagram(e.target.value)}
           className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
-        />
+              />
+
+        <div className="pt-3 border-t border-gray-100">
+          <p className="mb-2 text-xs font-bold text-gray-500">개인공간 비밀번호</p>
+          <div className="flex gap-2">
+            <input
+  type="password"
+  placeholder="회원가입 비밀번호 입력"
+  value={pinCheckPassword}
+  onChange={(e) => setPinCheckPassword(e.target.value)}
+  onKeyDown={(e) => { if (e.key === "Enter") handleCheckPin(); }}
+  className="flex-1 h-11 rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
+/>
+
+            <button
+              onClick={handleCheckPin}
+              className="h-11 px-4 rounded-xl bg-gray-900 text-white text-sm font-bold cursor-pointer hover:bg-gray-800"
+            >
+              확인
+            </button>
+          </div>
+          {pinCheckResult && (
+            <p className="mt-2 text-sm text-center font-semibold text-blue-600">{pinCheckResult}</p>
+          )}
+        </div>
 
         <div className="pt-3 border-t border-gray-100">
           <p className="mb-2 text-xs font-bold text-gray-500">
             비밀번호 변경
+
           </p>
 
           <input
@@ -3298,7 +3513,7 @@ hover:-translate-y-1
 
         <button
   onClick={() => {
-    window.location.href = "/naver-news";
+    window.location.href = "/today-news";
     setPcQuickOpen(false);
   }}
   className="
@@ -3487,7 +3702,7 @@ hover:-translate-y-1
 
 <button
   onClick={() => {
-    window.location.href = "/naver-news";
+    window.location.href = "/today-news";
     setPcQuickOpen(false);
   }}
   className="
@@ -6747,6 +6962,92 @@ setMemoAddOpen(false);
     </div>
   </div>
 )}
+
+
+      {/* 개인공간 PIN 팝업 */}
+      {cmPinOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
+          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm mx-4 px-8 pt-10 pb-8">
+<button
+  onClick={() => setCmPinOpen(false)}
+  className="absolute right-4 top-4 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer"
+>
+  <X className="w-4 h-4 text-gray-500" />
+</button>
+
+            {cmPinState === "not-approved" && (
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-gray-400" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800 mb-2">승인 회원 전용</h2>
+                <p className="text-sm text-gray-500 mb-6">개인공간 기능은 승인된 회원만 이용 가능합니다.<br />로그인 후 승인을 받으세요.</p>
+                <button onClick={() => setCmPinOpen(false)}
+                  className="w-full py-3 rounded-2xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition cursor-pointer">확인</button>
+              </div>
+            )}
+
+            {cmPinState === "no-pin" && (
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-gray-800 mb-1">{cmPinStep === "enter" ? "PIN 설정" : "PIN 확인"}</h2>
+                <p className="text-sm text-gray-500 mb-5">{cmPinStep === "enter" ? "개인공간 전용 4자리 PIN을 설정해주세요." : "PIN을 한 번 더 입력해주세요."}</p>
+                <div className="flex justify-center gap-3 mb-5">
+                  {[0,1,2,3].map((i) => (
+                    <div key={i} className={`w-4 h-4 rounded-full border-2 transition ${(cmPinStep === "enter" ? cmPinInput : cmPinConfirm).length > i ? "bg-blue-600 border-blue-600" : "border-gray-300"}`} />
+                  ))}
+                </div>
+                {cmPinError && <p className="text-xs text-red-500 mb-3">{cmPinError}</p>}
+                <div className="grid grid-cols-3 gap-3 mb-3">
+                  {["1","2","3","4","5","6","7","8","9"].map((n) => (
+                    <button key={n} onClick={() => handleCmKeypad(n)} className="py-4 rounded-2xl bg-gray-50 text-xl font-semibold hover:bg-gray-100 transition cursor-pointer">{n}</button>
+                  ))}
+                  <div />
+                  <button onClick={() => handleCmKeypad("0")} className="py-4 rounded-2xl bg-gray-50 text-xl font-semibold hover:bg-gray-100 transition cursor-pointer">0</button>
+                  <button onClick={() => handleCmKeypad("del")} className="py-4 rounded-2xl bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition cursor-pointer">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" /></svg>
+                  </button>
+                </div>
+                <button onClick={() => setCmPinOpen(false)} className="text-sm text-gray-400 hover:text-gray-600 transition cursor-pointer">돌아가기</button>
+              </div>
+            )}
+
+            {cmPinState === "locked" && (
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-bold text-gray-800 mb-1">PIN 입력</h2>
+                <p className="text-sm text-gray-500 mb-5">개인공간 4자리 PIN을 입력해주세요.</p>
+                <div className="flex justify-center gap-3 mb-5">
+                  {[0,1,2,3].map((i) => (
+                    <div key={i} className={`w-4 h-4 rounded-full border-2 transition ${cmPinInput.length > i ? "bg-blue-600 border-blue-600" : "border-gray-300"}`} />
+                  ))}
+                </div>
+                {cmPinError && <p className="text-xs text-red-500 mb-3">{cmPinError}</p>}
+                <div className="grid grid-cols-3 gap-3 mb-3">
+                  {["1","2","3","4","5","6","7","8","9"].map((n) => (
+                    <button key={n} onClick={() => handleCmKeypad(n)} className="py-4 rounded-2xl bg-gray-50 text-xl font-semibold hover:bg-gray-100 transition cursor-pointer">{n}</button>
+                  ))}
+                  <div />
+                  <button onClick={() => handleCmKeypad("0")} className="py-4 rounded-2xl bg-gray-50 text-xl font-semibold hover:bg-gray-100 transition cursor-pointer">0</button>
+                  <button onClick={() => handleCmKeypad("del")} className="py-4 rounded-2xl bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition cursor-pointer">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" /></svg>
+                  </button>
+                </div>
+                
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
 
                                         </main>
 

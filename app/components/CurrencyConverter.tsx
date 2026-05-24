@@ -262,13 +262,21 @@ function CurrencyConverterInner(props: any) {
         });
         setRates(rateMap);
         if (data.date) setRateDate(data.date);
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, "0");
-        const d = String(now.getDate()).padStart(2, "0");
-        const hh = String(now.getHours()).padStart(2, "0");
-        const mm = String(now.getMinutes()).padStart(2, "0");
-        setRateTime(`${y}. ${m}. ${d}. ${hh}:${mm}`);
+       if (data.date) {
+  const date = new Date(data.date);
+
+  const formatted = date.toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  setRateTime(formatted.replaceAll(". ", ". ").replace(".", "."));
+}
       }
     } catch (e) {
       console.error("환율 데이터 로드 실패:", e);

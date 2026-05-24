@@ -130,8 +130,10 @@ export default function MemoStickers() {
 
               const drag = dragRef.current;
 
-              const nextX = drag.originX + event.clientX - drag.startX;
-              const nextY = drag.originY + event.clientY - drag.startY;
+const CARD_W = 260;
+const CARD_H = 200; // 스티커 메모 대략적인 높이
+const nextX = Math.max(-CARD_W / 2, Math.min(window.innerWidth - CARD_W / 2, drag.originX + event.clientX - drag.startX));
+const nextY = Math.max(-CARD_H / 2, Math.min(window.innerHeight - CARD_H / 2, drag.originY + event.clientY - drag.startY));
 
               if (
                 Math.abs(event.clientX - drag.startX) > 3 ||

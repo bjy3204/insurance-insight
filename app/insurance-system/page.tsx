@@ -192,7 +192,7 @@ function CompanyCard({
             absolute top-2.5 right-2.5 z-10 w-9 h-9 rounded-full
             flex items-center justify-center
             hover:bg-gray-100 hover:ring-1 hover:ring-gray-200
-            transition cursor-default
+            transition cursor-pointer
           "
         >
           <Star
@@ -296,7 +296,7 @@ function SortableCompanyCard({
               absolute top-2.5 right-2.5 z-10 w-9 h-9 rounded-full
               flex items-center justify-center
               hover:bg-gray-100 hover:ring-1 hover:ring-gray-200
-              transition cursor-default
+              transition cursor-pointer
             "
           >
             <Star

@@ -107,7 +107,7 @@ function SortableRow({
           <button
             onClick={(e) => { e.stopPropagation(); onToggleFav(); }}
             onPointerDown={(e) => e.stopPropagation()}
-            className="transition"
+            className="transition cursor-pointer"
           >
             <Star
               className={`w-4 h-4 ${isFav ? "fill-yellow-400 text-yellow-400" : "text-gray-300 hover:text-yellow-300"}`}

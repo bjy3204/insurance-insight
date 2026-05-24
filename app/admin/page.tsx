@@ -32,7 +32,7 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Shield,
+  Settings,
   X,
   ChevronLeft,
   ChevronRight,
@@ -136,7 +136,7 @@ export default function AdminPage() {
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 12;
+  const PAGE_SIZE = 20;
   const [subCurrentPage, setSubCurrentPage] = useState(1);
 const SUB_PAGE_SIZE = 50;
 
@@ -732,10 +732,10 @@ const subTotalPages = Math.max(
   </Link>
   <div className="text-center">
     <div className="flex items-center justify-center gap-2">
-      <Shield className="w-7 h-7 text-blue-600" />
-      <h1 className="text-2xl font-black text-gray-900">관리자</h1>
+      <Settings className="w-7 h-7 text-blue-600" />
+      <h1 className="text-2xl font-black text-gray-900">관리자 페이지</h1>
     </div>
-    <p className="text-sm text-gray-500 mt-1">회원 및 구독자 관리</p>
+    <p className="text-sm text-gray-500 mt-1">승인 회원 및 구독자 관리</p>
   </div>
 
   {/* 연필 아이콘 + 드롭다운 */}
@@ -784,7 +784,7 @@ const subTotalPages = Math.max(
               adminTab === "members" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-800"
             }`}
           >
-            보험인사이트 회원 관리
+            승인 회원 관리
           </button>
           <button
             onClick={() => setAdminTab("subscribers")}
@@ -837,7 +837,7 @@ const subTotalPages = Math.max(
             {filteredProfiles.length === 0 ? (
               <div className="flex justify-center items-center py-20 text-sm text-gray-400">회원이 없습니다.</div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                 {pagedProfiles.map((profile) => (
                   <div key={profile.id} onClick={() => setSelectedProfile(profile)} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition cursor-default">
                     <div className="flex items-start justify-between mb-3">
