@@ -1361,10 +1361,16 @@ const diaryEndPage = Math.min(
 
 {/* ── 오늘 일정 + 체크리스트 ── */}
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-  {todayEvents.length > 0 && (
+  
     <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
       <h2 className="text-base font-black text-gray-900 mb-3">📅 오늘 일정</h2>
-
+{todayEvents.length === 0 ? (
+  <div className="flex items-center justify-center py-10">
+    <p className="text-sm text-gray-300">
+      오늘 일정이 없습니다.
+    </p>
+  </div>
+) : (
     <div className="space-y-2">
       {todayEvents.map((ev) => (
         <div
@@ -1393,21 +1399,21 @@ const diaryEndPage = Math.min(
   {/* 시간 */}
   <div className="min-w-[90px] max-w-[90px] truncate">
     <p className="text-sm text-gray-500 truncate">
-      {ev.time || "-"}
+      {ev.time || ""}
     </p>
   </div>
 
   {/* 장소 */}
   <div className="min-w-[120px] max-w-[120px] truncate">
     <p className="text-sm text-gray-500 truncate">
-      {ev.place || "-"}
+      {ev.place || ""}
     </p>
   </div>
 
   {/* 메모 */}
   <div className="flex-1 min-w-[120px] truncate">
     <p className="text-sm text-gray-400 truncate">
-      {ev.memo || "-"}
+      {ev.memo || ""}
     </p>
   </div>
 
@@ -1426,8 +1432,8 @@ const diaryEndPage = Math.min(
         </div>
       ))}
     </div>
-    </div>
   )}
+</div>
 
   {/* 체크리스트 카드 */}
   <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">

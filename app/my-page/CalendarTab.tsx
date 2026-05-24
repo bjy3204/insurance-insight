@@ -832,21 +832,21 @@ return (
   {/* 시간 */}
   <div className="min-w-[90px] max-w-[90px] truncate">
     <p className="text-sm text-gray-500 truncate">
-      {event.time || "-"}
+      {event.time || ""}
     </p>
   </div>
 
   {/* 장소 */}
   <div className="min-w-[120px] max-w-[120px] truncate">
     <p className="text-sm text-gray-500 truncate">
-      {event.place || "-"}
+      {event.place || ""}
     </p>
   </div>
 
   {/* 메모 */}
   <div className="flex-1 min-w-[120px] truncate">
     <p className="text-sm text-gray-400 truncate">
-      {event.memo || "-"}
+      {event.memo || ""}
     </p>
   </div>
 
