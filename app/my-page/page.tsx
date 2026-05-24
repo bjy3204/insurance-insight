@@ -63,7 +63,7 @@ import CalculatorComp from "@/app/components/Calculator";
 // ─────────────────────────────────────────────
 // 타입 정의
 // ─────────────────────────────────────────────
-type ActiveTab = "home" | "calendar" | "ai";
+type ActiveTab = "home" | "calendar" | "ai" | "customer";
 
 type MemoItem = {
   id: string;
@@ -88,9 +88,11 @@ export type CustomerSettings = {
   my_site_url: string | null;
   my_site_name: string | null;
   my_site_icon: string | null;
-  spreadsheet_url: string | null;
+   spreadsheet_url: string | null;
   spreadsheet_name: string | null;
   spreadsheet_icon: string | null;
+  customer_url?: string | null;
+
    nickname?: string;
    plant_pos_x?: number;
 plant_pos_y?: number;
@@ -418,7 +420,7 @@ useEffect(() => {
   if (!authUser) return;
   const { data } = await supabase
     .from("customer_settings")
-    .select("pin_hash, pin_changed_at, agent_name, kakao_url, kakao_name, kakao_icon, my_site_url, my_site_name, my_site_icon, spreadsheet_url, spreadsheet_name, spreadsheet_icon, nickname, plant_pos_x, plant_pos_y")
+    .select("pin_hash, pin_changed_at, agent_name, kakao_url, kakao_name, kakao_icon, my_site_url, my_site_name, my_site_icon, spreadsheet_url, spreadsheet_name, spreadsheet_icon, customer_url, nickname, plant_pos_x, plant_pos_y")
     .eq("user_id", authUser.id)
     .maybeSingle();
 
@@ -522,11 +524,14 @@ updateData.pin_changed_at = new Date().toISOString();
     );
   }
 
- const TABS = [
+  const TABS = [
   { id: "home" as ActiveTab, label: "홈", icon: BookOpen },
   { id: "calendar" as ActiveTab, label: "캘린더", icon: CalendarDays },
+  { id: "customer" as ActiveTab, label: "고객관리", icon: Users },
   { id: "ai" as ActiveTab, label: "AI메시지", icon: MessageSquare },
 ];
+
+
 
   return (
     <div className="min-h-screen bg-gray-100 pb-24">
@@ -607,7 +612,8 @@ updateData.pin_changed_at = new Date().toISOString();
 
       {/* ── 탭 ── */}
 <div className="w-full px-6 pt-3 pb-0 max-w-7xl mx-auto">
-  <div className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-5">
+    <div className="grid grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-5">
+
     {TABS.map((tab) => (
       <button
         key={tab.id}
@@ -638,6 +644,22 @@ updateData.pin_changed_at = new Date().toISOString();
 <div className={activeTab === "ai" ? "block" : "hidden"}>
   <AiMessageTab />
 </div>
+
+<div className={activeTab === "customer" ? "block" : "hidden"}>
+  <CustomerTab
+    spreadsheetUrl={settings?.customer_url || null}
+    onSaveUrl={async (url: string) => {
+      if (!authUser) return;
+      const { error } = await supabase.from("customer_settings").upsert(
+        { user_id: authUser.id, customer_url: url },
+        { onConflict: "user_id" }
+      );
+      if (!error) setSettings((prev) => prev ? { ...prev, customer_url: url } : null);
+    }}
+  />
+</div>
+
+
 
         
       </main>
@@ -1336,3 +1358,101 @@ function PinKeypad({ onPress }: { onPress: (val: string) => void }) {
     </div>
   );
 }
+function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | null; onSaveUrl: (url: string) => Promise<void> }) {
+  const [urlInputOpen, setUrlInputOpen] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const getEmbedUrl = (url: string) => {
+    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) return null;
+    return `https://docs.google.com/spreadsheets/d/${match[1]}/edit?rm=minimal&embedded=true`;
+  };
+
+  const embedUrl = spreadsheetUrl ? getEmbedUrl(spreadsheetUrl ) : null;
+
+  const handleSave = async () => {
+    if (!urlInput.trim()) return;
+    setSaving(true);
+    await onSaveUrl(urlInput.trim());
+    setSaving(false);
+    setUrlInputOpen(false);
+    setUrlInput("");
+  };
+
+  return (
+    <div className="w-full">
+            <div className="flex justify-between items-center mb-3">
+        <a
+          href="https://docs.google.com/spreadsheets/d/1AXjvjrINd5GwRRM-WuBeV2_AFKDmAWZDKlOD_uyQhzg/copy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-4 h-9 bg-green-50 text-green-700 text-xs font-bold rounded-xl hover:bg-green-100 transition flex items-center gap-1.5"
+        >
+          📥 고객관리 시트 다운로드
+        </a>
+        <button
+          onClick={( ) => { setUrlInput(spreadsheetUrl || ""); setUrlInputOpen(true); }}
+          className="px-4 h-9 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl hover:bg-gray-200 transition cursor-pointer"
+        >
+          {embedUrl ? "URL 변경" : "스프레드시트 연결"}
+        </button>
+      </div>
+
+
+      {!embedUrl && (
+  <div className="h-[70vh] flex flex-col items-center justify-center gap-2">
+    <p className="text-gray-400 text-sm">
+      연결된 스프레드시트가 없습니다.
+    </p>
+  </div>
+)}
+
+      {embedUrl && (
+        <iframe
+          src={embedUrl}
+          className="w-full rounded-2xl border border-gray-200 shadow"
+          style={{ height: "70vh" }}
+          frameBorder="0"
+          allowFullScreen
+        />
+      )}
+
+      {urlInputOpen && (
+        <div className="fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="font-bold text-gray-900">스프레드시트 URL 설정</span>
+              <button onClick={() => setUrlInputOpen(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer">
+                <X className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+            <input
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              placeholder="https://docs.google.com/spreadsheets/..."
+              className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition mb-4"
+            />
+                       <div className="flex gap-3">
+              <button onClick={() => setUrlInputOpen(false)} className="flex-1 h-11 rounded-2xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-pointer">취소</button>
+              {spreadsheetUrl && (
+                <button
+                  onClick={async () => { setSaving(true); await onSaveUrl(""); setSaving(false); setUrlInputOpen(false); setUrlInput(""); }}
+                  disabled={saving}
+                  className="flex-1 h-11 rounded-2xl bg-red-50 text-red-500 text-sm font-bold hover:bg-red-100 transition cursor-pointer disabled:opacity-50"
+                >
+                  삭제
+                </button>
+              )}
+              <button onClick={handleSave} disabled={saving} className="flex-1 h-11 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-pointer disabled:opacity-50">
+                {saving ? "저장 중..." : "저장"}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
