@@ -246,7 +246,14 @@ const [ddayPickerMonth, setDdayPickerMonth] = useState(new Date().getMonth());
   const [todayEventForm, setTodayEventForm] = useState({ title: "", time: "", place: "", memo: "", icon: "📅", color: "blue" });
 
 
+   // ── 체크리스트 ──
+  const [checklists, setChecklists] = useState<{ id: string; text: string; completed: boolean; }[]>([]);
+  const [checklistText, setChecklistText] = useState("");
+  const [editingChecklistId, setEditingChecklistId] = useState<string | null>(null);
+  const [editingChecklistText, setEditingChecklistText] = useState("");
+
   // ── 날씨 위젯 ──
+
 
 const WEATHER_REGIONS = ["서울","부산","대구","인천","광주","대전","울산","세종","제주"];
 const [weatherRegion, setWeatherRegion] = useState(() => localStorage.getItem("hometab-weather-region") || "서울");
@@ -467,6 +474,13 @@ useEffect(() => {
   };
   loadWidgets();
 }, [authUser]);
+
+useEffect(() => {
+  if (!authUser) return;
+  supabase.from("calendar_checklists").select("*").eq("user_id", authUser.id).limit(10)
+    .then(({ data }) => setChecklists(data || []));
+}, [authUser]);
+
 
 
 
@@ -1339,10 +1353,12 @@ const diaryEndPage = Math.min(
 
 </div>
 
-{/* ── 오늘 일정 ── */}
-{todayEvents.length > 0 && (
-  <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
-    <h2 className="text-base font-black text-gray-900 mb-3">📅 오늘 일정</h2>
+{/* ── 오늘 일정 + 체크리스트 ── */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+  {todayEvents.length > 0 && (
+    <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
+      <h2 className="text-base font-black text-gray-900 mb-3">📅 오늘 일정</h2>
+
     <div className="space-y-2">
       {todayEvents.map((ev) => (
         <div
@@ -1404,10 +1420,78 @@ const diaryEndPage = Math.min(
         </div>
       ))}
     </div>
+    </div>
+  )}
+
+  {/* 체크리스트 카드 */}
+  <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
+    <h2 className="text-base font-black text-gray-900 mb-3">체크리스트</h2>
+    <div className="space-y-2 mb-3">
+      {checklists.map((item) => (
+        <div key={item.id} className="flex items-center gap-2 p-1 hover:bg-gray-50 rounded transition">
+          <input type="checkbox" checked={item.completed} onChange={async () => {
+            await supabase.from("calendar_checklists").update({ completed: !item.completed }).eq("id", item.id);
+            const { data } = await supabase.from("calendar_checklists").select("*").eq("user_id", authUser!.id).limit(10);
+            setChecklists(data || []);
+          }} className="w-4 h-4 cursor-pointer" />
+          {editingChecklistId === item.id ? (
+            <input type="text" value={editingChecklistText}
+              onChange={(e) => setEditingChecklistText(e.target.value)}
+              onBlur={async () => {
+                if (!editingChecklistText.trim()) return;
+                await supabase.from("calendar_checklists").update({ text: editingChecklistText }).eq("id", item.id);
+                const { data } = await supabase.from("calendar_checklists").select("*").eq("user_id", authUser!.id).limit(10);
+                setChecklists(data || []);
+                setEditingChecklistId(null);
+              }}
+              onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+              autoFocus
+              className="flex-1 px-3 py-1 border border-gray-200 rounded-xl text-sm outline-none" />
+          ) : (
+            <span onClick={() => { setEditingChecklistId(item.id); setEditingChecklistText(item.text); }}
+              className={`flex-1 text-sm cursor-pointer ${item.completed ? "line-through text-gray-400" : "text-gray-700"}`}>
+              {item.text}
+            </span>
+          )}
+          <button onClick={async () => {
+            await supabase.from("calendar_checklists").delete().eq("id", item.id);
+            const { data } = await supabase.from("calendar_checklists").select("*").eq("user_id", authUser!.id).limit(10);
+            setChecklists(data || []);
+          }} className="text-gray-300 hover:text-red-400 transition">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ))}
+    </div>
+    {checklists.length < 10 && (
+      <div className="flex gap-2">
+        <input type="text" value={checklistText} onChange={(e) => setChecklistText(e.target.value)}
+          placeholder="항목 추가"
+          onKeyDown={async (e) => {
+            if (e.key === "Enter" && checklistText.trim() && authUser) {
+              await supabase.from("calendar_checklists").insert([{ user_id: authUser.id, text: checklistText, completed: false }]);
+              const { data } = await supabase.from("calendar_checklists").select("*").eq("user_id", authUser.id).limit(10);
+              setChecklists(data || []);
+              setChecklistText("");
+            }
+          }}
+          className="flex-1 px-3 py-2 border border-gray-200 rounded-2xl text-sm outline-none focus:border-gray-400 transition" />
+        <button onClick={async () => {
+          if (!authUser) return;
+          await supabase.from("calendar_checklists").insert([{ user_id: authUser.id, text: checklistText, completed: false }]);
+          const { data } = await supabase.from("calendar_checklists").select("*").eq("user_id", authUser.id).limit(10);
+          setChecklists(data || []);
+          setChecklistText("");
+        }} className="px-3 py-2 bg-gray-100 text-gray-500 rounded-2xl hover:bg-gray-200 transition">
+          <Plus className="w-4 h-4" />
+        </button>
+      </div>
+    )}
   </div>
-)}
+</div>
 
 {/* 오늘 일정 수정 팝업 */}
+
 {todayEventEditOpen && editingTodayEvent && (
   <div onClick={() => setTodayEventEditOpen(false)} className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center">
     <div onClick={(e) => e.stopPropagation()} className="bg-white w-[90%] max-w-lg rounded-3xl shadow-xl flex flex-col">
