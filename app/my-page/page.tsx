@@ -557,7 +557,7 @@ updateData.pin_changed_at = new Date().toISOString();
   </div>
 
   <p className="text-sm text-gray-500 mt-1">
-    현재 개발중이지만 그냥 사용하셔도 됩니다
+    나만의 비밀공간으로 이용하세요 !
   </p>
 </div>
 

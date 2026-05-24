@@ -169,7 +169,7 @@ const defaultMenus = [
   {
   id: "customer-manage",
   title: "개인공간",
-  desc: "메모 · 일정 관리",
+  desc: "메모 · 일정 관리 · AI 메시지",
   icon: User,
   link: "/my-page",
   isDefault: true,
