@@ -1382,7 +1382,17 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
 
   return (
     <div className="w-full">
-            <div className="flex justify-between items-center mb-3">
+           {embedUrl && (
+        <iframe
+          src={embedUrl}
+          className="w-full rounded-2xl border border-gray-200 shadow"
+          style={{ height: "85vh" }}
+          frameBorder="0"
+          allowFullScreen
+        />
+      )}
+           
+            <div className="flex justify-between items-center mt-5">
         <a
           href="https://docs.google.com/spreadsheets/d/1AXjvjrINd5GwRRM-WuBeV2_AFKDmAWZDKlOD_uyQhzg/copy"
           target="_blank"
@@ -1408,15 +1418,7 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
   </div>
 )}
 
-      {embedUrl && (
-        <iframe
-          src={embedUrl}
-          className="w-full rounded-2xl border border-gray-200 shadow"
-          style={{ height: "70vh" }}
-          frameBorder="0"
-          allowFullScreen
-        />
-      )}
+      
 
       {urlInputOpen && (
         <div className="fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4">
