@@ -4747,7 +4747,9 @@ rel="noopener noreferrer"
                 cursor-pointer
                 transition
               "
-            >              <td className="py-4 text-center text-gray-700 border-b border-gray-100">
+            >
+              <td className="py-4 text-center text-gray-700 border-b border-gray-100">
+
                 {(notice as any).isDb ? allNotices.length - allNotices.indexOf(notice) : notice.id}
               </td>
 
