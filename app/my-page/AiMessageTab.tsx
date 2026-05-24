@@ -2994,7 +2994,7 @@ const handleRegenerate = () => {
                         {generatedMessage}
                       </pre>
                     </div>
-                    <span className="text-[9px] text-gray-400 mt-1 block ml-1">
+                    <span className="text-[11px] text-gray-400 mt-1 block ml-1">
                       {today.getMonth() + 1}/{today.getDate()}{" "}
                       {today.getHours().toString().padStart(2, "0")}:{today.getMinutes().toString().padStart(2, "0")}
                     </span>
