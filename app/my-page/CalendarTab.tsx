@@ -804,7 +804,7 @@ return (
                       setFormData(event);
                       setShowEventModal(true);
                     }}
-                    className={`p-3 border border-gray-200 rounded-2xl hover:bg-gray-50 cursor-pointer transition flex items-center justify-between ${
+                    className={`p-3 border border-gray-200 rounded-2xl hover:bg-gray-50  transition flex items-center justify-between ${
                       event.color === "green"
                         ? "bg-green-50"
                         : event.color === "red"

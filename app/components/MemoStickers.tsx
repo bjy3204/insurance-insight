@@ -216,7 +216,9 @@ const nextY = Math.max(-CARD_H / 2, Math.min(window.innerHeight - CARD_H / 2, dr
             </button>
           </div>
 
-          <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line break-keep">
+               <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line break-words overflow-hidden">
+
+
             {memo.content}
           </p>
         </div>

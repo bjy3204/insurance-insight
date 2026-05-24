@@ -126,7 +126,27 @@ export default function AdminPage() {
   const router = useRouter();
 
   // --- 탭 상태 ---
-  const [adminTab, setAdminTab] = useState<"members" | "subscribers">("members");
+   const [adminTab, setAdminTab] = useState<"members" | "subscribers" | "notices">("members");
+
+// 공지 카테고리 타입
+type NoticeCategory = { id: string; name: string; color: string; };
+type NoticeDB = { id: string; title: string; content: string; category_id: string | null; is_popup: boolean; popup_start_date: string | null; popup_end_date: string | null; image_url: string | null; created_at: string; };
+
+// 공지 상태
+const [noticeCategories, setNoticeCategories] = useState<NoticeCategory[]>([]);
+const [noticesDB, setNoticesDB] = useState<NoticeDB[]>([]);
+const [noticeForm, setNoticeForm] = useState({ title: "", content: "", category_id: "", is_popup: false, popup_start_date: "", popup_end_date: "", image_url: "" });
+const [imageUploading, setImageUploading] = useState(false);
+const fileInputRef = useRef<HTMLInputElement>(null);
+const [noticeFormOpen, setNoticeFormOpen] = useState(false);
+const [editingNotice, setEditingNotice] = useState<NoticeDB | null>(null);
+const [catForm, setCatForm] = useState({ name: "", color: "blue" });
+const [noticeSaving, setNoticeSaving] = useState(false);
+
+const [noticeDatePickerOpen, setNoticeDatePickerOpen] =
+  useState<null | "start" | "end">(null);
+const [noticePickerYear, setNoticePickerYear] = useState(new Date().getFullYear());
+const [noticePickerMonth, setNoticePickerMonth] = useState(new Date().getMonth());
 
   // --- 기존 회원 관리 상태 ---
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -180,6 +200,21 @@ const [monthlySort, setMonthlySort] = useState<"name" | "date">("date");
     pay_app_code: "",
     memo: "",
   });
+
+  const openNoticeDatePicker = (type: "start" | "end") => {
+  const value =
+    type === "start"
+      ? noticeForm.popup_start_date
+      : noticeForm.popup_end_date;
+
+  if (value) {
+    const [y, m] = value.split("-").map(Number);
+    setNoticePickerYear(y);
+    setNoticePickerMonth(m - 1);
+  }
+
+  setNoticeDatePickerOpen(type);
+};
 
   // 전체 구독자 팝업 상태
   const [allSubscribers, setAllSubscribers] = useState<Subscriber[]>([]);
@@ -290,7 +325,8 @@ useEffect(() => {
         return;
       }
 
-                 Promise.all([fetchProfiles(), fetchSubscribers(), fetchAllSubscribers()]).then(() => setLoading(false));
+                    Promise.all([fetchProfiles(), fetchSubscribers(), fetchAllSubscribers(), loadNoticeData()]).then(() => setLoading(false));
+
 
 
 
@@ -320,6 +356,92 @@ useEffect(() => {
       setSelectedProfile((prev) => (prev ? { ...prev, status: newStatus } : prev));
     }
     setUpdating(null);
+  };
+
+  // --- 공지사항 관리 함수 ---
+  const loadNoticeData = async () => {
+    const { data: cats } = await supabase.from("notice_categories").select("*").order("created_at");
+    if (cats) setNoticeCategories(cats);
+    const { data: nts } = await supabase.from("notices_db").select("*").order("created_at", { ascending: false });
+    if (nts) setNoticesDB(nts);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('notice-images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('notice-images')
+        .getPublicUrl(filePath);
+
+      setNoticeForm(prev => ({ ...prev, image_url: publicUrl }));
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('이미지 업로드에 실패했습니다.');
+    } finally {
+      setImageUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const saveNotice = async () => {
+    if (!noticeForm.title.trim() || !noticeForm.content.trim()) return;
+    setNoticeSaving(true);
+    if (editingNotice) {
+      await supabase.from("notices_db").update({
+        title: noticeForm.title, content: noticeForm.content,
+        category_id: noticeForm.category_id || null,
+        is_popup: noticeForm.is_popup,
+        popup_start_date: noticeForm.popup_start_date || null,
+        popup_end_date: noticeForm.popup_end_date || null,
+        image_url: noticeForm.image_url || null,
+      }).eq("id", editingNotice.id);
+    } else {
+      await supabase.from("notices_db").insert({
+        title: noticeForm.title, content: noticeForm.content,
+        category_id: noticeForm.category_id || null,
+        is_popup: noticeForm.is_popup,
+        popup_start_date: noticeForm.popup_start_date || null,
+        popup_end_date: noticeForm.popup_end_date || null,
+        image_url: noticeForm.image_url || null,
+      });
+    }
+    setNoticeForm({ title: "", content: "", category_id: "", is_popup: false, popup_start_date: "", popup_end_date: "", image_url: "" });
+    setNoticeFormOpen(false);
+    setEditingNotice(null);
+    setNoticeSaving(false);
+    loadNoticeData();
+  };
+
+  const deleteNotice = async (id: string) => {
+    if (!confirm("공지를 삭제하시겠습니까?")) return;
+    await supabase.from("notices_db").delete().eq("id", id);
+    loadNoticeData();
+  };
+
+  const saveCategory = async () => {
+    if (!catForm.name.trim()) return;
+    await supabase.from("notice_categories").insert({ name: catForm.name, color: catForm.color });
+    setCatForm({ name: "", color: "blue" });
+    loadNoticeData();
+  };
+
+  const deleteCategory = async (id: string) => {
+    if (!confirm("카테고리를 삭제하시겠습니까?")) return;
+    await supabase.from("notice_categories").delete().eq("id", id);
+    loadNoticeData();
   };
 
   // --- 구독자 관리 함수 ---
@@ -786,7 +908,7 @@ const subTotalPages = Math.max(
           >
             승인 회원 관리
           </button>
-          <button
+                    <button
             onClick={() => setAdminTab("subscribers")}
             className={`flex-1 py-3.5 text-sm md:text-base font-bold rounded-xl transition ${
               adminTab === "subscribers" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-800"
@@ -794,7 +916,16 @@ const subTotalPages = Math.max(
           >
             구독자 관리
           </button>
+          <button
+            onClick={() => { setAdminTab("notices"); loadNoticeData(); }}
+            className={`flex-1 py-3.5 text-sm md:text-base font-bold rounded-xl transition ${
+              adminTab === "notices" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-800"
+            }`}
+          >
+            공지사항
+          </button>
         </div>
+
 
         {/* ==================== 회원 관리 탭 ==================== */}
         {adminTab === "members" && (
@@ -946,8 +1077,365 @@ const subTotalPages = Math.max(
           </>
         )}
 
+               {/* ==================== 공지사항 탭 ==================== */}
+        {adminTab === "notices" && (
+          <div className="space-y-6">
+
+            {/* 카테고리 관리 */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-5">
+              <h3 className="font-black text-gray-900 mb-4">카테고리 관리</h3>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {noticeCategories.map((cat) => (
+                  <div key={cat.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 bg-gray-50">
+                    <span className={`w-3 h-3 rounded-full ${
+                      cat.color === "blue" ? "bg-blue-400" :
+                      cat.color === "yellow" ? "bg-yellow-400" :
+                      cat.color === "red" ? "bg-red-400" :
+                      cat.color === "green" ? "bg-green-400" : "bg-orange-400"
+                    }`} />
+                    <span className="text-sm font-bold text-gray-700">{cat.name}</span>
+                    <button onClick={() => deleteCategory(cat.id)} className="text-gray-400 hover:text-red-500 transition cursor-pointer ml-1">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex gap-2 items-center">
+                  <input
+                    value={catForm.name}
+                    onChange={(e) => setCatForm({ ...catForm, name: e.target.value })}
+                    placeholder="카테고리 이름"
+                    className="flex-1 h-10 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
+                  />
+                  <div className="hidden sm:flex gap-1.5">
+                    {["blue","yellow","red","green","orange"].map((c) => (
+                      <button key={c} onClick={() => setCatForm({ ...catForm, color: c })}
+                        className={`w-7 h-7 rounded-full border-2 transition cursor-pointer ${
+                          c === "blue" ? "bg-blue-400" : c === "yellow" ? "bg-yellow-400" :
+                          c === "red" ? "bg-red-400" : c === "green" ? "bg-green-400" : "bg-orange-400"
+                        } ${catForm.color === c ? "border-gray-800 scale-110" : "border-transparent"}`}
+                      />
+                    ))}
+                  </div>
+                  <button onClick={saveCategory} className="sm:hidden h-10 px-4 bg-gray-800 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition cursor-pointer shrink-0">추가</button>
+                </div>
+                <div className="flex sm:hidden gap-1.5 items-center">
+                  {["blue","yellow","red","green","orange"].map((c) => (
+                    <button key={c} onClick={() => setCatForm({ ...catForm, color: c })}
+                      className={`w-8 h-8 rounded-full border-2 transition cursor-pointer ${
+                        c === "blue" ? "bg-blue-400" : c === "yellow" ? "bg-yellow-400" :
+                        c === "red" ? "bg-red-400" : c === "green" ? "bg-green-400" : "bg-orange-400"
+                      } ${catForm.color === c ? "border-gray-800 scale-110" : "border-transparent"}`}
+                    />
+                  ))}
+                </div>
+                <button onClick={saveCategory} className="hidden sm:block h-10 px-4 bg-gray-800 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition cursor-pointer shrink-0">추가</button>
+              </div>
+            </div>
+
+            {/* 공지 작성/수정 */}
+            {noticeFormOpen ? (
+              <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                <h3 className="font-black text-gray-900 mb-4">{editingNotice ? "공지 수정" : "공지 작성"}</h3>
+                <div className="space-y-3">
+                  <input
+                    value={noticeForm.title}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })}
+                    placeholder="제목"
+                    className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
+                  />
+                  <select
+                    value={noticeForm.category_id}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, category_id: e.target.value })}
+                    className="w-full h-11 pl-4 pr-8 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 bg-white "
+                  >
+                    <option value="">카테고리 선택 (선택사항)</option>
+                    {noticeCategories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                  <textarea
+                    value={noticeForm.content}
+                    onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })}
+                    placeholder="내용을 입력하세요"
+                    rows={10}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 resize-y leading-relaxed"
+                    onKeyDown={(e) => e.stopPropagation()}
+                  />
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        ref={fileInputRef}
+                        className="hidden"
+                      />
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={imageUploading}
+                        className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-pointer disabled:opacity-50"
+                      >
+                        {imageUploading ? "업로드 중..." : "이미지 첨부"}
+                      </button>
+                      {noticeForm.image_url && (
+                        <button
+                          onClick={() => setNoticeForm(prev => ({ ...prev, image_url: "" }))}
+                          className="px-4 py-2 rounded-xl bg-red-50 text-red-500 text-sm font-bold hover:bg-red-100 transition cursor-pointer"
+                        >
+                          이미지 삭제
+                        </button>
+                      )}
+                    </div>
+                    {noticeForm.image_url && (
+                      <div className="relative w-full max-w-md mt-2 rounded-xl overflow-hidden border border-gray-200">
+                        <img src={noticeForm.image_url} alt="첨부 이미지 미리보기" className="w-full h-auto object-contain" />
+                      </div>
+                    )}
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={noticeForm.is_popup}
+                      onChange={(e) => setNoticeForm({ ...noticeForm, is_popup: e.target.checked })}
+                      className="w-4 h-4 rounded cursor-pointer"
+                    />
+                    <span className="text-sm font-bold text-gray-700">메인 페이지 팝업으로 표시</span>
+                  </label>
+                  {noticeForm.is_popup && (
+  <div className="flex gap-3 items-center pl-6 relative">
+    {(["start", "end"] as const).map((type, index) => {
+      const value =
+        type === "start"
+          ? noticeForm.popup_start_date
+          : noticeForm.popup_end_date;
+
+      return (
+        <div key={type} className="flex items-center gap-2 relative">
+          {index === 1 && <span className="text-gray-400">~</span>}
+
+          <span className="text-xs font-bold text-gray-500">
+            {type === "start" ? "시작일" : "종료일"}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => openNoticeDatePicker(type)}
+            className="h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 bg-white flex items-center gap-2"
+          >
+            <span className={value ? "text-gray-800" : "text-gray-400"}>
+              {value || "연도-월-일"}
+            </span>
+            <Calendar className="w-4 h-4 text-gray-500" />
+          </button>
+
+          {noticeDatePickerOpen === type && (
+            <>
+              <div
+                className="fixed inset-0 z-[99]"
+                onClick={() => setNoticeDatePickerOpen(null)}
+              />
+
+              <div className="absolute top-11 left-0 z-[100] w-[320px] rounded-2xl border border-gray-200 bg-white p-4 shadow-lg">
+                <div className="flex items-center justify-between mb-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (noticePickerMonth === 0) {
+                        setNoticePickerMonth(11);
+                        setNoticePickerYear(noticePickerYear - 1);
+                      } else {
+                        setNoticePickerMonth(noticePickerMonth - 1);
+                      }
+                    }}
+                    className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
+                  >
+                    ‹
+                  </button>
+
+                  <span className="text-sm font-bold text-gray-800">
+                    {noticePickerYear}년 {noticePickerMonth + 1}월
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (noticePickerMonth === 11) {
+                        setNoticePickerMonth(0);
+                        setNoticePickerYear(noticePickerYear + 1);
+                      } else {
+                        setNoticePickerMonth(noticePickerMonth + 1);
+                      }
+                    }}
+                    className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
+                  >
+                    ›
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-7 mb-1">
+                  {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
+                    <div
+                      key={d}
+                      className={`text-center text-xs font-bold py-1 ${
+                        i === 0
+                          ? "text-red-400"
+                          : i === 6
+                          ? "text-blue-400"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      {d}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-7">
+                  {(() => {
+                    const firstDow = new Date(
+                      noticePickerYear,
+                      noticePickerMonth,
+                      1
+                    ).getDay();
+
+                    const daysInMonth = new Date(
+                      noticePickerYear,
+                      noticePickerMonth + 1,
+                      0
+                    ).getDate();
+
+                    const cells = [];
+
+                    for (let i = 0; i < firstDow; i++) {
+                      cells.push(<div key={`empty-${i}`} />);
+                    }
+
+                    for (let d = 1; d <= daysInMonth; d++) {
+                      const dateStr = `${noticePickerYear}-${String(
+                        noticePickerMonth + 1
+                      ).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+                      const isSelected = value === dateStr;
+                      const dow = new Date(
+                        noticePickerYear,
+                        noticePickerMonth,
+                        d
+                      ).getDay();
+
+                      cells.push(
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => {
+                            setNoticeForm({
+                              ...noticeForm,
+                              [type === "start"
+                                ? "popup_start_date"
+                                : "popup_end_date"]: dateStr,
+                            });
+                            setNoticeDatePickerOpen(null);
+                          }}
+                          className={`h-9 w-full rounded-xl text-sm font-medium transition ${
+                            isSelected
+                              ? "bg-gray-800 text-white"
+                              : "hover:bg-gray-100"
+                          } ${
+                            !isSelected && dow === 0 ? "text-red-400" : ""
+                          } ${
+                            !isSelected && dow === 6 ? "text-blue-400" : ""
+                          } ${
+                            !isSelected && dow !== 0 && dow !== 6
+                              ? "text-gray-700"
+                              : ""
+                          }`}
+                        >
+                          {d}
+                        </button>
+                      );
+                    }
+
+                    return cells;
+                  })()}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    })}
+  </div>
+)}
+                  <div className="flex gap-3 pt-2">
+                    <button onClick={() => { setNoticeFormOpen(false); setEditingNotice(null); setNoticeForm({ title: "", content: "", category_id: "", is_popup: false, popup_start_date: "", popup_end_date: "", image_url: "" }); }}
+                      className="flex-1 h-11 rounded-xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-pointer">취소</button>
+                    <button onClick={saveNotice} disabled={noticeSaving}
+                      className="flex-1 h-11 rounded-xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-pointer disabled:opacity-50">
+                      {noticeSaving ? "저장 중..." : (editingNotice ? "수정 완료" : "등록")}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => setNoticeFormOpen(true)}
+                className="w-full h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-pointer flex items-center justify-center gap-2">
+                <Plus className="w-4 h-4" /> 새 공지 작성
+              </button>
+            )}
+
+            {/* 공지 목록 */}
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100">
+                <h3 className="font-black text-gray-900">등록된 공지 ({noticesDB.length})</h3>
+              </div>
+              {noticesDB.length === 0 ? (
+                <div className="py-10 text-center text-sm text-gray-400">등록된 공지가 없습니다.</div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {noticesDB.map((notice) => {
+                    const cat = noticeCategories.find((c) => c.id === notice.category_id);
+                    return (
+                      <div key={notice.id} className="px-5 py-4 flex items-start gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            {cat && (
+                              <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                                cat.color === "blue" ? "bg-blue-100 text-blue-600" :
+                                cat.color === "yellow" ? "bg-yellow-100 text-yellow-700" :
+                                cat.color === "red" ? "bg-red-100 text-red-600" :
+                                cat.color === "green" ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-600"
+                              }`}>{cat.name}</span>
+                            )}
+                            {notice.is_popup && (
+                              <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-100 text-purple-600">팝업</span>
+                            )}
+                            {notice.is_popup && notice.popup_start_date && (
+                              <span className="text-[11px] text-gray-400">{notice.popup_start_date} ~ {notice.popup_end_date || "∞"}</span>
+                            )}
+                          </div>
+                          <p className="font-bold text-gray-900 text-sm truncate">{notice.title}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">{new Date(notice.created_at).toLocaleString("ko-KR")}</p>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <button onClick={() => {
+                            setEditingNotice(notice);
+                            setNoticeForm({ title: notice.title, content: notice.content, category_id: notice.category_id || "", is_popup: notice.is_popup, popup_start_date: notice.popup_start_date || "", popup_end_date: notice.popup_end_date || "", image_url: notice.image_url || "" });
+                            setNoticeFormOpen(true);
+                          }} className="h-8 px-3 rounded-xl bg-gray-100 text-gray-600 text-xs font-bold hover:bg-gray-200 transition cursor-pointer">수정</button>
+                          <button onClick={() => deleteNotice(notice.id)} className="h-8 px-3 rounded-xl bg-red-50 text-red-500 text-xs font-bold hover:bg-red-100 transition cursor-pointer">삭제</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ==================== 구독자 관리 탭 ==================== */}
         {adminTab === "subscribers" && (
+
           <div className="flex flex-col lg:flex-row gap-6">
             {/* 왼쪽: 메인 구독자 리스트 */}
             <div className="flex-1">

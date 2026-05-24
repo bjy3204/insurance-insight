@@ -564,16 +564,47 @@ const [selectedNotice, setSelectedNotice] = useState<any>(null);
   const [fixMessage, setFixMessage] = useState("");
   const [addMessage, setAddMessage] = useState("");
   const [contact, setContact] = useState("");
-  const noticesPerPage = 10;
-const totalNoticePages = Math.ceil(notices.length / noticesPerPage);
+const noticesPerPage = 10;
 
-const pagedNotices = notices.slice(
+const [hasUpdate, setHasUpdate] = useState(false);
+const [readNoticeIds, setReadNoticeIds] = useState<(number | string)[]>([]);
+const [dbNotices, setDbNotices] = useState<any[]>([]);
+const [dbCategories, setDbCategories] = useState<any[]>([]);
+const [popupNotice, setPopupNotice] = useState<any | null>(null);
+const [popupNoticeClosed, setPopupNoticeClosed] = useState(false);
+
+// DB 공지를 notices.ts 형식으로 변환해서 합치기
+const dbNoticesFormatted = dbNotices.map((n: any) => {
+
+  const cat = dbCategories.find((c: any) => c.id === n.category_id);
+  return {
+    id: `db_${n.id}`,
+    title: n.title,
+    content: n.content,
+    category: cat?.name || "",
+    categoryColor: cat?.color || "blue",
+    date: (() => {
+      const d = new Date(n.created_at);
+      return `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+    })(),
+    isDb: true,
+    dbId: n.id,
+    image_url: n.image_url || null,
+  };
+});
+
+const allNotices = [...dbNoticesFormatted, ...notices];
+const totalNoticePages = Math.ceil(allNotices.length / noticesPerPage);
+
+const pagedNotices = allNotices.slice(
   (noticePage - 1) * noticesPerPage,
   noticePage * noticesPerPage
 );
 
-const [hasUpdate, setHasUpdate] = useState(false);
-const [readNoticeIds, setReadNoticeIds] = useState<number[]>([]);
+
+
+
+
 const lifeAgeNumber = lifeAge === "" ? null : Number(lifeAge);
 
 const selectedLife =
@@ -622,7 +653,39 @@ const filteredNpsTable = currentNpsTable.filter((row: any) =>
 );
 
 useEffect(() => {
+  const fetchDbNotices = async () => {
+    const { data: cats } = await supabase.from("notice_categories").select("*");
+    if (cats) setDbCategories(cats);
+    const { data: nts } = await supabase.from("notices_db").select("*").order("created_at", { ascending: false });
+    console.log("notices_db 데이터:", nts);
+    if (!nts) return;
+    setDbNotices(nts);
+
+
+    // 팝업 공지 처리
+    const now = new Date();
+    const today = new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const seenIds: string[] = JSON.parse(localStorage.getItem("seen_popup_notice_ids") || "[]");
+    const popupTarget = nts.find((n: any) => {
+      if (!n.is_popup) return false;
+      if (seenIds.includes(n.id)) return false;
+      if (n.popup_start_date && n.popup_start_date > today) return false;
+      if (n.popup_end_date && n.popup_end_date < today) return false;
+      return true;
+    });
+    if (popupTarget) setPopupNotice(popupTarget);
+
+    // 빨간점: 읽지 않은 DB 공지가 있으면
+    const seenNoticeIds: string[] = JSON.parse(localStorage.getItem("seen_db_notice_ids") || "[]");
+    const hasUnread = nts.some((n: any) => !seenNoticeIds.includes(n.id));
+    if (hasUnread) setHasUpdate(true);
+  };
+  fetchDbNotices();
+}, []);
+
+useEffect(() => {
   const fetchBankRates = async () => {
+
     try {
       const res = await fetch(
         `/api/bank-rates?month=${bankRateMonth}`
@@ -3370,11 +3433,15 @@ hover:-translate-y-1
         e.stopPropagation();
 
         localStorage.setItem("noticeRead", noticeVersion.toString());
+        // DB 공지 전체 읽음 처리
+        const allDbIds = dbNotices.map((n: any) => n.id);
+        localStorage.setItem("seen_db_notice_ids", JSON.stringify(allDbIds));
         setHasUpdate(false);
         setSelectedNotice(null);
         resetPopupPosition("notice");
         setNoticeOpen(true);
         setUserMenuOpen(false);
+
       }}
       className="
         relative
@@ -4298,9 +4365,98 @@ rel="noopener noreferrer"
   </div>
 )}
 
+      {/* 공지 팝업 */}
+      {popupNotice && !popupNoticeClosed && (
+        <div className="fixed inset-0 z-[9000] bg-black/40 flex items-center justify-center p-3 md:p-4">
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[70vh] flex flex-col">
+            <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
+              <div className="font-bold flex items-center gap-2">
+                <Megaphone className="w-5 h-5" />
+                공지사항
+              </div>
+              <button
+                onClick={() => {
+                  const seenIds: string[] = JSON.parse(localStorage.getItem("seen_popup_notice_ids") || "[]");
+                  if (!seenIds.includes(popupNotice.id)) seenIds.push(popupNotice.id);
+                  localStorage.setItem("seen_popup_notice_ids", JSON.stringify(seenIds));
+                  setPopupNoticeClosed(true);
+                }}
+                className="cursor-pointer w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="px-6 md:px-10 pt-6 pb-6 flex-1 min-h-0 flex flex-col overflow-y-auto">
+              {(() => {
+                const cat = dbCategories.find((c: any) => c.id === popupNotice.category_id);
+                return (
+                  <>
+                    {cat && (
+                      <span className={`inline-block w-fit mb-3 px-3 py-1 rounded-lg text-xs font-bold ${
+                        cat.color === "yellow" ? "bg-yellow-100 text-yellow-700" :
+                        cat.color === "red" ? "bg-red-100 text-red-600" :
+                        cat.color === "green" ? "bg-emerald-100 text-emerald-700" :
+                        cat.color === "orange" ? "bg-orange-100 text-orange-600" :
+                        "bg-blue-100 text-blue-600"
+                      }`}>{cat.name}</span>
+                    )}
+                    <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep mb-2">
+                      {popupNotice.title}
+                    </h2>
+                    <p className="text-xs md:text-sm text-gray-500 mb-4">
+                      {new Date(popupNotice.created_at).toLocaleString("ko-KR", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                    <div className="border-t border-gray-200 pt-4 whitespace-pre-line text-[15px] leading-6 text-gray-800 break-keep flex-1">
+  {popupNotice.content}
+  {popupNotice.image_url && (
+    <div className="mt-4 rounded-xl overflow-hidden border border-gray-100">
+      <img src={popupNotice.image_url} alt="공지 이미지" className="w-full h-auto object-contain max-h-[500px]" />
+    </div>
+  )}
+</div>
+
+                  </>
+                );
+              })()}
+            </div>
+            <div className="border-t border-gray-200 px-6 py-4 flex justify-between items-center shrink-0">
+              <button
+                onClick={() => {
+                  const seenIds: string[] = JSON.parse(localStorage.getItem("seen_popup_notice_ids") || "[]");
+                  if (!seenIds.includes(popupNotice.id)) seenIds.push(popupNotice.id);
+                  localStorage.setItem("seen_popup_notice_ids", JSON.stringify(seenIds));
+                  setPopupNoticeClosed(true);
+                  localStorage.setItem("noticeRead", noticeVersion.toString());
+                  const allDbIds = dbNotices.map((n: any) => n.id);
+                  localStorage.setItem("seen_db_notice_ids", JSON.stringify(allDbIds));
+                  setHasUpdate(false);
+                  setSelectedNotice(null);
+                  resetPopupPosition("notice");
+                  setNoticeOpen(true);
+                }}
+                className="px-5 py-3 rounded-xl bg-gray-100 text-gray-700 text-sm font-bold cursor-pointer hover:bg-gray-200 transition"
+              >
+                공지사항 전체보기
+              </button>
+              <button
+                onClick={() => {
+                  const seenIds: string[] = JSON.parse(localStorage.getItem("seen_popup_notice_ids") || "[]");
+                  if (!seenIds.includes(popupNotice.id)) seenIds.push(popupNotice.id);
+                  localStorage.setItem("seen_popup_notice_ids", JSON.stringify(seenIds));
+                  setPopupNoticeClosed(true);
+                }}
+                className="px-5 py-3 rounded-xl bg-gray-800 text-white text-sm font-bold cursor-pointer hover:bg-gray-700 transition"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 메세지 모달 */}
       {open && (
+
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-5">
           <div
   style={getPopupStyle("message")}
@@ -4522,24 +4678,22 @@ rel="noopener noreferrer"
               NO. {notice.id}
             </span>
 
-            {!readNoticeIds.includes(notice.id) && (
-  <span
-    className={`
-      px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap
-      ${
-        notice.category === "업데이트"
-          ? "bg-blue-100 text-blue-600"
-          : notice.category === "강의안내"
-          ? "bg-yellow-100 text-yellow-700"
-          : notice.category === "OPEN"
-          ? "bg-emerald-100 text-emerald-700 px-3"
-          : "bg-orange-100 text-orange-600"
-      }
-    `}
-  >
+                              {!readNoticeIds.includes(notice.id) && notice.category && (
+  <span className={`px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap ${
+    (notice as any).categoryColor === "yellow" || notice.category === "강의안내"
+      ? "bg-yellow-100 text-yellow-700"
+      : (notice as any).categoryColor === "red"
+      ? "bg-red-100 text-red-600"
+      : (notice as any).categoryColor === "green" || notice.category === "OPEN"
+      ? "bg-emerald-100 text-emerald-700"
+      : (notice as any).categoryColor === "orange"
+      ? "bg-orange-100 text-orange-600"
+      : "bg-blue-100 text-blue-600"
+  }`}>
     {notice.category}
   </span>
 )}
+
           </div>
 
           <div className="font-bold text-gray-900 leading-tight break-keep">
@@ -4564,10 +4718,12 @@ rel="noopener noreferrer"
           </tr>
         </thead>
 
-        <tbody>
-          {pagedNotices.map((notice) => (
-            <tr
-              key={notice.id}
+                 <tbody>
+            {pagedNotices.map((notice) => (
+              <tr
+                key={notice.id}
+
+
               onClick={() => {
   setSelectedNotice(notice);
 
@@ -4590,33 +4746,31 @@ rel="noopener noreferrer"
                 cursor-pointer
                 transition
               "
-            >
-              <td className="py-4 text-center text-gray-700 border-b border-gray-100">
-                {notice.id}
+            >              <td className="py-4 text-center text-gray-700 border-b border-gray-100">
+                {(notice as any).isDb ? allNotices.length - allNotices.indexOf(notice) : notice.id}
               </td>
+
 
               <td className="py-4 font-medium border-b border-gray-100">
                 <div className="flex items-center gap-3">
                   <span>{notice.title}</span>
 
-                  {!readNoticeIds.includes(notice.id) && (
-  <span
-    className={`
-      px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap
-      ${
-        notice.category === "업데이트"
-          ? "bg-blue-100 text-blue-600"
-          : notice.category === "강의안내"
-          ? "bg-yellow-100 text-yellow-700"
-          : notice.category === "OPEN"
-          ? "bg-emerald-100 text-emerald-700 px-3"
-          : "bg-orange-100 text-orange-600"
-      }
-    `}
-  >
+                                   {!readNoticeIds.includes(notice.id) && notice.category && (
+  <span className={`px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap ${
+    (notice as any).categoryColor === "yellow" || notice.category === "강의안내"
+      ? "bg-yellow-100 text-yellow-700"
+      : (notice as any).categoryColor === "red"
+      ? "bg-red-100 text-red-600"
+      : (notice as any).categoryColor === "green" || notice.category === "OPEN"
+      ? "bg-emerald-100 text-emerald-700"
+      : (notice as any).categoryColor === "orange"
+      ? "bg-orange-100 text-orange-600"
+      : "bg-blue-100 text-blue-600"
+  }`}>
     {notice.category}
   </span>
 )}
+
                 </div>
               </td>
 
@@ -4691,6 +4845,11 @@ rel="noopener noreferrer"
     </p>
 
     <div className="border-t border-gray-200 mt-3 pt-2 pb-6 whitespace-pre-line text-[15px] leading-6 text-gray-800 break-keep">
+      {selectedNotice.image_url && (
+        <div className="mb-4 rounded-xl overflow-hidden border border-gray-100">
+          <img src={selectedNotice.image_url} alt="공지 이미지" className="w-full h-auto object-contain max-h-[400px]" />
+        </div>
+      )}
       {selectedNotice.content}
     </div>
   </div>
@@ -4876,12 +5035,14 @@ rel="noopener noreferrer"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
           {tempMenus.map((menu) => (
-   <SortableMenuSortCard
+      <SortableMenuSortCard
     key={menu.id}
     menu={menu}
     tempHiddenMenuIds={tempHiddenMenuIds}
     setTempHiddenMenuIds={setTempHiddenMenuIds}
+    isApproved={authStatus === "approved"}
     onContextMenu={(e) => {
+
 
   if (!menu.isPersonal) return;
 
@@ -7149,13 +7310,16 @@ function SortableMenuSortCard({
   onContextMenu,
   tempHiddenMenuIds,
   setTempHiddenMenuIds,
+  isApproved,
 }: {
   menu: any;
   onEdit: () => void;
   onContextMenu?: (e: React.MouseEvent<HTMLDivElement>) => void;
   tempHiddenMenuIds: string[];
   setTempHiddenMenuIds: React.Dispatch<React.SetStateAction<string[]>>;
+  isApproved: boolean;
 }) {
+
 
   const {
     attributes,
@@ -7199,9 +7363,8 @@ function SortableMenuSortCard({
        "
   >
     <div className="flex justify-between items-start mb-4">
-      <Icon className="w-10 h-10 text-blue-600 shrink-0" />
-            {(
-
+            <Icon className="w-10 h-10 text-blue-600 shrink-0" />
+      {isApproved && (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -7220,6 +7383,7 @@ function SortableMenuSortCard({
           )}
         </button>
       )}
+
     </div>
 
     <h2 className="text-lg font-bold text-gray-900">
