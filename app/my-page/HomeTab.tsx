@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 import {
@@ -231,7 +232,139 @@ function PlantSVG({ stage, watering }: { stage: PlantStage; watering: boolean })
 // 메인 HomeTab
 // ─────────────────────────────────────────────
 export default function HomeTab({ settings }: { settings: CustomerSettings | null }) {
+
+  const [showDdayDatePicker, setShowDdayDatePicker] = useState(false);
+const [ddayPickerYear, setDdayPickerYear] = useState(new Date().getFullYear());
+const [ddayPickerMonth, setDdayPickerMonth] = useState(new Date().getMonth());
+  
   const { authUser } = useAuth();
+
+  // ── 날씨 위젯 ──
+const WEATHER_REGIONS = ["서울","부산","대구","인천","광주","대전","울산","세종","제주"];
+const [weatherRegion, setWeatherRegion] = useState(() => localStorage.getItem("hometab-weather-region") || "서울");
+const [weather, setWeather] = useState<{
+  region: string; temp: number; description: string; icon: string;
+  daily?: { date: string; temp: number; description: string; icon: string; }[];
+} | null>(null);
+const [weatherContextMenu, setWeatherContextMenu] = useState<{ x: number; y: number } | null>(null);
+
+// ── D-Day 위젯 ──
+const [ddayWidgetLabel, setDdayWidgetLabel] = useState("");
+const [ddayWidgetDate, setDdayWidgetDate] = useState("");
+const [ddayWidgetEditOpen, setDdayWidgetEditOpen] = useState(false);
+const [ddayWidgetTempLabel, setDdayWidgetTempLabel] = useState("");
+const [ddayWidgetTempDate, setDdayWidgetTempDate] = useState("");
+
+// ── BGM 플레이어 ──
+const BGM_LIST = [
+  // 🔥 노동요 - K-POP
+  { title: "감다살 케이팝 노동요", vid: "uf9TNPYiwk4", category: "노동요" },
+  { title: "최고급 K-POP 노동요 오마카세", vid: "R9wSCx4tA6I", category: "노동요" },
+  { title: "2010년대 댄스곡 노동요", vid: "JPg4E4w_ZyE", category: "노동요" },
+  { title: "따라해 느좋 케이팝 노동요", vid: "9dDJq-Imtb0", category: "노동요" },
+  { title: "전투력 MAX 케이팝 노동요", vid: "12m0Jf-Ma3E", category: "노동요" },
+  { title: "최신 케이팝 노동요 플리", vid: "JkHzGy4w53M", category: "노동요" },
+  { title: "2010년대 레전드 K-POP", vid: "iWKx4DCSHv8", category: "노동요" },
+  { title: "콘서트 떼창 노래 모음", vid: "v9nwiR2QIYk", category: "노동요" },
+  { title: "ㄹㅇ 감다살 케이팝 노동요", vid: "uHnKOOXVXkU", category: "노동요" },
+  { title: "핵심 찌르는 케이팝 노동요", vid: "oU9w0RsvJlU", category: "노동요" },
+  { title: "여돌 걸그룹 노래모음 노동요", vid: "Jb2gPPijqTk", category: "노동요" },
+  { title: "끊김없는 Kpop MIXSET 노동요", vid: "WnrIX9Ak1wA", category: "노동요" },
+  { title: "일할 때 꺼내 듣는 케이팝", vid: "yiI3pKD2Nok", category: "노동요" },
+  { title: "2010년대 케이팝 노동요 뮤비", vid: "dc9qnKClYxA", category: "노동요" },
+  { title: "도파민 충전 둠칫 노동요", vid: "RDypwcB7ONY", category: "노동요" },
+  { title: "최신 K-POP 텐션 UP 노동요", vid: "wBVKaIutSFE", category: "노동요" },
+  { title: "최신 여돌 걸그룹 노동요", vid: "Jb2gPPijqTk", category: "노동요" },
+  { title: "9n년생 2010년대 레전드 K-POP", vid: "To8sXZwfk4Q", category: "노동요" },
+  { title: "K-POP 걸그룹 업비트 플리", vid: "laMC6qKiW9A", category: "노동요" },
+  { title: "전투력 상승 Kpop 믹스셋", vid: "WnrIX9Ak1wA", category: "노동요" },
+  { title: "2026 핫한 걸그룹 노동요", vid: "0hp8rzHpwEs", category: "노동요" },
+  { title: "쌈뽕 신나는 여돌 노동요", vid: "e7pBXF-HJrQ", category: "노동요" },
+  { title: "4월 핫한 케이팝 노동요", vid: "NBxhf0a36_E", category: "노동요" },
+  { title: "텐션 올라가는 케이팝 플리 ②", vid: "E3CawH2SkKM", category: "노동요" },
+  { title: "텐션업 케이팝 노동요 🌈🔥", vid: "Dc_QllCAAtY", category: "노동요" },
+  // 🎵 싸이월드 감성
+  { title: "도토리 쓰던 싸이월드 BGM", vid: "ShxagKy3CHQ", category: "싸이월드" },
+  { title: "추억의 싸이월드 BGM 100곡", vid: "gw3ltsoYBtI", category: "싸이월드" },
+  { title: "싸이월드 BGM 레전드 2000년대", vid: "I-AYt3CNIkQ", category: "싸이월드" },
+  { title: "그때 그 시절 싸이월드 노래", vid: "SNVOsxpSb08", category: "싸이월드" },
+  { title: "미니홈피 BGM 도토리 명곡", vid: "n3RDIxK8lvU", category: "싸이월드" },
+  { title: "싸이월드 BGM 미디움 발라드", vid: "WrdFbfzs2fE", category: "싸이월드" },
+  { title: "싸이월드 MIXSET 플레이리스트", vid: "73xztR-dR-A", category: "싸이월드" },
+  { title: "도토리 5개 싸이월드 BGM 60곡", vid: "QlMaKvWVLos", category: "싸이월드" },
+  { title: "싸이월드 BGM 팝송 100곡 6시간", vid: "ChzpfH1bUqM", category: "싸이월드" },
+  { title: "내가 깔았던 힙한 팝송 BGM", vid: "z_M20taxvx8", category: "싸이월드" },
+  { title: "싸이월드 좀 열심히 한 사람 BGM", vid: "d8DHMAWcK6U", category: "싸이월드" },
+  { title: "미니홈피 BGM 2000년대 플리", vid: "1Mo084qW5mY", category: "싸이월드" },
+  { title: "우리의 BGM 싸이월드 배경음악", vid: "Wb15QyFFK88", category: "싸이월드" },
+  { title: "싸이월드 BGM 피아노 커버", vid: "P__T4vOuFNg", category: "싸이월드" },
+  { title: "싸이월드 미니홈피 배경음악 #4", vid: "g459AmFYdpc", category: "싸이월드" },
+  { title: "Cyworld 미니홈피 BGM 감성", vid: "e_Viwt30r4U", category: "싸이월드" },
+  { title: "추억의 싸이월드 명곡 모음", vid: "xkDoq68-ACs", category: "싸이월드" },
+  { title: "일촌신청을 수락하시겠습니까?", vid: "1fsJrOaZDEM", category: "싸이월드" },
+];
+
+const [bgmIndex, setBgmIndex] = useState(() => Number(localStorage.getItem("bgm-index") || 0));
+const [bgmPlaying, setBgmPlaying] = useState(false);
+const [bgmEditOpen, setBgmEditOpen] = useState(false);
+const [bgmCategory, setBgmCategory] = useState<"전체" | "노동요" | "싸이월드">(() => (localStorage.getItem("bgm-category") as "전체" | "노동요" | "싸이월드") || "전체");
+
+const bgmRef = useRef<HTMLIFrameElement | null>(null);
+const [bgmTimer, setBgmTimer] = useState(0);
+const bgmTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+const [bgmColor, setBgmColor] = useState<"pink" | "yellow" | "blue" | "green" | "gray">(() =>
+  (localStorage.getItem("bgm-color") as "pink" | "yellow" | "blue" | "green" | "gray") || "pink"
+);
+const [bgmColorMenuOpen, setBgmColorMenuOpen] = useState(false);
+
+
+const filteredBgm = bgmCategory === "전체" ? BGM_LIST : BGM_LIST.filter(b => b.category === bgmCategory);
+const currentBgm = filteredBgm[bgmIndex % filteredBgm.length];
+const BGM_COLOR_MAP = {
+  pink:   { bg: "bg-pink-500",   light: "bg-pink-200",   text: "text-pink-400",   label: "분홍" },
+  yellow: { bg: "bg-yellow-400", light: "bg-yellow-100", text: "text-yellow-500", label: "노랑" },
+  blue:   { bg: "bg-blue-400",   light: "bg-blue-100",   text: "text-blue-400",   label: "파랑" },
+  green:  { bg: "bg-green-400",  light: "bg-green-100",  text: "text-green-400",  label: "초록" },
+  gray:   { bg: "bg-gray-400",   light: "bg-gray-100",   text: "text-gray-400",   label: "회색" },
+};
+const currentColor = BGM_COLOR_MAP[bgmColor];
+
+useEffect(() => {
+  if (bgmPlaying) {
+    bgmTimerRef.current = setInterval(() => {
+      setBgmTimer((t) => t + 1);
+    }, 1000);
+  } else {
+    if (bgmTimerRef.current) clearInterval(bgmTimerRef.current);
+  }
+  return () => { if (bgmTimerRef.current) clearInterval(bgmTimerRef.current); };
+}, [bgmPlaying]);
+
+useEffect(() => {
+  localStorage.setItem("bgm-index", String(bgmIndex));
+}, [bgmIndex]);
+
+useEffect(() => {
+  localStorage.setItem("bgm-category", bgmCategory);
+}, [bgmCategory]);
+
+useEffect(() => {
+  localStorage.setItem("bgm-color", bgmColor);
+  if (authUser) {
+    supabase.from("customer_settings").upsert(
+      { user_id: authUser.id, bgm_color: bgmColor },
+      { onConflict: "user_id" }
+    );
+  }
+}, [bgmColor, authUser]);
+
+
+
+useEffect(() => {
+  setBgmTimer(0);
+}, [bgmIndex]);
+
+
 const [viewingDiary, setViewingDiary] = useState<DiaryEntry | null>(null);
 const [editingMemo, setEditingMemo] = useState<any | null>(null);
 const [editMemoTitle, setEditMemoTitle] = useState("");
@@ -293,6 +426,41 @@ const [plantDragInfo, setPlantDragInfo] = useState<null | {
 
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
+
+// 날씨 fetch
+useEffect(() => {
+  const fetchWeather = async () => {
+    try {
+      const res = await fetch(`/api/weather?region=${weatherRegion}`);
+      const data = await res.json();
+      setWeather(data);
+    } catch {}
+  };
+  fetchWeather();
+  localStorage.setItem("hometab-weather-region", weatherRegion);
+}, [weatherRegion]);
+
+// D-Day Supabase 불러오기
+useEffect(() => {
+  if (!authUser) return;
+  const loadWidgets = async () => {
+    const { data } = await supabase
+      .from("customer_settings")
+      .select("dday_label, dday_date, bgm_color")
+
+      .eq("user_id", authUser.id)
+      .maybeSingle();
+    if (data) {
+  setDdayWidgetLabel(data.dday_label || "");
+  setDdayWidgetDate(data.dday_date || "");
+  if (data.bgm_color) setBgmColor(data.bgm_color as "pink" | "yellow" | "blue" | "green" | "gray");
+}
+
+  };
+  loadWidgets();
+}, [authUser]);
+
+
 
   useEffect(() => {
     if (!authUser) return;
@@ -660,6 +828,477 @@ const diaryEndPage = Math.min(
   </div>
 </div>
 
+{/* ── 날씨 / D-Day / BGM 위젯 ── */}
+<div className="grid grid-cols-3 gap-3">
+
+  {/* 날씨 */}
+  <div
+    className="bg-white rounded-3xl border border-gray-200 shadow p-4 relative select-none transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+    onContextMenu={(e) => { e.preventDefault(); setWeatherContextMenu({ x: e.clientX, y: e.clientY }); }}
+    onClick={() => setWeatherContextMenu(null)}
+  >
+    {weather ? (
+  <>
+    <div className="flex items-center gap-4 mb-3">
+      
+
+      <div className="flex items-center gap-2">
+        <span className="text-[25px] leading-none">
+          {(weather.description || "").includes("비") ? "🌧️"
+            : (weather.description || "").includes("눈") ? "❄️"
+            : (weather.description || "").includes("구름") ? "☁️"
+            : (weather.description || "").includes("맑") ? "☀️"
+            : "☁️"}
+        </span>
+
+        <span className="text-[15px] font-bold text-gray-700">
+          {weather.region}
+        </span>
+
+        <span className="text-[16px] font-black text-gray-700">
+          {weather.temp}°C
+        </span>
+      </div>
+    </div>
+
+    {weather.daily && weather.daily.length > 0 && (
+      <div className="flex items-center justify-between gap-2 px-4">
+        {weather.daily.map((day) => (
+          <div key={day.date} className="flex flex-col items-center gap-1">
+            <span className="text-[13px] font-bold text-gray-400">
+              {new Date(day.date).toLocaleDateString("ko-KR", { weekday: "short" })}
+            </span>
+
+            <span className="text-[18px] leading-none">
+              {(day.description || "").includes("비") ? "🌧️"
+                : (day.description || "").includes("눈") ? "❄️"
+                : (day.description || "").includes("구름") ? "☁️"
+                : (day.description || "").includes("맑") ? "☀️"
+                : "☁️"}
+            </span>
+
+            <span className="text-[12px] font-black text-gray-800">
+              {day.temp}°
+            </span>
+          </div>
+        ))}
+      </div>
+    )}
+  </>
+) : (
+  <p className="text-xs text-gray-300 text-center py-3">불러오는 중...</p>
+)}
+    {weatherContextMenu && (
+      <>
+        <div className="fixed inset-0 z-40" onClick={() => setWeatherContextMenu(null)} />
+        <div
+          className="fixed z-50 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden w-28"
+          style={{ left: weatherContextMenu.x, top: weatherContextMenu.y }}
+        >
+          {WEATHER_REGIONS.map((r) => (
+            <button
+              key={r}
+              onClick={() => { setWeatherRegion(r); setWeatherContextMenu(null); }}
+              className={`w-full px-4 py-2.5 text-sm font-bold text-left hover:bg-gray-50 transition ${r === weatherRegion ? "text-blue-600" : "text-gray-700"}`}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+      </>
+    )}
+  </div>
+
+  {/* D-Day */}
+  <div
+    className="bg-white rounded-3xl border border-gray-200 shadow p-4 relative select-none"
+    onContextMenu={(e) => { e.preventDefault(); setDdayWidgetTempLabel(ddayWidgetLabel); setDdayWidgetTempDate(ddayWidgetDate); setDdayWidgetEditOpen(true); }}
+  >
+    
+    {ddayWidgetDate ? (
+      <>
+       <div className="flex items-center gap-3 mb-4.5">
+  <p className="text-sm font-bold text-gray-700 truncate">
+    {ddayWidgetLabel || ""}
+  </p>
+
+  <span className="text-[13px] text-gray-400">
+    {ddayWidgetDate}
+  </span>
+</div>
+        <p className={`text-[30px] leading-none font-black text-center mt-1 ${calcDday(ddayWidgetDate) <= 0 ? "text-red-500" : "text-blue-600"}`}>
+          {getDdayLabel(calcDday(ddayWidgetDate))}
+        </p>
+        
+      </>
+    ) : (
+      <div className="flex items-center justify-center h-full min-h-[90px]">
+        <p className="text-sm text-gray-300 ">우클릭으로 설정</p>
+      </div>
+    )}
+    {ddayWidgetEditOpen && (
+      <>
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center" onClick={() => setDdayWidgetEditOpen(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl p-6 w-80" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+  <h3 className="text-lg font-black text-gray-900">
+    D-Day 설정
+  </h3>
+
+  <div className="flex items-center gap-1">
+    <button
+      onClick={async () => {
+        setDdayWidgetLabel("");
+        setDdayWidgetDate("");
+        setDdayWidgetTempLabel("");
+        setDdayWidgetTempDate("");
+
+        if (authUser) {
+          await supabase.from("customer_settings").upsert(
+            {
+              user_id: authUser.id,
+              dday_label: "",
+              dday_date: "",
+            },
+            { onConflict: "user_id" }
+          );
+        }
+      }}
+      className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 transition cursor-pointer"
+    >
+      <Trash2 className="w-4 h-4 text-red-400" />
+    </button>
+
+    <button
+      onClick={() => setDdayWidgetEditOpen(false)}
+      className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer"
+    >
+      <X className="w-4 h-4 text-gray-500" />
+    </button>
+  </div>
+</div>
+            <input
+              type="text"
+              value={ddayWidgetTempLabel}
+              onChange={(e) => setDdayWidgetTempLabel(e.target.value)}
+              placeholder="제목"
+              className="w-full h-11 px-4 rounded-2xl border border-gray-200 text-sm mb-3 outline-none focus:border-blue-400"
+            />
+            <div className="relative mb-4">
+  <button
+    type="button"
+    onClick={() => {
+      if (ddayWidgetTempDate) {
+        const [y, m] = ddayWidgetTempDate.split("-").map(Number);
+        setDdayPickerYear(y);
+        setDdayPickerMonth(m - 1);
+      }
+      setShowDdayDatePicker(!showDdayDatePicker);
+    }}
+    className="w-full h-11 px-4 rounded-2xl border border-gray-200 text-sm text-left flex items-center justify-between hover:bg-gray-50 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
+  >
+    <span>{ddayWidgetTempDate || "날짜 선택"}</span>
+    <Calendar className="w-4 h-4 text-gray-500" />
+  </button>
+
+  {showDdayDatePicker && (
+    <>
+      <div
+        className="fixed inset-0 z-[70]"
+        onClick={() => setShowDdayDatePicker(false)}
+      />
+
+      <div className="absolute top-13 left-0 bg-white border border-gray-200 rounded-3xl p-5 z-[80] shadow-xl w-[320px]">
+        <div className="flex items-center justify-between mb-4">
+          <button
+            type="button"
+            onClick={() => {
+              if (ddayPickerMonth === 0) {
+                setDdayPickerMonth(11);
+                setDdayPickerYear(ddayPickerYear - 1);
+              } else {
+                setDdayPickerMonth(ddayPickerMonth - 1);
+              }
+            }}
+            className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
+          >
+            ‹
+          </button>
+
+          <span className="text-base font-black text-gray-900">
+            {ddayPickerYear}년 {ddayPickerMonth + 1}월
+          </span>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (ddayPickerMonth === 11) {
+                setDdayPickerMonth(0);
+                setDdayPickerYear(ddayPickerYear + 1);
+              } else {
+                setDdayPickerMonth(ddayPickerMonth + 1);
+              }
+            }}
+            className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
+          >
+            ›
+          </button>
+        </div>
+
+        <div className="grid grid-cols-7 mb-2">
+          {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
+            <div
+              key={d}
+              className={`text-center text-xs font-bold py-1 ${
+                i === 0 ? "text-red-400" : i === 6 ? "text-blue-400" : "text-gray-400"
+              }`}
+            >
+              {d}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-1">
+          {(() => {
+            const firstDow = new Date(ddayPickerYear, ddayPickerMonth, 1).getDay();
+            const daysInMonth = new Date(ddayPickerYear, ddayPickerMonth + 1, 0).getDate();
+            const cells = [];
+
+            for (let i = 0; i < firstDow; i++) {
+              cells.push(<div key={`empty-${i}`} />);
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+              const dateStr = `${ddayPickerYear}-${String(ddayPickerMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+              const isSelected = ddayWidgetTempDate === dateStr;
+              const dow = new Date(ddayPickerYear, ddayPickerMonth, d).getDay();
+
+              cells.push(
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => {
+                    setDdayWidgetTempDate(dateStr);
+                    setShowDdayDatePicker(false);
+                  }}
+                  className={`h-9 rounded-xl text-sm font-bold transition ${
+                    isSelected
+                      ? "bg-gray-900 text-white"
+                      : dow === 0
+                      ? "text-red-400 hover:bg-gray-100"
+                      : dow === 6
+                      ? "text-blue-400 hover:bg-gray-100"
+                      : "text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {d}
+                </button>
+              );
+            }
+
+            return cells;
+          })()}
+        </div>
+      </div>
+    </>
+  )}
+</div>
+            <button
+              onClick={async () => {
+                setDdayWidgetLabel(ddayWidgetTempLabel);
+                setDdayWidgetDate(ddayWidgetTempDate);
+                setDdayWidgetEditOpen(false);
+                if (authUser) {
+                  await supabase.from("customer_settings").upsert(
+                    { user_id: authUser.id, dday_label: ddayWidgetTempLabel, dday_date: ddayWidgetTempDate },
+                    { onConflict: "user_id" }
+                  );
+                }
+              }}
+              className="w-full h-11 bg-blue-500 text-white font-black rounded-2xl hover:bg-blue-400 transition"
+            >
+              저장
+            </button>
+          </div>
+        </div>
+      </>
+    )}
+  </div>
+
+{/* BGM 플레이어 */}
+<div
+  className="bg-white rounded-3xl border border-gray-200 shadow p-4 relative"
+  onContextMenu={(e) => { e.preventDefault(); setBgmColorMenuOpen(true); }}
+>
+  {bgmColorMenuOpen && (
+    <>
+      <div className="fixed inset-0 z-40" onClick={() => setBgmColorMenuOpen(false)} />
+      <div className="absolute right-2 top-2 z-50 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden w-24">
+        {(Object.entries(BGM_COLOR_MAP) as [keyof typeof BGM_COLOR_MAP, typeof BGM_COLOR_MAP[keyof typeof BGM_COLOR_MAP]][]).map(([key, val]) => (
+          <button
+            key={key}
+            onClick={() => { setBgmColor(key); setBgmColorMenuOpen(false); }}
+            className={`w-full px-3 py-2 text-xs font-bold text-left flex items-center gap-2 hover:bg-gray-50 transition ${bgmColor === key ? "font-black" : "opacity-60"}`}
+          >
+            <span className={`w-3 h-3 rounded-full ${val.bg}`} />
+            {val.label}
+          </button>
+        ))}
+      </div>
+    </>
+  )}
+
+  <div className="flex items-center justify-between mb-2">
+    
+    
+  </div>
+
+  <div className="flex items-center gap-3 mb-2 relative -top-[6px]">
+  {bgmPlaying && (
+    <div className="flex items-end gap-[2px] h-3 shrink-0">
+    <span className={`w-[3px] rounded-full animate-bounce ${currentColor.bg}`} style={{ height: "60%", animationDelay: "0s", animationDuration: "0.6s" }} />
+<span className={`w-[3px] rounded-full animate-bounce ${currentColor.bg}`} style={{ height: "100%", animationDelay: "0.15s", animationDuration: "0.6s" }} />
+<span className={`w-[3px] rounded-full animate-bounce ${currentColor.bg}`} style={{ height: "40%", animationDelay: "0.3s", animationDuration: "0.6s" }} />
+<span className={`w-[3px] rounded-full animate-bounce ${currentColor.bg}`} style={{ height: "80%", animationDelay: "0.1s", animationDuration: "0.6s" }} />
+
+    </div>
+  )}
+  <p className="flex-1 min-w-0 text-[14px] font-bold text-gray-700 truncate relative ">
+    {currentBgm.title}
+  </p>
+
+
+  <button
+    onClick={() => setBgmEditOpen(true)}
+    className="text-[13px] text-gray-400 hover:text-gray-600 transition flex-shrink-0 "
+  >
+    목록
+  </button>
+</div>
+
+  <div className="flex items-center justify-center gap-1.5 mb-2">
+  {/* 경과 시간 */}
+  <span className={`text-[9px] font-bold tabular-nums w-7 text-center ${currentColor.text}`}>
+    {String(Math.floor(bgmTimer / 60)).padStart(2, "0")}:{String(bgmTimer % 60).padStart(2, "0")}
+  </span>
+  {/* 이전 버튼 */}
+  <button
+    onClick={() => { setBgmIndex((i) => (i - 1 + filteredBgm.length) % filteredBgm.length); setBgmPlaying(true); }}
+    className="w-7 h-7 rounded-xl bg-gray-100 text-gray-600 text-xs font-black hover:bg-gray-200 active:scale-90 transition cursor-pointer"
+  >
+    ⏮
+  </button>
+
+
+
+  {/* 재생/정지 버튼 - 프로그레스 효과 */}
+  <button
+    onClick={() => {
+      const iframe = bgmRef.current;
+      if (iframe) {
+        if (bgmPlaying) {
+          iframe.contentWindow?.postMessage(JSON.stringify({ event: "command", func: "pauseVideo" }), "*");
+        } else {
+          iframe.contentWindow?.postMessage(JSON.stringify({ event: "command", func: "playVideo" }), "*");
+        }
+      }
+      setBgmPlaying((p) => !p);
+    }}
+    className={`relative w-[250px] h-7 rounded-2xl text-white text-xs font-black overflow-hidden cursor-pointer ${currentColor.light}`}
+  >
+    {bgmPlaying ? (
+  <span
+    key={`${bgmIndex}-playing`}
+    className={`absolute inset-y-0 left-0 rounded-2xl ${currentColor.bg}`}
+    style={{ width: "0%", transition: "width 180s linear" }}
+    ref={(el) => {
+      if (el) requestAnimationFrame(() => { el.style.width = "100%"; });
+    }}
+  />
+) : (
+  <span className={`absolute inset-y-0 left-0 right-0 rounded-2xl ${currentColor.bg}`} />
+)}
+
+    <span className="relative z-10">{bgmPlaying ? "⏸" : "▶"}</span>
+  </button>
+  {/* 다음 버튼 */}
+  <button
+    onClick={() => { setBgmIndex((i) => (i + 1) % filteredBgm.length); setBgmPlaying(true); }}
+    className="w-7 h-7 rounded-xl bg-gray-100 text-gray-600 text-xs font-black hover:bg-gray-200 active:scale-90 transition cursor-pointer"
+  >
+    ⏭
+  </button>
+  {/* 남은 시간 */}
+  <span className="text-[9px] font-bold text-gray-300 tabular-nums w-7 text-center">
+    -{String(Math.floor(Math.max(0, 180 - bgmTimer) / 60)).padStart(2, "0")}:{String(Math.max(0, 180 - bgmTimer) % 60).padStart(2, "0")}
+  </span>
+</div>
+
+
+
+  <div className="flex gap-1 px-13">
+    {(["전체", "노동요", "싸이월드"] as const).map((cat) => (
+      <button
+        key={cat}
+        onClick={() => { setBgmCategory(cat); setBgmIndex(0); }}
+        className={`flex-1 h-6 rounded-xl text-[11px] font-bold transition cursor-pointer ${bgmCategory === cat ? `${currentColor.bg} text-white` : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+      >
+        {cat}
+      </button>
+    ))}
+  </div>
+
+  <iframe
+  ref={bgmRef}
+  id="bgm-iframe"
+  src={`https://www.youtube.com/embed/${currentBgm.vid}?enablejsapi=1&autoplay=${bgmPlaying ? 1 : 0}`}
+  className="hidden"
+  allow="autoplay"
+  onLoad={( ) => {
+    if (bgmRef.current && bgmPlaying) {
+      bgmRef.current.contentWindow?.postMessage(
+        JSON.stringify({ event: "command", func: "playVideo" }),
+        "*"
+      );
+    }
+  }}
+/>
+
+
+
+  {bgmEditOpen && (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center" onClick={() => setBgmEditOpen(false)}>
+      <div className="bg-white rounded-3xl shadow-2xl p-5 w-80 max-h-[70vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-base font-black text-gray-900 mb-3">BGM 목록</h3>
+        <div className="flex gap-1 mb-3">
+          {(["전체", "노동요", "싸이월드"] as const).map((cat) => (
+            <button
+              key={cat}
+              onClick={() => { setBgmCategory(cat); setBgmIndex(0); }}
+              className={`flex-1 h-8 rounded-xl text-xs font-bold transition ${bgmCategory === cat ? `${currentColor.bg} text-white` : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+        <div className="overflow-y-auto flex-1 space-y-1">
+          {filteredBgm.map((bgm, i) => (
+            <button
+              key={bgm.vid}
+              onClick={() => { setBgmIndex(i); setBgmPlaying(true); setBgmEditOpen(false); }}
+              className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition ${i === bgmIndex % filteredBgm.length ? `${currentColor.light} ${currentColor.text} border ${currentColor.bg.replace("bg-", "border-")}` : "hover:bg-gray-50 text-gray-700"}`}
+            >
+              {i === bgmIndex % filteredBgm.length && bgmPlaying ? "▶ " : ""}{bgm.title}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )}
+</div>
+
+</div>
+
 
       {/* ── 메모 | 일기 반반 ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -668,7 +1307,6 @@ const diaryEndPage = Math.min(
         <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-black text-gray-900 flex items-center gap-2">
-  <StickyNote className="w-5 h-5 text-yellow-500" />
               메모 목록
             </h2>
             <button
