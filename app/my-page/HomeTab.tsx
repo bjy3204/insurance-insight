@@ -867,7 +867,8 @@ const diaryEndPage = Math.min(
         {weather.daily.map((day) => (
           <div key={day.date} className="flex flex-col items-center gap-1">
             <span className="text-[13px] font-bold text-gray-400">
-              {new Date(day.date).toLocaleDateString("ko-KR", { weekday: "short" })}
+                           {new Date(`2000-${day.date}T00:00:00`).toLocaleDateString("ko-KR", { weekday: "short" })}
+
             </span>
 
             <span className="text-[18px] leading-none">
@@ -920,8 +921,9 @@ const diaryEndPage = Math.min(
 
   {/* D-Day */}
  <div
-  className={`bg-white rounded-3xl border border-gray-200 shadow p-4 relative transition-all duration-200 ${ddayWidgetEditOpen ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
-  onContextMenu={(e) => { e.preventDefault(); setDdayWidgetTempLabel(ddayWidgetLabel); setDdayWidgetTempDate(ddayWidgetDate); setDdayWidgetEditOpen(true); }}
+   className={`bg-white rounded-3xl border border-gray-200 shadow p-4 relative transition-all duration-200  ${ddayWidgetEditOpen ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
+  onClick={() => { setDdayWidgetTempLabel(ddayWidgetLabel); setDdayWidgetTempDate(ddayWidgetDate); setDdayWidgetEditOpen(true); }}
+
 >
 
     {ddayWidgetDate ? (
@@ -942,7 +944,7 @@ const diaryEndPage = Math.min(
       </>
     ) : (
       <div className="flex items-center justify-center h-full min-h-[90px]">
-        <p className="text-sm text-gray-300 ">우클릭으로 설정</p>
+        <p className="text-sm text-gray-300 ">D-Day 설정</p>
       </div>
     )}
     {ddayWidgetEditOpen && (
@@ -1136,9 +1138,10 @@ const diaryEndPage = Math.min(
 
 {/* BGM 플레이어 */}
 <div
-  className={`bg-white rounded-3xl border border-gray-200 shadow p-4 relative transition-all duration-200 ${bgmEditOpen || bgmColorMenuOpen ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
+  className={`hidden md:block bg-white rounded-3xl border border-gray-200 shadow p-4 relative transition-all duration-200 ${bgmEditOpen || bgmColorMenuOpen ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
   onContextMenu={(e) => { e.preventDefault(); setBgmColorMenuOpen(true); }}
 >
+
 
   {bgmColorMenuOpen && (
     <>

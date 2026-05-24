@@ -551,7 +551,7 @@ updateData.pin_changed_at = new Date().toISOString();
 
     <h1 className="text-2xl font-black text-gray-900">
       {settings?.nickname
-        ? `${settings.nickname}님의 홈페이지`
+        ? `${settings.nickname}님의 공간`
         : "나의 공간"}
     </h1>
   </div>
