@@ -323,8 +323,8 @@ const currentBgm = filteredBgm[bgmIndex % filteredBgm.length];
 const BGM_COLOR_MAP = {
   pink:   { bg: "bg-pink-500",   light: "bg-pink-200",   text: "text-pink-400",   label: "분홍" },
   yellow: { bg: "bg-yellow-400", light: "bg-yellow-100", text: "text-yellow-500", label: "노랑" },
-  blue:   { bg: "bg-blue-400",   light: "bg-blue-100",   text: "text-blue-400",   label: "파랑" },
-  green:  { bg: "bg-green-400",  light: "bg-green-100",  text: "text-green-400",  label: "초록" },
+  blue:   { bg: "bg-blue-400",   light: "bg-blue-100",   text: "text-blue-500",   label: "파랑" },
+  green:  { bg: "bg-green-400",  light: "bg-green-100",  text: "text-green-500",  label: "초록" },
   gray:   { bg: "bg-gray-400",   light: "bg-gray-100",   text: "text-gray-400",   label: "회색" },
 };
 const currentColor = BGM_COLOR_MAP[bgmColor];
