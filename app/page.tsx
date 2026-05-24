@@ -217,14 +217,18 @@ export default function Home() {
  
 
 
-  const [menus, setMenus] = useState<MenuItem[]>(defaultMenus);
+    const [menus, setMenus] = useState<MenuItem[]>(defaultMenus);
+  const [hiddenMenuIds, setHiddenMenuIds] = useState<string[]>([]);
+  const [tempHiddenMenuIds, setTempHiddenMenuIds] = useState<string[]>([]);
+
 
     useEffect(() => {
       const loadProfile = async (userId: string) => {
 
-    const { data: profile } = await supabase
+       const { data: profile } = await supabase
       .from("profiles")
-      .select("personal_menus, menu_order, quick_menu_keys, read_notice_ids, read_press_ids")
+      .select("personal_menus, menu_order, quick_menu_keys, read_notice_ids, read_press_ids, hidden_menu_ids")
+
       .eq("id", userId)
       .maybeSingle();
 
@@ -272,10 +276,16 @@ export default function Home() {
       setReadNoticeIds(profile.read_notice_ids as number[]);
     }
 
-      if (profile?.read_press_ids && Array.isArray(profile.read_press_ids)) {
+           if (profile?.read_press_ids && Array.isArray(profile.read_press_ids)) {
       setReadPressIds(profile.read_press_ids as number[]);
     }
+
+    if (profile?.hidden_menu_ids && Array.isArray(profile.hidden_menu_ids)) {
+      setHiddenMenuIds(profile.hidden_menu_ids as string[]);
+      setTempHiddenMenuIds(profile.hidden_menu_ids as string[]);
+    }
   };
+
 
   if (authUser) {
     loadProfile(authUser.id);
@@ -1228,12 +1238,15 @@ setTempMenus(finalMenus);
 setPersonalMenus(nextPersonalMenus);
 setTempPersonalMenus(nextPersonalMenus);
 setQuickMenuKeys(tempQuickMenuKeys);
+setHiddenMenuIds(tempHiddenMenuIds);
 
    if (authUser && authStatus === "approved") {
     supabase.from("profiles").update({
       menu_order: finalMenus.map((menu) => menu.id),
       quick_menu_keys: tempQuickMenuKeys,
+      hidden_menu_ids: tempHiddenMenuIds,
     }).eq("id", authUser.id).then();
+
   } else {
     localStorage.setItem("insurance-menu-order", JSON.stringify(finalMenus.map((menu) => menu.id)));
     localStorage.setItem("quickMenuKeys", JSON.stringify(tempQuickMenuKeys));
@@ -2190,14 +2203,16 @@ setMenuAddOpen(true);
 
 <button
  onClick={() => {
-    setTempMenus(menus);
+        setTempMenus(menus);
     setTempPersonalMenus(personalMenus);
     setTempQuickMenuKeys(quickMenuKeys);
+    setTempHiddenMenuIds(hiddenMenuIds);
     setSelectedPersonalMenuId("");
     setEditIconOpen(false);
     setMenuManageMode("sort");
     resetPopupPosition("menuSort");
 setMenuSortOpen(true);
+
     setMemoOpen(false);
     setMenuAddOpen(false);
     setSettingOpen(false);
@@ -2303,23 +2318,12 @@ setMenuSortOpen(true);
   }}
   className="relative grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 items-start"
 >
-{mainMenuManageMode === "normal" && authRole === "admin" && (
-  <a
-    href="/admin"
-    className="bg-blue-600 p-7 sm:p-8 rounded-3xl shadow hover:shadow-xl hover:-translate-y-1 transition min-h-[190px] cursor-default"
-  >
-    <Settings className="w-10 h-10 mb-4 text-white" />
-    <h2 className="text-lg font-bold text-white">관리자 페이지</h2>
-    <p className="text-sm text-blue-100 mt-2 leading-relaxed break-keep">
-      회원 승인 및 관리
-    </p>
-  </a>
-)}
 
 
         {mainMenuManageMode === "normal" &&
-  menus.map((menu) => {
+  menus.filter(menu => !hiddenMenuIds.includes(menu.id)).map((menu) => {
     const Icon = menu.icon;
+
 
     return (
       <a
@@ -2373,7 +2377,18 @@ setMenuSortOpen(true);
   })}
 
 
-
+{mainMenuManageMode === "normal" && authRole === "admin" && (
+  <a
+    href="/admin"
+    className="bg-blue-600 p-7 sm:p-8 rounded-3xl shadow hover:shadow-xl hover:-translate-y-1 transition min-h-[190px] cursor-default"
+  >
+    <Settings className="w-10 h-10 mb-4 text-white" />
+    <h2 className="text-lg font-bold text-white">관리자 페이지</h2>
+    <p className="text-sm text-blue-100 mt-2 leading-relaxed break-keep">
+      회원 승인 및 관리
+    </p>
+  </a>
+)}
 
 
 {mainMenuManageMode === "edit" && (
@@ -4731,10 +4746,12 @@ rel="noopener noreferrer"
 
  <button
   onClick={() => {
-    if (menuManageMode === "sort") {
-  setTempMenus(menus);
+  if (menuManageMode === "sort") {
+ setTempMenus(menus); 
   setTempPersonalMenus(personalMenus);
   setTempQuickMenuKeys(quickMenuKeys);
+  setTempHiddenMenuIds(hiddenMenuIds);
+
   setSelectedPersonalMenuId("");
   setSelectedDeleteMenuIds([]);
   setEditingOriginalMenu(null);
@@ -4859,11 +4876,13 @@ rel="noopener noreferrer"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
           {tempMenus.map((menu) => (
-  <SortableMenuSortCard
+   <SortableMenuSortCard
     key={menu.id}
     menu={menu}
-    
+    tempHiddenMenuIds={tempHiddenMenuIds}
+    setTempHiddenMenuIds={setTempHiddenMenuIds}
     onContextMenu={(e) => {
+
   if (!menu.isPersonal) return;
 
   e.preventDefault();
@@ -5287,9 +5306,10 @@ hover:-translate-y-1
         return;
       }
 
-      setTempMenus(menus);
+           setTempMenus(menus);
       setTempPersonalMenus(personalMenus);
       setTempQuickMenuKeys(quickMenuKeys);
+      setTempHiddenMenuIds(hiddenMenuIds);
       setSelectedPersonalMenuId("");
     }}
     className="
@@ -5297,6 +5317,7 @@ hover:-translate-y-1
       h-12
       rounded-2xl
       bg-gray-100
+
       text-gray-700
       text-sm
       font-bold
@@ -7126,11 +7147,16 @@ function SortableMenuSortCard({
   menu,
   onEdit,
   onContextMenu,
+  tempHiddenMenuIds,
+  setTempHiddenMenuIds,
 }: {
   menu: any;
   onEdit: () => void;
   onContextMenu?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  tempHiddenMenuIds: string[];
+  setTempHiddenMenuIds: React.Dispatch<React.SetStateAction<string[]>>;
 }) {
+
   const {
     attributes,
     listeners,
@@ -7170,11 +7196,34 @@ function SortableMenuSortCard({
       transition
       hover:shadow-xl
       hover:-translate-y-1
-    "
+       "
   >
-    <Icon className="w-10 h-10 mb-4 text-blue-600 shrink-0" />
+    <div className="flex justify-between items-start mb-4">
+      <Icon className="w-10 h-10 text-blue-600 shrink-0" />
+            {(
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setTempHiddenMenuIds((prev) =>
+              prev.includes(menu.id)
+                ? prev.filter((id) => id !== menu.id)
+                : [...prev, menu.id]
+            );
+          }}
+          className="p-2 rounded-full hover:bg-gray-100 transition"
+        >
+          {tempHiddenMenuIds.includes(menu.id) ? (
+            <EyeOff className="w-5 h-5 text-gray-400" />
+          ) : (
+            <Eye className="w-5 h-5 text-gray-400" />
+          )}
+        </button>
+      )}
+    </div>
 
     <h2 className="text-lg font-bold text-gray-900">
+
       {menu.title}
     </h2>
 

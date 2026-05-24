@@ -239,7 +239,15 @@ const [ddayPickerMonth, setDdayPickerMonth] = useState(new Date().getMonth());
   
   const { authUser } = useAuth();
 
+  // ── 오늘 일정 ──
+  const [todayEvents, setTodayEvents] = useState<{ id: string; title: string; time: string; icon: string; color: string; place: string; date: string; memo: string; }[]>([]);
+  const [todayEventEditOpen, setTodayEventEditOpen] = useState(false);
+  const [editingTodayEvent, setEditingTodayEvent] = useState<{ id: string; title: string; time: string; icon: string; color: string; place: string; date: string; memo: string; } | null>(null);
+  const [todayEventForm, setTodayEventForm] = useState({ title: "", time: "", place: "", memo: "", icon: "📅", color: "blue" });
+
+
   // ── 날씨 위젯 ──
+
 const WEATHER_REGIONS = ["서울","부산","대구","인천","광주","대전","울산","세종","제주"];
 const [weatherRegion, setWeatherRegion] = useState(() => localStorage.getItem("hometab-weather-region") || "서울");
 const [weather, setWeather] = useState<{
@@ -469,6 +477,22 @@ useEffect(() => {
     loadCustomerEvents();
     loadPrivateMemos();
   }, [authUser]);
+
+useEffect(() => {
+  if (!authUser) return;
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+  supabase
+    .from("calendar_events")
+    .select("id, title, time, icon, color, place, date, memo")
+
+    .eq("user_id", authUser.id)
+    .eq("date", todayStr)
+    .order("time", { ascending: true })
+    .then(({ data }) => setTodayEvents(data || []));
+}, [authUser]);
+
 
   useEffect(() => {
   if (!authUser || !settings) return;
@@ -944,7 +968,7 @@ const diaryEndPage = Math.min(
       </>
     ) : (
       <div className="flex items-center justify-center h-full min-h-[90px]">
-        <p className="text-sm text-gray-300 ">D-Day 설정</p>
+        <p className="text-sm text-gray-300 cursor-default">D-Day 설정</p>
       </div>
     )}
     {ddayWidgetEditOpen && (
@@ -1299,7 +1323,8 @@ const diaryEndPage = Math.min(
         <div className="overflow-y-auto flex-1 space-y-1">
           {filteredBgm.map((bgm, i) => (
             <button
-              key={bgm.vid}
+              key={`${bgm.vid}-${i}`}
+
               onClick={() => { setBgmIndex(i); setBgmPlaying(true); setBgmEditOpen(false); }}
               className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition ${i === bgmIndex % filteredBgm.length ? `${currentColor.light} ${currentColor.text} border ${currentColor.bg.replace("bg-", "border-")}` : "hover:bg-gray-50 text-gray-700"}`}
             >
@@ -1314,8 +1339,130 @@ const diaryEndPage = Math.min(
 
 </div>
 
+{/* ── 오늘 일정 ── */}
+{todayEvents.length > 0 && (
+  <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
+    <h2 className="text-base font-black text-gray-900 mb-3">📅 오늘 일정</h2>
+    <div className="space-y-2">
+      {todayEvents.map((ev) => (
+        <div
+          key={ev.id}
+          className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 hover:bg-blue-50 transition cursor-pointer"
+          onClick={() => {
+            setEditingTodayEvent(ev);
+                        setTodayEventForm({ title: ev.title, time: ev.time || "", place: ev.place || "", memo: ev.memo || "", icon: ev.icon, color: ev.color });
+
+            setTodayEventEditOpen(true);
+          }}
+        >
+          <span className="text-xl leading-none">{ev.icon}</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-gray-800 truncate">{ev.title}</p>
+            {ev.place && <p className="text-xs text-gray-400 truncate">{ev.place}</p>}
+          </div>
+          {ev.time && <span className="text-xs text-gray-400 shrink-0">{ev.time}</span>}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+{/* 오늘 일정 수정 팝업 */}
+{todayEventEditOpen && editingTodayEvent && (
+  <div onClick={() => setTodayEventEditOpen(false)} className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center">
+    <div onClick={(e) => e.stopPropagation()} className="bg-white w-[90%] max-w-lg rounded-3xl shadow-xl flex flex-col">
+      <div className="flex items-center justify-between px-6 pt-6 pb-4">
+        <h2 className="text-xl font-black text-gray-900">일정 수정</h2>
+        <button onClick={() => setTodayEventEditOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer">
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+      <div className="px-6 pt-2 pb-4 overflow-y-auto flex-1 min-w-0">
+        <div className="space-y-3">
+          {/* 이모지 + 제목 */}
+          <div className="flex gap-2">
+            <button className="w-12 h-12 border border-gray-200 rounded-2xl text-2xl hover:bg-gray-50 transition flex items-center justify-center outline-none">
+              {todayEventForm.icon}
+            </button>
+            <input type="text" placeholder="제목" value={todayEventForm.title}
+              onChange={(e) => setTodayEventForm(f => ({ ...f, title: e.target.value }))}
+              className="flex-1 h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition" />
+          </div>
+          {/* 날짜 (수정 불가, 표시만) */}
+          <button type="button" disabled className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm text-left flex items-center gap-2 bg-gray-50">
+            <span className="text-gray-400">📅</span>
+            <span className="text-gray-800">{editingTodayEvent.date}</span>
+          </button>
+          {/* 시간 */}
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-base pointer-events-none">⏰</span>
+            <input type="text" placeholder="시간 (예: 오후 2시)" value={todayEventForm.time}
+              onChange={(e) => setTodayEventForm(f => ({ ...f, time: e.target.value }))}
+              className="w-full h-12 rounded-2xl border border-gray-200 pl-10 pr-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition" />
+          </div>
+          {/* 장소 */}
+          <input type="text" placeholder="장소" value={todayEventForm.place}
+            onChange={(e) => setTodayEventForm(f => ({ ...f, place: e.target.value }))}
+            className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition" />
+          {/* 메모 */}
+          <textarea placeholder="메모" value={todayEventForm.memo ?? ""}
+            onChange={(e) => setTodayEventForm(f => ({ ...f, memo: e.target.value }))}
+            className="w-full h-20 rounded-2xl border border-gray-200 p-4 text-sm outline-none resize-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition" />
+          {/* 색상 */}
+          <div className="flex gap-3">
+            {[
+              { value: "white", color: "bg-white" },
+              { value: "blue", color: "bg-blue-50" },
+              { value: "green", color: "bg-green-50" },
+              { value: "yellow", color: "bg-yellow-50" },
+              { value: "red", color: "bg-red-50" },
+            ].map((opt) => (
+              <button key={opt.value} onClick={() => setTodayEventForm(f => ({ ...f, color: opt.value }))}
+                className={`w-8 h-8 rounded-full border border-gray-200 transition hover:scale-105 cursor-pointer ${opt.color} ${todayEventForm.color === opt.value ? "ring-2 ring-gray-400 ring-offset-2" : ""}`} />
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="flex gap-3 px-6 pb-6 pt-4">
+        <button
+          onClick={async () => {
+            if (!authUser || !editingTodayEvent) return;
+            await supabase.from("calendar_events").delete().eq("id", editingTodayEvent.id);
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+              const { data } = await supabase.from("calendar_events").select("id, title, time, icon, color, place, date, memo").eq("user_id", authUser.id).eq("date", todayStr).order("time", { ascending: true });
+            setTodayEvents(data || []);
+            setTodayEventEditOpen(false);
+          }}
+          className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-600 text-sm font-bold hover:bg-red-50 hover:text-red-500 transition cursor-pointer"
+        >삭제</button>
+        <button
+          onClick={async () => {
+            if (!authUser || !editingTodayEvent) return;
+            await supabase.from("calendar_events").update({
+              title: todayEventForm.title,
+              time: todayEventForm.time || null,
+              place: todayEventForm.place || null,
+              memo: todayEventForm.memo || null,
+              color: todayEventForm.color,
+            }).eq("id", editingTodayEvent.id);
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+              const { data } = await supabase.from("calendar_events").select("id, title, time, icon, color, place, date, memo").eq("user_id", authUser.id).eq("date", todayStr).order("time", { ascending: true });
+            setTodayEvents(data || []);
+            setTodayEventEditOpen(false);
+          }}
+          className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-pointer"
+        >완료</button>
+      </div>
+    </div>
+  </div>
+)}
+
+
 
       {/* ── 메모 | 일기 반반 ── */}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
 
         {/* 메모 목록 */}
@@ -1336,7 +1483,7 @@ const diaryEndPage = Math.min(
 {privateMemos.length === 0 ? (
   <div className="text-center py-6">
     <StickyNote className="w-7 h-7 mx-auto mb-1.5 text-gray-200" />
-    <p className="text-sm text-gray-400">메모가 없습니다.</p>
+    <p className="text-sm text-gray-400 cursor-default">메모가 없습니다.</p>
   </div>
 ) : (
   <div className="space-y-2.5">
@@ -1514,7 +1661,7 @@ const diaryEndPage = Math.min(
     return filtered.length === 0 ? (
       <div className="text-center py-6">
         <BookOpen className="w-7 h-7 mx-auto mb-1.5 text-gray-200" />
-        <p className="text-sm text-gray-400">이 달의 일기가 없어요.</p>
+        <p className="text-sm text-gray-400 cursor-default">이 달의 일기가 없어요.</p>
       </div>
     ) : (
       <div className="space-y-2.5">

@@ -181,9 +181,9 @@ const [urlPopupIconPickerOpen, setUrlPopupIconPickerOpen] = useState(false);
   const [urlPopupSaving, setUrlPopupSaving] = useState(false);
 
   const urlPopupMeta = {
-    kakao: { label: "카카오톡 채널 URL", placeholder: "https://pf.kakao.com/..." },
-    mysite: { label: "내 사이트 URL", placeholder: "https://..." },
-    spreadsheet: { label: "구글 스프레드시트 URL", placeholder: "https://docs.google.com/..." },
+    kakao: { label: "내 사이트 URL 설정", placeholder: "https://" },
+    mysite: { label: "내 사이트 URL 설정", placeholder: "https://" },
+    spreadsheet: { label: "내 사이트 URL 설정", placeholder: "https://" },
   };
 
   const openUrlPopup = (type: "kakao" | "mysite" | "spreadsheet") => {
@@ -627,11 +627,18 @@ updateData.pin_changed_at = new Date().toISOString();
 </div>
       {/* ── 탭 콘텐츠 ── */}
       <main className="max-w-7xl mx-auto px-6 pb-8">
-       {activeTab === "home" && <HomeTab settings={settings} />}
+       <div className={activeTab === "home" ? "block" : "hidden"}>
+  <HomeTab settings={settings} />
+</div>
 
-{activeTab === "calendar" && <CalendarTab />}
+<div className={activeTab === "calendar" ? "block" : "hidden"}>
+  <CalendarTab />
+</div>
 
-{activeTab === "ai" && <AiMessageTab />}
+<div className={activeTab === "ai" ? "block" : "hidden"}>
+  <AiMessageTab />
+</div>
+
         
       </main>
 
@@ -664,87 +671,105 @@ updateData.pin_changed_at = new Date().toISOString();
 
     
 
-      {/* ── URL 설정 팝업 ── */}
-      {urlPopupType && (
-        <div className="fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden">
-            <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
-              <span className="font-bold text-sm">{urlPopupMeta[urlPopupType].label}</span>
-              <button
-                onClick={() => setUrlPopupType(null)}
-                className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="p-5 space-y-4">
-                <div>
-  <label className="text-xs text-gray-500 font-semibold mb-1 block">버튼 이름</label>
-  <input
-    value={urlPopupName}
-    onChange={(e) => setUrlPopupName(e.target.value)}
-    placeholder="예: 내 블로그"
-    className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-  />
-</div>
-<div>
-  <label className="text-xs text-gray-500 font-semibold mb-1 block">아이콘 선택</label>
-  {/* 선택된 아이콘 버튼 - 클릭 시 피커 토글 */}
-  <button
-    type="button"
-    onClick={() => setUrlPopupIconPickerOpen((v) => !v)}
-    className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer mb-2"
-  >
-    {(() => {
-      const found = LINK_ICONS.find(i => i.id === urlPopupIcon);
-      const IconComp = found ? found.icon : CirclePlus;
-      return <IconComp className="w-5 h-5 text-gray-700" />;
-    })()}
-    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${urlPopupIconPickerOpen ? "rotate-180" : ""}`} />
-  </button>
-  {/* 아이콘 피커 박스 */}
-  {urlPopupIconPickerOpen && (
-    <div className="grid grid-cols-5 gap-2 p-2 rounded-xl border border-gray-200 bg-gray-50 mb-1">
-      {LINK_ICONS.map((item) => {
-        const IconComp = item.icon;
-        return (
-          <button key={item.id} type="button"
-            onClick={() => { setUrlPopupIcon(item.id); setUrlPopupIconPickerOpen(false); }}
-            className={`flex items-center justify-center p-2 rounded-xl border transition cursor-pointer ${urlPopupIcon === item.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-white"}`}>
-            <IconComp className="w-5 h-5 text-gray-700" />
-          </button>
-        );
-      })}
-    </div>
-  )}
-</div>
+     {/* ── URL 설정 팝업 ── */}
+{urlPopupType && (
+  <div className="fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4">
+    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-visible">
+      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between rounded-t-3xl">
+        <span className="font-bold text-sm">{urlPopupMeta[urlPopupType].label}</span>
+        <button
+          onClick={() => setUrlPopupType(null)}
+          className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
 
-              <input
-                value={urlPopupValue}
-                onChange={(e) => setUrlPopupValue(e.target.value)}
-                placeholder={urlPopupMeta[urlPopupType].placeholder}
-                className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-                autoFocus
+      <div className="p-5 space-y-3 overflow-visible">
+        <label className="text-xs text-gray-500 font-semibold block">
+          내 사이트 URL 설정
+        </label>
+
+        <div className="flex items-center gap-2">
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setUrlPopupIconPickerOpen((v) => !v)}
+              className="flex items-center gap-1.5 px-2.5 h-10 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition cursor-pointer"
+            >
+              {(() => {
+                const found = LINK_ICONS.find((i) => i.id === urlPopupIcon);
+                const IconComp = found ? found.icon : CirclePlus;
+                return <IconComp className="w-4 h-4 text-gray-700" />;
+              })()}
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-gray-400 transition-transform ${
+                  urlPopupIconPickerOpen ? "rotate-180" : ""
+                }`}
               />
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setUrlPopupType(null)}
-                  className="flex-1 h-10 bg-gray-100 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-200 transition cursor-pointer"
-                >
-                  취소
-                </button>
-                <button
-                  onClick={handleSaveUrlPopup}
-                  disabled={urlPopupSaving}
-                  className="flex-1 h-10 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition disabled:opacity-50 cursor-pointer"
-                >
-                  {urlPopupSaving ? "저장 중..." : "저장"}
-                </button>
+            </button>
+
+            {urlPopupIconPickerOpen && (
+              <div className="absolute top-full left-0 mt-2 z-[9999] w-[220px] grid grid-cols-5 gap-2 p-2 rounded-2xl border border-gray-200 bg-white shadow-xl">
+                {LINK_ICONS.map((item) => {
+                  const IconComp = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setUrlPopupIcon(item.id);
+                        setUrlPopupIconPickerOpen(false);
+                      }}
+                      className={`flex items-center justify-center w-9 h-9 rounded-xl border transition cursor-pointer ${
+                        urlPopupIcon === item.id
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      <IconComp className="w-4 h-4 text-gray-700" />
+                    </button>
+                  );
+                })}
               </div>
-            </div>
+            )}
           </div>
+
+          <input
+            value={urlPopupName}
+            onChange={(e) => setUrlPopupName(e.target.value)}
+            placeholder="버튼 이름"
+            className="flex-1 h-10 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+          />
         </div>
-      )}
+
+        <input
+          value={urlPopupValue}
+          onChange={(e) => setUrlPopupValue(e.target.value)}
+          placeholder={urlPopupMeta[urlPopupType].placeholder}
+          className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+          autoFocus
+        />
+
+        <div className="flex gap-3 pt-1">
+          <button
+            onClick={() => setUrlPopupType(null)}
+            className="flex-1 h-10 bg-gray-100 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-200 transition cursor-pointer"
+          >
+            취소
+          </button>
+          <button
+            onClick={handleSaveUrlPopup}
+            disabled={urlPopupSaving}
+            className="flex-1 h-10 bg-gray-800 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition disabled:opacity-50 cursor-pointer"
+          >
+            {urlPopupSaving ? "저장 중..." : "저장"}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
       
 
