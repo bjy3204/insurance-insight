@@ -833,9 +833,9 @@ const diaryEndPage = Math.min(
 
   {/* 날씨 */}
   <div
-    className="bg-white rounded-3xl border border-gray-200 shadow p-4 relative select-none transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
-    onContextMenu={(e) => { e.preventDefault(); setWeatherContextMenu({ x: e.clientX, y: e.clientY }); }}
-    onClick={() => setWeatherContextMenu(null)}
+    className={`bg-white rounded-3xl border border-gray-200 shadow p-4 relative select-none transition-all duration-200 ${weatherContextMenu ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
+   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setWeatherContextMenu({ x: e.clientX, y: e.clientY }); }}
+
   >
     {weather ? (
   <>
@@ -888,13 +888,21 @@ const diaryEndPage = Math.min(
 ) : (
   <p className="text-xs text-gray-300 text-center py-3">불러오는 중...</p>
 )}
-    {weatherContextMenu && (
-      <>
-        <div className="fixed inset-0 z-40" onClick={() => setWeatherContextMenu(null)} />
-        <div
-          className="fixed z-50 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden w-28"
-          style={{ left: weatherContextMenu.x, top: weatherContextMenu.y }}
-        >
+  {weatherContextMenu && (
+  <>
+   <div 
+  className="fixed inset-0 z-[9998]" 
+  onClick={() => setWeatherContextMenu(null)}
+  onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setWeatherContextMenu(null); }}
+/>
+
+
+    <div
+      className="fixed z-[9999] bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden w-28"
+      style={{ left: weatherContextMenu.x, top: weatherContextMenu.y }}
+    >
+
+
           {WEATHER_REGIONS.map((r) => (
             <button
               key={r}
@@ -910,11 +918,11 @@ const diaryEndPage = Math.min(
   </div>
 
   {/* D-Day */}
-  <div
-    className="bg-white rounded-3xl border border-gray-200 shadow p-4 relative select-none"
-    onContextMenu={(e) => { e.preventDefault(); setDdayWidgetTempLabel(ddayWidgetLabel); setDdayWidgetTempDate(ddayWidgetDate); setDdayWidgetEditOpen(true); }}
-  >
-    
+ <div
+  className={`bg-white rounded-3xl border border-gray-200 shadow p-4 relative transition-all duration-200 ${ddayWidgetEditOpen ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
+  onContextMenu={(e) => { e.preventDefault(); setDdayWidgetTempLabel(ddayWidgetLabel); setDdayWidgetTempDate(ddayWidgetDate); setDdayWidgetEditOpen(true); }}
+>
+
     {ddayWidgetDate ? (
       <>
        <div className="flex items-center gap-3 mb-4.5">
@@ -938,7 +946,7 @@ const diaryEndPage = Math.min(
     )}
     {ddayWidgetEditOpen && (
       <>
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center" onClick={() => setDdayWidgetEditOpen(false)}>
+        <div className="fixed inset-0 z-[9998] bg-black/40 flex items-center justify-center" onClick={() => setDdayWidgetEditOpen(false)}>
           <div className="bg-white rounded-3xl shadow-2xl p-6 w-80" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
   <h3 className="text-lg font-black text-gray-900">
@@ -1127,13 +1135,15 @@ const diaryEndPage = Math.min(
 
 {/* BGM 플레이어 */}
 <div
-  className="bg-white rounded-3xl border border-gray-200 shadow p-4 relative"
+  className={`bg-white rounded-3xl border border-gray-200 shadow p-4 relative transition-all duration-200 ${bgmEditOpen || bgmColorMenuOpen ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
   onContextMenu={(e) => { e.preventDefault(); setBgmColorMenuOpen(true); }}
 >
+
   {bgmColorMenuOpen && (
     <>
-      <div className="fixed inset-0 z-40" onClick={() => setBgmColorMenuOpen(false)} />
-      <div className="absolute right-2 top-2 z-50 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden w-24">
+      <div className="fixed inset-0 z-[9998]" onClick={() => setBgmColorMenuOpen(false)} />
+<div className="absolute right-2 top-2 z-[9999] bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden w-24">
+
         {(Object.entries(BGM_COLOR_MAP) as [keyof typeof BGM_COLOR_MAP, typeof BGM_COLOR_MAP[keyof typeof BGM_COLOR_MAP]][]).map(([key, val]) => (
           <button
             key={key}
@@ -1267,7 +1277,8 @@ const diaryEndPage = Math.min(
 
 
   {bgmEditOpen && (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center" onClick={() => setBgmEditOpen(false)}>
+  <div className="fixed inset-0 z-[9998] bg-black/40 flex items-center justify-center" onClick={() => setBgmEditOpen(false)}>
+
       <div className="bg-white rounded-3xl shadow-2xl p-5 w-80 max-h-[70vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-base font-black text-gray-900 mb-3">BGM 목록</h3>
         <div className="flex gap-1 mb-3">
