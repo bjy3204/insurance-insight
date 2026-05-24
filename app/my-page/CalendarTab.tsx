@@ -816,25 +816,52 @@ return (
                         : "bg-blue-50"
                     }`}
                   >
-                    {/* 왼쪽: 이모지 + 제목 */}
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <span className="shrink-0 text-base">{event.icon}</span>
-                      <div className="min-w-0">
-                        {/* 제목 */}
-                        <p className="font-bold text-gray-900 text-sm truncate">
-                          {event.title}
-                        </p>
-                        {/* 날짜 + 시간 (제목 아래 작게) */}
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          {new Date(event.date).toLocaleDateString("ko-KR", {
-                            month: "numeric",
-                            day: "numeric",
-                            weekday: "short",
-                          })}
-                          {event.time && ` · ${event.time}`}
-                        </p>
-                      </div>
-                    </div>
+                    {/* 일정 정보 */}
+<div className="flex items-center gap-5 min-w-0 flex-1 overflow-hidden">
+
+  {/* 아이콘 */}
+  <span className="shrink-0 text-base">{event.icon}</span>
+
+  {/* 제목 */}
+  <div className="min-w-[120px] max-w-[160px] truncate">
+    <p className="font-bold text-gray-900 text-sm truncate">
+      {event.title}
+    </p>
+  </div>
+
+  {/* 시간 */}
+  <div className="min-w-[90px] max-w-[90px] truncate">
+    <p className="text-sm text-gray-500 truncate">
+      {event.time || "-"}
+    </p>
+  </div>
+
+  {/* 장소 */}
+  <div className="min-w-[120px] max-w-[120px] truncate">
+    <p className="text-sm text-gray-500 truncate">
+      {event.place || "-"}
+    </p>
+  </div>
+
+  {/* 메모 */}
+  <div className="flex-1 min-w-[120px] truncate">
+    <p className="text-sm text-gray-400 truncate">
+      {event.memo || "-"}
+    </p>
+  </div>
+
+{/* 날짜 */}
+<div className="shrink-0 mr-4">
+    <p className="text-sm text-gray-400">
+     {new Date(event.date).toLocaleDateString("ko-KR", {
+  month: "numeric",
+  day: "numeric",
+  weekday: "short",
+})}
+    </p>
+  </div>
+
+</div>
 
                     {/* 오른쪽: 삭제 버튼 */}
                     <button
@@ -960,12 +987,15 @@ return (
           onClick={() => setShowEventModal(false)}
           className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center"
         >
-          <div
+                   <div
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => {
+              const tag = (e.target as HTMLElement).tagName;
+              if (tag === "INPUT" || tag === "TEXTAREA" || tag === "BUTTON") return;
               setIsDragging(true);
               setDragStart({ x: e.clientX - modalPos.x, y: e.clientY - modalPos.y });
             }}
+
             onMouseMove={(e) => {
               if (isDragging) {
                 setModalPos({

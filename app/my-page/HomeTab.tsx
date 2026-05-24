@@ -1347,7 +1347,7 @@ const diaryEndPage = Math.min(
       {todayEvents.map((ev) => (
         <div
           key={ev.id}
-          className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 hover:bg-blue-50 transition cursor-pointer"
+          className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 hover:bg-blue-50 transition"
           onClick={() => {
             setEditingTodayEvent(ev);
                         setTodayEventForm({ title: ev.title, time: ev.time || "", place: ev.place || "", memo: ev.memo || "", icon: ev.icon, color: ev.color });
@@ -1355,12 +1355,52 @@ const diaryEndPage = Math.min(
             setTodayEventEditOpen(true);
           }}
         >
-          <span className="text-xl leading-none">{ev.icon}</span>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-800 truncate">{ev.title}</p>
-            {ev.place && <p className="text-xs text-gray-400 truncate">{ev.place}</p>}
-          </div>
-          {ev.time && <span className="text-xs text-gray-400 shrink-0">{ev.time}</span>}
+{/* 일정 정보 */}
+<div className="flex items-center gap-5 min-w-0 flex-1 overflow-hidden">
+
+  {/* 아이콘 */}
+  <span className="shrink-0 text-base">{ev.icon}</span>
+
+  {/* 제목 */}
+  <div className="min-w-[120px] max-w-[160px] truncate">
+    <p className="font-bold text-gray-900 text-sm truncate">
+      {ev.title}
+    </p>
+  </div>
+
+  {/* 시간 */}
+  <div className="min-w-[90px] max-w-[90px] truncate">
+    <p className="text-sm text-gray-500 truncate">
+      {ev.time || "-"}
+    </p>
+  </div>
+
+  {/* 장소 */}
+  <div className="min-w-[120px] max-w-[120px] truncate">
+    <p className="text-sm text-gray-500 truncate">
+      {ev.place || "-"}
+    </p>
+  </div>
+
+  {/* 메모 */}
+  <div className="flex-1 min-w-[120px] truncate">
+    <p className="text-sm text-gray-400 truncate">
+      {ev.memo || "-"}
+    </p>
+  </div>
+
+  {/* 날짜 */}
+  <div className="shrink-0 min-w-[90px] text-right">
+    <p className="text-sm text-gray-400">
+      {new Date(ev.date).toLocaleDateString("ko-KR", {
+        month: "numeric",
+        day: "numeric",
+        weekday: "short",
+      })}
+    </p>
+  </div>
+
+</div>
         </div>
       ))}
     </div>
