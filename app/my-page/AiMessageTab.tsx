@@ -2767,7 +2767,7 @@ export default function AiMessageTab() {
 
   const [messageType, setMessageType] = useState<MessageType>("daily_check");
   const [customerName, setCustomerName] = useState("");
-  const [agentName, setAgentName] = useState("배지연");
+  const [agentName, setAgentName] = useState(() => localStorage.getItem("agent-name") || "");
   const [generatedMessage, setGeneratedMessage] = useState("");
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -2851,7 +2851,10 @@ const handleRegenerate = () => {
     <input
       type="text"
       value={agentName}
-      onChange={(e) => setAgentName(e.target.value)}
+      onChange={(e) => {
+  setAgentName(e.target.value);
+  localStorage.setItem("agent-name", e.target.value);
+}}
       placeholder="설계사 이름"
       className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400 transition"
     />
