@@ -365,13 +365,17 @@ useEffect(() => {
 
 useEffect(() => {
   localStorage.setItem("bgm-color", bgmColor);
-  if (authUser) {
-    supabase.from("customer_settings").upsert(
-      { user_id: authUser.id, bgm_color: bgmColor },
-      { onConflict: "user_id" }
-    );
-  }
-}, [bgmColor, authUser]);
+}, [bgmColor]);
+
+useEffect(() => {
+  if (!authUser) return;
+  supabase.from("customer_settings").upsert(
+    { user_id: authUser.id, bgm_color: bgmColor },
+    { onConflict: "user_id" }
+  );
+}, [bgmColor]);
+
+
 
 
 
@@ -468,7 +472,9 @@ useEffect(() => {
     if (data) {
   setDdayWidgetLabel(data.dday_label || "");
   setDdayWidgetDate(data.dday_date || "");
-  if (data.bgm_color) setBgmColor(data.bgm_color as "pink" | "yellow" | "blue" | "green" | "gray");
+  const localColor = localStorage.getItem("bgm-color");
+  if (!localColor && data.bgm_color) setBgmColor(data.bgm_color as "pink" | "yellow" | "blue" | "green" | "gray");
+
 }
 
   };
