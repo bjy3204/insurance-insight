@@ -43,6 +43,61 @@ import {
 
 import { CSS } from "@dnd-kit/utilities";
 
+
+// ─────────────────────────────────────────────
+// 환율 차트 위젯 (TradingView)
+// ─────────────────────────────────────────────
+function ExchangeRateChart() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    // 기존 스크립트 제거 (재렌더링 방지)
+    containerRef.current.innerHTML = '';
+    
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    script.type = 'text/javascript';
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      "autosize": true,
+      "symbol": "FX_IDC:USDKRW",
+      "interval": "M",
+      "timezone": "Asia/Seoul",
+      "theme": "light",
+      "style": "3", // 3 = Area chart
+      "locale": "kr",
+      "enable_publishing": false,
+      "backgroundColor": "rgba(255, 255, 255, 1)",
+      "gridColor": "rgba(240, 243, 250, 0)",
+      "hide_top_toolbar": true,
+      "hide_legend": true,
+      "save_image": false,
+      "container_id": "tradingview_usdkrw",
+      "allow_symbol_change": false,
+      "calendar": false,
+      "hide_volume": true,
+      "support_host": "https://www.tradingview.com"
+    });
+    
+    containerRef.current.appendChild(script);
+  }, []);
+
+  return (
+    <div className="w-full h-[400px] mt-8 rounded-2xl overflow-hidden border border-gray-200 shadow-sm bg-white">
+      <div className="tradingview-widget-container" style={{ height: '100%', width: '100%' }}>
+        <div id="tradingview_usdkrw" style={{ height: 'calc(100% - 32px)', width: '100%' }} ref={containerRef}></div>
+        <div className="tradingview-widget-copyright" style={{ height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#9DB2BD' }}>
+          <a href="https://kr.tradingview.com/" rel="noopener nofollow" target="_blank">
+            <span className="blue-text">TradingView</span>
+          </a> 제공 환율 차트
+        </div>
+      </div>
+    </div>
+  );
+}
+
 type MemoItem = {
   id: string;
   title: string;
@@ -827,6 +882,9 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
               </div>
             )}
           </div>
+          
+          {/* 환율 차트 (달러가치 탭일 때만 표시) */}
+          {type === "dollar" && <ExchangeRateChart />}
           
           {/* 설명 */}
           <div className="mt-5 text-gray-500 text-sm leading-relaxed">

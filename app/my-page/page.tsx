@@ -133,6 +133,47 @@ function SortableMemoCard({ memo, children }: { memo: MemoItem; children: React.
 }
 
 // ─────────────────────────────────────────────
+// 탭 정의
+// ─────────────────────────────────────────────
+const TABS = [
+  { id: "home" as ActiveTab, label: "홈", icon: BookOpen },
+  { id: "calendar" as ActiveTab, label: "캘린더", icon: CalendarDays },
+  { id: "customer" as ActiveTab, label: "고객관리", icon: Users },
+  { id: "ai" as ActiveTab, label: "AI메시지", icon: MessageSquare },
+];
+
+// ─────────────────────────────────────────────
+// SortableTab
+// ─────────────────────────────────────────────
+function SortableTab({ tab, activeTab, setActiveTab }: { tab: any; activeTab: string; setActiveTab: (id: any) => void }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: tab.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 80 : ("auto" as any),
+    opacity: isDragging ? 0.8 : 1,
+  };
+  return (
+    <button
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={() => setActiveTab(tab.id)}
+      className={`rounded-xl py-3 font-bold transition ${
+        activeTab === tab.id
+          ? "bg-white text-blue-600 shadow-sm"
+          : "text-gray-600"
+      }`}
+    >
+      <div className="flex items-center justify-center">
+        {tab.label}
+      </div>
+    </button>
+  );
+}
+
+// ─────────────────────────────────────────────
 // 메인 컴포넌트
 // ─────────────────────────────────────────────
 export default function CustomerManagePage() {
@@ -141,6 +182,7 @@ export default function CustomerManagePage() {
 
   const [settings, setSettings] = useState<CustomerSettings | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("home");
+  const [tabs, setTabs] = useState(TABS);
 
   // 설정 드롭다운
   const [settingOpen, setSettingOpen] = useState(false);
@@ -342,6 +384,25 @@ useEffect(() => {
     saveMemos(nextMemos);
   };
 
+  
+  const handleTabDragEnd = async (event: any) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    
+    const oldIndex = tabs.findIndex((t) => t.id === active.id);
+    const newIndex = tabs.findIndex((t) => t.id === over.id);
+    
+    const newTabs = arrayMove(tabs, oldIndex, newIndex);
+    setTabs(newTabs);
+    
+    if (authUser) {
+      await supabase.from("customer_settings").upsert(
+        { user_id: authUser.id, tab_order: newTabs.map((t: typeof TABS[number]) => t.id) },
+        { onConflict: "user_id" }
+      );
+    }
+  };
+
   const handleMemoDragEnd = (event: any) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -420,7 +481,7 @@ useEffect(() => {
   if (!authUser) return;
   const { data } = await supabase
     .from("customer_settings")
-    .select("pin_hash, pin_changed_at, agent_name, kakao_url, kakao_name, kakao_icon, my_site_url, my_site_name, my_site_icon, spreadsheet_url, spreadsheet_name, spreadsheet_icon, customer_url, nickname, plant_pos_x, plant_pos_y")
+    .select("pin_hash, pin_changed_at, agent_name, kakao_url, kakao_name, kakao_icon, my_site_url, my_site_name, my_site_icon, spreadsheet_url, spreadsheet_name, spreadsheet_icon, customer_url, nickname, plant_pos_x, plant_pos_y, tab_order")
     .eq("user_id", authUser.id)
     .maybeSingle();
 
@@ -433,6 +494,12 @@ useEffect(() => {
 
   if (!data) return;
   setSettings({ ...data, nickname: profile?.nickname || data.nickname || null });
+  if (data.tab_order && Array.isArray(data.tab_order)) {
+    const order = data.tab_order as string[];
+    const orderedTabs = order.map((id: string) => TABS.find((t) => t.id === id)).filter((t): t is typeof TABS[number] => Boolean(t));
+    const missingTabs = TABS.filter((t) => !order.includes(t.id));
+    setTabs([...orderedTabs, ...missingTabs]);
+  }
   setSettingForm((f) => ({
     ...f,
     kakao_url: data.kakao_url || "",
@@ -524,12 +591,7 @@ updateData.pin_changed_at = new Date().toISOString();
     );
   }
 
-  const TABS = [
-  { id: "home" as ActiveTab, label: "홈", icon: BookOpen },
-  { id: "calendar" as ActiveTab, label: "캘린더", icon: CalendarDays },
-  { id: "customer" as ActiveTab, label: "고객관리", icon: Users },
-  { id: "ai" as ActiveTab, label: "AI메시지", icon: MessageSquare },
-];
+  
 
 
 
@@ -612,24 +674,15 @@ updateData.pin_changed_at = new Date().toISOString();
 
       {/* ── 탭 ── */}
 <div className="w-full px-6 pt-3 pb-0 max-w-7xl mx-auto">
-    <div className="grid grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-5">
-
-    {TABS.map((tab) => (
-      <button
-        key={tab.id}
-        onClick={() => setActiveTab(tab.id)}
-        className={`rounded-xl py-3 font-bold transition ${
-          activeTab === tab.id
-            ? "bg-white text-blue-600 shadow-sm"
-            : "text-gray-600"
-        }`}
-      >
-        <div className="flex items-center justify-center">
-  {tab.label}
-</div>
-      </button>
-    ))}
-  </div>
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleTabDragEnd}>
+      <SortableContext items={tabs.map(t => t.id)} strategy={rectSortingStrategy}>
+        <div className="grid grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-5">
+          {tabs.map((tab) => (
+            <SortableTab key={tab.id} tab={tab} activeTab={activeTab} setActiveTab={setActiveTab} />
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
 </div>
       {/* ── 탭 콘텐츠 ── */}
       <main className="max-w-7xl mx-auto px-6 pb-8">
