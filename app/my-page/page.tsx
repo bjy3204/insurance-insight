@@ -1445,7 +1445,7 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
         />
       )}
            
-            <div className="flex justify-between items-center mt-5">
+            <div className="flex items-center gap-5 mt-5 flex-wrap">
         <a
           href="https://docs.google.com/spreadsheets/d/1AXjvjrINd5GwRRM-WuBeV2_AFKDmAWZDKlOD_uyQhzg/copy"
           target="_blank"
@@ -1454,9 +1454,36 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
         >
           📥 고객관리 시트 다운로드
         </a>
+
+ <a
+    href="/excel/보장분석 리포트.xlsx"
+    download
+    className="px-4 h-9 bg-blue-50 text-blue-700 text-xs font-bold rounded-xl hover:bg-blue-100 transition flex items-center gap-1.5"
+  >
+    📊 보장분석 리포트 다운로드
+  </a>
+
+<a
+  href="https://canva.link/snqpmrzextqr5m2"
+  target="_blank"
+  rel="noopener noreferrer"
+ className="px-4 h-9 bg-yellow-50 text-yellow-700 text-xs font-bold rounded-xl hover:bg-yellow-100 transition flex items-center gap-1.5"
+>
+  💌 면책종료 안내장
+</a>
+
+<a
+  href="https://canva.link/hcibkhwdimqy82o"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="px-4 h-9 bg-orange-50 text-orange-700 text-xs font-bold rounded-xl hover:bg-orange-100 transition flex items-center gap-1.5"
+>
+  💌 감액종료 안내장
+</a>
+        
         <button
           onClick={( ) => { setUrlInput(spreadsheetUrl || ""); setUrlInputOpen(true); }}
-          className="px-4 h-9 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl hover:bg-gray-200 transition cursor-pointer"
+          className="ml-auto px-4 h-9 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl hover:bg-gray-200 transition cursor-pointer"
         >
           {embedUrl ? "URL 변경" : "스프레드시트 연결"}
         </button>
