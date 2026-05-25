@@ -165,39 +165,44 @@ function InflationChart() {
   return (
     <div className="w-full mt-8 rounded-2xl border border-gray-200 shadow-sm bg-white p-4">
       <p className="text-center text-sm font-semibold text-gray-700 mb-4">연도별 소비자물가 상승률 (전년 대비, %)</p>
-      <ResponsiveContainer width="100%" height={360}>
-        <LineChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis
-            dataKey="year"
-            tick={{ fontSize: 11, fill: '#888' }}
-            tickLine={false}
-            interval={0}
-            ticks={(() => {
-              const every5 = data.filter((_, i) => i % 5 === 0).map(d => d.year);
-              const last = data.length > 0 ? data[data.length - 1].year : null;
-              const all = last && !every5.includes(last) ? [...every5, last] : every5;
-              return all.sort();
-            })()}
-          />
-          <YAxis
-            tick={{ fontSize: 11, fill: '#888' }}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(v) => `${v}%`}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <ReferenceLine y={0} stroke="#e5e7eb" />
-          <Line
-            type="monotone"
-            dataKey="rate"
-            stroke="#3b82f6"
-            strokeWidth={2}
-            dot={{ r: 3, fill: '#3b82f6', strokeWidth: 0 }}
-            activeDot={{ r: 5 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      {/* 모바일: 가로 스크롤 / 데스크탑: 꽉 채움 */}
+      <div className="overflow-x-auto md:overflow-x-visible -mx-1 px-1">
+        <div style={{ minWidth: '600px' }} className="md:min-w-0">
+          <ResponsiveContainer width="100%" height={360}>
+            <LineChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis
+                dataKey="year"
+                tick={{ fontSize: 11, fill: '#888' }}
+                tickLine={false}
+                interval={0}
+                ticks={(() => {
+                  const every5 = data.filter((_, i) => i % 5 === 0).map(d => d.year);
+                  const last = data.length > 0 ? data[data.length - 1].year : null;
+                  const all = last && !every5.includes(last) ? [...every5, last] : every5;
+                  return all.sort();
+                })()}
+              />
+              <YAxis
+                tick={{ fontSize: 11, fill: '#888' }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(v) => `${v}%`}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <ReferenceLine y={0} stroke="#e5e7eb" />
+              <Line
+                type="monotone"
+                dataKey="rate"
+                stroke="#3b82f6"
+                strokeWidth={2}
+                dot={{ r: 3, fill: '#3b82f6', strokeWidth: 0 }}
+                activeDot={{ r: 5 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
       <p className="text-right text-xs text-gray-400 mt-1">출처: 한국은행 경제통계시스템(ECOS)</p>
     </div>
   );
