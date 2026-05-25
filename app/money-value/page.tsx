@@ -13,6 +13,7 @@ import {
   Search,
   StickyNote,
   NotebookPen,
+  ChevronDown,
   Pin,
   Eye,
   EyeOff,
@@ -212,127 +213,127 @@ function InflationChart() {
 const YEAR_DATA: Record<string, { year: number; item: string; img: string }[]> = {
   "1970~1979": [
     // 1970년: 라면 20원 → 1,000원으로 50개
-    { year: 1970, item: "라면 약 50개", img: "/images/year/ramen.jpg" },
+    { year: 1970, item: "라면 약 50개", img: "/images/year/ramen.png" },
     // 1971년: 시내버스 15원 → 1,000원으로 66번
-    { year: 1971, item: "시내버스 약 66번", img: "/images/year/bus.jpg" },
+    { year: 1971, item: "시내버스 약 66번", img: "/images/year/bus.png" },
     // 1972년: 신문 30원 → 1,000원으로 33부
-    { year: 1972, item: "신문 약 33부", img: "/images/year/newspaper.jpg" },
+    { year: 1972, item: "신문 약 33부", img: "/images/year/newspaper.png" },
     // 1973년: 계란 1개 약 10원 → 1,000원으로 100개
-    { year: 1973, item: "계란 약 100개", img: "/images/year/eggs.jpg" },
+    { year: 1973, item: "계란 약 100개", img: "/images/year/eggs.png" },
     // 1974년: 새우깡 출시가 50원 → 1,000원으로 20봉지
-    { year: 1974, item: "새우깡 약 20봉지", img: "/images/year/shrimp-snack.jpg" },
+    { year: 1974, item: "새우깡 약 20봉지", img: "/images/year/shrimp-snack.png" },
     // 1975년: 우유 1병 약 50원 → 1,000원으로 20병
-    { year: 1975, item: "우유 약 20병", img: "/images/year/milk.jpg" },
+    { year: 1975, item: "우유 약 20병", img: "/images/year/milk.png" },
     // 1976년: 짜장면 약 150원 → 1,000원으로 6그릇
-    { year: 1976, item: "짜장면 약 6그릇", img: "/images/year/jajangmyeon.jpg" },
+    { year: 1976, item: "짜장면 약 6그릇", img: "/images/year/jajangmyeon.png" },
     // 1977년: 공중전화 10원 → 1,000원으로 100번
-    { year: 1977, item: "공중전화 약 100번", img: "/images/year/payphone.jpg" },
+    { year: 1977, item: "공중전화 약 100번", img: "/images/year/payphone.png" },
     // 1978년: 영화 관람 약 300원 → 1,000원으로 3번
-    { year: 1978, item: "영화 관람 약 3번", img: "/images/year/movie.jpg" },
+    { year: 1978, item: "영화 관람 약 3번", img: "/images/year/movie.png" },
     // 1979년: 담배 청자 약 100원 → 1,000원으로 10갑
-    { year: 1979, item: "담배 약 10갑", img: "/images/year/cigarette.jpg" },
+    { year: 1979, item: "담배 약 10갑", img: "/images/year/cigarette.png" },
   ],
   "1980~1989": [
     // 1980년: 떡볶이 약 100원/인분 → 1,000원으로 10인분
-    { year: 1980, item: "떡볶이 약 10인분", img: "/images/year/tteokbokki.jpg" },
+    { year: 1980, item: "떡볶이 약 10인분", img: "/images/year/tteokbokki.png" },
     // 1981년: 공중전화 20원 → 1,000원으로 50번
-    { year: 1981, item: "공중전화 약 50번", img: "/images/year/payphone.jpg" },
+    { year: 1981, item: "공중전화 약 50번", img: "/images/year/payphone.png" },
     // 1982년: 초코파이 약 50원 → 1,000원으로 20개
-    { year: 1982, item: "초코파이 약 20개", img: "/images/year/chocopie.jpg" },
+    { year: 1982, item: "초코파이 약 20개", img: "/images/year/chocopie.png" },
     // 1983년: 지하철 개통 150원 → 1,000원으로 6번
-    { year: 1983, item: "지하철 약 6번", img: "/images/year/subway.jpg" },
+    { year: 1983, item: "지하철 약 6번", img: "/images/year/subway.png" },
     // 1984년: 짜장면 약 350원 → 1,000원으로 2그릇
-    { year: 1984, item: "짜장면 약 2그릇", img: "/images/year/jajangmyeon.jpg" },
+    { year: 1984, item: "짜장면 약 2그릇", img: "/images/year/jajangmyeon.png" },
     // 1985년: 라면 약 150원 → 1,000원으로 6개
-    { year: 1985, item: "라면 약 6개", img: "/images/year/ramen.jpg" },
+    { year: 1985, item: "라면 약 6개", img: "/images/year/ramen.png" },
     // 1986년: 순대 약 200원/인분 → 1,000원으로 5인분
-    { year: 1986, item: "순대 약 5인분", img: "/images/year/sundae.jpg" },
+    { year: 1986, item: "순대 약 5인분", img: "/images/year/sundae.png" },
     // 1987년: 시내버스 140원 → 1,000원으로 7번
-    { year: 1987, item: "시내버스 약 7번", img: "/images/year/bus.jpg" },
+    { year: 1987, item: "시내버스 약 7번", img: "/images/year/bus.png" },
     // 1988년: 콜라 캔 약 200원 → 1,000원으로 5캔
-    { year: 1988, item: "콜라 약 5캔", img: "/images/year/cola.jpg" },
+    { year: 1988, item: "콜라 약 5캔", img: "/images/year/cola.png" },
     // 1989년: 소형택시 기본요금 700원 → 1,000원으로 1번
-    { year: 1989, item: "택시 기본요금 1번", img: "/images/year/taxi.jpg" },
+    { year: 1989, item: "택시 기본요금 1번", img: "/images/year/taxi.png" },
   ],
   "1990~1999": [
     // 1990년: 짜장면 1,000원 → 1,000원으로 1그릇
-    { year: 1990, item: "짜장면 1그릇", img: "/images/year/jajangmyeon.jpg" },
+    { year: 1990, item: "짜장면 1그릇", img: "/images/year/jajangmyeon.png" },
     // 1991년: 김밥 약 500원/줄 → 1,000원으로 2줄
-    { year: 1991, item: "김밥 약 2줄", img: "/images/year/gimbap.jpg" },
+    { year: 1991, item: "김밥 약 2줄", img: "/images/year/gimbap.png" },
     // 1992년: 시내버스 200원 → 1,000원으로 5번
-    { year: 1992, item: "시내버스 약 5번", img: "/images/year/bus.jpg" },
+    { year: 1992, item: "시내버스 약 5번", img: "/images/year/bus.png" },
     // 1993년: 컵라면 약 300원 → 1,000원으로 3개
-    { year: 1993, item: "컵라면 약 3개", img: "/images/year/cup-ramen.jpg" },
+    { year: 1993, item: "컵라면 약 3개", img: "/images/year/cup-ramen.png" },
     // 1994년: 택시 기본요금 1,000원 → 1,000원으로 1번
-    { year: 1994, item: "택시 기본요금 1번", img: "/images/year/taxi.jpg" },
+    { year: 1994, item: "택시 기본요금 1번", img: "/images/year/taxi.png" },
     // 1995년: 지하철 기본요금 400원 → 1,000원으로 2번
-    { year: 1995, item: "지하철 약 2번", img: "/images/year/subway.jpg" },
+    { year: 1995, item: "지하철 약 2번", img: "/images/year/subway.png" },
     // 1996년: 아이스크림 바 약 500원 → 1,000원으로 2개
-    { year: 1996, item: "아이스크림 약 2개", img: "/images/year/icecream.jpg" },
+    { year: 1996, item: "아이스크림 약 2개", img: "/images/year/icecream.png" },
     // 1997년: 신문 약 400원 → 1,000원으로 2부
-    { year: 1997, item: "신문 약 2부", img: "/images/year/newspaper.jpg" },
+    { year: 1997, item: "신문 약 2부", img: "/images/year/newspaper.png" },
     // 1998년: 공중전화 50원 → 1,000원으로 20번
-    { year: 1998, item: "공중전화 약 20번", img: "/images/year/payphone.jpg" },
+    { year: 1998, item: "공중전화 약 20번", img: "/images/year/payphone.png" },
     // 1999년: PC방 1시간 약 1,000원
-    { year: 1999, item: "PC방 약 1시간", img: "/images/year/pcroom.jpg" },
+    { year: 1999, item: "PC방 약 1시간", img: "/images/year/pcroom.png" },
   ],
   "2000~2009": [
     // 2000년: 김밥 약 500원/줄 → 1,000원으로 2줄
-    { year: 2000, item: "김밥 약 2줄", img: "/images/year/gimbap.jpg" },
+    { year: 2000, item: "김밥 약 2줄", img: "/images/year/gimbap.png" },
     // 2001년: 컵라면 약 500원 → 1,000원으로 2개
-    { year: 2001, item: "컵라면 약 2개", img: "/images/year/cup-ramen.jpg" },
+    { year: 2001, item: "컵라면 약 2개", img: "/images/year/cup-ramen.png" },
     // 2002년: 시내버스 600원 → 1,000원으로 1번
-    { year: 2002, item: "시내버스 약 1번", img: "/images/year/bus.jpg" },
+    { year: 2002, item: "시내버스 약 1번", img: "/images/year/bus.png" },
     // 2003년: 삼각김밥 약 600~700원 → 1,000원으로 1개
-    { year: 2003, item: "삼각김밥 약 1개", img: "/images/year/onigiri.jpg" },
+    { year: 2003, item: "삼각김밥 약 1개", img: "/images/year/onigiri.png" },
     // 2004년: 핫바 약 500원 → 1,000원으로 2개
-    { year: 2004, item: "핫바 약 2개", img: "/images/year/hotbar.jpg" },
+    { year: 2004, item: "핫바 약 2개", img: "/images/year/hotbar.png" },
     // 2005년: 담배 88라이트 1,000원 → 1,000원으로 1갑
-    { year: 2005, item: "담배 1갑", img: "/images/year/cigarette.jpg" },
+    { year: 2005, item: "담배 1갑", img: "/images/year/cigarette.png" },
     // 2006년: 어묵 약 200원/개 → 1,000원으로 5개
-    { year: 2006, item: "어묵 약 5개", img: "/images/year/eomuk.jpg" },
+    { year: 2006, item: "어묵 약 5개", img: "/images/year/eomuk.png" },
     // 2007년: 붕어빵 약 200원 → 1,000원으로 5개
-    { year: 2007, item: "붕어빵 약 5개", img: "/images/year/bungeoppang.jpg" },
+    { year: 2007, item: "붕어빵 약 5개", img: "/images/year/bungeoppang.png" },
     // 2008년: 우유 약 900원/병 → 1,000원으로 1병
-    { year: 2008, item: "우유 약 1병", img: "/images/year/milk.jpg" },
+    { year: 2008, item: "우유 약 1병", img: "/images/year/milk.png" },
     // 2009년: 생수 약 500원/병 → 1,000원으로 2병
-    { year: 2009, item: "생수 약 2병", img: "/images/year/water.jpg" },
+    { year: 2009, item: "생수 약 2병", img: "/images/year/water.png" },
   ],
   "2010~2019": [
     // 2010년: 삼각김밥 약 800~900원 → 1,000원으로 1개
-    { year: 2010, item: "삼각김밥 약 1개", img: "/images/year/onigiri.jpg" },
+    { year: 2010, item: "삼각김밥 약 1개", img: "/images/year/onigiri.png" },
     // 2011년: 컵라면 약 700원 → 1,000원으로 1개
-    { year: 2011, item: "컵라면 약 1개", img: "/images/year/cup-ramen.jpg" },
+    { year: 2011, item: "컵라면 약 1개", img: "/images/year/cup-ramen.png" },
     // 2012년: 편의점 음료 약 800~1,000원 → 1,000원으로 1개
-    { year: 2012, item: "편의점 음료 약 1개", img: "/images/year/cvs-drink.jpg" },
+    { year: 2012, item: "편의점 음료 약 1개", img: "/images/year/cvs-drink.png" },
     // 2013년: 김밥 약 1,000원/줄 → 1,000원으로 1줄
-    { year: 2013, item: "김밥 약 1줄", img: "/images/year/gimbap.jpg" },
+    { year: 2013, item: "김밥 약 1줄", img: "/images/year/gimbap.png" },
     // 2014년: 아이스크림 바 약 800~1,000원 → 1,000원으로 1개
-    { year: 2014, item: "아이스크림 약 1개", img: "/images/year/icecream.jpg" },
+    { year: 2014, item: "아이스크림 약 1개", img: "/images/year/icecream.png" },
     // 2015년: 계란 약 200원/개 → 1,000원으로 5개
-    { year: 2015, item: "계란 약 5개", img: "/images/year/eggs.jpg" },
+    { year: 2015, item: "계란 약 5개", img: "/images/year/eggs.png" },
     // 2016년: 라면 약 800원 → 1,000원으로 1개
-    { year: 2016, item: "라면 약 1개", img: "/images/year/ramen.jpg" },
+    { year: 2016, item: "라면 약 1개", img: "/images/year/ramen.png" },
     // 2017년: 생수 약 800~1,000원/병 → 1,000원으로 1병
-    { year: 2017, item: "생수 약 1병", img: "/images/year/water.jpg" },
+    { year: 2017, item: "생수 약 1병", img: "/images/year/water.png" },
     // 2018년: 붕어빵 약 300원 → 1,000원으로 3개
-    { year: 2018, item: "붕어빵 약 3개", img: "/images/year/bungeoppang.jpg" },
+    { year: 2018, item: "붕어빵 약 3개", img: "/images/year/bungeoppang.png" },
     // 2019년: 우유 작은 팩 약 800~1,000원 → 1,000원으로 1개
-    { year: 2019, item: "우유 작은 팩 약 1개", img: "/images/year/milk.jpg" },
+    { year: 2019, item: "우유 작은 팩 약 1개", img: "/images/year/milk.png" },
   ],
   "2020~2025": [
     // 2020년: 라면 약 1,000원 → 1,000원으로 1개
-    { year: 2020, item: "라면 약 1개", img: "/images/year/ramen.jpg" },
+    { year: 2020, item: "라면 약 1개", img: "/images/year/ramen.png" },
     // 2021년: 삼각김밥 약 1,000~1,200원 → 1,000원으로 1개
-    { year: 2021, item: "삼각김밥 약 1개", img: "/images/year/onigiri.jpg" },
+    { year: 2021, item: "삼각김밥 약 1개", img: "/images/year/onigiri.png" },
     // 2022년: 계란 약 300~350원/개 → 1,000원으로 3개
-    { year: 2022, item: "계란 약 3개", img: "/images/year/eggs.jpg" },
+    { year: 2022, item: "계란 약 3개", img: "/images/year/eggs.png" },
     // 2023년: 떡볶이 약 4,000원/인분 → 1,000원으로 1/4인분
-    { year: 2023, item: "떡볶이 1/4인분", img: "/images/year/tteokbokki.jpg" },
+    { year: 2023, item: "떡볶이 1/4인분", img: "/images/year/tteokbokki.png" },
     // 2024년: 붕어빵 약 500원 → 1,000원으로 2개
-    { year: 2024, item: "붕어빵 약 2개", img: "/images/year/bungeoppang.jpg" },
+    { year: 2024, item: "붕어빵 약 2개", img: "/images/year/bungeoppang.png" },
     // 2025년: 편의점 생수 약 900~1,000원 → 1,000원으로 1병
-    { year: 2025, item: "편의점 생수 약 1병", img: "/images/year/water.jpg" },
+    { year: 2025, item: "편의점 생수 약 1병", img: "/images/year/water.png" },
   ],
 };
 
@@ -340,6 +341,7 @@ const DECADE_OPTIONS = Object.keys(YEAR_DATA);
 
 function MoneyValueByYear() {
   const [selectedDecade, setSelectedDecade] = useState(DECADE_OPTIONS[0]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const items = YEAR_DATA[selectedDecade] || [];
 
   return (
@@ -349,21 +351,74 @@ function MoneyValueByYear() {
           <span className="text-xl">💰</span>
           <h2 className="text-base font-black text-gray-900">연도별 1,000원의 가치</h2>
         </div>
-        <p className="text-sm text-gray-500 mb-4">현재 이미지 넣는 중입니다 ㅠ_ㅠ...</p>
+        <p className="text-sm text-gray-500 mb-4">과거 1,000원으로 살 수 있었던 것들을 확인해보세요.</p>
 
-        {/* 드롭다운 */}
-        <div className="mb-5">
-          <select
-            value={selectedDecade}
-            onChange={(e) => setSelectedDecade(e.target.value)}
-            className="h-11 px-4 pr-10 rounded-2xl border border-gray-200 text-sm font-bold text-gray-700 bg-white outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer appearance-none"
-            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
-          >
-            {DECADE_OPTIONS.map((d) => (
-              <option key={d} value={d}>{d.replace('~', '년 ~ ')}년</option>
-            ))}
-          </select>
-        </div>
+       {/* 커스텀 드롭다운 */}
+<div className="mb-5 relative inline-block">
+  <button
+    type="button"
+    onClick={() => setDropdownOpen((prev) => !prev)}
+    className="
+      h-11
+      min-w-[185px]
+      px-4
+      rounded-2xl
+      border border-gray-200
+      bg-white
+      shadow-sm
+      flex items-center justify-between gap-3
+      text-sm font-bold text-gray-700
+      hover:border-gray-300
+      transition
+      cursor-pointer
+    "
+  >
+    <span>{selectedDecade.replace("~", "년 ~ ")}년</span>
+
+    <ChevronDown
+  className={`
+    w-4 h-4 text-gray-400 transition-transform duration-200
+    ${dropdownOpen ? "rotate-180" : ""}
+  `}
+/>
+  </button>
+
+  {dropdownOpen && (
+    <div
+      className="
+        absolute left-0 top-12 z-50
+        w-[185px]
+        rounded-2xl
+        border border-gray-200
+        bg-white
+        shadow-xl
+        p-1.5
+      "
+    >
+      {DECADE_OPTIONS.map((d) => (
+        <button
+          key={d}
+          type="button"
+          onClick={() => {
+            setSelectedDecade(d);
+            setDropdownOpen(false);
+          }}
+          className={`
+            w-full h-10 px-3 rounded-xl
+            text-left text-sm font-bold transition
+            ${
+              selectedDecade === d
+                ? "bg-gray-900 text-white"
+                : "text-gray-700 hover:bg-gray-100"
+            }
+          `}
+        >
+          {d.replace("~", "년 ~ ")}년
+        </button>
+      ))}
+    </div>
+  )}
+</div>
 
         {/* 카드 그리드 */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
@@ -372,8 +427,8 @@ function MoneyValueByYear() {
               key={item.year}
               className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
             >
-              <p className="text-center text-xs font-bold text-gray-500 pt-3 pb-1">{item.year}년</p>
-              <div className="mx-3 mb-2 rounded-xl overflow-hidden bg-gray-50" style={{ aspectRatio: '1/1' }}>
+              <p className="text-center text-base font-bold text-gray-500 pt-3 pb-1">{item.year}년</p>
+              <div className="mx-4 mb-3 rounded-3xl overflow-hidden" style={{ aspectRatio: '1/0.9' }}>
                 <img
                   src={item.img}
                   alt={item.item}
@@ -383,7 +438,7 @@ function MoneyValueByYear() {
               </div>
               <div className="px-3 pb-3 text-center">
                 <p className="text-sm font-bold text-gray-800">{item.item}</p>
-                <p className="text-xs text-gray-400 mt-0.5">1,000원</p>
+                <p className="text-sm text-gray-400 mt-0.5">1,000원</p>
               </div>
             </div>
           ))}
@@ -1211,12 +1266,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
           {/* 연도별 1,000원의 가치 (현재가치 탭일 때만 표시) */}
           {type === "present" && <MoneyValueByYear />}
           
-          {/* 설명 */}
-          <div className="mt-5 text-gray-500 text-sm leading-relaxed">
-            {type === "dollar"
-              ? "환율 변화에 따라 같은 원화 자산이라도 달러 기준 가치는 달라질 수 있습니다."
-              : "물가상승률이 높을수록 화폐가치는 작아집니다."}
-          </div>
+          
         </div>
       </div>
 
