@@ -890,7 +890,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
           <div className="mt-5 text-gray-500 text-sm leading-relaxed">
             {type === "dollar"
               ? "환율 변화에 따라 같은 원화 자산이라도 달러 기준 가치는 달라질 수 있습니다."
-              : "물가상승률이 높을수록 미래의 화폐가치는 커지고, 현재가치는 작아집니다."}
+              : "물가상승률이 높을수록 화폐가치는 작아집니다."}
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
@@ -434,17 +434,6 @@ const [plantDragInfo, setPlantDragInfo] = useState<null | {
   originX: number;
   originY: number;
 }>(null);
-
-// ── 날씨/D-Day/BGM 위젯 순서 ──
-const [widgetOrder, setWidgetOrder] = useState<("weather" | "dday" | "bgm")[]>(() => {
-  try {
-    const saved = localStorage.getItem("widget-order");
-    if (saved) return JSON.parse(saved);
-  } catch {}
-  return ["weather", "dday", "bgm"];
-});
-const [dragWidgetId, setDragWidgetId] = useState<string | null>(null);
-const [dragOverWidgetId, setDragOverWidgetId] = useState<string | null>(null);
 
   // 캘린더
   const [calYear, setCalYear] = useState(new Date().getFullYear());
@@ -885,32 +874,13 @@ const diaryEndPage = Math.min(
 
 {/* ── 날씨 / D-Day / BGM 위젯 ── */}
 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-  {widgetOrder.map((widgetId) => (
-    <div
-      key={widgetId}
-      draggable
-      onDragStart={() => setDragWidgetId(widgetId)}
-      onDragOver={(e) => { e.preventDefault(); setDragOverWidgetId(widgetId); }}
-      onDrop={() => {
-        if (!dragWidgetId || dragWidgetId === widgetId) return;
-        const newOrder = [...widgetOrder];
-        const fromIdx = newOrder.indexOf(dragWidgetId as "weather" | "dday" | "bgm");
-        const toIdx = newOrder.indexOf(widgetId);
-        newOrder.splice(fromIdx, 1);
-        newOrder.splice(toIdx, 0, dragWidgetId as "weather" | "dday" | "bgm");
-        setWidgetOrder(newOrder);
-        localStorage.setItem("widget-order", JSON.stringify(newOrder));
-        setDragWidgetId(null);
-        setDragOverWidgetId(null);
-      }}
-      onDragEnd={() => { setDragWidgetId(null); setDragOverWidgetId(null); }}
-      style={{ opacity: dragWidgetId === widgetId ? 0.5 : 1 }}
-    >
 
-  {widgetId === "weather" && (
+
+  {/* 날씨 */}
   <div
     className={`bg-white rounded-3xl border border-gray-200 shadow p-4 relative select-none transition-all duration-200 ${weatherContextMenu ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
    onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setWeatherContextMenu({ x: e.clientX, y: e.clientY }); }}
+
   >
     {weather ? (
   <>
@@ -992,9 +962,8 @@ const diaryEndPage = Math.min(
       </>
     )}
   </div>
-  )}
 
-  {widgetId === "dday" && (
+  {/* D-Day */}
  <div
    className={`bg-white rounded-3xl border border-gray-200 shadow p-4 relative transition-all duration-200  ${ddayWidgetEditOpen ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
   onClick={() => { setDdayWidgetTempLabel(ddayWidgetLabel); setDdayWidgetTempDate(ddayWidgetDate); setDdayWidgetEditOpen(true); }}
@@ -1210,9 +1179,8 @@ const diaryEndPage = Math.min(
       </>
     )}
   </div>
-  )}
 
-  {widgetId === "bgm" && (
+{/* BGM 플레이어 */}
 <div
   className={`hidden md:block bg-white rounded-3xl border border-gray-200 shadow p-4 relative transition-all duration-200 ${bgmEditOpen || bgmColorMenuOpen ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
   onContextMenu={(e) => { e.preventDefault(); setBgmColorMenuOpen(true); }}
@@ -1388,9 +1356,7 @@ const diaryEndPage = Math.min(
     </div>
   )}
 </div>
-  )}
-    </div>
-  ))}
+
 </div>
 
 {/* ── 오늘 일정 + 체크리스트 ── */}
