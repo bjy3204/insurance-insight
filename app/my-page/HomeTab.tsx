@@ -17,6 +17,7 @@ import {
   Smile,
   Frown,
   Meh,
+  NotebookPen,
   Heart,
   Star,
 } from "lucide-react";
@@ -444,7 +445,8 @@ const [plantDragInfo, setPlantDragInfo] = useState<null | {
   const [ddayFilter, setDdayFilter] = useState<"all" | "birthday" | "myeonchek" | "gamek" | "silson">("all");
 
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
+  const kstOffset = 9 * 60 * 60 * 1000;
+  const todayStr = new Date(today.getTime() + kstOffset).toISOString().split("T")[0];
 
 // 날씨 fetch
 useEffect(() => {
@@ -653,7 +655,7 @@ setViewingMemo(updated);
         if (bParts.length >= 2) {
           let bDate = new Date(year, parseInt(bParts[1]) - 1, parseInt(bParts[2] || "1"));
           if (bDate < todayD) bDate = new Date(year + 1, parseInt(bParts[1]) - 1, parseInt(bParts[2] || "1"));
-          const bKey = bDate.toISOString().split("T")[0];
+          const bKey = new Date(bDate.getTime() + 9 * 60 * 60 * 1000).toISOString().split("T")[0];
           if (!events[bKey]) events[bKey] = [];
           events[bKey].push({ type: "birthday", name: c.name });
           const dday = calcDday(bKey);
@@ -709,7 +711,7 @@ setViewingMemo(updated);
     let count = 0;
     const d = new Date();
     while (true) {
-      const key = d.toISOString().split("T")[0];
+      const key = new Date(d.getTime() + 9 * 60 * 60 * 1000).toISOString().split("T")[0];
       if (attendance.find((r) => r.date === key && r.watered)) {
         count++;
         d.setDate(d.getDate() - 1);
@@ -1363,7 +1365,7 @@ const diaryEndPage = Math.min(
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
   
     <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
-      <h2 className="text-base font-black text-gray-900 mb-3">📅 오늘 일정</h2>
+      <h2 className="text-base font-black text-gray-900 mb-3">오늘 일정</h2>
 {todayEvents.length === 0 ? (
   <div className="flex items-center justify-center py-10">
     <p className="text-sm text-gray-300">
@@ -1605,6 +1607,7 @@ const diaryEndPage = Math.min(
         <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-black text-gray-900 flex items-center gap-2">
+              <NotebookPen className="w-5 h-5 text-yellow-500" />
               메모 목록
             </h2>
             <button
