@@ -478,9 +478,11 @@ return (
       
 
       {/* 메인 콘텐츠 */}
-     <div className="w-full px-4 sm:px-6 pt-0 pb-6 max-w-7xl mx-auto mt-2">
-        {/* 달력 */}
-        <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5 mb-6">
+     <div className="w-full pt-0 pb-6 mt-2">
+        {/* PC: 2열 레이아웃 (왼쪽 1fr: 체크리스트+일정, 오른쪽 3fr: 달력) */}
+        <div className="flex flex-col sm:grid sm:gap-6" style={{ gridTemplateColumns: "minmax(0, 1fr) minmax(0, 3fr)" }}>
+        {/* 달력 — PC: 오른쪽(order-2) */}
+        <div className="order-1 sm:order-2 bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5 mb-6 sm:mb-0">
           {/* 월 네비게이션 */}
           <div className="flex items-start justify-between mb-4">
             <button
@@ -686,13 +688,11 @@ return (
           </div>
         </div>
 
-        {/* 아래: 일정 목록(위) + 체크리스트(아래) — 모바일/PC 공통 구조 */}
-        {/* PC: grid 1fr 2fr (체크리스트 왼쪽, 일정 오른쪽) */}
-        {/* 모바일: flex-col (일정 위, 체크리스트 아래) */}
-        <div className="flex flex-col sm:grid sm:gap-6" style={{ gridTemplateColumns: "1fr 2fr" }}>
+        {/* 왼쪽 컬럼: 체크리스트(위) + 일정목록(아래) — PC: order-1, 모바일: 아래 */}
+        <div className="order-2 sm:order-1 flex flex-col gap-6">
 
           {/* 체크리스트 — 모바일: order-2(아래), PC: order-1(왼쪽) */}
-          <div className="order-2 sm:order-1 bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5 mt-6 sm:mt-0">
+          <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5">
             <h2 className="text-lg font-black text-gray-900 mb-4">
               체크리스트
             </h2>
@@ -776,7 +776,7 @@ return (
           </div>
 
           {/* 일정 목록 — 모바일: order-1(위), PC: order-2(오른쪽) */}
-          <div className="order-1 sm:order-2 bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5">
+          <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5">
             <h2 className="text-lg font-black text-gray-900 mb-4">일정</h2>
 
             <div className="mb-4 relative">
@@ -878,6 +878,7 @@ return (
               )}
             </div>
           </div>
+        </div>
         </div>
       </div>
 
