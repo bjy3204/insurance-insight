@@ -32,7 +32,7 @@ const makeItems = (
   return codes.map((code) => {
     const value = toKrwRate(rates, code);
     const prevValue = prevRates ? toKrwRate(prevRates, code) : value;
-    const change = parseFloat((value - prevValue).toFixed(2));
+    const change = parseFloat((value - prevValue).toFixed(4));
     return {
       label: code,
       value,
@@ -66,14 +66,13 @@ export async function GET() {
       // 오늘 데이터 저장
       await supabase.from("exchange_rates").upsert({ date: today, rates });
 
-// 7일 이전 데이터 자동 삭제 (어제 데이터 보존 목적)
-const sevenDaysAgo = new Date();
-sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-await supabase
-  .from("exchange_rates")
-  .delete()
-  .lt("date", sevenDaysAgo.toISOString().split("T")[0]);
-
+      // 2일 이전 데이터 자동 삭제
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+      await supabase
+        .from("exchange_rates")
+        .delete()
+        .lt("date", twoDaysAgo.toISOString().split("T")[0]);
     }
 
     // 어제 데이터 조회
