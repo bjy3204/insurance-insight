@@ -1056,7 +1056,8 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                 <p className="text-gray-600 text-sm mt-4 text-center">
                   {type === "future"
                     ? `지금 ${formatMoney(Number(money || 0))}만원으로 살 수 있는 것을 ${years}년 뒤에는 약 ${formatMoney(result)}만원이 필요합니다`
-                    : `${years}년 뒤 ${formatMoney(Number(money || 0))}만원은 현재 물가 기준으로 약 ${formatMoney(result)}만원의 가치입니다`}
+                    :`${years}년 뒤 ${formatMoney(Number(money || 0))}만원은 햔재 약 ${formatMoney(result)}만원의 가치입니다`
+}
                 </p>
               </>
             ) : (
