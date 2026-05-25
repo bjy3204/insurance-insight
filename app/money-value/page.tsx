@@ -947,9 +947,9 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                   return (
                     <p className="text-gray-600 text-sm mb-4 text-center leading-relaxed">
                       환율이 <span className="font-bold">{Number(compareRate).toLocaleString()}원</span>일 때 달러 자산을 준비했다면{" "}
-                      <span className="font-bold text-blue-600">{compDollar.toLocaleString()}달러</span>를 확보할 수 있었지만,
-                      현재는 <span className="font-bold text-blue-600">{currDollar.toLocaleString()}달러</span>로{" "}
-                      <span className="font-bold text-red-500">{diff.toLocaleString()}달러 차이</span>가 납니다.
+                      <span className="font-bold text-blue-600">{compDollar.toLocaleString()}달러</span> 가치 였지만,
+                      
+                      현재 환율 기준으로는 <span className="font-bold text-red-500">{diff.toLocaleString()}달러 </span>가치 차이가 발생합니다
                     </p>
                   );
                 } else {
@@ -958,7 +958,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                     <p className="text-gray-600 text-sm mb-4 text-center leading-relaxed">
                       환율이 <span className="font-bold">{Number(compareRate).toLocaleString()}원</span>으로 오르기 전 지금(<span className="font-bold">{Number(currentRate).toLocaleString()}원</span>) 달러 자산을 준비하면{" "}
                       <span className="font-bold text-blue-600">{currDollar.toLocaleString()}달러</span>로,{" "}
-                      지금 준비하면 <span className="font-bold text-blue-600">{diff.toLocaleString()}달러 유리</span>합니다.
+                      지금 준비하면 <span className="font-bold text-red-500">{diff.toLocaleString()}달러</span> 유리 합니다.
                     </p>
                   );
                 }
