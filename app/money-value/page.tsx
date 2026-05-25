@@ -291,7 +291,7 @@ function MoneyValueByYear() {
           <span className="text-xl">💰</span>
           <h2 className="text-base font-black text-gray-900">연도별 1,000원의 가치</h2>
         </div>
-        <p className="text-sm text-gray-500 mb-4">과거 1,000원으로 살 수 있었던 것들을 확인해보세요.</p>
+        <p className="text-sm text-gray-500 mb-4">현재 데이터 넣는중입니다.</p>
 
         {/* 드롭다운 */}
         <div className="mb-5">
