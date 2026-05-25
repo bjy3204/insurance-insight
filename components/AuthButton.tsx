@@ -370,7 +370,7 @@ const handleResetPassword = async () => {
       );
     }
 
-    if (status === "blocked") {
+    if (status === "rejected") {
       return (
         <span className="rounded-full bg-red-50 px-2 py-1 text-[10px] font-bold text-red-600 border border-red-100">
           승인보류

@@ -660,9 +660,15 @@ updateData.pin_changed_at = new Date().toISOString();
                     </button>
                     <button
                       onClick={() => { setSettingOpen(false); setTimeout(() => setSettingPanelOpen(true), 50); }}
-                      className="block w-full rounded-b-2xl text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer"
+                      className="block w-full text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition border-b border-gray-100 cursor-pointer"
                     >
                       개인설정
+                    </button>
+                    <button
+                      onClick={() => { setSettingOpen(false); setTimeout(() => window.dispatchEvent(new Event("open-home-customize")), 50); }}
+                      className="block w-full rounded-b-2xl text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition cursor-pointer"
+                    >
+                      홈 꾸미기
                     </button>
                   </div>
                 )}

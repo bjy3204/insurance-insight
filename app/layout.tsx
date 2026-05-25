@@ -47,6 +47,15 @@ export const metadata: Metadata = {
 
     type: "website",
   },
+verification: {
+  other: {
+    "naver-site-verification":
+      "a654287d085037758c4cb85c081e5dad47a451a3",
+
+    "google-site-verification":
+      "nSorRb0EXXKrURSL9GCftAVHtg25EKr7tTgCveyRknw",
+  },
+},
 };
 
 export default function RootLayout({
