@@ -481,17 +481,19 @@ const handleFolderDownload = async (item: DisplayItem) => {
 
 
   // 파일 Blob 다운로드 헬퍼 (새 탭 열림 방지)
- const downloadBlob = async (signedUrl: string, fileName: string) => {
-    const url = signedUrl.includes("?")
-      ? `${signedUrl}&download=${encodeURIComponent(fileName)}`
-      : `${signedUrl}?download=${encodeURIComponent(fileName)}`;
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
+const downloadBlob = async (signedUrl: string, fileName: string) => {
+  const res = await fetch(signedUrl);
+  const blob = await res.blob();
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = blobUrl;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+};
+
 
 
   // 단일 다운로드
