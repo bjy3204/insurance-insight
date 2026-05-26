@@ -1020,8 +1020,8 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
           {/* 환율 차트 (달러가치 탭일 때만 표시) */}
           {type === "dollar" && <ExchangeRateChart />}
 
-          {/* 물가상승률 차트 (미래가치 탭일 때만 표시) */}
-          {type === "future" && <InflationChart />}
+          {/* 물가상승률 차트 (미래가치/현재가치 탭일 때 표시) */}
+{(type === "future" || type === "present") && <InflationChart />}
 
           
         </div>
