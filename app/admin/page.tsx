@@ -1786,7 +1786,7 @@ const subTotalPages = Math.max(
       {/* ==================== 팝업 3: 구독자 전체 목록 (마스터 관리) ==================== */}
       {isAllSubPopupOpen && (
         <div
-  className="fixed inset-0 z-[9998] bg-black/40 flex items-center justify-center p-4"
+  className="fixed inset-0 z-[9998] bg-black/40 flex items-end md:items-center justify-center md:p-4"
   onMouseMove={handleDragMove}
   onMouseUp={handleDragEnd}
   onClick={(e) => { if (e.target === e.currentTarget) setIsAllSubPopupOpen(false); }}
@@ -1794,10 +1794,10 @@ const subTotalPages = Math.max(
           <div
   onClick={(e) => e.stopPropagation()}
   style={{ transform: `translate(${popupPos.x}px, ${popupPos.y}px)` }}
-  className="w-full max-w-5xl h-[85vh] rounded-3xl bg-white shadow-xl flex flex-col overflow-hidden"
+  className="w-full max-w-5xl h-[90vh] md:h-[85vh] md:rounded-3xl rounded-t-3xl bg-white shadow-xl flex flex-col overflow-hidden"
 >
             <div
-  className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50 select-none"
+  className="px-4 md:px-6 py-4 md:py-5 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2 bg-gray-50 select-none"
   onMouseDown={handleDragStart}
 >
               <div className="flex items-center gap-2">
@@ -1806,7 +1806,7 @@ const subTotalPages = Math.max(
               </div>
              
              {/* CSV 업로드 버튼 */}
-<div className="flex items-center gap-2">
+<div className="hidden md:flex items-center gap-2">
   <select
     value={csvMonth || ""}
     onChange={(e) => setCsvMonth(e.target.value)}
@@ -1830,8 +1830,8 @@ const subTotalPages = Math.max(
 </div>
 
              
-              <div className="flex items-center gap-3">
-                <button onClick={() => openSubPopup()} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 transition">
+              <div className="flex items-center gap-2 md:gap-3">
+                <button onClick={() => openSubPopup()} className="flex items-center gap-1.5 md:gap-2 bg-blue-600 text-white px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold hover:bg-blue-700 transition">
                   <UserPlus className="w-4 h-4" />
                   새 구독자 등록
                 </button>
@@ -1841,7 +1841,7 @@ const subTotalPages = Math.max(
               </div>
             </div>
 
-            <div className="p-6 flex-1 flex flex-col overflow-hidden bg-white">
+            <div className="p-3 md:p-6 flex-1 flex flex-col overflow-hidden bg-white">
                 
               {/* 탭 3개 및 검색창 */}
               <div className="mb-6">
@@ -1897,17 +1897,17 @@ const subTotalPages = Math.max(
                     <div className="p-10 text-center text-gray-400 text-sm">데이터가 없습니다.</div>
                   ) : (
                     filteredAllSubs.map((sub) => (
-                      <div key={sub.id} className={`flex flex-col md:flex-row md:items-center py-3 px-5 hover:bg-gray-50 transition gap-2 md:gap-0 ${sub.status === "canceled" ? "opacity-60 bg-gray-50/50" : ""}`}>
-                        <div className="w-30 text-sm text-gray-500 truncate" title={sub.subscriber_id}>{sub.subscriber_id}</div>
-                        <div className="w-50 font-medium text-gray-900 flex items-center gap-1.5">
+                      <div key={sub.id} className={`flex flex-col md:flex-row md:items-center py-3 px-3 md:px-5 hover:bg-gray-50 transition gap-1 md:gap-0 ${sub.status === "canceled" ? "opacity-60 bg-gray-50/50" : ""}`}>
+                        <div className="md:w-30 text-xs md:text-sm text-gray-500 truncate" title={sub.subscriber_id}>{sub.subscriber_id}</div>
+                        <div className="md:w-50 font-medium text-gray-900 flex items-center gap-1.5">
                           <span className={`truncate ${sub.status === "canceled" ? "line-through" : ""}`} title={sub.name}>{sub.name}</span>
                           {sub.pay_app && <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold">P</span>}
                         </div>
-                        <div className="w-40 text-sm text-gray-600 truncate" title={sub.data_room}>{sub.data_room || "-"}</div>
-                        <div className="w-40 text-sm text-gray-600 truncate" title={sub.video_room}>{sub.video_room || "-"}</div>
-                        <div className="w-30 text-xs text-gray-400">{formatDate(sub.created_at)}</div>
+                        <div className="md:w-40 text-xs md:text-sm text-gray-600 truncate" title={sub.data_room}>{sub.data_room || "-"}</div>
+                        <div className="md:w-40 text-xs md:text-sm text-gray-600 truncate" title={sub.video_room}>{sub.video_room || "-"}</div>
+                        <div className="md:w-30 text-xs text-gray-400">{formatDate(sub.created_at)}</div>
                         
-                        <div className="flex-1 flex items-center justify-end gap-1.5 mt-2 md:mt-0">
+                        <div className="flex items-center justify-end gap-1.5 mt-1 md:mt-0">
                           <button onClick={() => openSubPopup(sub)} className="text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">수정</button>
                           {sub.status === "active" ? (
                             <button onClick={() => cancelSubscriber(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition cursor-pointer">해지</button>

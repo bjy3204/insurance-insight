@@ -4676,7 +4676,7 @@ rel="noopener noreferrer"
         >
           <div className="flex items-center justify-between gap-2 mb-1">
             <span className="text-xs font-bold text-gray-400">
-              NO. {notice.id}
+              NO. {allNotices.length - allNotices.indexOf(notice)}
             </span>
 
                               {!readNoticeIds.includes(notice.id) && notice.category && (
