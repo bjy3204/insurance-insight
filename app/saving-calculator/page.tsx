@@ -673,7 +673,7 @@ const principal = monthly * months;
         <div className="bg-white rounded-3xl shadow-sm p-5">
           {/* 이자방식 */}
 <div className="mb-6">
-  <div className={`grid gap-2 mb-6 ${type === "saving" ? "grid-cols-2" : "grid-cols-4"}`}>
+  <div className={`grid gap-2 mb-6 ${type === "saving" ? "grid-cols-2" : "grid-cols-2 md:grid-cols-4"}`}>
     <SelectButton
       active={interestType === "simple"}
       onClick={() => setInterestType("simple")}

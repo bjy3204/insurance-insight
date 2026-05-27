@@ -89,6 +89,14 @@ type MemoItem = {
 };
 
 const defaultMenus = [
+   {
+  id: "customer-manage",
+  title: "개인공간",
+  desc: "일정  · 고객관리 · AI 메시지",
+  icon: User,
+  link: "/my-page",
+  isDefault: true,
+},
   {
     id: "insurance-system",
     title: "보험사전산",
@@ -166,14 +174,7 @@ const defaultMenus = [
     icon: Briefcase,
     link: "/job",
   },
-  {
-  id: "customer-manage",
-  title: "개인공간",
-  desc: "일정  · 고객관리 · AI 메시지",
-  icon: User,
-  link: "/my-page",
-  isDefault: true,
-},
+
 ];
 
 
