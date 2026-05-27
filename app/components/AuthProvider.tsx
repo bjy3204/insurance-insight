@@ -168,21 +168,27 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     initialize();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === "USER_UPDATED" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") return;
-        const user = session?.user || null;
-        setAuthUser(user);
-        if (user) {
-          loadProfile(user.id);
-        } else {
-          setAuthNickname(null);
-          setAuthInstagram(null);
-          setAuthStatus(null);
-          setAuthRole(null);
-          setAuthCreatedAt(null);
-        }
-      }
-    );
+  async (event, session) => {
+    if (event === "USER_UPDATED" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") return;
+
+    // refresh token 만료 시 자동 로그아웃
+    if (!session) {
+      await supabase.auth.signOut();
+      setAuthUser(null);
+      setAuthNickname(null);
+      setAuthInstagram(null);
+      setAuthStatus(null);
+      setAuthRole(null);
+      setAuthCreatedAt(null);
+      return;
+    }
+
+    const user = session.user;
+    setAuthUser(user);
+    loadProfile(user.id);
+  }
+);
+
 
     return () => subscription.unsubscribe();
   }, []);

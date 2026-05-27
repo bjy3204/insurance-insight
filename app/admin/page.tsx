@@ -495,7 +495,7 @@ useEffect(() => {
   };
 
   const saveSubscriber = async () => {
-    if (!subForm.subscriber_id || !subForm.name) return alert("아이디와 이름을 입력해주세요.");
+    if (!subForm.subscriber_id) return alert("아이디를 입력해주세요.");
 
     if (!subForm.id) {
       await supabase.from("subscribers").insert({
@@ -1887,7 +1887,7 @@ const subTotalPages = Math.max(
                 <div className="hidden md:flex items-center py-3 px-5 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-500">
                   <div className="w-30">아이디</div>
                   <div className="w-50">이름</div>
-                  <div className="w-40">자료방</div>
+                  <div className="w-40">페이앱 코드</div>
                   <div className="w-40">영상방</div>
                   <div className="w-30">등록날짜</div>
                   <div className="flex-1 text-center">관리</div>
