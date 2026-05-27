@@ -504,6 +504,7 @@ useEffect(() => {
         data_room: subForm.data_room,
         video_room: subForm.video_room,
         pay_app: subForm.pay_app,
+         pay_app_code: subForm.pay_app_code,
         memo: subForm.memo,
         status: "active",
       });
@@ -514,6 +515,7 @@ useEffect(() => {
         data_room: subForm.data_room,
         video_room: subForm.video_room,
         pay_app: subForm.pay_app,
+         pay_app_code: subForm.pay_app_code,
         memo: subForm.memo,
       }).eq("id", subForm.id);
     }
@@ -1903,7 +1905,7 @@ const subTotalPages = Math.max(
                           <span className={`truncate ${sub.status === "canceled" ? "line-through" : ""}`} title={sub.name}>{sub.name}</span>
                           {sub.pay_app && <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold">P</span>}
                         </div>
-                        <div className="md:w-40 text-xs md:text-sm text-gray-600 truncate" title={sub.data_room}>{sub.data_room || "-"}</div>
+                        <div className="md:w-40 text-xs md:text-sm text-gray-600 truncate" title={sub.pay_app_code}>{sub.pay_app_code || "-"}</div>
                         <div className="md:w-40 text-xs md:text-sm text-gray-600 truncate" title={sub.video_room}>{sub.video_room || "-"}</div>
                         <div className="md:w-30 text-xs text-gray-400">{formatDate(sub.created_at)}</div>
                         
