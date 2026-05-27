@@ -224,15 +224,25 @@ export default function Calculator() {
   };
 
   const handleBackspace = () => {
-    if (justCalculated) { clear(); return; }
-    const raw = display.replace(/,/g, "");
-    if (raw.length <= 1) {
-      setDisplay("0");
-    } else {
-      const newVal = raw.slice(0, -1);
-      setDisplay(formatNumber(newVal));
-    }
-  };
+  if (justCalculated) { clear(); return; }
+  const raw = display.replace(/,/g, "");
+  if (raw.length <= 1) {
+    setDisplay("0");
+    setExpression((prev) => {
+      const parts = prev.split(/([+\-×÷])/);
+      parts[parts.length - 1] = "0";
+      return parts.join("");
+    });
+  } else {
+    const newVal = raw.slice(0, -1);
+    setDisplay(formatNumber(newVal));
+    setExpression((prev) => {
+      const parts = prev.split(/([+\-×÷])/);
+      parts[parts.length - 1] = newVal;
+      return parts.join("");
+    });
+  }
+};
 
   const clear = () => {
     setDisplay("0");
