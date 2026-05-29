@@ -170,9 +170,9 @@ const SUB_PAGE_SIZE = 50;
   const [missingData, setMissingData] = useState<Subscriber[]>([]);
   const [subSearch, setSubSearch] = useState("");
   
-const csvInputRef = useRef<HTMLInputElement>(null);
-const [csvUploading, setCsvUploading] = useState(false);
-const [csvMonth, setCsvMonth] = useState<string | null>(null);
+const [saveTargetYear, setSaveTargetYear] = useState(new Date().getFullYear());
+const [saveTargetMonth, setSaveTargetMonth] = useState(new Date().getMonth() + 1);
+const [savingMonthly, setSavingMonthly] = useState(false);
 
 
 // 전체 구독자 팝업 필터/정렬
@@ -549,81 +549,62 @@ useEffect(() => {
     fetchSubscribers();
   };
 
-const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file || !csvMonth) return;
-  setCsvUploading(true);
+const saveActiveSubscribersToMonth = async () => {
+  const targetMonthKey = `${saveTargetYear}-${String(saveTargetMonth).padStart(2, "0")}`;
 
-  const text = await file.text();
-  const lines = text.split("\n").filter(l => l.trim());
-  // 헤더 행 건너뜀
-  const rows = lines.slice(1).map(line => {
-    const cols = line.split(",");
-    return {
-      instagram_id: (cols[1] || "").trim().replace(/^"|"$/g, ""),
-      name: (cols[2] || "").trim().replace(/^"|"$/g, ""),
-      data_room: (cols[3] || "").trim().replace(/^"|"$/g, ""),
-      video_room: (cols[4] || "").trim().replace(/^"|"$/g, ""),
-      pay_app_raw: (cols[5] || "").trim().replace(/^"|"$/g, ""),
-    };
-  }).filter(r => r.instagram_id && r.name);
+console.log(
+  allSubscribers.reduce((acc: Record<string, number>, sub) => {
+    const key = sub.status || "null";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {})
+);
 
-  let added = 0;
-  let skipped = 0;
 
-  for (const row of rows) {
-    // 마스터에 이미 있는지 확인
-    const { data: existing } = await supabase
-      .from("subscribers")
-      .select("id")
-      .eq("subscriber_id", row.instagram_id)
-      .maybeSingle();
+ const activeSubscribers = allSubscribers.filter(
+  (sub) => sub.status !== "canceled"
+);
 
-    let subId = existing?.id;
-
-    if (!subId) {
-      // 마스터에 없으면 새로 추가
-      const { data: inserted } = await supabase.from("subscribers").insert({
-        subscriber_id: row.instagram_id,
-        name: row.name,
-        data_room: row.data_room,
-        video_room: row.video_room,
-        pay_app: !!row.pay_app_raw,
-        pay_app_code: row.pay_app_raw || "",
-        status: "active",
-        memo: "",
-      }).select("id").single();
-      subId = inserted?.id;
-      added++;
-    } else {
-      skipped++;
-    }
-
-    if (subId) {
-      // 월별 리스트에 추가 (중복 방지)
-      const { data: monthExisting } = await supabase
-        .from("subscriber_monthly")
-        .select("id")
-        .eq("subscriber_id", subId)
-        .eq("month_key", csvMonth)
-        .maybeSingle();
-
-      if (!monthExisting) {
-        await supabase.from("subscriber_monthly").insert({
-          subscriber_id: subId,
-          month_key: csvMonth,
-          status: "active",
-        });
-      }
-    }
+  if (activeSubscribers.length === 0) {
+    alert("저장할 구독중 구독자가 없습니다.");
+    return;
   }
 
-  setCsvUploading(false);
-  setCsvMonth(null);
-  if (csvInputRef.current) csvInputRef.current.value = "";
-  await fetchAllSubscribers();
+  const ok = confirm(
+    `${saveTargetYear}년 ${saveTargetMonth}월에 구독중 ${activeSubscribers.length}명을 저장할까요?\n이미 등록된 구독자는 자동으로 건너뜁니다.`
+  );
+
+  if (!ok) return;
+
+  setSavingMonthly(true);
+
+  const rows = activeSubscribers.map((sub) => ({
+    subscriber_id: sub.id,
+    month_key: targetMonthKey,
+    status: "active",
+  }));
+
+  const { data, error } = await supabase
+    .from("subscriber_monthly")
+    .upsert(rows, {
+      onConflict: "subscriber_id,month_key",
+      ignoreDuplicates: true,
+    })
+    .select();
+
+  setSavingMonthly(false);
+
+  if (error) {
+    console.error(error);
+    alert("월별 구독자 저장에 실패했습니다.");
+    return;
+  }
+
   await fetchSubscribers();
-  alert(`완료! 신규 추가: ${added}명 / 기존 존재: ${skipped}명`);
+
+  alert(
+    `${saveTargetYear}년 ${saveTargetMonth}월 저장 완료\n신규 저장: ${data?.length || 0}명\n기존 등록자는 자동 제외되었습니다.`
+  );
 };
 
 
@@ -1616,7 +1597,11 @@ const subTotalPages = Math.max(
 
 <div style={{minWidth: "180px"}}>이름 <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.name).length}</span></div>
 
-  <div style={{minWidth: "150px"}}>자료방 <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.data_room).length}</span></div>
+  <div style={{minWidth: "150px"}}>
+  페이앱 코드 <span className="text-blue-500 ml-1">
+    {activeMonthly.filter(d => d.subscribers.pay_app_code).length}
+  </span>
+</div>
   <div style={{minWidth: "160px"}}>영상방 <span className="text-blue-500 ml-1">{activeMonthly.filter(d => d.subscribers.video_room).length}</span></div>
   <div style={{minWidth: "110px"}}>등록날짜</div>
   <div className="flex-1 text-center">관리</div>
@@ -1649,7 +1634,9 @@ const subTotalPages = Math.max(
 </div>
 
 
-<div style={{minWidth: "150px"}} className="text-sm text-gray-600 truncate" title={item.subscribers.data_room}>{item.subscribers.data_room || "-"}</div>
+<div style={{minWidth: "150px"}} className="text-sm text-gray-600 truncate" title={item.subscribers.pay_app_code}>
+  {item.subscribers.pay_app_code || "-"}
+</div>
 <div style={{minWidth: "150px"}} className="text-sm text-gray-600 truncate" title={item.subscribers.video_room}>{item.subscribers.video_room || "-"}</div>
 <div style={{minWidth: "110px"}} className="text-xs text-gray-400">{formatDate(item.subscribers.created_at)}</div>
 
@@ -2037,52 +2024,65 @@ const subTotalPages = Math.max(
       {/* ==================== 팝업 3: 구독자 전체 목록 (마스터 관리) ==================== */}
       {isAllSubPopupOpen && (
         <div
-  className="fixed inset-0 z-[9998] bg-black/40 flex items-end md:items-center justify-center md:p-4"
+  className="fixed inset-0 z-[9998] bg-black/40 flex items-center justify-center p-3"
   onMouseMove={handleDragMove}
   onMouseUp={handleDragEnd}
   onClick={(e) => { if (e.target === e.currentTarget) setIsAllSubPopupOpen(false); }}
 >
           <div
   onClick={(e) => e.stopPropagation()}
-  style={{ transform: `translate(${popupPos.x}px, ${popupPos.y}px)` }}
-  className="w-full max-w-5xl h-[90vh] md:h-[85vh] md:rounded-3xl rounded-t-3xl bg-white shadow-xl flex flex-col overflow-hidden"
+  style={{ transform: typeof window !== "undefined" && window.innerWidth >= 768 ? `translate(${popupPos.x}px, ${popupPos.y}px)` : "none" }}
+  className="w-full max-w-5xl h-[88vh] rounded-3xl bg-white shadow-xl flex flex-col overflow-hidden"
 >
             <div
-  className="px-4 md:px-6 py-4 md:py-5 border-b border-gray-100 flex flex-wrap items-center justify-between gap-2 bg-gray-50 select-none"
+  className="px-4 md:px-6 py-4 md:py-5 border-b border-gray-100 flex items-center justify-between gap-2 bg-gray-50 select-none"
   onMouseDown={handleDragStart}
 >
               <div className="flex items-center gap-2">
                 <List className="w-5 h-5 text-gray-700" />
-                <h2 className="text-lg font-bold text-gray-900">구독자 전체 목록 (마스터)</h2>
+                <h2 className="text-base md:text-lg font-bold text-gray-900 truncate">
+  구독자 전체 목록 (마스터)
+</h2>
               </div>
              
              {/* CSV 업로드 버튼 */}
 <div className="hidden md:flex items-center gap-2">
   <select
-    value={csvMonth || ""}
-    onChange={(e) => setCsvMonth(e.target.value)}
+    value={saveTargetYear}
+    onChange={(e) => setSaveTargetYear(Number(e.target.value))}
     className="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none bg-white"
   >
-    <option value="">월 선택</option>
-    {Array.from({ length: 12 }, (_, i) => {
-      const d = new Date(new Date().getFullYear(), new Date().getMonth() - 6 + i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-      return <option key={key} value={key}>{d.getFullYear()}년 {d.getMonth() + 1}월</option>;
-    })}
+    {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 2 + i).map((year) => (
+      <option key={year} value={year}>
+        {year}년
+      </option>
+    ))}
   </select>
+
+  <select
+    value={saveTargetMonth}
+    onChange={(e) => setSaveTargetMonth(Number(e.target.value))}
+    className="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none bg-white"
+  >
+    {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+      <option key={month} value={month}>
+        {month}월
+      </option>
+    ))}
+  </select>
+
   <button
-    onClick={() => { if (!csvMonth) { alert("먼저 월을 선택해주세요."); return; } csvInputRef.current?.click(); }}
-    disabled={csvUploading}
+    onClick={saveActiveSubscribersToMonth}
+    disabled={savingMonthly}
     className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-green-700 transition disabled:opacity-50"
   >
-    {csvUploading ? "업로드 중..." : "CSV 업로드"}
+    {savingMonthly ? "저장 중..." : "구독중 저장"}
   </button>
-  <input ref={csvInputRef} type="file" accept=".csv" className="hidden" onChange={handleCsvUpload} />
 </div>
 
              
-              <div className="flex items-center gap-2 md:gap-3">
-                <button onClick={() => openSubPopup()} className="flex items-center gap-1.5 md:gap-2 bg-blue-600 text-white px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold hover:bg-blue-700 transition">
+              <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                <button onClick={() => openSubPopup()} className="hidden md:flex items-center gap-1.5 md:gap-2 bg-blue-600 text-white px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold hover:bg-blue-700 transition">
                   <UserPlus className="w-4 h-4" />
                   새 구독자 등록
                 </button>
@@ -2095,7 +2095,7 @@ const subTotalPages = Math.max(
             <div className="p-3 md:p-6 flex-1 flex flex-col overflow-hidden bg-white">
                 
               {/* 탭 3개 및 검색창 */}
-              <div className="mb-6">
+              <div className="mb-2">
                 <div className="flex bg-gray-200 p-1 rounded-xl w-full  mb-3">
   <button onClick={() => setAllSubTab("all")} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${allSubTab === "all" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
     전체목록 <span className="text-xs font-black ml-1">{allSubscribers.length}</span>
@@ -2126,7 +2126,17 @@ const subTotalPages = Math.max(
                   >
                     {allSubSort === "name" ? "이름순" : "등록순"}
                   </button>
-                </div>
+                
+
+<button
+  onClick={() => openSubPopup()}
+  className="md:hidden ml-auto flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold"
+>
+  <UserPlus className="w-3 h-3" />
+  등록
+</button>
+</div>
+                
               </div>
 
               {/* 한 줄 리스트 형식 (테이블 스타일) */}
@@ -2182,7 +2192,7 @@ const subTotalPages = Math.max(
                         <div className="md:w-40 text-xs md:text-sm text-gray-600 truncate" title={sub.video_room}>{sub.video_room || "-"}</div>
                         <div className="md:w-25 text-xs text-gray-400">{formatDate(sub.created_at)}</div>
                         
-                        <div className="flex items-center justify-end gap-1.5 mt-1 md:mt-0">
+                        <div className="flex items-center justify-end gap-1.5 -translate-y-8 -mb-7 ml-auto md:translate-y-0 md:mb-0 md:shrink-0">
                           <button onClick={() => openSubPopup(sub)} className="text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">수정</button>
                           {sub.status === "active" ? (
                             <button onClick={() => cancelSubscriber(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition cursor-pointer">해지</button>
@@ -2312,7 +2322,7 @@ const subTotalPages = Math.max(
     <div style={{ transform: `translate(${memoAddPopupPos.x}px, ${memoAddPopupPos.y}px)` }} onMouseDown={(e) => { if (window.innerWidth < 768) return; const target = e.target as HTMLElement; if (target.closest("button") || target.closest("input") || target.closest("textarea")) return; memoAddDragRef.current = { isDragging: true, startX: e.clientX, startY: e.clientY, originX: memoAddPopupPos.x, originY: memoAddPopupPos.y }; }} onClick={(e) => e.stopPropagation()} className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6 cursor-default">
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-xl font-black text-gray-900">메모 추가</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           {memoColorOptions.map((color) => (
             <button key={color.value} type="button" onClick={() => setMemoColor(color.value)} className={`w-7 h-7 rounded-full border transition hover:scale-105 ${memoColor === color.value ? "ring-2 ring-gray-400 ring-offset-2" : ""} ${color.className}`} />
           ))}
