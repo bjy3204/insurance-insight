@@ -1836,7 +1836,15 @@ const subTotalPages = Math.max(
   return matchPay && matchSearch;
 })
 
-            
+            .sort((a, b) => {
+  const aLinked =
+    selectedProfile?.linked_subscriber_id === a.id ? 1 : 0;
+
+  const bLinked =
+    selectedProfile?.linked_subscriber_id === b.id ? 1 : 0;
+
+  return bLinked - aLinked;
+})
             .map((sub) => {
               const isLinked =
                 selectedProfile.linked_subscriber_id === sub.id;
