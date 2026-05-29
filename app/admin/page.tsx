@@ -58,6 +58,7 @@ type Profile = {
   status: string | null;
   role: string | null;
   created_at: string | null;
+   linked_subscriber_id: string | null;
 };
 
 // --- 구독자 타입 ---
@@ -155,6 +156,8 @@ const [noticePickerMonth, setNoticePickerMonth] = useState(new Date().getMonth()
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [profileSubSearch, setProfileSubSearch] = useState("");
+  const [profileSubPayFilter, setProfileSubPayFilter] = useState(false);
   const [updating, setUpdating] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 20;
@@ -342,7 +345,7 @@ useEffect(() => {
   const fetchProfiles = async () => {
     const { data } = await supabase
       .from("profiles")
-      .select("id, nickname, instagram_id, status, role, created_at")
+      .select("id, nickname, instagram_id, status, role, created_at, linked_subscriber_id")
       .order("created_at", { ascending: false });
     setProfiles((data as Profile[]) || []);
   };
@@ -798,7 +801,69 @@ const totalMemoPages = Math.max(1, Math.ceil(filteredMemos.length / MEMOS_PER_PA
 const pagedMemos = filteredMemos.slice((memoPage - 1) * MEMOS_PER_PAGE, memoPage * MEMOS_PER_PAGE);
 
 
+const getLinkedSubscriber = (profile: Profile) => {
+  if (!profile.linked_subscriber_id) return null;
 
+  return allSubscribers.find(
+    (sub) => sub.id === profile.linked_subscriber_id
+  );
+};
+
+const linkProfileToSubscriber = async (
+  profileId: string,
+  subscriberId: string
+) => {
+  const { error } = await supabase
+    .from("profiles")
+    .update({ linked_subscriber_id: subscriberId })
+    .eq("id", profileId);
+
+  if (error) {
+    alert("구독자 연결에 실패했습니다.");
+    return;
+  }
+
+  setProfiles((prev) =>
+    prev.map((p) =>
+      p.id === profileId
+        ? { ...p, linked_subscriber_id: subscriberId }
+        : p
+    )
+  );
+
+  setSelectedProfile((prev) =>
+  prev
+    ? { ...prev, linked_subscriber_id: subscriberId }
+    : prev
+);
+  
+};
+
+const unlinkProfileSubscriber = async (profileId: string) => {
+  const { error } = await supabase
+    .from("profiles")
+    .update({ linked_subscriber_id: null })
+    .eq("id", profileId);
+
+  if (error) {
+    alert("구독자 연결 해제에 실패했습니다.");
+    return;
+  }
+
+  setProfiles((prev) =>
+    prev.map((p) =>
+      p.id === profileId
+        ? { ...p, linked_subscriber_id: null }
+        : p
+    )
+  );
+
+  setSelectedProfile((prev) =>
+  prev
+    ? { ...prev, linked_subscriber_id: null }
+    : prev
+);
+};
 
   // --- 렌더링용 데이터 필터링 ---
   const filteredProfiles = profiles.filter((p) => {
@@ -992,7 +1057,10 @@ const subTotalPages = Math.max(
               <div className="flex justify-center items-center py-20 text-sm text-gray-400">회원이 없습니다.</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                {pagedProfiles.map((profile) => (
+                {pagedProfiles.map((profile) => {
+  const linkedSub = getLinkedSubscriber(profile);
+
+  return (
                   <div key={profile.id} onClick={() => setSelectedProfile(profile)} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition cursor-default">
                     <div className="flex items-start justify-between mb-3">
                       <div>
@@ -1003,6 +1071,11 @@ const subTotalPages = Math.max(
                         <span className={`text-xs font-bold px-3 py-1 rounded-full ${STATUS_COLOR[profile.status || ""] || "bg-gray-100 text-gray-500"}`}>
                           {STATUS_LABEL[profile.status || ""] || profile.status || "-"}
                         </span>
+                        {linkedSub?.status === "canceled" && (
+  <span className="text-xs font-bold px-3 py-1 rounded-full bg-red-100 text-red-600">
+    해지
+  </span>
+)}
                       </div>
                     </div>
                     <p className="text-xs text-gray-400 mb-4">가입일: {formatDate(profile.created_at)}</p>
@@ -1054,8 +1127,9 @@ const subTotalPages = Math.max(
 </button>
                       </div>
                     )}
-                  </div>
-                ))}
+                     </div>
+  );
+})}
               </div>
             )}
             {totalPages > 1 && (
@@ -1683,6 +1757,152 @@ const subTotalPages = Math.max(
           </div>
         )}
       </section>
+
+      {selectedProfile && (
+  <div
+    className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4"
+    onClick={() => {
+      setSelectedProfile(null);
+      setProfileSubSearch("");
+      setProfileSubPayFilter(false);
+    }}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="w-full max-w-xl h-[620px] bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col"
+    >
+      <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-black text-gray-900">
+            구독자 연결
+          </h2>
+          <p className="text-xs text-gray-400 mt-1">
+            {selectedProfile.nickname || "닉네임 없음"} ·{" "}
+            {selectedProfile.instagram_id
+              ? `@${selectedProfile.instagram_id}`
+              : "인스타 없음"}
+          </p>
+        </div>
+
+        <button
+          onClick={() => {
+            setSelectedProfile(null);
+            setProfileSubSearch("");
+            setProfileSubPayFilter(false);
+          }}
+          className="w-9 h-9 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200 transition cursor-pointer"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="p-5 flex-1 min-h-0 flex flex-col">
+        <div className="bg-white rounded-2xl border border-gray-200 px-4 py-3 flex items-center gap-3 mb-4">
+          <Search className="w-4 h-4 text-gray-400 shrink-0" />
+          <input
+            value={profileSubSearch}
+            onChange={(e) => setProfileSubSearch(e.target.value)}
+            placeholder="아이디 또는 이름으로 구독자 검색"
+            className="w-full outline-none text-sm bg-transparent"
+          />
+        </div>
+
+        <div className="flex items-center justify-end mb-3">
+  <button
+    onClick={() => setProfileSubPayFilter((v) => !v)}
+    className={`text-xs font-bold px-3 py-1.5 rounded-lg transition ${
+      profileSubPayFilter
+        ? "bg-blue-600 text-white"
+        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+    }`}
+  >
+    P 페이앱만
+  </button>
+</div>
+
+        <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-gray-100 border border-gray-100 rounded-2xl">
+          {allSubscribers
+           .filter((sub) => {
+  const q = profileSubSearch.toLowerCase().trim();
+  const matchPay = !profileSubPayFilter || sub.pay_app;
+
+  if (!q) return matchPay;
+
+  const matchSearch =
+    sub.subscriber_id.toLowerCase().includes(q) ||
+    sub.name.toLowerCase().includes(q) ||
+    (sub.pay_app_code || "").toLowerCase().includes(q);
+
+  return matchPay && matchSearch;
+})
+
+            
+            .map((sub) => {
+              const isLinked =
+                selectedProfile.linked_subscriber_id === sub.id;
+
+             return (
+  <div
+    key={sub.id}
+    className={`w-full px-4 py-3 flex items-center justify-between gap-3 text-left transition ${
+      isLinked ? "bg-blue-50" : "bg-white"
+    }`}
+  >
+    <div className="min-w-0">
+      <div className="flex items-center gap-2 mb-1">
+        <p className="text-sm font-black text-gray-900 truncate">
+          {sub.subscriber_id}
+        </p>
+
+        {sub.pay_app && (
+          <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold shrink-0">
+            P
+          </span>
+        )}
+
+        {sub.status === "canceled" && (
+          <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold shrink-0">
+            해지
+          </span>
+        )}
+      </div>
+
+      <p className="text-xs text-gray-500 truncate">
+        이름: {sub.name || "-"}
+      </p>
+
+      <p className="text-xs text-gray-400 truncate mt-0.5">
+        페이앱 코드: {sub.pay_app_code || "-"}
+      </p>
+    </div>
+
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+
+        if (isLinked) {
+          unlinkProfileSubscriber(selectedProfile.id);
+        } else {
+          linkProfileToSubscriber(selectedProfile.id, sub.id);
+        }
+      }}
+      className={`text-xs font-bold px-3 py-1 rounded-full shrink-0 transition cursor-pointer ${
+        isLinked
+          ? "bg-blue-600 text-white hover:bg-blue-700"
+          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+      }`}
+    >
+      {isLinked ? "연결됨" : "선택"}
+    </button>
+  </div>
+);
+            })}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* 구독자 전체 보기 플로팅 버튼 */}
 {(adminTab === "subscribers" || adminTab === "members") && (
