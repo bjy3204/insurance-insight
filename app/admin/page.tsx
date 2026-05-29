@@ -1952,7 +1952,7 @@ const subTotalPages = Math.max(
                         </div>
                         <div className="md:w-40 text-xs md:text-sm text-gray-600 truncate" title={sub.pay_app_code}>{sub.pay_app_code || "-"}</div>
                         <div className="md:w-40 text-xs md:text-sm text-gray-600 truncate" title={sub.video_room}>{sub.video_room || "-"}</div>
-                        <div className="md:w-30 text-xs text-gray-400">{formatDate(sub.created_at)}</div>
+                        <div className="md:w-25 text-xs text-gray-400">{formatDate(sub.created_at)}</div>
                         
                         <div className="flex items-center justify-end gap-1.5 mt-1 md:mt-0">
                           <button onClick={() => openSubPopup(sub)} className="text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">수정</button>
