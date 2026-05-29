@@ -72,6 +72,7 @@ type Subscriber = {
   memo: string;
   status: string;
   created_at: string;
+  is_checked: boolean;
 };
 
 type SubscriberMonthly = {
@@ -474,6 +475,26 @@ useEffect(() => {
       .order("created_at", { ascending: false });
     setAllSubscribers((data as Subscriber[]) || []);
   };
+
+  const toggleSubscriberCheck = async (sub: Subscriber) => {
+  const nextChecked = !sub.is_checked;
+
+  setAllSubscribers((prev) =>
+    prev.map((s) =>
+      s.id === sub.id ? { ...s, is_checked: nextChecked } : s
+    )
+  );
+
+  const { error } = await supabase
+    .from("subscribers")
+    .update({ is_checked: nextChecked })
+    .eq("id", sub.id);
+
+  if (error) {
+    alert("체크 저장에 실패했습니다.");
+    fetchAllSubscribers();
+  }
+};
 
   const openSubPopup = (sub?: Subscriber) => {
     if (sub) {
@@ -1885,7 +1906,10 @@ const subTotalPages = Math.max(
               <div className="flex-1 overflow-hidden flex flex-col border border-gray-200 rounded-2xl">
                 {/* 리스트 헤더 */}
                 <div className="hidden md:flex items-center py-3 px-5 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-500">
-                  <div className="w-30">아이디</div>
+                  <div className="w-36 flex items-center gap-2">
+  <span className="w-4" />
+  <span>아이디</span>
+</div>
                   <div className="w-50">이름</div>
                   <div className="w-40">페이앱 코드</div>
                   <div className="w-40">영상방</div>
@@ -1900,7 +1924,28 @@ const subTotalPages = Math.max(
                   ) : (
                     filteredAllSubs.map((sub) => (
                       <div key={sub.id} className={`flex flex-col md:flex-row md:items-center py-3 px-3 md:px-5 hover:bg-gray-50 transition gap-1 md:gap-0 ${sub.status === "canceled" ? "opacity-60 bg-gray-50/50" : ""}`}>
-                        <div className="md:w-30 text-xs md:text-sm text-gray-500 truncate" title={sub.subscriber_id}>{sub.subscriber_id}</div>
+                        <div
+  className="md:w-36 text-xs md:text-sm text-gray-500 flex items-center gap-2 truncate"
+  title={sub.subscriber_id}
+>
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      toggleSubscriberCheck(sub);
+    }}
+    className="shrink-0 cursor-pointer"
+  >
+    {sub.is_checked ? (
+      <CheckSquare className="w-4 h-4 text-blue-600" />
+    ) : (
+      <Square className="w-4 h-4 text-gray-400" />
+    )}
+  </button>
+
+  <span className="truncate">
+    {sub.subscriber_id}
+  </span>
+</div>
                         <div className="md:w-50 font-medium text-gray-900 flex items-center gap-1.5">
                           <span className={`truncate ${sub.status === "canceled" ? "line-through" : ""}`} title={sub.name}>{sub.name}</span>
                           {sub.pay_app && <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold">P</span>}
