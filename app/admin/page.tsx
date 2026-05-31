@@ -177,7 +177,8 @@ const [savingMonthly, setSavingMonthly] = useState(false);
 
 // 전체 구독자 팝업 필터/정렬
 const [allSubPayFilter, setAllSubPayFilter] = useState(false);
-const [allSubSort, setAllSubSort] = useState<"name" | "date">("date");
+const [allSubSort, setAllSubSort] =
+  useState<"name" | "date" | "checked-desc" | "checked-asc">("date");
 
 // 월별 리스트 필터/정렬
 const [monthlyPayFilter, setMonthlyPayFilter] = useState(false);
@@ -915,11 +916,21 @@ const matchSearch =
     const matchPay = !allSubPayFilter || s.pay_app;
     return matchTab && matchSearch && matchPay;
   })
-  .sort((a, b) => {
-    if (allSubSort === "name") return a.name.localeCompare(b.name, "ko", { numeric: true });
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
+ .sort((a, b) => {
+  if (allSubSort === "name") {
+    return a.name.localeCompare(b.name, "ko", { numeric: true });
+  }
 
+  if (allSubSort === "checked-desc") {
+    return Number(b.is_checked) - Number(a.is_checked);
+  }
+
+  if (allSubSort === "checked-asc") {
+    return Number(a.is_checked) - Number(b.is_checked);
+  }
+
+  return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+});
 
   // 선택 팝업용 필터링 (현재 달에 이미 등록된 사람은 제외, 해지자 제외)
   const currentMonthlySubIds = new Set(monthlyData.map(d => d.subscriber_id));
@@ -2162,6 +2173,24 @@ const matchSearch =
                     {allSubSort === "name" ? "이름순" : "등록순"}
                   </button>
                 
+<button
+  onClick={() =>
+    setAllSubSort((v) =>
+      v === "checked-desc" ? "checked-asc" : "checked-desc"
+    )
+  }
+  className={`text-xs font-bold px-3 py-1.5 rounded-lg transition ${
+    allSubSort === "checked-desc" || allSubSort === "checked-asc"
+      ? "bg-blue-600 text-white"
+      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+  }`}
+>
+  {allSubSort === "checked-desc"
+    ? "체크순 ↑"
+    : allSubSort === "checked-asc"
+    ? "체크순 ↓"
+    : "체크순"}
+</button>
 
 <button
   onClick={() => openSubPopup()}
