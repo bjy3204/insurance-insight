@@ -499,6 +499,33 @@ useEffect(() => {
   }
 };
 
+const toggleAllSubscriberChecks = async () => {
+  const targetIds = filteredAllSubs.map((s) => s.id)
+
+  if (targetIds.length === 0) return
+
+  const allChecked = filteredAllSubs.every((s) => s.is_checked)
+  const nextChecked = !allChecked
+
+  setAllSubscribers((prev) =>
+    prev.map((s) =>
+      targetIds.includes(s.id)
+        ? { ...s, is_checked: nextChecked }
+        : s
+    )
+  )
+
+  const { error } = await supabase
+    .from("subscribers")
+    .update({ is_checked: nextChecked })
+    .in("id", targetIds)
+
+  if (error) {
+    alert("전체 체크 저장에 실패했습니다.")
+    fetchAllSubscribers()
+  }
+}
+
   const openSubPopup = (sub?: Subscriber) => {
     if (sub) {
       setSubForm({
@@ -2144,8 +2171,19 @@ const subTotalPages = Math.max(
               <div className="flex-1 overflow-hidden flex flex-col border border-gray-200 rounded-2xl">
                 {/* 리스트 헤더 */}
                 <div className="hidden md:flex items-center py-3 px-5 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-500">
-                  <div className="w-36 flex items-center gap-2">
-  <span className="w-4" />
+                 <div className="w-36 flex items-center gap-2">
+  <button
+    onClick={toggleAllSubscriberChecks}
+    className="shrink-0 cursor-pointer"
+  >
+    {filteredAllSubs.length > 0 &&
+    filteredAllSubs.every((s) => s.is_checked) ? (
+      <CheckSquare className="w-4 h-4 text-blue-600" />
+    ) : (
+      <Square className="w-4 h-4 text-gray-400" />
+    )}
+  </button>
+
   <span>아이디</span>
 </div>
                   <div className="w-50">이름</div>
