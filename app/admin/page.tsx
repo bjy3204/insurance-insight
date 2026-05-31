@@ -903,7 +903,15 @@ const subTotalPages = Math.max(
   const filteredAllSubs = allSubscribers
   .filter(s => {
     const matchTab = allSubTab === "all" || s.status === allSubTab;
-    const matchSearch = s.name.includes(allSubSearch) || s.subscriber_id.includes(allSubSearch);
+   const keyword = allSubSearch.trim().toLowerCase();
+
+const matchSearch =
+  keyword === "" ||
+  s.name?.toLowerCase().includes(keyword) ||
+  s.subscriber_id?.toLowerCase().includes(keyword) ||
+  s.data_room?.toLowerCase().includes(keyword) ||
+  s.video_room?.toLowerCase().includes(keyword) ||
+  s.pay_app_code?.toLowerCase().includes(keyword);
     const matchPay = !allSubPayFilter || s.pay_app;
     return matchTab && matchSearch && matchPay;
   })
