@@ -232,7 +232,16 @@ function PlantSVG({ stage, watering }: { stage: PlantStage; watering: boolean })
 // ─────────────────────────────────────────────
 // 메인 HomeTab
 // ─────────────────────────────────────────────
-export default function HomeTab({ settings }: { settings: CustomerSettings | null }) {
+export default function HomeTab({
+  settings,
+  hiddenHomeMenus,
+}: {
+  settings: CustomerSettings | null;
+  hiddenHomeMenus: string[];
+}) {
+
+  const isHidden = (id: string) =>
+  hiddenHomeMenus.includes(id);
 
   const [showDdayDatePicker, setShowDdayDatePicker] = useState(false);
 const [ddayPickerYear, setDdayPickerYear] = useState(new Date().getFullYear());
@@ -879,7 +888,8 @@ const diaryEndPage = Math.min(
 
 
   {/* 날씨 */}
-  <div
+  {!isHidden("weather") && (
+<div
     className={`bg-white rounded-3xl border border-gray-200 shadow p-4 relative select-none transition-all duration-200 ${weatherContextMenu ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
    onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setWeatherContextMenu({ x: e.clientX, y: e.clientY }); }}
 
@@ -964,9 +974,10 @@ const diaryEndPage = Math.min(
       </>
     )}
   </div>
-
+)}
   {/* D-Day */}
- <div
+ {!isHidden("dday") && (
+<div
    className={`bg-white rounded-3xl border border-gray-200 shadow p-4 relative transition-all duration-200  ${ddayWidgetEditOpen ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
   onClick={() => { setDdayWidgetTempLabel(ddayWidgetLabel); setDdayWidgetTempDate(ddayWidgetDate); setDdayWidgetEditOpen(true); }}
 
@@ -1181,8 +1192,10 @@ const diaryEndPage = Math.min(
       </>
     )}
   </div>
+)}
 
 {/* BGM 플레이어 */}
+{!isHidden("bgm") && (
 <div
   className={`hidden md:block bg-white rounded-3xl border border-gray-200 shadow p-4 relative transition-all duration-200 ${bgmEditOpen || bgmColorMenuOpen ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
   onContextMenu={(e) => { e.preventDefault(); setBgmColorMenuOpen(true); }}
@@ -1358,13 +1371,14 @@ const diaryEndPage = Math.min(
     </div>
   )}
 </div>
-
+)}
 </div>
 
 {/* ── 오늘 일정 + 체크리스트 ── */}
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-  
-    <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
+
+  {!isHidden("schedule") && (
+  <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
       <h2 className="text-base font-black text-gray-900 mb-3">오늘 일정</h2>
 {todayEvents.length === 0 ? (
   <div className="flex items-center justify-center py-10">
@@ -1436,9 +1450,11 @@ const diaryEndPage = Math.min(
     </div>
   )}
 </div>
+  )}
 
-  {/* 체크리스트 카드 */}
-  <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
+{/* 체크리스트 카드 */}
+{!isHidden("checklist") && (
+<div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
     <h2 className="text-base font-black text-gray-900 mb-3">체크리스트</h2>
     <div className="space-y-2 mb-3">
       {checklists.map((item) => (
@@ -1501,7 +1517,8 @@ const diaryEndPage = Math.min(
         </button>
       </div>
     )}
-  </div>
+</div>
+)}
 </div>
 
 {/* 오늘 일정 수정 팝업 */}
@@ -1603,8 +1620,9 @@ const diaryEndPage = Math.min(
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
 
-        {/* 메모 목록 */}
-        <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
+{/* 메모 목록 */}
+{!isHidden("memo") && (
+<div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-black text-gray-900 flex items-center gap-2">
               <NotebookPen className="w-5 h-5 text-yellow-500" />
@@ -1691,6 +1709,7 @@ const diaryEndPage = Math.min(
         </div>
 )}
         </div>
+)}
 
         {/* 메모 추가 팝업 */}
 {privateMemoAddOpen && (
@@ -1749,8 +1768,9 @@ const diaryEndPage = Math.min(
 )}
 
 
-        {/* 일기 */}
-        <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
+{/* 일기 */}
+{!isHidden("diary") && (
+<div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
           <div className="relative flex items-center justify-between mb-3">
   <h2 className="text-base font-black text-gray-900 flex items-center gap-2">
   <BookOpen className="w-5 h-5 text-blue-500" />
@@ -1873,6 +1893,7 @@ const diaryEndPage = Math.min(
   })()
 )}
         </div>
+)}
       </div>
 
       {/* ── 일기 작성/수정 팝업 ── */}

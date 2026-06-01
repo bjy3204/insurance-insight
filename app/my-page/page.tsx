@@ -35,6 +35,9 @@ MessageSquare,
   Link,
   Globe,
   Camera,
+  CloudSun,
+Music,
+CheckSquare,
   Video,
   ChevronDown,
 } from "lucide-react";
@@ -85,6 +88,7 @@ type MemoItem = {
 
 export type CustomerSettings = {
   pin_hash: string | null;
+  hidden_home_menus?: string[];
   pin_changed_at: string | null;
   agent_name: string | null;
   kakao_url: string | null;
@@ -148,6 +152,16 @@ const TABS = [
   { id: "ai" as ActiveTab, label: "AI메시지", icon: MessageSquare },
 ];
 
+const HOME_MENU_ITEMS = [
+  { id: "weather", label: "날씨", desc: "지역별 날씨 확인", icon: CloudSun, color: "text-sky-500", bg: "bg-sky-50" },
+  { id: "dday", label: "D-Day", desc: "중요한 날짜 표시", icon: CalendarDays, color: "text-blue-500", bg: "bg-blue-50" },
+  { id: "bgm", label: "BGM", desc: "음악 플레이어", icon: Music, color: "text-pink-500", bg: "bg-pink-50" },
+  { id: "schedule", label: "오늘 일정", desc: "오늘 등록된 일정", icon: CalendarDays, color: "text-indigo-500", bg: "bg-indigo-50" },
+  { id: "checklist", label: "체크리스트", desc: "오늘 할 일 관리", icon: CheckSquare, color: "text-green-500", bg: "bg-green-50" },
+  { id: "memo", label: "메모 목록", desc: "개인 메모 확인", icon: NotebookPen, color: "text-yellow-500", bg: "bg-yellow-50" },
+  { id: "diary", label: "일기", desc: "월별 일기 기록", icon: BookOpen, color: "text-blue-500", bg: "bg-blue-50" },
+];
+
 // ─────────────────────────────────────────────
 // SortableTab
 // ─────────────────────────────────────────────
@@ -192,7 +206,8 @@ export default function CustomerManagePage() {
 
   // 설정 드롭다운
   const [settingOpen, setSettingOpen] = useState(false);
-
+const [homeMenuSettingOpen, setHomeMenuSettingOpen] = useState(false);
+const [hiddenHomeMenus, setHiddenHomeMenus] = useState<string[]>([]);
 const settingRef = useRef<HTMLDivElement>(null);
 
 
@@ -487,7 +502,7 @@ useEffect(() => {
   if (!authUser) return;
   const { data } = await supabase
     .from("customer_settings")
-    .select("pin_hash, pin_changed_at, agent_name, kakao_url, kakao_name, kakao_icon, my_site_url, my_site_name, my_site_icon, spreadsheet_url, spreadsheet_name, spreadsheet_icon, customer_url, nickname, plant_pos_x, plant_pos_y, tab_order")
+    .select("pin_hash, pin_changed_at, agent_name, kakao_url, kakao_name, kakao_icon, my_site_url, my_site_name, my_site_icon, spreadsheet_url, spreadsheet_name, spreadsheet_icon, customer_url, nickname, plant_pos_x, plant_pos_y, tab_order, hidden_home_menus")
     .eq("user_id", authUser.id)
     .maybeSingle();
 
@@ -503,6 +518,10 @@ setSettings({
   ...(data || {}),
   nickname: profile?.nickname || data?.nickname || null,
 } as CustomerSettings);
+
+setHiddenHomeMenus(
+  Array.isArray(data?.hidden_home_menus) ? data.hidden_home_menus : []
+);
 
 if (data?.tab_order && Array.isArray(data.tab_order)) {
   const order = data.tab_order as string[];
@@ -677,6 +696,17 @@ updateData.pin_changed_at = new Date().toISOString();
                     >
                       계산기
                     </button>
+
+<button
+  onClick={() => {
+    setSettingOpen(false);
+    setTimeout(() => setHomeMenuSettingOpen(true), 50);
+  }}
+  className="block w-full text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-b border-gray-100 cursor-pointer"
+>
+  홈 설정
+</button>
+
                     <button
                       onClick={() => { setSettingOpen(false); setTimeout(() => setSettingPanelOpen(true), 50); }}
                       className="block w-full rounded-b-2xl text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer"
@@ -706,7 +736,10 @@ updateData.pin_changed_at = new Date().toISOString();
       {/* ── 탭 콘텐츠 ── */}
       <main className="max-w-7xl mx-auto px-6 pb-8">
        <div className={activeTab === "home" ? "block" : "hidden"}>
-  <HomeTab settings={settings} />
+  <HomeTab
+  settings={settings}
+  hiddenHomeMenus={hiddenHomeMenus}
+/>
 </div>
 
 <div className={activeTab === "calendar" ? "block" : "hidden"}>
@@ -867,7 +900,222 @@ updateData.pin_changed_at = new Date().toISOString();
   </div>
 )}
 
-      
+      {homeMenuSettingOpen && (
+  <div className="fixed inset-0 z-[250] bg-black/40 flex items-center justify-center p-4">
+    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden">
+      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
+        <span className="font-bold text-sm">홈 메뉴 변경</span>
+
+        <button
+          onClick={() => setHomeMenuSettingOpen(false)}
+         className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="p-5 space-y-4">
+
+  {/* 상단 */}
+  <div className="grid md:grid-cols-3 gap-3">
+    {HOME_MENU_ITEMS.filter(item =>
+      ["weather", "dday", "bgm"].includes(item.id)
+    ).map((item) => {
+      const hidden = hiddenHomeMenus.includes(item.id);
+      const Icon = item.icon;
+
+      return (
+        <div
+          key={item.id}
+className={`relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 ${
+  hidden
+    ? "opacity-45"
+    : "hover:-translate-y-1 hover:shadow-lg"
+}`}
+        >
+          <button
+            onClick={async () => {
+              const next = hidden
+                ? hiddenHomeMenus.filter(v => v !== item.id)
+                : [...hiddenHomeMenus, item.id];
+
+              setHiddenHomeMenus(next);
+
+              await supabase.from("customer_settings").upsert(
+                {
+                  user_id: authUser?.id,
+                  hidden_home_menus: next,
+                },
+                { onConflict: "user_id" }
+              );
+            }}
+            className="
+  absolute
+  right-3
+  top-3
+  w-7
+  h-7
+  rounded-full
+  flex
+  items-center
+  justify-center
+  text-gray-400
+  hover:bg-gray-100
+  hover:text-gray-600
+  transition
+  cursor-pointer
+"
+          >
+            {hidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+
+          <div className={`w-11 h-11 rounded-2xl ${item.bg} flex items-center justify-center mb-4`}>
+            <Icon className={`w-6 h-6 ${item.color}`} />
+          </div>
+
+          <p className="font-black">{item.label}</p>
+          <p className="text-sm text-gray-400">{item.desc}</p>
+        </div>
+      );
+    })}
+  </div>
+
+  {/* 중간 */}
+  <div className="grid md:grid-cols-2 gap-3">
+    {HOME_MENU_ITEMS.filter(item =>
+      ["schedule", "checklist"].includes(item.id)
+    ).map((item) => {
+      const hidden = hiddenHomeMenus.includes(item.id);
+      const Icon = item.icon;
+
+      return (
+        <div
+          key={item.id}
+className={`relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 ${
+  hidden
+    ? "opacity-45"
+    : "hover:-translate-y-1 hover:shadow-lg"
+}`}
+        >
+          <button
+            onClick={async () => {
+              const next = hidden
+                ? hiddenHomeMenus.filter(v => v !== item.id)
+                : [...hiddenHomeMenus, item.id];
+
+              setHiddenHomeMenus(next);
+
+              await supabase.from("customer_settings").upsert(
+                {
+                  user_id: authUser?.id,
+                  hidden_home_menus: next,
+                },
+                { onConflict: "user_id" }
+              );
+            }}
+            className="
+  absolute
+  right-3
+  top-3
+  w-7
+  h-7
+  rounded-full
+  flex
+  items-center
+  justify-center
+  text-gray-400
+  hover:bg-gray-100
+  hover:text-gray-600
+  transition
+  cursor-pointer
+"
+          >
+            {hidden ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+
+          <div className={`w-11 h-11 rounded-2xl ${item.bg} flex items-center justify-center mb-4`}>
+            <Icon className={`w-6 h-6 ${item.color}`} />
+          </div>
+
+          <p className="font-black">{item.label}</p>
+          <p className="text-sm text-gray-400">{item.desc}</p>
+        </div>
+      );
+    })}
+  </div>
+
+  {/* 하단 */}
+  <div className="grid md:grid-cols-2 gap-3">
+    {HOME_MENU_ITEMS.filter(item =>
+      ["memo", "diary"].includes(item.id)
+    ).map((item) => {
+      const hidden = hiddenHomeMenus.includes(item.id);
+      const Icon = item.icon;
+
+      return (
+        <div
+          key={item.id}
+className={`relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 ${
+  hidden
+    ? "opacity-45"
+    : "hover:-translate-y-1 hover:shadow-lg"
+}`}
+        >
+          <button
+            onClick={async () => {
+              const next = hidden
+                ? hiddenHomeMenus.filter(v => v !== item.id)
+                : [...hiddenHomeMenus, item.id];
+
+              setHiddenHomeMenus(next);
+
+              await supabase.from("customer_settings").upsert(
+                {
+                  user_id: authUser?.id,
+                  hidden_home_menus: next,
+                },
+                { onConflict: "user_id" }
+              );
+            }}
+            className="
+  absolute
+  right-3
+  top-3
+  w-7
+  h-7
+  rounded-full
+  flex
+  items-center
+  justify-center
+  text-gray-400
+  hover:bg-gray-100
+  hover:text-gray-600
+  transition
+  cursor-pointer
+"
+          >
+{hidden ? (
+  <EyeOff className="w-3.5 h-3.5" />
+) : (
+  <Eye className="w-3.5 h-3.5" />
+)}
+          </button>
+
+          <div className={`w-11 h-11 rounded-2xl ${item.bg} flex items-center justify-center mb-4`}>
+            <Icon className={`w-6 h-6 ${item.color}`} />
+          </div>
+
+          <p className="font-black">{item.label}</p>
+          <p className="text-sm text-gray-400">{item.desc}</p>
+        </div>
+      );
+    })}
+  </div>
+
+</div>
+    </div>
+  </div>
+)}
 
       {/* ── 개인설정 팝업 ── */}
       {settingPanelOpen && (
