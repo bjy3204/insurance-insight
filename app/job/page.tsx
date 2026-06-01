@@ -563,6 +563,7 @@ const currentCompanies = filteredCompanies.slice(
   <p className="text-sm text-blue-600 font-bold">
     {item.company}
   </p>
+  
 
   {item.website && (
     <a
@@ -577,10 +578,13 @@ const currentCompanies = filteredCompanies.slice(
   )}
 </div>
 
-<div className="flex items-center gap-2 mb-3">
-  <h3 className="text-xl font-black text-gray-900 break-keep">
-    {item.organization}
-  </h3>
+
+
+<div className="flex items-start gap-2 mb-3">
+ <h3 className="text-xl font-black text-gray-900 truncate flex-1">
+  {item.organization}
+</h3>
+  
 
   {item.region && (
     <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-bold shrink-0">
@@ -588,6 +592,17 @@ const currentCompanies = filteredCompanies.slice(
     </span>
   )}
 </div>
+
+{item.image?.[0] && (
+  <div className="mb-3 rounded-2xl overflow-hidden border border-gray-100">
+    <img
+      src={item.image[0]}
+      alt={item.organization}
+      className="w-full h-55 object-cover"
+    />
+  </div>
+)}
+
 
 {item.memo && (
   <div className="rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3 mb-3">
@@ -600,7 +615,7 @@ const currentCompanies = filteredCompanies.slice(
   </div>
 )}
 
-<p className="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-6">
+<p className="text-sm text-gray-600 leading-relaxed line-clamp-2 mb-3">
   {item.description}
 </p>
 
