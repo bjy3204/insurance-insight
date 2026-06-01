@@ -695,7 +695,7 @@ updateData.pin_changed_at = new Date().toISOString();
 <div className="w-full px-6 pt-3 pb-0 max-w-7xl mx-auto">
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleTabDragEnd}>
       <SortableContext items={tabs.map(t => t.id)} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-5 bg-gray-200 rounded-2xl p-1 mb-5">
+        <div className="grid grid-cols-3 md:grid-cols-5 bg-gray-200 rounded-2xl p-1 mb-5">
           {tabs.map((tab) => (
             <SortableTab key={tab.id} tab={tab} activeTab={activeTab} setActiveTab={setActiveTab} />
           ))}

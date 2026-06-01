@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import KoreanLunarCalendar from "korean-lunar-calendar";
 import { useAuth } from "@/app/components/AuthProvider";
 import {
   Sparkles,
@@ -23,6 +24,7 @@ type SpecialDay = {
 };
 
 function getTodaySpecialDays(date: Date): SpecialDay[] {
+  const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
   const results: SpecialDay[] = [];
@@ -37,6 +39,87 @@ function getTodaySpecialDays(date: Date): SpecialDay[] {
     "10-9": { label: "한글날", type: "holiday", emoji: "📖" },
     "12-25": { label: "크리스마스", type: "holiday", emoji: "🎄" },
   };
+
+  const lunarDays: Record<string, SpecialDay> = {};
+
+const addLunarDay = (
+  lunarMonth: number,
+  lunarDay: number,
+  label: string,
+  emoji: string
+) => {
+  const calendar = new KoreanLunarCalendar();
+
+  calendar.setLunarDate(
+    year,
+    lunarMonth,
+    lunarDay,
+    false
+  );
+
+  const solar = calendar.getSolarCalendar();
+
+  lunarDays[`${solar.month}-${solar.day}`] = {
+    label,
+    type: "anniversary",
+    emoji,
+  };
+};
+
+addLunarDay(1, 1, "설날", "🧧");
+addLunarDay(1, 15, "정월대보름", "🌕");
+addLunarDay(4, 8, "부처님오신날", "🪷");
+addLunarDay(5, 5, "단오", "🎏");
+addLunarDay(7, 7, "칠석", "⭐");
+addLunarDay(7, 15, "백중", "🌾");
+addLunarDay(8, 15, "추석", "🌕");
+addLunarDay(9, 9, "중양절", "🍁");
+
+const addSolarDay = (month: number, day: number, label: string, emoji: string) => {
+  lunarDays[`${month}-${day}`] = {
+    label,
+    type: "anniversary",
+    emoji,
+  };
+};
+
+const isGengDay = (target: Date) => {
+  const base = new Date(1970, 0, 1);
+  const diff = Math.floor((target.getTime() - base.getTime()) / 86400000);
+  return diff % 10 === 9;
+};
+
+const getBokDays = (year: number) => {
+  const gengDaysAfterHaji: Date[] = [];
+
+  let d = new Date(year, 5, 21); // 하지 기준 6월 21일
+
+  while (gengDaysAfterHaji.length < 4) {
+    if (isGengDay(d)) gengDaysAfterHaji.push(new Date(d));
+    d.setDate(d.getDate() + 1);
+  }
+
+  let malbok = new Date(year, 7, 7); // 입추 기준 8월 7일
+
+  while (!isGengDay(malbok)) {
+    malbok.setDate(malbok.getDate() + 1);
+  }
+
+  return {
+    chobok: gengDaysAfterHaji[2],
+    jungbok: gengDaysAfterHaji[3],
+    malbok,
+  };
+};
+
+const bok = getBokDays(year);
+
+
+
+addSolarDay(bok.chobok.getMonth() + 1, bok.chobok.getDate(), "초복", "☀️🐔");
+addSolarDay(bok.jungbok.getMonth() + 1, bok.jungbok.getDate(), "중복", "☀️🐔");
+addSolarDay(bok.malbok.getMonth() + 1, bok.malbok.getDate(), "말복", "☀️🐔");
+
 
   const key = `${month}-${day}`;
   if (holidays[key]) results.push(holidays[key]);
@@ -101,7 +184,7 @@ const anniversaries: Record<string, SpecialDay> = {
   "5-15": { label: "스승의날", type: "anniversary", emoji: "📚" },
   "5-21": { label: "부부의날", type: "anniversary", emoji: "💑" },
   "5-31": { label: "바다의날", type: "anniversary", emoji: "🌊" },
-
+"6-1": { label: "의병의날", type: "anniversary", emoji: "🌿" },
   "6-5": { label: "환경의날", type: "anniversary", emoji: "🌱" },
   "6-6": { label: "현충일", type: "anniversary", emoji: "🇰🇷" },
   "6-9": { label: "육구데이", type: "anniversary", emoji: "🐶" },
@@ -136,9 +219,10 @@ const anniversaries: Record<string, SpecialDay> = {
   "12-31": { label: "한해 마지막날", type: "anniversary", emoji: "🎆" },
 };
 
-  if (anniversaries[key]) results.push(anniversaries[key]);
+if (anniversaries[key]) results.push(anniversaries[key]);
+if (lunarDays[key]) results.push(lunarDays[key]);
 
-  return results;
+return results;
 }
 
 function getSeason(month: number): { name: string; emoji: string } {

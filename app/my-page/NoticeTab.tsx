@@ -145,7 +145,7 @@ const [isCapturing, setIsCapturing] = useState(false);
         signature_color: signatureColor,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "user_id" }
+      { onConflict: "user_id,notice_type,month" }
     );
 
     setSaveMsg(error ? "저장 실패" : "저장되었습니다");
@@ -336,11 +336,13 @@ const [isCapturing, setIsCapturing] = useState(false);
         )}
       </div>
 
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-10 flex justify-center items-start overflow-auto h-fit">
-        <div
-          ref={previewRef}
-          className="relative w-[720px] h-[720px] shrink-0 bg-white"
-        >
+     <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-10 flex justify-center items-start overflow-auto h-fit">
+
+  <div className="h-[324px] md:h-auto scale-[0.45] md:scale-100 origin-top">
+    <div
+      ref={previewRef}
+      className="relative w-[720px] h-[720px] shrink-0 bg-white"
+    >
           <img
             src={bgUrl}
             alt=""
@@ -391,8 +393,10 @@ const [isCapturing, setIsCapturing] = useState(false);
           >
             {signature}
           </div>
-        </div>
-      </div>
+             </div>
     </div>
+
+  </div>
+</div>
   );
 }
