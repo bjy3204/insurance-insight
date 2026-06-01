@@ -148,6 +148,8 @@ export default function CalendarTab() {
           "Arbor Day": "식목일",
           "Buddha's Birthday": "부처님오신날",
           "Memorial Day": "현충일",
+          "Local Election Day": "지방선거",
+"Local Election": "지방선거",
           "Liberation Day": "광복절",
           "Chuseok": "추석",
           "National Foundation Day": "개천절",
