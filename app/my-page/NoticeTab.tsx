@@ -336,7 +336,7 @@ const [isCapturing, setIsCapturing] = useState(false);
         )}
       </div>
 
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-5 flex justify-center items-start overflow-auto h-fit">
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-10 flex justify-center items-start overflow-auto h-fit">
         <div
           ref={previewRef}
           className="relative w-[720px] h-[720px] shrink-0 bg-white"
