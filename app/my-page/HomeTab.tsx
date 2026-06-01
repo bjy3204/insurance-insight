@@ -857,7 +857,7 @@ const diaryEndPage = Math.min(
       <PlantSVG stage={plantStage} watering={wateringAnim} />
     </div>
     <p className="text-[13px] font-black text-gray-700 mt-2">{stageName[plantStage]}</p>
-    <p className="text-[11px] text-gray-400"> {streak}일</p>
+    <p className="text-[11px] text-gray-400"> {totalWatered}일</p>
     <button
       onClick={handleWater}
       disabled={wateringAnim || attendanceLoading}
