@@ -57,13 +57,18 @@ import { CSS } from "@dnd-kit/utilities";
 import HomeTab from "./HomeTab";
 import CalendarTab from "./CalendarTab";
 import AiMessageTab from "./AiMessageTab";
-
+import NoticeTab from "./NoticeTab";
 import CalculatorComp from "@/app/components/Calculator";
 
 // ─────────────────────────────────────────────
 // 타입 정의
 // ─────────────────────────────────────────────
-type ActiveTab = "home" | "calendar" | "ai" | "customer";
+type ActiveTab =
+  | "home"
+  | "calendar"
+  | "ai"
+  | "customer"
+  | "notice";
 
 type MemoItem = {
   id: string;
@@ -137,8 +142,9 @@ function SortableMemoCard({ memo, children }: { memo: MemoItem; children: React.
 // ─────────────────────────────────────────────
 const TABS = [
   { id: "home" as ActiveTab, label: "홈", icon: BookOpen },
-  { id: "calendar" as ActiveTab, label: "캘린더", icon: CalendarDays },
   { id: "customer" as ActiveTab, label: "고객관리", icon: Users },
+  { id: "notice" as ActiveTab, label: "안내장", icon: FileText },
+  { id: "calendar" as ActiveTab, label: "캘린더", icon: CalendarDays },
   { id: "ai" as ActiveTab, label: "AI메시지", icon: MessageSquare },
 ];
 
@@ -493,13 +499,26 @@ useEffect(() => {
     .maybeSingle();
 
   if (!data) return;
-  setSettings({ ...data, nickname: profile?.nickname || data.nickname || null });
-  if (data.tab_order && Array.isArray(data.tab_order)) {
-    const order = data.tab_order as string[];
-    const orderedTabs = order.map((id: string) => TABS.find((t) => t.id === id)).filter((t): t is typeof TABS[number] => Boolean(t));
-    const missingTabs = TABS.filter((t) => !order.includes(t.id));
-    setTabs([...orderedTabs, ...missingTabs]);
-  }
+setSettings({
+  ...(data || {}),
+  nickname: profile?.nickname || data?.nickname || null,
+} as CustomerSettings);
+
+if (data?.tab_order && Array.isArray(data.tab_order)) {
+  const order = data.tab_order as string[];
+
+  const orderedTabs = order
+    .map((id: string) => TABS.find((t) => t.id === id))
+    .filter((t): t is typeof TABS[number] => Boolean(t));
+
+  const missingTabs = TABS.filter((t) => !order.includes(t.id));
+
+  setTabs([...orderedTabs, ...missingTabs]);
+} else {
+  setTabs(TABS);
+}
+
+if (!data) return;
   setSettingForm((f) => ({
     ...f,
     kakao_url: data.kakao_url || "",
@@ -676,7 +695,7 @@ updateData.pin_changed_at = new Date().toISOString();
 <div className="w-full px-6 pt-3 pb-0 max-w-7xl mx-auto">
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleTabDragEnd}>
       <SortableContext items={tabs.map(t => t.id)} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-5">
+        <div className="grid grid-cols-5 bg-gray-200 rounded-2xl p-1 mb-5">
           {tabs.map((tab) => (
             <SortableTab key={tab.id} tab={tab} activeTab={activeTab} setActiveTab={setActiveTab} />
           ))}
@@ -712,7 +731,9 @@ updateData.pin_changed_at = new Date().toISOString();
   />
 </div>
 
-
+<div className={activeTab === "notice" ? "block" : "hidden"}>
+  <NoticeTab />
+</div>
 
         
       </main>
@@ -1463,23 +1484,7 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
     📊 보장분석 리포트 다운로드
   </a>
 
-<a
-  href="https://canva.link/snqpmrzextqr5m2"
-  target="_blank"
-  rel="noopener noreferrer"
- className="px-4 h-9 bg-yellow-50 text-yellow-700 text-xs font-bold rounded-xl hover:bg-yellow-100 transition flex items-center gap-1.5"
->
-  💌 면책종료 안내장
-</a>
 
-<a
-  href="https://canva.link/hcibkhwdimqy82o"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="px-4 h-9 bg-orange-50 text-orange-700 text-xs font-bold rounded-xl hover:bg-orange-100 transition flex items-center gap-1.5"
->
-  💌 감액종료 안내장
-</a>
         
         <button
           onClick={( ) => { setUrlInput(spreadsheetUrl || ""); setUrlInputOpen(true); }}
