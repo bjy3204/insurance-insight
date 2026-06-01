@@ -55,7 +55,7 @@ const defaultContents = {
 // 면책 / 감액 글자 위치 따로 조절
 const textPositions = {
   exemption: {
-    nameTop: 200,
+    nameTop: 210,
     nameX: -40,
 
     contentTop: 310,
@@ -66,7 +66,7 @@ const textPositions = {
   },
 
   reduction: {
-    nameTop: 150,
+    nameTop: 160,
     nameX: -67,
 
     contentTop: 240,
@@ -97,7 +97,7 @@ const [signature, setSignature] = useState(
   const [textColor, setTextColor] = useState("#4a4a4a");
   const [signatureColor, setSignatureColor] = useState("#9a7a3a");
   const [saveMsg, setSaveMsg] = useState("");
-
+const [isCapturing, setIsCapturing] = useState(false);
   
 
   const bgUrl = `/card-templates/${noticeType}/${month}.png`;
@@ -152,22 +152,28 @@ const [signature, setSignature] = useState(
     setTimeout(() => setSaveMsg(""), 2000);
   };
 
-  const handleDownload = async () => {
-    if (!previewRef.current) return;
+ const handleDownload = async () => {
+  if (!previewRef.current) return;
 
-    const canvas = await html2canvas(previewRef.current, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: null,
-    });
+  setIsCapturing(true);
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  await document.fonts.ready;
 
-    const link = document.createElement("a");
-    link.download = `${customerName || "고객"}_${
-      noticeType === "exemption" ? "면책종료" : "감액종료"
-    }_안내장.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  };
+  const canvas = await html2canvas(previewRef.current, {
+    scale: 1,
+    useCORS: true,
+    backgroundColor: null,
+  });
+
+  setIsCapturing(false);
+
+  const link = document.createElement("a");
+  link.download = `${customerName || "고객"}_${
+    noticeType === "exemption" ? "면책종료" : "감액종료"
+  }_안내장.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+};
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-6">
@@ -342,18 +348,18 @@ const [signature, setSignature] = useState(
           />
 
           <div
-            className="absolute left-0 w-full text-center"
-            style={{
-  top: `${pos.nameTop}px`,
-  transform: `translateX(${pos.nameX}px)`,
-  fontFamily,
-  color: textColor,
-}}
-          >
-            <span className="text-[38px] tracking-[-1px]">
-              {customerName}
-            </span>
-          </div>
+  className="absolute left-0 w-full text-center text-[40px]"
+  style={{
+    top: `${pos.nameTop - (isCapturing ? 18 : 0)}px`,
+    transform: `translateX(${pos.nameX}px)`,
+    fontFamily,
+    color: textColor,
+    lineHeight: "40px",
+    height: "40px",
+  }}
+>
+  {customerName}
+</div>
 
          <div
   className="absolute left-[100px] right-[100px] text-center text-[18px]"
