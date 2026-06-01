@@ -61,12 +61,12 @@ export async function GET() {
 
         
 
-        image:
-          page.properties["소개 이미지"]?.files?.[0]
-            ?.file?.url ||
-          page.properties["소개 이미지"]?.files?.[0]
-            ?.external?.url ||
-          "",
+       image:
+  page.properties["소개 이미지"]?.files?.map((file: any) =>
+    file.type === "external"
+      ? file.external.url
+      : file.file.url
+  ) || [],
       }));
 
     return NextResponse.json(companies);

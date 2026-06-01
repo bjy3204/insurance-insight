@@ -9,7 +9,8 @@ import { useAuth } from "@/app/components/AuthProvider";
 import {
   ArrowLeft,
   Search,
-  
+  ChevronLeft,
+ChevronRight,
   Phone,
   House,
   Megaphone,
@@ -53,7 +54,7 @@ type Company = {
   phone: string;
   website: string;
   memo: string;
-  image: string;
+  image: string[];
 };
 
 type MemoItem = {
@@ -116,6 +117,7 @@ const companiesPerPage = 12;
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [readyOpen, setReadyOpen] = useState(false);
   const [careerOpen, setCareerOpen] = useState(false);
+const [imageIndex, setImageIndex] = useState(0);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -604,7 +606,10 @@ const currentCompanies = filteredCompanies.slice(
 
 <button
   type="button"
-  onClick={() => setSelectedCompany(item)}
+  onClick={() => {
+  setSelectedCompany(item);
+  setImageIndex(0);
+}}
   className="
     mt-auto
     block
@@ -784,15 +789,52 @@ const currentCompanies = filteredCompanies.slice(
       </div>
 
       <div className="p-6 overflow-y-auto flex-1">
-        {selectedCompany.image && (
-          <div className="mb-6 rounded-2xl overflow-hidden">
-            <img
-              src={selectedCompany.image}
-              alt={selectedCompany.organization}
-              className="w-full h-auto"
-            />
+{selectedCompany.image?.length > 0 && (() => {
+  const images = selectedCompany.image.filter(Boolean);
+  const safeIndex = Math.min(imageIndex, images.length - 1);
+
+  return (
+    <div className="relative mb-6 rounded-2xl overflow-hidden bg-gray-100 min-h-[260px] flex items-center justify-center">
+      <img
+        src={images[safeIndex]}
+        alt={selectedCompany.organization}
+        className="w-full h-full object-cover"
+      />
+
+      {images.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={() =>
+              setImageIndex((prev) =>
+                prev === 0 ? images.length - 1 : prev - 1
+              )
+            }
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center cursor-pointer hover:bg-black/60 transition"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() =>
+              setImageIndex((prev) =>
+                prev === images.length - 1 ? 0 : prev + 1
+              )
+            }
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center cursor-pointer hover:bg-black/60 transition"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/40 text-white text-xs font-bold">
+            {safeIndex + 1} / {images.length}
           </div>
-        )}
+        </>
+      )}
+    </div>
+  );
+})()}
 
         <div className="flex items-center justify-between gap-2 mb-2">
           <p className="text-sm text-blue-600 font-bold truncate">
