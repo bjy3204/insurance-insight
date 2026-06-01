@@ -439,7 +439,7 @@ const currentCompanies = filteredCompanies.slice(
               </div>
 
               <p className="text-sm text-gray-500 mt-1">
-                검수형 보험 조직 연결 플랫폼
+                보험 조직 연결 플랫폼
               </p>
             </div>
 
