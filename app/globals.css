@@ -57,3 +57,19 @@ html, body {
     -webkit-text-fill-color: initial !important;
   }
 }
+
+.ql-toolbar {
+  border: none !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  background: #f9fafb;
+}
+
+.ql-container {
+  border: none !important;
+}
+
+.ql-editor {
+  min-height: 500px;
+  max-height: 500px;
+  overflow-y: auto;
+}

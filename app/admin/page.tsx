@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
+import "react-quill-new/dist/quill.snow.css";
 
+const ReactQuill = dynamic(() => import("react-quill-new"), {
+  ssr: false,
+});
 import {
   DndContext,
   closestCenter,
@@ -132,12 +137,32 @@ export default function AdminPage() {
 
 // 공지 카테고리 타입
 type NoticeCategory = { id: string; name: string; color: string; };
-type NoticeDB = { id: string; title: string; content: string; category_id: string | null; is_popup: boolean; popup_start_date: string | null; popup_end_date: string | null; image_url: string | null; created_at: string; };
+type NoticeDB = {
+  id: string;
+  title: string;
+  content: string;
+  category_id: string | null;
+  is_popup: boolean;
+  popup_start_date: string | null;
+  popup_end_date: string | null;
+  image_url: string | null;
+  image_urls: string[] | null;
+  created_at: string;
+};
 
 // 공지 상태
 const [noticeCategories, setNoticeCategories] = useState<NoticeCategory[]>([]);
 const [noticesDB, setNoticesDB] = useState<NoticeDB[]>([]);
-const [noticeForm, setNoticeForm] = useState({ title: "", content: "", category_id: "", is_popup: false, popup_start_date: "", popup_end_date: "", image_url: "" });
+const [noticeForm, setNoticeForm] = useState({
+  title: "",
+  content: "",
+  category_id: "",
+  is_popup: false,
+  popup_start_date: "",
+  popup_end_date: "",
+  image_url: "",
+  image_urls: [] as string[],
+});
 const [imageUploading, setImageUploading] = useState(false);
 const fileInputRef = useRef<HTMLInputElement>(null);
 const [noticeFormOpen, setNoticeFormOpen] = useState(false);
@@ -371,35 +396,45 @@ useEffect(() => {
     if (nts) setNoticesDB(nts);
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+ const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = Array.from(e.target.files || []);
+  if (files.length === 0) return;
 
-    setImageUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
+  setImageUploading(true);
+
+  try {
+    const uploadedUrls: string[] = [];
+
+    for (const file of files) {
+      const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('notice-images')
-        .upload(filePath, file);
+        .from("notice-images")
+        .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('notice-images')
-        .getPublicUrl(filePath);
+        .from("notice-images")
+        .getPublicUrl(fileName);
 
-      setNoticeForm(prev => ({ ...prev, image_url: publicUrl }));
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      alert('이미지 업로드에 실패했습니다.');
-    } finally {
-      setImageUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      uploadedUrls.push(publicUrl);
     }
-  };
+
+    setNoticeForm((prev: any) => ({
+      ...prev,
+      image_urls: [...(prev.image_urls || []), ...uploadedUrls],
+      image_url: uploadedUrls[0] || prev.image_url,
+    }));
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    alert("이미지 업로드에 실패했습니다.");
+  } finally {
+    setImageUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+};
 
   const saveNotice = async () => {
     if (!noticeForm.title.trim() || !noticeForm.content.trim()) return;
@@ -412,6 +447,7 @@ useEffect(() => {
         popup_start_date: noticeForm.popup_start_date || null,
         popup_end_date: noticeForm.popup_end_date || null,
         image_url: noticeForm.image_url || null,
+        image_urls: noticeForm.image_urls || [],
       }).eq("id", editingNotice.id);
     } else {
       await supabase.from("notices_db").insert({
@@ -421,9 +457,19 @@ useEffect(() => {
         popup_start_date: noticeForm.popup_start_date || null,
         popup_end_date: noticeForm.popup_end_date || null,
         image_url: noticeForm.image_url || null,
+        image_urls: noticeForm.image_urls || [],
       });
     }
-    setNoticeForm({ title: "", content: "", category_id: "", is_popup: false, popup_start_date: "", popup_end_date: "", image_url: "" });
+    setNoticeForm({
+  title: "",
+  content: "",
+  category_id: "",
+  is_popup: false,
+  popup_start_date: "",
+  popup_end_date: "",
+  image_url: "",
+  image_urls: [],
+});
     setNoticeFormOpen(false);
     setEditingNotice(null);
     setNoticeSaving(false);
@@ -1279,23 +1325,39 @@ const matchSearch =
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
                   </select>
-                  <textarea
-                    value={noticeForm.content}
-                    onChange={(e) => setNoticeForm({ ...noticeForm, content: e.target.value })}
-                    placeholder="내용을 입력하세요"
-                    rows={10}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 resize-y leading-relaxed"
-                    onKeyDown={(e) => e.stopPropagation()}
-                  />
-                  <div className="flex flex-col gap-2">
+                  
+<div className="rounded-xl border border-gray-200 overflow-hidden bg-white">
+  <ReactQuill
+    theme="snow"
+    value={noticeForm.content}
+    onChange={(value) =>
+      setNoticeForm({
+        ...noticeForm,
+        content: value,
+      })
+    }
+    modules={{
+      toolbar: [
+        [{ size: [] }],
+        ["bold", "italic", "underline"],
+        [{ color: [] }],
+        [{ align: [] }],
+        ["link"],
+      ],
+    }}
+  />
+</div>
+
+<div className="flex flex-col gap-2">
                     <div className="flex items-center gap-3">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        ref={fileInputRef}
-                        className="hidden"
-                      />
+<input
+  type="file"
+  accept="image/*"
+  multiple
+  onChange={handleImageUpload}
+  ref={fileInputRef}
+  className="hidden"
+/>
                       <button
                         onClick={() => fileInputRef.current?.click()}
                         disabled={imageUploading}
@@ -1303,20 +1365,49 @@ const matchSearch =
                       >
                         {imageUploading ? "업로드 중..." : "이미지 첨부"}
                       </button>
-                      {noticeForm.image_url && (
+                      {noticeForm.image_urls.length > 0 && (
                         <button
-                          onClick={() => setNoticeForm(prev => ({ ...prev, image_url: "" }))}
+                          onClick={() => setNoticeForm(prev => ({ ...prev, image_url: "", image_urls: [] }))}
                           className="px-4 py-2 rounded-xl bg-red-50 text-red-500 text-sm font-bold hover:bg-red-100 transition cursor-pointer"
                         >
                           이미지 삭제
                         </button>
                       )}
                     </div>
-                    {noticeForm.image_url && (
-                      <div className="relative w-full max-w-md mt-2 rounded-xl overflow-hidden border border-gray-200">
-                        <img src={noticeForm.image_url} alt="첨부 이미지 미리보기" className="w-full h-auto object-contain" />
-                      </div>
-                    )}
+                   {noticeForm.image_urls.length > 0 && (
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+    {noticeForm.image_urls.map((url, index) => (
+      <div
+        key={url}
+        className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50"
+      >
+        <img
+          src={url}
+          alt={`첨부 이미지 ${index + 1}`}
+          className="w-full h-50 object-cover"
+        />
+
+        <button
+          type="button"
+          onClick={() =>
+            setNoticeForm((prev) => {
+              const nextUrls = prev.image_urls.filter((_, i) => i !== index);
+
+              return {
+                ...prev,
+                image_urls: nextUrls,
+                image_url: nextUrls[0] || "",
+              };
+            })
+          }
+          className="absolute right-2 top-2 w-7 h-7 rounded-full bg-black/50 text-white text-xs font-bold cursor-pointer hover:bg-black/70 transition"
+        >
+          ×
+        </button>
+      </div>
+    ))}
+  </div>
+)}
                   </div>
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
@@ -1491,7 +1582,16 @@ const matchSearch =
   </div>
 )}
                   <div className="flex gap-3 pt-2">
-                    <button onClick={() => { setNoticeFormOpen(false); setEditingNotice(null); setNoticeForm({ title: "", content: "", category_id: "", is_popup: false, popup_start_date: "", popup_end_date: "", image_url: "" }); }}
+                    <button onClick={() => { setNoticeFormOpen(false); setEditingNotice(null); setNoticeForm({
+  title: "",
+  content: "",
+  category_id: "",
+  is_popup: false,
+  popup_start_date: "",
+  popup_end_date: "",
+  image_url: "",
+  image_urls: [],
+}); }}
                       className="flex-1 h-11 rounded-xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-pointer">취소</button>
                     <button onClick={saveNotice} disabled={noticeSaving}
                       className="flex-1 h-11 rounded-xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-pointer disabled:opacity-50">
@@ -1543,7 +1643,16 @@ const matchSearch =
                         <div className="flex gap-2 shrink-0">
                           <button onClick={() => {
                             setEditingNotice(notice);
-                            setNoticeForm({ title: notice.title, content: notice.content, category_id: notice.category_id || "", is_popup: notice.is_popup, popup_start_date: notice.popup_start_date || "", popup_end_date: notice.popup_end_date || "", image_url: notice.image_url || "" });
+                            setNoticeForm({
+  title: notice.title,
+  content: notice.content,
+  category_id: notice.category_id || "",
+  is_popup: notice.is_popup,
+  popup_start_date: notice.popup_start_date || "",
+  popup_end_date: notice.popup_end_date || "",
+  image_url: notice.image_url || "",
+  image_urls: notice.image_urls || [],
+});
                             setNoticeFormOpen(true);
                           }} className="h-8 px-3 rounded-xl bg-gray-100 text-gray-600 text-xs font-bold hover:bg-gray-200 transition cursor-pointer">수정</button>
                           <button onClick={() => deleteNotice(notice.id)} className="h-8 px-3 rounded-xl bg-red-50 text-red-500 text-xs font-bold hover:bg-red-100 transition cursor-pointer">삭제</button>

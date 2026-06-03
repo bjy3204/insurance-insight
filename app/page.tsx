@@ -572,6 +572,8 @@ const [lifeGender, setLifeGender] = useState<"남성" | "여성">("남성");
 const [lifeAge, setLifeAge] = useState("");
 const [noticePage, setNoticePage] = useState(1);
 const [selectedNotice, setSelectedNotice] = useState<any>(null);
+const [noticeImageIndex, setNoticeImageIndex] = useState(0);
+const [popupNoticeImageIndex, setPopupNoticeImageIndex] = useState(0);
   const [fixMessage, setFixMessage] = useState("");
   const [addMessage, setAddMessage] = useState("");
   const [contact, setContact] = useState("");
@@ -601,6 +603,7 @@ const dbNoticesFormatted = dbNotices.map((n: any) => {
     isDb: true,
     dbId: n.id,
     image_url: n.image_url || null,
+    image_urls: n.image_urls || [],
   };
 });
 
@@ -4421,12 +4424,61 @@ rel="noopener noreferrer"
                       {new Date(popupNotice.created_at).toLocaleString("ko-KR", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </p>
                     <div className="border-t border-gray-200 pt-4 whitespace-pre-line text-[15px] leading-6 text-gray-800 break-keep flex-1">
-  {popupNotice.content}
-  {popupNotice.image_url && (
-    <div className="mt-4 rounded-xl overflow-hidden border border-gray-100">
-      <img src={popupNotice.image_url} alt="공지 이미지" className="w-full h-auto object-contain max-h-[500px]" />
+  <div
+  dangerouslySetInnerHTML={{
+    __html: popupNotice.content,
+  }}
+/>
+{(() => {
+  const images =
+    popupNotice.image_urls?.length > 0
+      ? popupNotice.image_urls
+      : popupNotice.image_url
+      ? [popupNotice.image_url]
+      : [];
+
+  if (images.length === 0) return null;
+
+  return (
+    <div className="relative mt-4 rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
+      <img
+        src={images[popupNoticeImageIndex]}
+        alt="공지 이미지"
+        className="w-full h-auto object-contain max-h-[500px]"
+      />
+
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={() =>
+              setPopupNoticeImageIndex((prev) =>
+                prev === 0 ? images.length - 1 : prev - 1
+              )
+            }
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition"
+          >
+            ‹
+          </button>
+
+          <button
+            onClick={() =>
+              setPopupNoticeImageIndex((prev) =>
+                prev === images.length - 1 ? 0 : prev + 1
+              )
+            }
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition"
+          >
+            ›
+          </button>
+
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/45 text-white text-xs font-bold">
+            {popupNoticeImageIndex + 1} / {images.length}
+          </div>
+        </>
+      )}
     </div>
-  )}
+  );
+})()}
 </div>
 
                   </>
@@ -4661,7 +4713,8 @@ rel="noopener noreferrer"
         <button
           key={notice.id}
           onClick={() => {
-  setSelectedNotice(notice);
+ setSelectedNotice(notice);
+setNoticeImageIndex(0);
 
     const nextReadIds = Array.from(
     new Set([...readNoticeIds, notice.id])
@@ -4740,6 +4793,7 @@ rel="noopener noreferrer"
 
               onClick={() => {
   setSelectedNotice(notice);
+setNoticeImageIndex(0);
 
     const nextReadIds = Array.from(
     new Set([...readNoticeIds, notice.id])
@@ -4861,12 +4915,61 @@ rel="noopener noreferrer"
     </p>
 
     <div className="border-t border-gray-200 mt-3 pt-2 pb-6 whitespace-pre-line text-[15px] leading-6 text-gray-800 break-keep">
-      {selectedNotice.image_url && (
-        <div className="mb-4 rounded-xl overflow-hidden border border-gray-100">
-          <img src={selectedNotice.image_url} alt="공지 이미지" className="w-full h-auto object-contain max-h-[400px]" />
-        </div>
+{(() => {
+  const images =
+    selectedNotice.image_urls?.length > 0
+      ? selectedNotice.image_urls
+      : selectedNotice.image_url
+      ? [selectedNotice.image_url]
+      : [];
+
+  if (images.length === 0) return null;
+
+  return (
+    <div className="relative mb-4 rounded-xl overflow-hidden border border-gray-100 bg-white">
+      <img
+        src={images[noticeImageIndex]}
+        alt="공지 이미지"
+        className="w-full h-full object-cover"
+      />
+
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={() =>
+              setNoticeImageIndex((prev) =>
+                prev === 0 ? images.length - 1 : prev - 1
+              )
+            }
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition"
+          >
+            ‹
+          </button>
+
+          <button
+            onClick={() =>
+              setNoticeImageIndex((prev) =>
+                prev === images.length - 1 ? 0 : prev + 1
+              )
+            }
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition"
+          >
+            ›
+          </button>
+
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/45 text-white text-xs font-bold">
+            {noticeImageIndex + 1} / {images.length}
+          </div>
+        </>
       )}
-      {selectedNotice.content}
+    </div>
+  );
+})()}
+      <div
+  dangerouslySetInnerHTML={{
+    __html: selectedNotice.content,
+  }}
+/>
     </div>
   </div>
 
