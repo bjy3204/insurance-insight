@@ -45,6 +45,7 @@ import {
   Home as HomeIcon,
   Percent,
   Users,
+  Send
 } from "lucide-react";
 
 import AuthButton from "@/components/AuthButton";
@@ -111,6 +112,15 @@ const defaultMenus = [
     icon: Phone,
     link: "/customer-center",
   },
+
+  {
+  id: "auto-claim",
+  title: "보험금 청구",
+  desc: "무료 청구 프로그램 (추천인코드 TREE)",
+  icon: Send,
+  link: "https://openarena.co.kr/autoclaim/login",
+},
+
   {
     id: "product-public",
     title: "상품공시실",
@@ -2406,11 +2416,13 @@ setMenuSortOpen(true);
 }}
         href={menu.id === "customer-manage" ? undefined : menu.link}
         onClick={menu.id === "customer-manage" ? (e) => { e.preventDefault(); openCmPinPopup(); } : undefined}
-        target={
-          menu.title === "보험인사이트 폴더" || menu.isPersonal
-            ? "_blank"
-            : "_self"
-        }
+target={
+  menu.title === "보험인사이트 폴더" ||
+  menu.id === "auto-claim" ||
+  menu.isPersonal
+    ? "_blank"
+    : "_self"
+}
         rel="noopener noreferrer"
         className={`
           ${
