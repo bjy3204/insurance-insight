@@ -4386,7 +4386,7 @@ rel="noopener noreferrer"
       {/* 공지 팝업 */}
       {popupNotice && !popupNoticeClosed && (
         <div className="fixed inset-0 z-[9000] bg-black/40 flex items-center justify-center p-3 md:p-4">
-          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[70vh] flex flex-col">
+          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[80vh] flex flex-col">
             <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
               <div className="font-bold flex items-center gap-2">
                 <Megaphone className="w-5 h-5" />
@@ -4682,7 +4682,7 @@ rel="noopener noreferrer"
          <div
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("notice")}
-  className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[70vh] flex flex-col"
+  className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[80vh] flex flex-col"
 >
             <div
   onPointerDown={(e) => startPopupDrag("notice", e)}
