@@ -901,8 +901,8 @@ updateData.pin_changed_at = new Date().toISOString();
 )}
 
       {homeMenuSettingOpen && (
-  <div className="fixed inset-0 z-[250] bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden">
+ <div className="fixed inset-0 z-[250] bg-black/40 flex items-center justify-center px-3 py-4 md:p-4">
+  <div className="bg-white rounded-3xl shadow-2xl w-full max-w-[360px] md:max-w-2xl h-[82vh] md:h-auto overflow-hidden flex flex-col">
       <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
         <span className="font-bold text-sm">홈 메뉴 변경</span>
 
@@ -914,7 +914,7 @@ updateData.pin_changed_at = new Date().toISOString();
         </button>
       </div>
 
-      <div className="p-5 space-y-4">
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 md:p-5 space-y-3 md:space-y-4">
 
   {/* 상단 */}
   <div className="grid md:grid-cols-3 gap-3">
