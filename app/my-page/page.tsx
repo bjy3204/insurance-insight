@@ -40,6 +40,7 @@ Music,
 CheckSquare,
   Video,
   ChevronDown,
+  Sprout
 } from "lucide-react";
 
 import {
@@ -915,6 +916,45 @@ updateData.pin_changed_at = new Date().toISOString();
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-4 md:p-5 space-y-3 md:space-y-4">
+
+<div className="flex items-center justify-between px-4 py-3 rounded-2xl border border-gray-200 bg-white">
+  <div className="flex items-center gap-3">
+<div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center">
+  <Sprout className="w-5 h-5 text-green-500" />
+</div>
+
+    <span className="text-sm font-black text-gray-800">
+      {settings?.nickname || "나"}의 식물
+    </span>
+  </div>
+
+  <button
+    onClick={async () => {
+      const hidden = hiddenHomeMenus.includes("plant");
+
+      const next = hidden
+        ? hiddenHomeMenus.filter((v) => v !== "plant")
+        : [...hiddenHomeMenus, "plant"];
+
+      setHiddenHomeMenus(next);
+
+      await supabase.from("customer_settings").upsert(
+        {
+          user_id: authUser?.id,
+          hidden_home_menus: next,
+        },
+        { onConflict: "user_id" }
+      );
+    }}
+    className="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition cursor-pointer"
+  >
+    {hiddenHomeMenus.includes("plant") ? (
+      <EyeOff className="w-4 h-4" />
+    ) : (
+      <Eye className="w-4 h-4" />
+    )}
+  </button>
+</div>
 
   {/* 상단 */}
   <div className="grid md:grid-cols-3 gap-3">

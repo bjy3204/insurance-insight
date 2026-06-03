@@ -155,12 +155,12 @@ const [isCapturing, setIsCapturing] = useState(false);
  const handleDownload = async () => {
   if (!previewRef.current) return;
 
-  setIsCapturing(true);
-  await new Promise((resolve) => setTimeout(resolve, 50));
-  await document.fonts.ready;
+setIsCapturing(true);
+await document.fonts.ready;
+await new Promise((resolve) => setTimeout(resolve, 300));
 
   const canvas = await html2canvas(previewRef.current, {
-    scale: 1,
+    scale: 2,
     useCORS: true,
     backgroundColor: null,
   });
@@ -338,7 +338,7 @@ const [isCapturing, setIsCapturing] = useState(false);
 
      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-10 flex justify-center items-start overflow-auto h-fit">
 
-  <div className="h-[324px] md:h-auto scale-[0.45] md:scale-100 origin-top">
+  <div className={`h-[324px] md:h-auto origin-top ${isCapturing ? "scale-100" : "scale-[0.45] md:scale-100"}`}>
     <div
       ref={previewRef}
       className="relative w-[720px] h-[720px] shrink-0 bg-white"

@@ -834,8 +834,9 @@ const diaryEndPage = Math.min(
     <div className="space-y-5">
 
      {/* 식물 카드 - 드래그 가능 */}
-<div
-  style={{ left: plantPos.x, top: plantPos.y }}
+{!isHidden("plant") && (
+  <div
+    style={{ left: plantPos.x, top: plantPos.y }}
   onMouseDown={(e) => {
     setPlantDragInfo({
       startX: e.clientX,
@@ -882,6 +883,7 @@ const diaryEndPage = Math.min(
     </button>
   </div>
 </div>
+)}
 
 {/* ── 날씨 / D-Day / BGM 위젯 ── */}
 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
