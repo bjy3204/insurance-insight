@@ -1,5 +1,6 @@
 "use client";
 import DiseaseCodePopup from "./claim-docs/disease-code-popup";
+
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
@@ -4424,7 +4425,13 @@ rel="noopener noreferrer"
                       {new Date(popupNotice.created_at).toLocaleString("ko-KR", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </p>
                     <div className="border-t border-gray-200 pt-4 whitespace-pre-line text-[15px] leading-6 text-gray-800 break-keep flex-1">
-  <div
+<div
+  className="
+    [&_p]:m-0
+    [&_p]:min-h-[24px]
+    [&_p]:leading-6
+    [&_br]:block
+  "
   dangerouslySetInnerHTML={{
     __html: popupNotice.content,
   }}
@@ -4455,7 +4462,7 @@ rel="noopener noreferrer"
                 prev === 0 ? images.length - 1 : prev - 1
               )
             }
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition cursor-pointer"
           >
             ‹
           </button>
@@ -4466,7 +4473,7 @@ rel="noopener noreferrer"
                 prev === images.length - 1 ? 0 : prev + 1
               )
             }
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition cursor-pointer"
           >
             ›
           </button>
@@ -4905,6 +4912,8 @@ setNoticeImageIndex(0);
 ) : (
               <div className="px-6 md:px-10 pt-4 pb-6 flex-1 min-h-0 flex flex-col">
 
+
+
   <div className="overflow-y-auto flex-1">
     <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep">
       {selectedNotice.title}
@@ -4914,63 +4923,71 @@ setNoticeImageIndex(0);
       작성일: {selectedNotice.date}
     </p>
 
-    <div className="border-t border-gray-200 mt-3 pt-2 pb-6 whitespace-pre-line text-[15px] leading-6 text-gray-800 break-keep">
-{(() => {
-  const images =
-    selectedNotice.image_urls?.length > 0
-      ? selectedNotice.image_urls
-      : selectedNotice.image_url
-      ? [selectedNotice.image_url]
-      : [];
+   <div className="border-t border-gray-200 mt-3 pt-4 pb-6 text-[15px] leading-6 text-gray-800 break-keep">
 
-  if (images.length === 0) return null;
+  <div
+    className="
+      [&_p]:m-0
+      [&_p]:min-h-[24px]
+      [&_p]:leading-6
+      [&_br]:block
+    "
+    dangerouslySetInnerHTML={{
+      __html: selectedNotice.content,
+    }}
+  />
 
-  return (
-    <div className="relative mb-4 rounded-xl overflow-hidden border border-gray-100 bg-white">
-      <img
-        src={images[noticeImageIndex]}
-        alt="공지 이미지"
-        className="w-full h-full object-cover"
-      />
+  {(() => {
+    const images =
+      selectedNotice.image_urls?.length > 0
+        ? selectedNotice.image_urls
+        : selectedNotice.image_url
+        ? [selectedNotice.image_url]
+        : [];
 
-      {images.length > 1 && (
-        <>
-          <button
-            onClick={() =>
-              setNoticeImageIndex((prev) =>
-                prev === 0 ? images.length - 1 : prev - 1
-              )
-            }
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition"
-          >
-            ‹
-          </button>
+    if (images.length === 0) return null;
 
-          <button
-            onClick={() =>
-              setNoticeImageIndex((prev) =>
-                prev === images.length - 1 ? 0 : prev + 1
-              )
-            }
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition"
-          >
-            ›
-          </button>
+    return (
+      <div className="relative mt-4 rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
+        <img
+          src={images[noticeImageIndex]}
+          alt="공지 이미지"
+          className="w-full h-auto object-contain max-h-[500px]"
+        />
 
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/45 text-white text-xs font-bold">
-            {noticeImageIndex + 1} / {images.length}
-          </div>
-        </>
-      )}
-    </div>
-  );
-})()}
-      <div
-  dangerouslySetInnerHTML={{
-    __html: selectedNotice.content,
-  }}
-/>
-    </div>
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={() =>
+                setNoticeImageIndex((prev) =>
+                  prev === 0 ? images.length - 1 : prev - 1
+                )
+              }
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition cursor-pointer"
+            >
+              ‹
+            </button>
+
+            <button
+              onClick={() =>
+                setNoticeImageIndex((prev) =>
+                  prev === images.length - 1 ? 0 : prev + 1
+                )
+              }
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition cursor-pointer"
+            >
+              ›
+            </button>
+
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/45 text-white text-xs font-bold">
+              {noticeImageIndex + 1} / {images.length}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  })()}
+</div>
   </div>
 
   <div className="border-t border-gray-200 pt-4 text-center shrink-0">
