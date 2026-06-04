@@ -3500,6 +3500,42 @@ hover:-translate-y-1
 
 </button>
 
+<button
+  onClick={() => {
+    setTempMenus(menus);
+    setTempPersonalMenus(personalMenus);
+    setTempQuickMenuKeys(quickMenuKeys);
+    setTempHiddenMenuIds(hiddenMenuIds);
+
+    setSelectedPersonalMenuId("");
+    setEditIconOpen(false);
+
+    setMenuManageMode("sort");
+
+    resetPopupPosition("menuSort");
+    setMenuSortOpen(true);
+
+    setUserMenuOpen(false);
+  }}
+  className="
+    md:hidden
+    block
+    w-full
+    px-4
+    py-3
+    text-center
+    text-sm
+    font-bold
+    text-gray-700
+    hover:bg-gray-50
+    border-t
+    border-gray-100
+    cursor-default
+  "
+>
+  메뉴변경
+</button>
+
     <button
       onClick={(e) => {
         e.stopPropagation();
