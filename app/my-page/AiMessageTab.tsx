@@ -2987,7 +2987,7 @@ const handleRegenerate = () => {
   localStorage.setItem("agent-name", e.target.value);
 }}
       placeholder="설계사 이름"
-      className="w-full h-10 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400 transition"
+      className="w-full h-9 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400 transition"
     />
   </div>
 
@@ -3003,7 +3003,7 @@ const handleRegenerate = () => {
           setGeneratedMessage("");
         }}
         placeholder="고객 이름"
-        className="w-full h-10 pl-9 pr-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400 transition"
+        className="w-full h-9 pl-9 pr-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400 transition"
       />
     </div>
   </div>
@@ -3020,11 +3020,11 @@ const handleRegenerate = () => {
       value={searchQuery}
       onChange={(e) => setSearchQuery(e.target.value)}
       placeholder="메시지 종류 검색"
-      className="w-full h-9 pl-9 pr-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-blue-400 transition"
+      className="w-full h-9 pl-9 pr-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400 transition"
     />
   </div>
 
-  <div className="grid grid-cols-4 gap-2">
+  <div className="grid grid-cols-4 gap-1.5 md:gap-2">
     {filteredTypes.map((t) => (
       <button
         key={t.id}
@@ -3032,7 +3032,7 @@ const handleRegenerate = () => {
           setMessageType(t.id);
           setGeneratedMessage("");
         }}
-        className={`h-13 rounded-xl text-[13px] font-semibold flex items-center justify-center transition ${
+        className={`h-10 md:h-13 rounded-xl text-[12px] md:text-[13px] font-semibold flex items-center justify-center transition ${
           messageType === t.id
             ? "bg-gray-900 text-white"
             : "bg-gray-50 border border-gray-200 text-gray-600 hover:border-gray-400"
