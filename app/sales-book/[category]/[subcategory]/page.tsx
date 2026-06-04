@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
   Maximize,
   X,
+  Pencil,
+  Highlighter,
+  Eraser,
+  Trash2,
 } from "lucide-react";
 import { salesData } from "../../data";
 
@@ -32,6 +36,10 @@ export default function SubCategoryPage({
 
   const [current, setCurrent] = useState(0);
   const [showFullscreen, setShowFullscreen] = useState(false);
+  const [tool, setTool] = useState<"pen" | "highlighter" | "eraser">("pen");
+const canvasRef = useRef<HTMLCanvasElement>(null);
+const isDrawing = useRef(false);
+const lastPoint = useRef({ x: 0, y: 0 });
 
   const prevSlide = () => {
     setCurrent((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
@@ -40,6 +48,76 @@ export default function SubCategoryPage({
   const nextSlide = () => {
     setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   };
+
+  const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  isDrawing.current = true;
+
+  const rect = e.currentTarget.getBoundingClientRect();
+
+  lastPoint.current = {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top,
+  };
+};
+
+const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  if (!isDrawing.current) return;
+
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const rect = canvas.getBoundingClientRect();
+
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  if (tool === "pen") {
+    ctx.globalCompositeOperation = "source-over";
+    ctx.strokeStyle = "#ff0000";
+    ctx.lineWidth = 4;
+    ctx.globalAlpha = 1;
+  }
+
+  if (tool === "highlighter") {
+    ctx.globalCompositeOperation = "source-over";
+    ctx.strokeStyle = "#ffff00";
+    ctx.lineWidth = 35;
+    ctx.globalAlpha = 0.2;
+  }
+
+  if (tool === "eraser") {
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.lineWidth = 24;
+    ctx.globalAlpha = 1;
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(lastPoint.current.x, lastPoint.current.y);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+
+  lastPoint.current = { x, y };
+};
+
+const stopDrawing = () => {
+  isDrawing.current = false;
+};
+
+const clearCanvas = () => {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+};
 
   const openFullscreen = async () => {
     setShowFullscreen(true);
@@ -106,9 +184,9 @@ export default function SubCategoryPage({
 
               <div className="text-center">
                 <h1 className="text-2xl font-black text-gray-900">
-                  {subcategory}
+                  {category}
                 </h1>
-                <p className="text-sm text-gray-500 mt-1">{category}</p>
+                <p className="text-sm text-gray-500 mt-1">{subcategory}</p>
               </div>
 
               <button
@@ -124,7 +202,7 @@ export default function SubCategoryPage({
 
         <div className="max-w-7xl mx-auto px-4 py-4">
           {/* PC */}
-          <div className="hidden md:flex bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden h-[82vh]">
+          <div className="hidden md:flex bg-white rounded-3xl border border-gray-200  overflow-hidden h-[80vh]">
             <aside
               style={{ flex: "0 0 190px" }}
               className="border-r border-gray-200 bg-gray-100 py-4 px-4"
@@ -176,7 +254,7 @@ export default function SubCategoryPage({
                 </div>
               </div>
 
-              <div className="relative w-full flex-1 flex items-center justify-center bg-gray-50 rounded-3xl border border-gray-200 p-4 overflow-hidden">
+             <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden">
                 <button
                   onClick={prevSlide}
                   className="absolute left-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border border-gray-200 shadow flex items-center justify-center hover:bg-white transition cursor-pointer"
@@ -187,9 +265,7 @@ export default function SubCategoryPage({
 <img
   src={slides[current]}
   alt=""
-  onContextMenu={(e) => e.preventDefault()}
-  className="max-w-full max-h-[68vh] object-contain rounded-2xl shadow-xl bg-white border-0 outline-none block"
-  draggable={false}
+  className="w-full h-full object-contain rounded-2xl bg-white border-0 outline-none block "
 />
 
                 <button
@@ -290,6 +366,43 @@ export default function SubCategoryPage({
           id="salesbook-fullscreen"
           className="fixed inset-0 z-[5000] bg-black flex items-center justify-center"
         >
+
+            <div className="hidden md:flex absolute top-5 left-5 z-30 gap-2">
+  <button
+    onClick={() => setTool("pen")}
+    className={`w-11 h-11 rounded-full text-white flex items-center justify-center transition ${
+      tool === "pen" ? "bg-blue-600" : "bg-white/10 hover:bg-white/20"
+    }`}
+  >
+    <Pencil className="w-5 h-5" />
+  </button>
+
+  <button
+    onClick={() => setTool("highlighter")}
+    className={`w-11 h-11 rounded-full text-white flex items-center justify-center transition ${
+      tool === "highlighter" ? "bg-blue-600" : "bg-white/10 hover:bg-white/20"
+    }`}
+  >
+    <Highlighter className="w-5 h-5" />
+  </button>
+
+  <button
+    onClick={() => setTool("eraser")}
+    className={`w-11 h-11 rounded-full text-white flex items-center justify-center transition ${
+      tool === "eraser" ? "bg-blue-600" : "bg-white/10 hover:bg-white/20"
+    }`}
+  >
+    <Eraser className="w-5 h-5" />
+  </button>
+
+  <button
+    onClick={clearCanvas}
+    className="w-11 h-11 rounded-full bg-red-500/80 text-white flex items-center justify-center hover:bg-red-500 transition"
+  >
+    <Trash2 className="w-5 h-5" />
+  </button>
+</div>
+
           <button
             onClick={closeFullscreen}
             className="absolute top-5 right-5 z-20 w-11 h-11 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
@@ -304,14 +417,26 @@ export default function SubCategoryPage({
             <ChevronLeft className="w-8 h-8" />
           </button>
 
-<img
-  src={slides[current]}
-  alt=""
-  onClick={nextSlide}
-  onContextMenu={(e) => e.preventDefault()}
-  className="max-w-screen max-h-screen object-contain  select-none"
-  draggable={false}
-/>
+<div className="relative max-w-screen max-h-screen">
+  <img
+    src={slides[current]}
+    alt=""
+    onContextMenu={(e) => e.preventDefault()}
+    className="max-w-screen max-h-screen object-contain select-none"
+    draggable={false}
+  />
+
+  <canvas
+    ref={canvasRef}
+    width={1920}
+    height={1080}
+    onPointerDown={startDrawing}
+    onPointerMove={draw}
+    onPointerUp={stopDrawing}
+    onPointerLeave={stopDrawing}
+    className="hidden md:block absolute inset-0 w-full h-full touch-none"
+  />
+</div>
 
           <button
             onClick={nextSlide}
@@ -320,9 +445,7 @@ export default function SubCategoryPage({
             <ChevronRight className="w-8 h-8" />
           </button>
 
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 bg-white/10 text-white text-sm font-bold px-4 py-2 rounded-full">
-            {current + 1} / {slides.length}
-          </div>
+
         </div>
       )}
     </>
