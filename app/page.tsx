@@ -4424,16 +4424,23 @@ rel="noopener noreferrer"
                     <p className="text-xs md:text-sm text-gray-500 mb-4">
                       {new Date(popupNotice.created_at).toLocaleString("ko-KR", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </p>
-                    <div className="border-t border-gray-200 pt-4 whitespace-pre-line text-[15px] leading-6 text-gray-800 break-keep flex-1">
+                   <div className="border-t border-gray-200 pt-4 text-[15px] leading-6 text-gray-800 break-keep flex-1 overflow-x-hidden">
 <div
   className="
+    max-w-full
+    overflow-hidden
+    break-words
+    [&_*]:max-w-full
     [&_p]:m-0
     [&_p]:min-h-[24px]
     [&_p]:leading-6
     [&_br]:block
+    [&_a]:break-all
   "
-  dangerouslySetInnerHTML={{
-    __html: popupNotice.content,
+   dangerouslySetInnerHTML={{
+    __html: popupNotice.content.includes("<")
+      ? popupNotice.content
+      : popupNotice.content.replace(/\n/g, "<br />"),
   }}
 />
 {(() => {
@@ -4451,7 +4458,7 @@ rel="noopener noreferrer"
       <img
         src={images[popupNoticeImageIndex]}
         alt="공지 이미지"
-        className="w-full h-auto object-contain max-h-[500px]"
+        className="w-full max-w-full h-auto object-contain max-h-[500px]"
       />
 
       {images.length > 1 && (
@@ -4914,7 +4921,7 @@ setNoticeImageIndex(0);
 
 
 
-  <div className="overflow-y-auto flex-1">
+  <div className="overflow-y-auto overflow-x-hidden flex-1">
     <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep">
       {selectedNotice.title}
     </h2>
@@ -4925,18 +4932,24 @@ setNoticeImageIndex(0);
 
    <div className="border-t border-gray-200 mt-3 pt-4 pb-6 text-[15px] leading-6 text-gray-800 break-keep">
 
-  <div
-    className="
-      [&_p]:m-0
-      [&_p]:min-h-[24px]
-      [&_p]:leading-6
-      [&_br]:block
-    "
-    dangerouslySetInnerHTML={{
-      __html: selectedNotice.content,
-    }}
-  />
-
+<div
+  className="
+    max-w-full
+    overflow-hidden
+    break-words
+    [&_*]:max-w-full
+    [&_p]:m-0
+    [&_p]:min-h-[24px]
+    [&_p]:leading-6
+    [&_br]:block
+    [&_a]:break-all
+  "
+  dangerouslySetInnerHTML={{
+    __html: selectedNotice.content.includes("<")
+      ? selectedNotice.content
+      : selectedNotice.content.replace(/\n/g, "<br />"),
+  }}
+/>
   {(() => {
     const images =
       selectedNotice.image_urls?.length > 0
@@ -4949,11 +4962,11 @@ setNoticeImageIndex(0);
 
     return (
       <div className="relative mt-4 rounded-xl overflow-hidden border border-gray-100 bg-gray-50">
-        <img
-          src={images[noticeImageIndex]}
-          alt="공지 이미지"
-          className="w-full h-auto object-contain max-h-[500px]"
-        />
+    <img
+  src={images[noticeImageIndex]}
+  alt="공지 이미지"
+  className="w-full max-w-full h-auto object-contain max-h-[500px]"
+/>
 
         {images.length > 1 && (
           <>
