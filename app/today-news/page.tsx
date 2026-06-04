@@ -820,7 +820,7 @@ const fetchTickerNews = async () => {
          {/* 환율 보드 */}
         <section className="mt-6">
           <div className="flex items-end justify-between gap-3 mb-3">
-            <div className="flex items-center gap-2 pl-3">
+          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 pl-3">
   <h2 className="text-lg font-black text-gray-900">
     오늘의 환율
   </h2>
