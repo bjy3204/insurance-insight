@@ -111,6 +111,62 @@ function SortableMemoCard({ memo, children }: { memo: MemoItem; children: React.
   );
 }
 
+function AdminPagination({
+  page,
+  totalPages,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+
+  const start = Math.max(1, Math.min(page - 2, totalPages - 4));
+  const end = Math.min(totalPages, start + 4);
+
+  const pages = Array.from(
+    { length: end - start + 1 },
+    (_, i) => start + i
+  );
+
+  return (
+    <div className="sticky bottom-0 z-30 -mx-5 mt-4 bg-gray-50/95 backdrop-blur px-5 py-3 flex justify-center">
+      <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm bg-white shadow-sm">
+        <button
+          onClick={() => onPageChange(Math.max(1, page - 1))}
+          disabled={page === 1}
+          className="h-10 px-4 bg-white text-gray-500 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer whitespace-nowrap"
+        >
+          이전
+        </button>
+
+        {pages.map((p) => (
+          <button
+            key={p}
+            onClick={() => onPageChange(p)}
+            className={`h-10 min-w-10 px-3 border-l border-gray-200 cursor-pointer ${
+              page === p
+                ? "bg-slate-800 text-white"
+                : "bg-white text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            {p}
+          </button>
+        ))}
+
+        <button
+          onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+          disabled={page === totalPages}
+          className="h-10 px-4 border-l border-gray-200 bg-white text-gray-500 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer whitespace-nowrap"
+        >
+          다음
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 type MemoItem = {
   id: string;
@@ -1116,15 +1172,28 @@ const matchSearch =
               ))}
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3 mb-5">
-              <Search className="w-5 h-5 text-gray-400 shrink-0" />
-              <input
-                placeholder="닉네임 또는 인스타그램 아이디로 검색"
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-                className="w-full outline-none text-sm bg-transparent"
-              />
-            </div>
+          <div className="mb-5 flex flex-col gap-3">
+  <button
+    onClick={() => {
+      fetchAllSubscribers();
+      setIsAllSubPopupOpen(true);
+    }}
+    className="md:hidden w-full h-11 rounded-2xl bg-slate-800 text-white text-sm font-black flex items-center justify-center gap-2"
+  >
+    <List className="w-4 h-4" />
+    구독자 전체 보기
+  </button>
+
+  <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
+    <Search className="w-5 h-5 text-gray-400 shrink-0" />
+    <input
+      placeholder="닉네임 또는 인스타그램 아이디로 검색"
+      value={search}
+      onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+      className="w-full outline-none text-sm bg-transparent"
+    />
+  </div>
+</div>
 
             {filteredProfiles.length === 0 ? (
               <div className="flex justify-center items-center py-20 text-sm text-gray-400">회원이 없습니다.</div>
@@ -1205,45 +1274,11 @@ const matchSearch =
 })}
               </div>
             )}
-            {totalPages > 1 && (
-  <div className="sticky bottom-6 z-20 flex justify-center mt-6">
-    <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm bg-white">
-      <button
-        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-        disabled={currentPage === 1}
-        className="px-4 py-2 text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-      >
-        이전
-      </button>
-
-      {Array.from({ length: totalPages }).map((_, index) => {
-        const page = index + 1;
-
-        return (
-          <button
-            key={page}
-            onClick={() => setCurrentPage(page)}
-            className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
-              currentPage === page
-                ? "bg-slate-800 text-white"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            {page}
-          </button>
-        );
-      })}
-
-      <button
-        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-        disabled={currentPage === totalPages}
-        className="px-4 py-2 border-l border-gray-200 text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-      >
-        다음
-      </button>
-    </div>
-  </div>
-)}
+        <AdminPagination
+  page={currentPage}
+  totalPages={totalPages}
+  onPageChange={setCurrentPage}
+/>
           </>
         )}
 
@@ -1709,14 +1744,30 @@ const matchSearch =
                     </button>
                   </div>
                 </div>
-                <div className="mx-4 my-3 bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
-                  <Search className="w-5 h-5 text-gray-400 shrink-0" />
-                  <input
-                    placeholder="이번 달 구독자 이름 또는 아이디 검색"
-                    value={subSearch}
-                    onChange={(e) => setSubSearch(e.target.value)}
-                    className="w-full outline-none text-sm bg-transparent"
-                  />
+
+
+
+                <div className="mx-4 my-3 flex flex-col gap-3">
+                  <button
+                    onClick={() => {
+                      fetchAllSubscribers();
+                      setIsAllSubPopupOpen(true);
+                    }}
+                    className="md:hidden w-full h-11 rounded-2xl bg-slate-800 text-white text-sm font-black flex items-center justify-center gap-2"
+                  >
+                    <List className="w-4 h-4" />
+                    구독자 전체 보기
+                  </button>
+
+                  <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
+                    <Search className="w-5 h-5 text-gray-400 shrink-0" />
+                    <input
+                      placeholder="이번 달 구독자 이름 또는 아이디 검색"
+                      value={subSearch}
+                      onChange={(e) => setSubSearch(e.target.value)}
+                      className="w-full outline-none text-sm bg-transparent"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -1808,45 +1859,11 @@ const matchSearch =
                 </div>
               </div>
 
-{subTotalPages > 1 && (
-  <div className="sticky bottom-6 z-20 flex justify-center mt-6">
-    <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm bg-white">
-      <button
-        onClick={() => setSubCurrentPage((p) => Math.max(1, p - 1))}
-        disabled={subCurrentPage === 1}
-        className="px-4 py-2 text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-      >
-        이전
-      </button>
-
-      {Array.from({ length: subTotalPages }).map((_, index) => {
-        const page = index + 1;
-
-        return (
-          <button
-            key={page}
-            onClick={() => setSubCurrentPage(page)}
-            className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
-              subCurrentPage === page
-                ? "bg-slate-800 text-white"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            {page}
-          </button>
-        );
-      })}
-
-      <button
-        onClick={() => setSubCurrentPage((p) => Math.min(subTotalPages, p + 1))}
-        disabled={subCurrentPage === subTotalPages}
-        className="px-4 py-2 border-l border-gray-200 text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-      >
-        다음
-      </button>
-    </div>
-  </div>
-)}
+<AdminPagination
+  page={subCurrentPage}
+  totalPages={subTotalPages}
+  onPageChange={setSubCurrentPage}
+/>
 
               {/* 해지자 리스트 */}
               {canceledMonthly.length > 0 && (
@@ -2058,7 +2075,7 @@ const matchSearch =
 {(adminTab === "subscribers" || adminTab === "members") && (
   <button
     onClick={() => { fetchAllSubscribers(); setIsAllSubPopupOpen(true); }}
-    className="fixed bottom-8 left-8 z-40 bg-slate-800 text-white px-5 py-3 rounded-full shadow-xl flex items-center gap-2 hover:bg-slate-700 transition hover:-translate-y-1"
+   className="hidden md:flex fixed bottom-8 left-8 z-40 bg-slate-800 text-white px-5 py-3 rounded-full shadow-xl items-center gap-2 hover:bg-slate-700 transition hover:-translate-y-1"
   >
     <List className="w-5 h-5" />
     <span className="font-bold text-sm">구독자 전체 보기</span>
