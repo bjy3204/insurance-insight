@@ -61,7 +61,7 @@ const pagedCategories = filteredCategories.slice(
         </div>
       </header>
 
-     <div className="max-w-7xl mx-auto px-4 py-4">
+     <div className="max-w-7xl mx-auto px-3 md:px-4 py-4">
   <div
   className="
     h-12
@@ -105,7 +105,7 @@ const pagedCategories = filteredCategories.slice(
 </div>
       
 
-      <div className="max-w-7xl mx-auto px-4 pb-6">
+      <div className="max-w-7xl mx-auto px-3 md:px-4 pb-6">
   <div className="bg-white rounded-3xl border border-gray-200 shadow-sm flex h-[82vh]">
        <aside
   style={{ flex: "0 0 190px" }}
@@ -133,7 +133,7 @@ const pagedCategories = filteredCategories.slice(
           </div>
         </aside>
 
-        <section className="flex-1 px-4 md:px-6 py-5 md:py-6 flex flex-col min-w-0">
+        <section className="flex-1 px-3 md:px-6 py-5 md:py-6 flex flex-col min-w-0">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-sm font-black text-gray-700">
