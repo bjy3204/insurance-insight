@@ -7538,54 +7538,80 @@ setMemoAddOpen(false);
 
 function ExchangeIndexBar() {
   const [exchange, setExchange] = useState<any>(null);
+  const [market, setMarket] = useState<any>(null);
 
   useEffect(() => {
-    fetch("/api/exchange")
-      .then((res) => res.json())
-      .then((data) => setExchange(data))
-      .catch(() => setExchange(null));
+    Promise.all([
+      fetch("/api/naver-exchange").then((res) => res.json()),
+      fetch("/api/market").then((res) => res.json()),
+    ])
+      .then(([exchangeData, marketData]) => {
+        setExchange(exchangeData);
+        setMarket(marketData);
+      })
+      .catch(() => {
+        setExchange(null);
+        setMarket(null);
+      });
   }, []);
 
-  if (!exchange?.items) {
+  const exchangeItems = exchange?.items || [];
+  const marketItems = market?.items || [];
+
+  const items = [...exchangeItems, ...marketItems];
+
+  if (items.length === 0) {
     return (
       <div className="hidden md:block max-w-[1500px] mx-auto px-5 mb-22">
-        <div className=" rounded-2xl px-4 py-3 text-center text-sm text-block-500">
+        <div className="rounded-2xl px-4 py-3 text-center text-sm text-block-500">
           환율 정보를 불러오지 못했습니다.
         </div>
       </div>
     );
   }
 
+  const formatValue = (item: any) => {
+    if (item.label === "국내 금 (원/g)") {
+      return `${Math.round(item.value).toLocaleString()}원`;
+    }
+
+    if (item.label === "은 (USD/OZS)") {
+      return item.value.toLocaleString("ko-KR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    }
+
+    if (item.label === "코스피" || item.label === "코스닥") {
+      return item.value.toLocaleString("ko-KR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    }
+
+    return `${Math.round(item.value).toLocaleString()}원`;
+  };
+
   return (
     <div className="hidden md:block max-w-[1500px] mx-auto px-5 mb-22">
-      <div className=" rounded-2xl px-4 py-3 ">
+      <div className="rounded-2xl px-4 py-3">
         <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs sm:text-sm text-gray-600">
           <span className="font-bold text-gray-800">
-            실시간 환율
+            실시간 지표
           </span>
 
-          {exchange.items.map((item: any) => (
+          {items.map((item: any) => (
             <span key={item.label}>
               {item.label}{" "}
               <b className="text-gray-900">
-                {Math.round(item.value).toLocaleString()}원
+                {formatValue(item)}
               </b>
             </span>
           ))}
 
-          
-
           <span className="text-[13px] text-gray-400">
-  기준일 {exchange.date
-    ? (() => {
-        const d = new Date(exchange.date);
-        return isNaN(d.getTime())
-          ? exchange.date
-          : d.toLocaleString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
-      })()
-    : "-"}
-</span>
-
+            네이버 증권 기준
+          </span>
         </div>
       </div>
     </div>
