@@ -269,6 +269,7 @@ export default function MoneyValuePage() {
   const [years, setYears] = useState("");
   const [currentRate, setCurrentRate] = useState("");
   const [compareRate, setCompareRate] = useState("");
+  const [naverRate, setNaverRate] = useState("");
 
 const sensors = useSensors(
   useSensor(PointerSensor, {
@@ -333,6 +334,32 @@ const memoEditDragRef = useRef({
     Number(compareRate || 0) > 0
       ? (Number(money || 0) * 10000) / Number(compareRate || 0)
       : 0;
+
+      useEffect(() => {
+  const fetchNaverRate = async () => {
+    try {
+      const res = await fetch("/api/naver-exchange", {
+        cache: "no-store",
+      });
+
+      const data = await res.json();
+
+      const usd = data.items?.find(
+        (item: any) => item.label === "USD"
+      );
+
+      if (usd?.value) {
+        setNaverRate(
+          Math.round(usd.value).toLocaleString()
+        );
+      }
+    } catch {
+      setNaverRate("");
+    }
+  };
+
+  fetchNaverRate();
+}, []);
 
 const moveMemoPopup = (
   e: any,
@@ -846,9 +873,10 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                 </label>
 
                 <div className="relative">
-                  <input
-                    type="text"
-                    inputMode="numeric"
+<input
+  type="text"
+  inputMode="numeric"
+  placeholder={naverRate}
                     value={
                       currentRate
                         ? Number(

@@ -260,6 +260,28 @@ function CurrencyConverterInner(props: any) {
           if (item.label && item.value) rateMap[item.label] = item.value;
           if (item.code && item.rate) rateMap[item.code] = item.rate;
         });
+
+const naverRes = await fetch("/api/naver-exchange");
+const naverData = await naverRes.json();
+
+naverData.items?.forEach((item: any) => {
+  if (item.label === "USD") {
+    rateMap.USD = item.value;
+  }
+
+  if (item.label === "EUR") {
+    rateMap.EUR = item.value;
+  }
+
+  if (item.label === "CNY") {
+    rateMap.CNY = item.value;
+  }
+
+  if (item.label === "JPY") {
+    rateMap.JPY = item.value;
+  }
+});
+
         setRates(rateMap);
         if (data.date) setRateDate(data.date);
        if (data.date) {
