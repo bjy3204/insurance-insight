@@ -351,7 +351,7 @@ export default function Home() {
   "제주",
 ];
 
-const [weatherRegion, setWeatherRegion] = useState("서울");
+const [weatherRegion, setWeatherRegion] = useState("");
 const [weatherOpen, setWeatherOpen] = useState(false);
 const [weather, setWeather] = useState<{
   region: string;
@@ -1013,35 +1013,28 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  const saved = localStorage.getItem("pcQuickPosition");
+  if (!weatherRegion) return;
 
-  if (!saved) return;
-
-  try {
-    setPcQuickPos(JSON.parse(saved));
-  } catch {}
-}, []);
-
-useEffect(() => {
   const fetchWeather = async () => {
     try {
       const res = await fetch(
-        `/api/weather?region=${weatherRegion}`
+        `/api/weather?region=${weatherRegion}`,
+        { cache: "no-store" }
       );
 
       const data = await res.json();
 
-console.log("날씨 데이터", data);
+      console.log("날씨 지역:", weatherRegion);
+      console.log("날씨 데이터", data);
 
       setWeather(data);
+      localStorage.setItem("weather-region", weatherRegion);
     } catch (error) {
       console.log(error);
     }
   };
 
   fetchWeather();
-
-  localStorage.setItem("weather-region", weatherRegion);
 }, [weatherRegion]);
 
 
