@@ -175,7 +175,7 @@ const pagedCategories = filteredCategories.slice(
                 <Link
                   key={category}
                   href={`/sales-book/${encodeURIComponent(category)}`}
-                  className="bg-white rounded-3xl border border-gray-200 p-5 md:p-8 min-h-[150px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition"
+                  className="bg-white rounded-3xl border border-gray-200 p-5 md:p-8 h-[140px] md:h-[150px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition"
                 >
                   <Folder className="w-12 h-12 text-yellow-500 mb-4" />
 
