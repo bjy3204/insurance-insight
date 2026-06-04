@@ -37,6 +37,7 @@ export default function SubCategoryPage({
   const [current, setCurrent] = useState(0);
   const [showFullscreen, setShowFullscreen] = useState(false);
   const [tool, setTool] = useState<"pen" | "highlighter" | "eraser">("pen");
+  const [drawMode, setDrawMode] = useState(false);
 const canvasRef = useRef<HTMLCanvasElement>(null);
 const isDrawing = useRef(false);
 const lastPoint = useRef({ x: 0, y: 0 });
@@ -362,41 +363,59 @@ const clearCanvas = () => {
       </main>
 
       {showFullscreen && (
-        <div
-          id="salesbook-fullscreen"
-          className="fixed inset-0 z-[5000] bg-black flex items-center justify-center"
-        >
+<div
+  id="salesbook-fullscreen"
+  onClick={() => {
+    if (!drawMode) nextSlide();
+  }}
+  className="fixed inset-0 z-[5000] bg-black flex items-center justify-center"
+>
 
             <div className="hidden md:flex absolute top-5 left-5 z-30 gap-2">
   <button
-    onClick={() => setTool("pen")}
-    className={`w-11 h-11 rounded-full text-white flex items-center justify-center transition ${
-      tool === "pen" ? "bg-blue-600" : "bg-white/10 hover:bg-white/20"
-    }`}
+  onClick={(e) => {
+    e.stopPropagation();
+    setDrawMode((prev) => !prev);
+    setTool("pen");
+  }}
+className={`w-11 h-11 rounded-full text-white flex items-center justify-center transition ${
+  drawMode && tool === "pen" ? "bg-blue-600" : "bg-white/10 hover:bg-white/20"
+}`}
   >
     <Pencil className="w-5 h-5" />
   </button>
 
-  <button
-    onClick={() => setTool("highlighter")}
-    className={`w-11 h-11 rounded-full text-white flex items-center justify-center transition ${
-      tool === "highlighter" ? "bg-blue-600" : "bg-white/10 hover:bg-white/20"
-    }`}
-  >
+<button
+  onClick={(e) => {
+    e.stopPropagation();
+    setDrawMode(true);
+    setTool("highlighter");
+  }}
+  className={`w-11 h-11 rounded-full text-white flex items-center justify-center transition ${
+    drawMode && tool === "highlighter" ? "bg-blue-600" : "bg-white/10 hover:bg-white/20"
+  }`}
+>
     <Highlighter className="w-5 h-5" />
   </button>
 
-  <button
-    onClick={() => setTool("eraser")}
-    className={`w-11 h-11 rounded-full text-white flex items-center justify-center transition ${
-      tool === "eraser" ? "bg-blue-600" : "bg-white/10 hover:bg-white/20"
-    }`}
-  >
+<button
+  onClick={(e) => {
+    e.stopPropagation();
+    setDrawMode(true);
+    setTool("eraser");
+  }}
+  className={`w-11 h-11 rounded-full text-white flex items-center justify-center transition ${
+    drawMode && tool === "eraser" ? "bg-blue-600" : "bg-white/10 hover:bg-white/20"
+  }`}
+>
     <Eraser className="w-5 h-5" />
   </button>
 
-  <button
-    onClick={clearCanvas}
+ <button
+  onClick={(e) => {
+    e.stopPropagation();
+    clearCanvas();
+  }}
     className="w-11 h-11 rounded-full bg-red-500/80 text-white flex items-center justify-center hover:bg-red-500 transition"
   >
     <Trash2 className="w-5 h-5" />
@@ -404,20 +423,33 @@ const clearCanvas = () => {
 </div>
 
           <button
-            onClick={closeFullscreen}
+            onClick={(e) => {
+  e.stopPropagation();
+  closeFullscreen();
+}}
             className="absolute top-5 right-5 z-20 w-11 h-11 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
           >
             <X className="w-6 h-6" />
           </button>
 
-          <button
-            onClick={prevSlide}
-            className="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
-          >
-            <ChevronLeft className="w-8 h-8" />
-          </button>
+{drawMode && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      prevSlide();
+    }}
+    className="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
+  >
+    <ChevronLeft className="w-8 h-8" />
+  </button>
+)}
 
-<div className="relative max-w-screen max-h-screen">
+<div
+  onClick={(e) => {
+    if (drawMode) e.stopPropagation();
+  }}
+  className="relative max-w-screen max-h-screen"
+>
   <img
     src={slides[current]}
     alt=""
@@ -434,16 +466,23 @@ const clearCanvas = () => {
     onPointerMove={draw}
     onPointerUp={stopDrawing}
     onPointerLeave={stopDrawing}
-    className="hidden md:block absolute inset-0 w-full h-full touch-none"
+    className={`hidden md:block absolute inset-0 w-full h-full touch-none ${
+  drawMode ? "pointer-events-auto" : "pointer-events-none"
+}`}
   />
 </div>
 
-          <button
-            onClick={nextSlide}
-            className="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
-          >
-            <ChevronRight className="w-8 h-8" />
-          </button>
+{drawMode && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      nextSlide();
+    }}
+    className="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
+  >
+    <ChevronRight className="w-8 h-8" />
+  </button>
+)}
 
 
         </div>
