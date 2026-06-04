@@ -1,0 +1,330 @@
+"use client";
+
+import Link from "next/link";
+import { use, useEffect, useState } from "react";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Maximize,
+  X,
+} from "lucide-react";
+import { salesData } from "../../data";
+
+export default function SubCategoryPage({
+  params,
+}: {
+  params: Promise<{
+    category: string;
+    subcategory: string;
+  }>;
+}) {
+  const { category: rawCategory, subcategory: rawSubcategory } = use(params);
+
+  const category = decodeURIComponent(rawCategory);
+  const subcategory = decodeURIComponent(rawSubcategory);
+
+  const categoryData = salesData[category as keyof typeof salesData];
+
+  const slides: string[] = categoryData
+    ? categoryData[subcategory as keyof typeof categoryData] || []
+    : [];
+
+  const [current, setCurrent] = useState(0);
+  const [showFullscreen, setShowFullscreen] = useState(false);
+
+  const prevSlide = () => {
+    setCurrent((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+  };
+
+  const nextSlide = () => {
+    setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+  };
+
+  const openFullscreen = async () => {
+    setShowFullscreen(true);
+
+    setTimeout(() => {
+      const target = document.getElementById("salesbook-fullscreen");
+
+      if (target?.requestFullscreen) {
+        target.requestFullscreen();
+      }
+    }, 50);
+  };
+
+  const closeFullscreen = async () => {
+    setShowFullscreen(false);
+
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setShowFullscreen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") prevSlide();
+      if (e.key === "ArrowRight") nextSlide();
+      if (e.key === "Escape") setShowFullscreen(false);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [slides.length]);
+
+  if (slides.length === 0) {
+    return (
+      <main className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-xl font-black text-gray-900">자료가 없습니다.</div>
+      </main>
+    );
+  }
+
+  return (
+    <>
+      <main className="min-h-screen bg-gray-100 overflow-x-hidden">
+        <header className="bg-white border-b border-black shadow-sm">
+          <div className="max-w-7xl mx-auto px-6 py-6">
+            <div className="relative flex items-center justify-center">
+              <Link
+                href={`/sales-book/${encodeURIComponent(category)}`}
+                className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
+              >
+                <ArrowLeft className="w-5 h-5 text-black" />
+              </Link>
+
+              <div className="text-center">
+                <h1 className="text-2xl font-black text-gray-900">
+                  {subcategory}
+                </h1>
+                <p className="text-sm text-gray-500 mt-1">{category}</p>
+              </div>
+
+              <button
+                onClick={openFullscreen}
+                className="hidden md:flex absolute right-0 h-11 px-4 rounded-xl bg-blue-600 text-white text-sm font-bold items-center gap-2 hover:bg-blue-700 transition cursor-pointer"
+              >
+                <Maximize className="w-4 h-4" />
+                전체화면
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          {/* PC */}
+          <div className="hidden md:flex bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden h-[82vh]">
+            <aside
+              style={{ flex: "0 0 190px" }}
+              className="border-r border-gray-200 bg-gray-100 py-4 px-4"
+            >
+              <div className="text-xs font-black text-gray-400 px-4 mb-3">
+                슬라이드 목록
+              </div>
+
+              <div className="space-y-3 overflow-y-auto max-h-[72vh] pr-1">
+                {slides.map((slide: string, index: number) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrent(index)}
+                    className={`w-full rounded-2xl border-2 bg-white p-1.5 transition cursor-pointer ${
+                      current === index
+                        ? "border-blue-600 shadow-sm"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+<img
+  src={slide}
+  alt=""
+  onContextMenu={(e) => e.preventDefault()}
+  className="w-full aspect-video object-contain rounded-xl block"
+  draggable={false}
+/>
+
+                    <div className="text-xs font-black text-gray-500 mt-1">
+                      {index + 1}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </aside>
+
+            <section className="flex-1 px-6 py-6 flex flex-col">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h2 className="text-sm font-black text-gray-700">
+                    {subcategory}
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-1">
+                    총 {slides.length}장
+                  </p>
+                </div>
+
+                <div className="text-xs font-black text-gray-400">
+                  {current + 1} / {slides.length}
+                </div>
+              </div>
+
+              <div className="relative w-full flex-1 flex items-center justify-center bg-gray-50 rounded-3xl border border-gray-200 p-4 overflow-hidden">
+                <button
+                  onClick={prevSlide}
+                  className="absolute left-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border border-gray-200 shadow flex items-center justify-center hover:bg-white transition cursor-pointer"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+
+<img
+  src={slides[current]}
+  alt=""
+  onContextMenu={(e) => e.preventDefault()}
+  className="max-w-full max-h-[68vh] object-contain rounded-2xl shadow-xl bg-white border-0 outline-none block"
+  draggable={false}
+/>
+
+                <button
+                  onClick={nextSlide}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border border-gray-200 shadow flex items-center justify-center hover:bg-white transition cursor-pointer"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </div>
+            </section>
+          </div>
+
+          {/* 모바일 */}
+          <div className="md:hidden space-y-4">
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h2 className="text-sm font-black text-gray-800">
+                    슬라이드 목록
+                  </h2>
+                  <p className="text-xs text-gray-400 mt-1">
+                    총 {slides.length}장
+                  </p>
+                </div>
+
+                <div className="text-xs font-black text-gray-400">
+                  {current + 1} / {slides.length}
+                </div>
+              </div>
+
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {slides.map((slide: string, index: number) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrent(index)}
+                    className={`shrink-0 w-24 rounded-2xl border-2 bg-white p-1.5 ${
+                      current === index
+                        ? "border-blue-600"
+                        : "border-gray-200"
+                    }`}
+                  >
+<img
+  src={slide}
+  alt=""
+  onContextMenu={(e) => e.preventDefault()}
+  className="w-full aspect-video object-contain rounded-xl block"
+  draggable={false}
+/>
+
+                    <div className="text-[11px] font-black text-gray-500 mt-1">
+                      {index + 1}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-4">
+              <div className="mb-3">
+                <h2 className="text-sm font-black text-gray-800">
+                  {subcategory}
+                </h2>
+              </div>
+
+              <div className="bg-gray-50 rounded-3xl border border-gray-200 p-2 h-[190px] flex items-center justify-center overflow-hidden">
+                <img
+                  src={slides[current]}
+                  alt=""
+                  className="w-full h-full object-contain rounded-2xl bg-white shadow-lg"
+                  draggable={false}
+                />
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  onClick={prevSlide}
+                  className="h-11 rounded-2xl bg-white border border-gray-200 text-sm font-black text-gray-700 shadow-sm flex items-center justify-center gap-1"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  이전
+                </button>
+
+                <button
+                  onClick={nextSlide}
+                  className="h-11 rounded-2xl bg-blue-600 text-white text-sm font-black shadow-sm flex items-center justify-center gap-1"
+                >
+                  다음
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {showFullscreen && (
+        <div
+          id="salesbook-fullscreen"
+          className="fixed inset-0 z-[5000] bg-black flex items-center justify-center"
+        >
+          <button
+            onClick={closeFullscreen}
+            className="absolute top-5 right-5 z-20 w-11 h-11 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          <button
+            onClick={prevSlide}
+            className="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
+          >
+            <ChevronLeft className="w-8 h-8" />
+          </button>
+
+<img
+  src={slides[current]}
+  alt=""
+  onClick={nextSlide}
+  onContextMenu={(e) => e.preventDefault()}
+  className="max-w-screen max-h-screen object-contain  select-none"
+  draggable={false}
+/>
+
+          <button
+            onClick={nextSlide}
+            className="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
+          >
+            <ChevronRight className="w-8 h-8" />
+          </button>
+
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 bg-white/10 text-white text-sm font-bold px-4 py-2 rounded-full">
+            {current + 1} / {slides.length}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}

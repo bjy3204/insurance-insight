@@ -46,7 +46,8 @@ import {
   Home as HomeIcon,
   Percent,
   Users,
-  Send
+  Send,
+BookOpen
 } from "lucide-react";
 
 import AuthButton from "@/components/AuthButton";
@@ -136,6 +137,13 @@ const defaultMenus = [
     icon: FileText,
     link: "/claim-docs",
   },
+  {
+  id: "sales-book",
+  title: "세일즈북",
+  desc: "고객 상담용 프레젠테이션 자료",
+  icon: BookOpen,
+  link: "#",
+},
   {
     id: "calculator",
     title: "실비계산기",
@@ -567,7 +575,7 @@ const [saveConfirmType, setSaveConfirmType] =
   const [saveConfirmMessage, setSaveConfirmMessage] =
   useState("변경 내용이 저장되었습니다.");
   const [menuLinkAlertOpen, setMenuLinkAlertOpen] = useState(false);
-
+const [salesBookAlertOpen, setSalesBookAlertOpen] = useState(false);
 
 const [lifeGender, setLifeGender] = useState<"남성" | "여성">("남성");
 const [lifeAge, setLifeAge] = useState("");
@@ -2418,8 +2426,31 @@ setMenuSortOpen(true);
     id: menu.id,
   });
 }}
-        href={menu.id === "customer-manage" ? undefined : menu.link}
-        onClick={menu.id === "customer-manage" ? (e) => { e.preventDefault(); openCmPinPopup(); } : undefined}
+href={
+  menu.id === "customer-manage" || menu.id === "sales-book"
+    ? undefined
+    : menu.link
+}
+onClick={(e) => {
+  if (menu.id === "customer-manage") {
+    e.preventDefault();
+    openCmPinPopup();
+    return;
+  }
+
+if (menu.id === "sales-book") {
+  e.preventDefault();
+
+  if (!authUser || authStatus !== "approved") {
+    setCmPinState("not-approved");
+    setCmPinOpen(true);
+    return;
+  }
+
+  setSalesBookAlertOpen(true);
+  return;
+}
+}}
 target={
   menu.title === "보험인사이트 폴더" ||
   menu.id === "auto-claim" ||
@@ -7388,6 +7419,41 @@ setMemoAddOpen(false);
 
  {/* 환율 변환기 (승인 구독자 전용 - 컴포넌트 내부에서 권한 체크) */}
         <CurrencyConverter />
+
+        {salesBookAlertOpen && (
+  <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/30">
+    <div className="w-[320px] rounded-3xl bg-white p-6 shadow-2xl text-center">
+      <h3 className="text-lg font-black text-gray-900">
+        서비스 준비중입니다
+      </h3>
+
+      <p className="mt-3 text-sm font-bold text-gray-500">
+        세일즈북 서비스는 현재 제작 중입니다.
+      </p>
+
+      <button
+        onClick={() => setSalesBookAlertOpen(false)}
+   className="
+  mt-6
+  h-11
+  w-full
+  rounded-2xl
+  bg-blue-600
+  text-sm
+  font-black
+  text-white
+  transition-all
+  duration-200
+  hover:bg-blue-700
+  hover:shadow-lg
+  cursor-pointer
+"
+      >
+        확인
+      </button>
+    </div>
+  </div>
+)}
 
     </>
     );
