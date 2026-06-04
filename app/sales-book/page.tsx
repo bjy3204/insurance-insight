@@ -54,7 +54,7 @@ const pagedCategories = filteredCategories.slice(
               </div>
 
               <p className="text-sm text-gray-500 mt-1">
-                세일즈북 상담 자료
+                상담 세일즈북 자료
               </p>
             </div>
           </div>
@@ -169,13 +169,13 @@ const pagedCategories = filteredCategories.slice(
             </div>
           </div>
 
-          {viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 pr-3 pt-3 pb-5">
+{viewMode === "grid" ? (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 pt-3 pb-5">
               {pagedCategories.map((category) => (
                 <Link
                   key={category}
                   href={`/sales-book/${encodeURIComponent(category)}`}
-                  className="bg-white rounded-3xl border border-gray-200 p-5 md:p-8 h-[120px] md:h-[150px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition"
+                  className="bg-white rounded-3xl border border-gray-200 p-5 md:p-8 min-h-[150px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition"
                 >
                   <Folder className="w-12 h-12 text-yellow-500 mb-4" />
 
