@@ -153,7 +153,7 @@ export default function CalendarTab() {
           "Liberation Day": "광복절",
           "Chuseok": "추석",
           "National Foundation Day": "개천절",
-          "Hangeul Day": "한글날",
+          "Hangul Day": "한글날",
           "Constitution Day": "제헌절",
           "Christmas Day": "크리스마스",
           "Labour Day": "근로자의날",
