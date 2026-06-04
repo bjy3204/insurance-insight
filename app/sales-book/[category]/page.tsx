@@ -81,7 +81,7 @@ const pagedSubcategories = filteredSubcategories.slice(
               </div>
 
               <p className="text-sm text-gray-500 mt-1">
-                고객 상담용 프레젠테이션 자료
+                상담 세일즈북 자료
               </p>
             </div>
           </div>

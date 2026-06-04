@@ -140,7 +140,7 @@ const defaultMenus = [
   {
   id: "sales-book",
   title: "세일즈북",
-  desc: "고객 상담용 프레젠테이션 자료",
+  desc: "상담 세일즈북 자료",
   icon: BookOpen,
   link: "#",
 },
