@@ -42,6 +42,13 @@ type ExchangeItem = {
   direction: "up" | "down" | "same";
 };
 
+type MarketItem = {
+  label: string;
+  value: number;
+  change: number;
+  direction: "up" | "down" | "same";
+};
+
 type WeatherItem = {
   region: string;
   temp: number;
@@ -137,6 +144,36 @@ const formatExchange = (label: string, value: number) => {
   });
 };
 
+const EXCHANGE_LINKS: Record<string, string> = {
+  USD: "https://m.stock.naver.com/marketindex/exchange/FX_USDKRW",
+  JPY: "https://m.stock.naver.com/marketindex/exchange/FX_JPYKRW",
+  EUR: "https://m.stock.naver.com/marketindex/exchange/FX_EURKRW",
+  CNY: "https://m.stock.naver.com/marketindex/exchange/FX_CNYKRW",
+};
+
+const MARKET_LINKS: Record<string, string> = {
+  코스피: "https://m.stock.naver.com/domestic/index/KOSPI/total",
+  코스닥: "https://m.stock.naver.com/domestic/index/KOSDAQ/total",
+  "국내 금 (원/g)": "https://m.stock.naver.com/marketindex/metals/M04020000",
+  "은 (USD/OZS)": "https://m.stock.naver.com/marketindex/metals/SIcv1",
+};
+
+const isGold = (label: string) => label === "국내 금 (원/g)";
+
+const formatMarketValue = (item: MarketItem) => {
+  return item.value.toLocaleString("ko-KR", {
+    minimumFractionDigits: isGold(item.label) ? 0 : 2,
+    maximumFractionDigits: isGold(item.label) ? 0 : 2,
+  });
+};
+
+const formatMarketChange = (item: MarketItem) => {
+  return Math.abs(item.change).toLocaleString("ko-KR", {
+    minimumFractionDigits: isGold(item.label) ? 0 : 2,
+    maximumFractionDigits: isGold(item.label) ? 0 : 2,
+  });
+};
+
 const getTitleClamp = (title: string) => {
   return cleanText(title).length <= 28 ? "line-clamp-1" : "line-clamp-2";
 };
@@ -220,6 +257,8 @@ const [searchInput, setSearchInput] = useState("");
   const [exchangeLoading, setExchangeLoading] = useState(false);
   const [exchangeDate, setExchangeDate] = useState("");
   const [exchangeItems, setExchangeItems] = useState<ExchangeItem[]>([]);
+  const [marketItems, setMarketItems] = useState<MarketItem[]>([]);
+const [marketLoading, setMarketLoading] = useState(false);
 
  const [weatherItems, setWeatherItems] = useState<WeatherItem[]>([]);
 const [weatherOrder, setWeatherOrder] = useState<string[]>(WEATHER_REGIONS);
@@ -289,9 +328,9 @@ const sortedWeatherItems = useMemo(() => {
     try {
       setExchangeLoading(true);
 
-      const res = await fetch("/api/exchange", {
-        cache: "no-store",
-      });
+const res = await fetch("/api/naver-exchange", {
+  cache: "no-store",
+});
 
       const data = await res.json();
 
@@ -303,6 +342,24 @@ const sortedWeatherItems = useMemo(() => {
       setExchangeLoading(false);
     }
   };
+
+  const fetchMarket = async () => {
+  try {
+    setMarketLoading(true);
+
+    const res = await fetch("/api/market", {
+      cache: "no-store",
+    });
+
+    const data = await res.json();
+
+    setMarketItems(data.items || []);
+  } catch {
+    setMarketItems([]);
+  } finally {
+    setMarketLoading(false);
+  }
+};
 
   const fetchWeatherItems = async () => {
   try {
@@ -364,9 +421,10 @@ const fetchTickerNews = async () => {
   }
 };
 
-  useEffect(() => {
- fetchNews("전체");
+useEffect(() => {
+  fetchNews("전체");
   fetchExchange();
+  fetchMarket();
   fetchWeatherItems();
   fetchInstagram();
   fetchTickerNews();
@@ -825,9 +883,9 @@ const fetchTickerNews = async () => {
     오늘의 환율
   </h2>
 
-  <p className="text-xs text-gray-400 font-bold">
-    기준일 {exchangeDate ? formatExchangeDate(exchangeDate) : "-"}
-  </p>
+<p className="text-xs text-gray-400 font-bold">
+  네이버 증권 기준
+</p>
 </div>
 
             <button
@@ -864,9 +922,12 @@ const fetchTickerNews = async () => {
               const isUp = item.direction === "up";
               const isDown = item.direction === "down";
 
-              return (
-                <div
-                  key={item.label}
+return (
+  <a
+    key={item.label}
+    href={EXCHANGE_LINKS[item.label]}
+    target="_blank"
+    rel="noopener noreferrer"
                  className="
   block
   bg-gray-50
@@ -888,22 +949,7 @@ duration-200
                       {item.label}/KRW
                     </p>
 
-                    <span
-                      className={`
-                        text-sm
-                        leading-none
-                        font-black
-                        ${
-                          isUp
-                            ? "text-red-500"
-                            : isDown
-                            ? "text-blue-500"
-                            : "text-gray-400"
-                        }
-                      `}
-                    >
-                      {isUp ? "▲" : isDown ? "▼" : "-"}
-                    </span>
+     
                   </div>
 
                   <p className="text-2xl font-black text-gray-900 mt-2 tracking-tight">
@@ -924,11 +970,11 @@ duration-200
                       }
                     `}
                   >
-                   {`${isUp ? "+ " : isDown ? "- " : ""}${Math.abs(
+                   {`${isUp ? "▲ " : isDown ? "▼ " : ""}${Math.abs(
   item.change
 ).toFixed(2)}`}
                   </p>
-                </div>
+                </a>
               );
             })}
 
@@ -939,6 +985,114 @@ duration-200
             )}
           </div>
         </section>
+
+{/* 시장지표 보드 */}
+<section className="mt-2">
+  <div className="flex items-end justify-between gap-3 mb-3">
+    <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 pl-3">
+      <h2 className="text-lg font-black text-gray-900">
+        오늘의 시장지표
+      </h2>
+
+      <p className="text-xs text-gray-400 font-bold">
+        네이버 증권 기준
+      </p>
+    </div>
+
+    <button
+      onClick={fetchMarket}
+      className="
+        h-9
+        px-3
+        rounded-xl
+        bg-white
+        border
+        border-gray-200
+        text-xs
+        font-bold
+        text-gray-500
+        flex
+        items-center
+        gap-1.5
+        hover:bg-gray-50
+        transition
+        cursor-default
+      "
+    >
+      <RefreshCw
+        className={`w-3.5 h-3.5 ${
+          marketLoading ? "animate-spin" : ""
+        }`}
+      />
+      새로고침
+    </button>
+  </div>
+
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    {marketItems.map((item) => {
+      const isUp = item.direction === "up";
+      const isDown = item.direction === "down";
+
+      return (
+<a
+  key={item.label}
+  href={MARKET_LINKS[item.label]}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="
+            block
+            bg-gray-50
+            border
+            border-gray-200
+            rounded-3xl
+            p-5
+            shadow-sm
+            hover:shadow-xl
+            hover:-translate-y-0.5
+            transition-all
+            duration-200
+            mb-4
+            cursor-default
+          "
+        >
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-black text-gray-400">
+              {item.label}
+            </p>
+          </div>
+
+          <p className="text-2xl font-black text-gray-900 mt-2 tracking-tight">
+{formatMarketValue(item)}
+          </p>
+
+          <p
+            className={`
+              text-base
+              font-bold
+              mt-2
+              ${
+                isUp
+                  ? "text-red-500"
+                  : isDown
+                  ? "text-blue-500"
+                  : "text-gray-400"
+              }
+            `}
+          >
+{`${isUp ? "▲ " : isDown ? "▼ " : ""}${formatMarketChange(item)}`}
+          </p>
+        </a>
+      );
+    })}
+
+    {marketItems.length === 0 && (
+      <div className="col-span-full bg-white border border-gray-200 rounded-3xl p-5 text-sm text-gray-400 text-center">
+        시장지표를 불러오지 못했습니다.
+      </div>
+    )}
+  </div>
+</section>
+
       </div>
 
       {/* 하단 고정 메뉴 */}
