@@ -5194,19 +5194,40 @@ setNoticeImageIndex(0);
 <div className="px-5 py-2.5 border-b border-gray-100 flex items-center justify-between gap-3">
   <div className="min-w-0">
   <p className="text-base font-black text-gray-900">
-    {menuManageMode === "sort" && "메뉴 위치 변경"}
+    {menuManageMode === "sort" && (
+  <>
+    <span className="hidden md:inline">
+      메뉴 위치 변경 및 숨기기
+    </span>
+
+    <span className="md:hidden">
+      메뉴 숨기기
+    </span>
+  </>
+)}
     {menuManageMode === "edit" && "메뉴 수정"}
     {menuManageMode === "delete" && "메뉴 삭제"}
   </p>
 
-  <p className="text-sm text-gray-500 mt-0. leading-relaxed break-keep">
-    {menuManageMode === "sort" &&
-      "메뉴를 드래그해서 원하는 순서로 변경할 수 있습니다."}
-    {menuManageMode === "edit" &&
-      "직접 추가한 메뉴를 수정하고 빠른메뉴 실행 항목을 설정할 수 있습니다."}
-    {menuManageMode === "delete" &&
-      "직접 추가한 메뉴 중 삭제할 메뉴를 선택할 수 있습니다."}
-  </p>
+<p className="text-sm text-gray-500 mt-0 leading-relaxed break-keep">
+  {menuManageMode === "sort" && (
+    <>
+      <span className="hidden md:inline">
+        메뉴를 드래그해서 원하는 순서로 변경할 수 있습니다.
+      </span>
+
+      <span className="md:hidden">
+        눈 아이콘으로 메뉴를 숨기거나 다시 표시할 수 있습니다.
+      </span>
+    </>
+  )}
+
+  {menuManageMode === "edit" &&
+    "직접 추가한 메뉴를 수정하고 빠른메뉴 실행 항목을 설정할 수 있습니다."}
+
+  {menuManageMode === "delete" &&
+    "직접 추가한 메뉴 중 삭제할 메뉴를 선택할 수 있습니다."}
+</p>
 </div>
   <div className="flex gap-2 shrink-0">
    <button
@@ -7655,6 +7676,8 @@ function SortableMenuSortCard({
     <Eye className="w-5 h-5 text-gray-400" />
   )}
 </button>
+
+
 
     </div>
 
