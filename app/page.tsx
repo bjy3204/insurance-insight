@@ -300,10 +300,21 @@ export default function Home() {
       setReadPressIds(profile.read_press_ids as number[]);
     }
 
-    if (profile?.hidden_menu_ids && Array.isArray(profile.hidden_menu_ids)) {
-      setHiddenMenuIds(profile.hidden_menu_ids as string[]);
-      setTempHiddenMenuIds(profile.hidden_menu_ids as string[]);
-    }
+    if (authStatus === "approved") {
+  if (profile?.hidden_menu_ids && Array.isArray(profile.hidden_menu_ids)) {
+    setHiddenMenuIds(profile.hidden_menu_ids as string[]);
+    setTempHiddenMenuIds(profile.hidden_menu_ids as string[]);
+  }
+} else {
+  const savedHiddenMenus = localStorage.getItem("hiddenMenuIds");
+
+  if (savedHiddenMenus) {
+    const parsed = JSON.parse(savedHiddenMenus);
+
+    setHiddenMenuIds(parsed);
+    setTempHiddenMenuIds(parsed);
+  }
+}
   };
 
 
@@ -1333,10 +1344,22 @@ setHiddenMenuIds(tempHiddenMenuIds);
       hidden_menu_ids: tempHiddenMenuIds,
     }).eq("id", authUser.id).then();
 
-  } else {
-    localStorage.setItem("insurance-menu-order", JSON.stringify(finalMenus.map((menu) => menu.id)));
-    localStorage.setItem("quickMenuKeys", JSON.stringify(tempQuickMenuKeys));
-  }
+ } else {
+  localStorage.setItem(
+    "insurance-menu-order",
+    JSON.stringify(finalMenus.map((menu) => menu.id))
+  );
+
+  localStorage.setItem(
+    "quickMenuKeys",
+    JSON.stringify(tempQuickMenuKeys)
+  );
+
+  localStorage.setItem(
+    "hiddenMenuIds",
+    JSON.stringify(tempHiddenMenuIds)
+  );
+}
 
   setEditingOriginalMenu(null);
   closeEditingMenu();
@@ -5220,7 +5243,7 @@ setNoticeImageIndex(0);
     menu={menu}
     tempHiddenMenuIds={tempHiddenMenuIds}
     setTempHiddenMenuIds={setTempHiddenMenuIds}
-    isApproved={authStatus === "approved"}
+
     onContextMenu={(e) => {
 
 
@@ -7525,14 +7548,14 @@ function SortableMenuSortCard({
   onContextMenu,
   tempHiddenMenuIds,
   setTempHiddenMenuIds,
-  isApproved,
+  
 }: {
   menu: any;
   onEdit: () => void;
   onContextMenu?: (e: React.MouseEvent<HTMLDivElement>) => void;
   tempHiddenMenuIds: string[];
   setTempHiddenMenuIds: React.Dispatch<React.SetStateAction<string[]>>;
-  isApproved: boolean;
+  
 }) {
 
 
@@ -7579,25 +7602,23 @@ function SortableMenuSortCard({
   >
     <div className="flex justify-between items-start mb-4">
             <Icon className="w-10 h-10 text-blue-600 shrink-0" />
-      {isApproved && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setTempHiddenMenuIds((prev) =>
-              prev.includes(menu.id)
-                ? prev.filter((id) => id !== menu.id)
-                : [...prev, menu.id]
-            );
-          }}
-          className="p-2 rounded-full hover:bg-gray-100 transition"
-        >
-          {tempHiddenMenuIds.includes(menu.id) ? (
-            <EyeOff className="w-5 h-5 text-gray-400" />
-          ) : (
-            <Eye className="w-5 h-5 text-gray-400" />
-          )}
-        </button>
-      )}
+     <button
+  onClick={(e) => {
+    e.stopPropagation();
+    setTempHiddenMenuIds((prev) =>
+      prev.includes(menu.id)
+        ? prev.filter((id) => id !== menu.id)
+        : [...prev, menu.id]
+    );
+  }}
+  className="p-2 rounded-full hover:bg-gray-100 transition"
+>
+  {tempHiddenMenuIds.includes(menu.id) ? (
+    <EyeOff className="w-5 h-5 text-gray-400" />
+  ) : (
+    <Eye className="w-5 h-5 text-gray-400" />
+  )}
+</button>
 
     </div>
 
