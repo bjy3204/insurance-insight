@@ -7593,9 +7593,12 @@ function ExchangeIndexBar() {
   };
 
   return (
-    <div className="hidden md:block max-w-[1500px] mx-auto px-5 mb-22">
-      <div className="rounded-2xl px-4 py-3">
-        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs sm:text-sm text-gray-600">
+   <div className="hidden md:block max-w-[1500px] mx-auto px-10 mb-22">
+      <div
+  onClick={() => window.location.href = "/today-news"}
+  className="rounded-2xl px-4 py-3 hover:bg-gray-50 transition"
+>
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs sm:text-sm text-gray-600 cursor-default">
           <span className="font-bold text-gray-800">
             실시간 지표
           </span>
