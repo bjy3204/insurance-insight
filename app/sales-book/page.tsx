@@ -106,7 +106,7 @@ const pagedCategories = filteredCategories.slice(
       
 
       <div className="max-w-7xl mx-auto px-4 pb-6">
-  <div className="bg-white rounded-3xl border border-gray-200 shadow-sm flex overflow-hidden h-[82vh]">
+  <div className="bg-white rounded-3xl border border-gray-200 shadow-sm flex h-[82vh]">
        <aside
   style={{ flex: "0 0 190px" }}
   className="hidden md:block border-r border-gray-200 bg-gray-100 py-4 px-4 overflow-y-auto"
@@ -170,7 +170,7 @@ const pagedCategories = filteredCategories.slice(
           </div>
 
           {viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 pr-3 pt-3 pb-5">
               {pagedCategories.map((category) => (
                 <Link
                   key={category}
