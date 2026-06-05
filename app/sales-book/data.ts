@@ -29,6 +29,7 @@ export const salesData = {
 "/sales-book/암보험/니즈환기/26.png",
 "/sales-book/암보험/니즈환기/27.png",
 "/sales-book/암보험/니즈환기/28.png",
+
 "/sales-book/암보험/니즈환기/29.png",
     ],
 
@@ -36,14 +37,14 @@ export const salesData = {
 
   실손보험: {
     "실손 변천사": [
-      "/sales-book/실손보험/실손 변천사/1.png",
+     
     ],
 
   },
 
   운전자보험: {
     형사합의금: [
-      "/sales-book/운전자보험/형사합의금/1.png",
+      
     ],
 
 
