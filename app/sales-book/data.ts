@@ -4,6 +4,11 @@ export const salesData = {
       "/sales-book/암보험/니즈환기/1.png",
       "/sales-book/암보험/니즈환기/2.png",
       "/sales-book/암보험/니즈환기/3.png",
+      "/sales-book/암보험/니즈환기/4.png",
+      "/sales-book/암보험/니즈환기/5.png",
+      "/sales-book/암보험/니즈환기/6.png",
+      "/sales-book/암보험/니즈환기/7.png",
+      "/sales-book/암보험/니즈환기/8.png",
     ],
 
   },

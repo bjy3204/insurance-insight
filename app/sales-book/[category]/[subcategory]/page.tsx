@@ -14,6 +14,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { salesData } from "../../data";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/app/components/AuthProvider";
 
 export default function SubCategoryPage({
   params,
@@ -38,6 +40,14 @@ export default function SubCategoryPage({
   const [showFullscreen, setShowFullscreen] = useState(false);
   const [tool, setTool] = useState<"pen" | "highlighter" | "eraser">("pen");
   const [drawMode, setDrawMode] = useState(false);
+
+  const { authUser } = useAuth();
+
+const [slideNote, setSlideNote] = useState("");
+const [savedSlideNote, setSavedSlideNote] = useState("");
+const [noteEditing, setNoteEditing] = useState(false);
+const [noteSaving, setNoteSaving] = useState(false);
+
 const canvasRef = useRef<HTMLCanvasElement>(null);
 const isDrawing = useRef(false);
 const lastPoint = useRef({ x: 0, y: 0 });
@@ -118,6 +128,53 @@ const clearCanvas = () => {
   if (!ctx) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+};
+
+useEffect(() => {
+  const fetchSlideNote = async () => {
+    if (!authUser) return;
+
+    const { data } = await supabase
+      .from("sales_book_notes")
+      .select("note")
+      .eq("user_id", authUser.id)
+      .eq("category", category)
+      .eq("subcategory", subcategory)
+      .eq("slide_index", current)
+      .maybeSingle();
+
+    const note = data?.note || "";
+
+    setSlideNote(note);
+    setSavedSlideNote(note);
+    setNoteEditing(false);
+  };
+
+  fetchSlideNote();
+}, [authUser, category, subcategory, current]);
+
+const saveSlideNote = async () => {
+  if (!authUser) return;
+
+  setNoteSaving(true);
+
+  await supabase.from("sales_book_notes").upsert(
+    {
+      user_id: authUser.id,
+      category,
+      subcategory,
+      slide_index: current,
+      note: slideNote,
+      updated_at: new Date().toISOString(),
+    },
+    {
+      onConflict: "user_id,category,subcategory,slide_index",
+    }
+  );
+
+  setSavedSlideNote(slideNote);
+  setNoteEditing(false);
+  setNoteSaving(false);
 };
 
   const openFullscreen = async () => {
@@ -203,81 +260,145 @@ const clearCanvas = () => {
 
         <div className="max-w-7xl mx-auto px-4 py-4">
           {/* PC */}
-          <div className="hidden md:flex bg-white rounded-3xl border border-gray-200  overflow-hidden h-[80vh]">
-            <aside
-              style={{ flex: "0 0 190px" }}
-              className="border-r border-gray-200 bg-gray-100 py-4 px-4"
-            >
-              <div className="text-xs font-black text-gray-400 px-4 mb-3">
-                슬라이드 목록
-              </div>
+         <div
+  className="hidden md:flex bg-white rounded-3xl border border-gray-200 overflow-hidden"
+  style={{ height: "calc(100vh - 150px)" }}
+>
+  <aside
+    className="border-r border-gray-200 bg-gray-100 py-4 px-4"
+    style={{
+      width: 190,
+      flex: "0 0 190px",
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden",
+    }}
+  >
+    <div className="text-xs font-black text-gray-400 px-4 mb-3 shrink-0">
+      슬라이드 목록
+    </div>
 
-              <div className="space-y-3 overflow-y-auto max-h-[72vh] pr-1">
-                {slides.map((slide: string, index: number) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrent(index)}
-                    className={`w-full rounded-2xl border-2 bg-white p-1.5 transition cursor-pointer ${
-                      current === index
-                        ? "border-blue-600 shadow-sm"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-<img
-  src={slide}
-  alt=""
-  onContextMenu={(e) => e.preventDefault()}
-  className="w-full aspect-video object-contain rounded-xl block"
-  draggable={false}
-/>
+    <div
+      className="space-y-3 pr-1"
+      style={{
+        flex: 1,
+        minHeight: 0,
+        overflowY: "auto",
+      }}
+    >
+      {slides.map((slide: string, index: number) => (
+        <button
+          key={index}
+          onClick={() => setCurrent(index)}
+          className={`w-full rounded-2xl border-2 bg-white p-1.5 transition cursor-pointer ${
+            current === index
+              ? "border-blue-600 shadow-sm"
+              : "border-gray-200 hover:border-gray-300"
+          }`}
+        >
+          <img
+            src={slide}
+            alt=""
+            onContextMenu={(e) => e.preventDefault()}
+            className="w-full aspect-video object-contain rounded-xl block"
+            draggable={false}
+          />
 
-                    <div className="text-xs font-black text-gray-500 mt-1">
-                      {index + 1}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </aside>
-
-            <section className="flex-1 px-6 py-6 flex flex-col">
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h2 className="text-sm font-black text-gray-700">
-                    {subcategory}
-                  </h2>
-                  <p className="text-xs text-gray-400 mt-1">
-                    총 {slides.length}장
-                  </p>
-                </div>
-
-                <div className="text-xs font-black text-gray-400">
-                  {current + 1} / {slides.length}
-                </div>
-              </div>
-
-             <div className="relative w-full flex-1 flex items-center justify-center overflow-hidden">
-                <button
-                  onClick={prevSlide}
-                  className="absolute left-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border border-gray-200 shadow flex items-center justify-center hover:bg-white transition cursor-pointer"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
-
-<img
-  src={slides[current]}
-  alt=""
-  className="w-full h-full object-contain rounded-2xl bg-white border-0 outline-none block "
-/>
-
-                <button
-                  onClick={nextSlide}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border border-gray-200 shadow flex items-center justify-center hover:bg-white transition cursor-pointer"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-              </div>
-            </section>
+          <div className="text-xs font-black text-gray-500 mt-1">
+            {index + 1}
           </div>
+        </button>
+      ))}
+    </div>
+  </aside>
+
+  <section
+    className="px-6 py-6"
+    style={{
+      flex: 1,
+      minWidth: 0,
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden",
+    }}
+  >
+    <div className="flex items-center justify-between mb-5 shrink-0">
+      <div>
+        <h2 className="text-sm font-black text-gray-700">
+          {subcategory}
+        </h2>
+        <p className="text-xs text-gray-400 mt-1">
+          총 {slides.length}장
+        </p>
+      </div>
+
+      <div className="text-xs font-black text-gray-400">
+        {current + 1} / {slides.length}
+      </div>
+    </div>
+
+    <div
+      className="relative w-full flex items-center justify-center overflow-hidden"
+      style={{ flex: 1, minHeight: 0, maxHeight: "78%" }}
+    >
+      <button
+        onClick={prevSlide}
+        className="absolute left-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border border-gray-200 shadow flex items-center justify-center hover:bg-white transition cursor-pointer"
+      >
+        <ChevronLeft className="w-6 h-6" />
+      </button>
+
+      <img
+        src={slides[current]}
+        alt=""
+        className="max-w-full max-h-full object-contain rounded-2xl bg-white border-0 outline-none block"
+        draggable={false}
+      />
+
+      <button
+        onClick={nextSlide}
+        className="absolute right-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border border-gray-200 shadow flex items-center justify-center hover:bg-white transition cursor-pointer"
+      >
+        <ChevronRight className="w-6 h-6" />
+      </button>
+    </div>
+
+        <div className="mt-3 shrink-0">
+      <div className="flex items-center justify-between mb-2">
+
+
+      </div>
+
+      <textarea
+        value={slideNote}
+        readOnly={!noteEditing}
+        onChange={(e) => setSlideNote(e.target.value)}
+        placeholder=""
+        className="w-full h-20 resize-none rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-blue-400"
+      />
+    </div>
+
+     <div className="flex items-center gap-2">
+          <button
+            onClick={() => setNoteEditing(true)}
+            className="h-8 px-3 rounded-xl bg-white border border-gray-200 text-xs font-black text-gray-600 hover:bg-gray-100 transition"
+          >
+            수정
+          </button>
+
+          <button
+            onClick={saveSlideNote}
+            disabled={noteSaving || slideNote === savedSlideNote}
+            className="h-8 px-3 rounded-xl bg-blue-600 text-white text-xs font-black disabled:bg-gray-300 transition"
+          >
+            {noteSaving ? "저장중" : "저장"}
+          </button>
+        </div>
+    
+  </section>
+</div>
 
           {/* 모바일 */}
           <div className="md:hidden space-y-4">
@@ -416,7 +537,17 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
     e.stopPropagation();
     clearCanvas();
   }}
-    className="w-11 h-11 rounded-full bg-red-500/80 text-white flex items-center justify-center hover:bg-red-500 transition"
+    className="
+  w-11 h-11
+  rounded-full
+  text-white
+  flex
+  items-center
+  justify-center
+  bg-transparent
+  hover:bg-white/20
+  transition
+"
   >
     <Trash2 className="w-5 h-5" />
   </button>
