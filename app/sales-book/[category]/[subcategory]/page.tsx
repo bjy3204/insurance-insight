@@ -486,8 +486,18 @@ const saveSlideNote = async () => {
       {showFullscreen && (
 <div
   id="salesbook-fullscreen"
-  onClick={() => {
-    if (!drawMode) nextSlide();
+  onClick={(e) => {
+    if (drawMode) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const half = rect.width / 2;
+
+    if (clickX < half) {
+      prevSlide();
+    } else {
+      nextSlide();
+    }
   }}
   className="fixed inset-0 z-[5000] bg-black flex items-center justify-center"
 >
