@@ -349,13 +349,12 @@ const saveSlideNote = async () => {
       >
         <ChevronLeft className="w-6 h-6" />
       </button>
-
-      <img
-        src={slides[current]}
-        alt=""
-        className="max-w-full max-h-full object-contain rounded-2xl bg-white border-0 outline-none block"
-        draggable={false}
-      />
+<img
+  src={slides[current]}
+  alt=""
+  className="w-full max-h-full object-contain rounded-2xl bg-white border-0 outline-none block"
+  draggable={false}
+/>
 
       <button
         onClick={nextSlide}
