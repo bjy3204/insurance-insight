@@ -341,7 +341,7 @@ const saveSlideNote = async () => {
 
     <div
       className="relative w-full flex items-center justify-center overflow-hidden"
-      style={{ flex: 1, minHeight: 0, maxHeight: "78%" }}
+      style={{ flex: 1, minHeight: 0 }}
     >
       <button
         onClick={prevSlide}
