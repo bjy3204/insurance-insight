@@ -147,7 +147,7 @@ const pagedSubcategories = filteredSubcategories.slice(
           >
             <Link
               href="/sales-book"
-              className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-gray-700 hover:bg-white transition"
+              className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black text-blue-600 bg-blue-100 hover:bg-blue-50 cursor-default"
             >
               <Home className="w-4 h-4" />
               전체 자료
@@ -158,7 +158,7 @@ const pagedSubcategories = filteredSubcategories.slice(
                 <Link
                   key={item}
                   href={`/sales-book/${encodeURIComponent(item)}`}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition cursor-default ${
                     item === category
                       ? "bg-blue-100 text-blue-600"
                       : "text-gray-700 hover:bg-white"
@@ -189,7 +189,7 @@ const pagedSubcategories = filteredSubcategories.slice(
                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition ${
                     viewMode === "grid"
                       ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-500 border border-gray-200"
+                      : "bg-white text-gray-500 border border-gray-200 hover:bg-gray-50"
                   }`}
                 >
                   <Grid3X3 className="w-5 h-5" />
@@ -200,7 +200,7 @@ const pagedSubcategories = filteredSubcategories.slice(
                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition ${
                     viewMode === "list"
                       ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-500 border border-gray-200"
+                      : "bg-white text-gray-500 border border-gray-200 hover:bg-gray-50"
                   }`}
                 >
                   <List className="w-5 h-5" />
@@ -216,7 +216,7 @@ const pagedSubcategories = filteredSubcategories.slice(
                     href={`/sales-book/${encodeURIComponent(
                       category
                     )}/${encodeURIComponent(subcategory)}`}
-                    className="bg-white rounded-3xl border border-gray-200 p-5 md:p-8 h-[120px] md:h-[150px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition"
+                    className="bg-white rounded-3xl border border-gray-200 p-5 md:p-8 h-[120px] md:h-[150px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition cursor-default"
                   >
                     <FileText className="w-12 h-12 text-red-500 mb-4" />
 
@@ -234,7 +234,7 @@ const pagedSubcategories = filteredSubcategories.slice(
                     href={`/sales-book/${encodeURIComponent(
                       category
                     )}/${encodeURIComponent(subcategory)}`}
-                    className="flex items-center gap-4 px-5 py-4 border-b last:border-b-0 border-gray-100 hover:bg-gray-50 transition"
+                    className="flex items-center gap-4 px-5 py-4 border-b last:border-b-0 border-gray-100 hover:bg-gray-50 transition cursor-default"
                   >
                     <FileText className="w-8 h-8 text-red-500 shrink-0" />
 
