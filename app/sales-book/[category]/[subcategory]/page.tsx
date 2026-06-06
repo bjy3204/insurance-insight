@@ -290,23 +290,22 @@ const saveSlideNote = async () => {
           </div>
         </header>
 
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 pt-4 pb-10">
           {/* PC */}
-         <div
+<div
   className="hidden md:flex bg-white rounded-3xl border border-gray-200 overflow-hidden"
-  style={{ height: "calc(100vh - 150px)" }}
+  style={{ height: "calc(100vh - 100px)" }}
 >
-  <aside
-    className="border-r border-gray-200 bg-gray-100 py-4 px-4"
-    style={{
-      width: 190,
-      flex: "0 0 190px",
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      overflow: "hidden",
-    }}
-  >
+<aside
+  className="border-r border-gray-200 bg-gray-100 py-4 px-4"
+  style={{
+    width: 190,
+    flex: "0 0 190px",
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+  }}
+>
     <div className="text-xs font-black text-gray-400 px-4 mb-3 shrink-0">
       슬라이드 목록
     </div>
@@ -345,17 +344,17 @@ const saveSlideNote = async () => {
     </div>
   </aside>
 
-  <section
-    className="px-6 py-6"
-    style={{
-      flex: 1,
-      minWidth: 0,
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      overflow: "hidden",
-    }}
-  >
+ <section
+  className="px-6 py-6"
+  style={{
+    flex: 1,
+    minWidth: 0,
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    overflowY: "auto",
+  }}
+>
     <div className="flex items-center justify-between mb-5 shrink-0">
       <div>
         <h2 className="text-sm font-black text-gray-700">
@@ -371,9 +370,9 @@ const saveSlideNote = async () => {
       </div>
     </div>
 
-    <div
-      className="relative w-full flex items-center justify-center overflow-hidden"
-      style={{ flex: 1, minHeight: 0 }}
+       <div
+      className="relative w-full overflow-hidden"
+      style={{ flex: "0 0 auto" }}
     >
       <button
         onClick={prevSlide}
@@ -381,14 +380,12 @@ const saveSlideNote = async () => {
       >
         <ChevronLeft className="w-6 h-6" />
       </button>
-<img
-  src={slides[current]}
-  alt=""
-  className="w-full h-full object-cover rounded-2xl bg-white border-0 outline-none block"
-  draggable={false}
-/>
-
-
+      <img
+        src={slides[current]}
+        alt=""
+        className="w-full h-auto rounded-2xl bg-white border-0 outline-none block"
+        draggable={false}
+      />
       <button
         onClick={nextSlide}
         className="absolute right-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border border-gray-200 shadow flex items-center justify-center hover:bg-white transition cursor-pointer"
@@ -396,6 +393,7 @@ const saveSlideNote = async () => {
         <ChevronRight className="w-6 h-6" />
       </button>
     </div>
+
 
         <div className="mt-3 shrink-0">
       <div className="flex items-center justify-between mb-2">
