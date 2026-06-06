@@ -240,10 +240,13 @@ const handleLogin = async () => {
     return;
   }
 
-    setAuthOpen(false);
-  setEmail("");
-  setPassword("");
-  onMenuClose?.();
+setAuthOpen(false);
+setEmail("");
+setPassword("");
+
+await onAuthChange?.();
+
+onMenuClose?.();
 };
 
  
