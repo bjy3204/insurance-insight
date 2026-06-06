@@ -38,6 +38,10 @@ export default function SubCategoryPage({
     ? categoryData[subcategory as keyof typeof categoryData] || []
     : [];
 
+const showDriverTooltip =
+  category === "운전자보험" &&
+  subcategory === "운전자보험 설명서";
+
   const [current, setCurrent] = useState(0);
   const [showFullscreen, setShowFullscreen] = useState(false);
   const [tool, setTool] = useState<"pen" | "highlighter" | "eraser">("pen");
@@ -629,7 +633,7 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
   onClick={(e) => {
     if (drawMode) e.stopPropagation();
   }}
-  className="relative max-w-screen max-h-screen"
+  className="relative max-w-screen max-h-screen overflow-visible"
 >
   <img
     src={slides[current]}
@@ -638,6 +642,163 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
     className="max-w-screen max-h-screen object-contain select-none"
     draggable={false}
   />
+
+  {showDriverTooltip && current === 9 && (
+  <>
+
+{/* 합의X 기소 */}
+<div
+  className="
+    group
+    absolute
+    left-[36.5%]
+    top-[81%]
+    w-[6%]
+    h-[4%]
+    z-[9999]
+    overflow-visible
+  "
+  onClick={(e) => e.stopPropagation()}
+>
+  <img
+    src="/sales-book/운전자보험/설명/기소.png"
+    alt=""
+    className="
+      hidden
+      group-hover:block
+      absolute
+      top-full
+      left-1/2
+      -translate-x-[50%]
+      mt-[7px]
+      !w-[250px]
+      max-w-none
+      rounded-xl
+      shadow-xl
+      bg-white
+      border
+      border-gray-200
+      z-[9999]
+    "
+    draggable={false}
+  />
+</div>
+
+    {/* 기소 */}
+    <div
+      className="
+        group
+        absolute
+        left-[65%]
+        top-[58%]
+        w-[8%]
+        h-[4%]
+         z-[9999]
+    overflow-visible
+      "
+      onClick={(e) => e.stopPropagation()}
+    >
+     <img
+  src="/sales-book/운전자보험/설명/기소.png"
+  alt="기소 설명"
+  className="
+    hidden
+    group-hover:block
+    absolute
+    top-full
+    left-1/2
+    -translate-x-[48%]
+    mt-[-3px]
+    !w-[250px]
+    max-w-none
+    rounded-xl
+    shadow-xl
+    bg-white
+     border
+  border-gray-200
+     z-[9999]
+  "
+  draggable={false}
+/>
+    </div>
+
+    {/* 불기소 */}
+    <div
+      className="
+        group
+        absolute
+        left-[57%]
+        top-[58%]
+        w-[8%]
+        h-[4%]
+         z-[9999]
+    overflow-visible
+      "
+      onClick={(e) => e.stopPropagation()}
+    >
+      <img
+        src="/sales-book/운전자보험/설명/불기소.png"
+        alt="불기소 설명"
+       className="
+    hidden
+    group-hover:block
+    absolute
+     top-full
+    left-1/2
+    -translate-x-[52%]
+    mt-[-3px]
+    !w-[250px]
+    max-w-none
+    rounded-xl
+    shadow-xl
+    bg-white
+     border
+  border-gray-200
+     z-[9999]
+  "
+        draggable={false}
+      />
+    </div>
+
+    {/* 약식기소 */}
+    <div
+      className="
+        group
+        absolute
+        left-[73.3%]
+        top-[58%]
+        w-[8%]
+        h-[4%]
+         z-[9999]
+    overflow-visible
+      "
+      onClick={(e) => e.stopPropagation()}
+    >
+      <img
+        src="/sales-book/운전자보험/설명/약식기소.png"
+        alt="약식기소 설명"
+        className="
+    hidden
+    group-hover:block
+    absolute
+    top-full
+    left-1/2
+    -translate-x-[48%]
+    mt-[-3px]
+    !w-[250px]
+    max-w-none
+    rounded-xl
+    shadow-xl
+    bg-white
+     border
+  border-gray-200
+     z-[9999]
+  "
+        draggable={false}
+      />
+    </div>
+  </>
+)}
 
   <canvas
     ref={canvasRef}
