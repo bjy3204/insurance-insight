@@ -63,15 +63,20 @@ const lastPoint = useRef({ x: 0, y: 0 });
     setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   };
 
-  const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
-  isDrawing.current = true;
+const getCanvasPoint = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  const canvas = e.currentTarget;
+  const rect = canvas.getBoundingClientRect();
 
-  const rect = e.currentTarget.getBoundingClientRect();
-
-  lastPoint.current = {
-    x: e.clientX - rect.left,
-    y: e.clientY - rect.top,
+  return {
+    x: ((e.clientX - rect.left) / rect.width) * canvas.width,
+    y: ((e.clientY - rect.top) / rect.height) * canvas.height,
   };
+};
+
+const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  e.currentTarget.setPointerCapture(e.pointerId);
+  isDrawing.current = true;
+  lastPoint.current = getCanvasPoint(e);
 };
 
 const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -83,11 +88,10 @@ const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  const rect = canvas.getBoundingClientRect();
+const point = getCanvasPoint(e);
 
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
+const x = point.x;
+const y = point.y;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
@@ -103,6 +107,8 @@ const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
     ctx.strokeStyle = "#ffff00";
     ctx.lineWidth = 35;
     ctx.globalAlpha = 0.2;
+    ctx.lineCap = "butt";
+     ctx.lineJoin = "round";
   }
 
   if (tool === "eraser") {
@@ -119,7 +125,11 @@ const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
   lastPoint.current = { x, y };
 };
 
-const stopDrawing = () => {
+const stopDrawing = (e?: React.PointerEvent<HTMLCanvasElement>) => {
+  if (e?.currentTarget.hasPointerCapture(e.pointerId)) {
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  }
+
   isDrawing.current = false;
 };
 
