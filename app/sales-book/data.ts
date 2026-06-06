@@ -42,11 +42,16 @@ export const salesData = {
 
   },
 
-  운전자보험: {
-    "필수 가이드": [
-      
-    ],
-
-
-  },
+운전자보험: {
+  "운전자보험 설명서": [
+    "/sales-book/운전자보험/운전자보험 설명서/1.png",
+    "/sales-book/운전자보험/운전자보험 설명서/2.png",
+    "/sales-book/운전자보험/운전자보험 설명서/3.png",
+    "/sales-book/운전자보험/운전자보험 설명서/4.png",
+    "/sales-book/운전자보험/운전자보험 설명서/5.png",
+    "/sales-book/운전자보험/운전자보험 설명서/6.png",
+    "/sales-book/운전자보험/운전자보험 설명서/7.png",
+    "/sales-book/운전자보험/운전자보험 설명서/8.png",
+  ],
+},
 };
