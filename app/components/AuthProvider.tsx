@@ -169,7 +169,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
   async (event, session) => {
-    if (event === "USER_UPDATED" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") return;
+    if (event === "USER_UPDATED" || event === "TOKEN_REFRESHED") return;
+
 
     // refresh token 만료 시 자동 로그아웃
     if (!session) {

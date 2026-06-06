@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { use, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/components/AuthProvider";
 import {
   ArrowLeft,
   FileText,
@@ -11,6 +13,7 @@ import {
   List,
   Home,
   Search,
+  Lock,
 } from "lucide-react";
 import { salesData } from "../data";
 
@@ -19,6 +22,8 @@ export default function CategoryPage({
 }: {
   params: Promise<{ category: string }>;
 }) {
+      const router = useRouter();
+  const { authUser, authStatus } = useAuth();
   const { category: rawCategory } = use(params);
   const category = decodeURIComponent(rawCategory);
 
@@ -30,6 +35,35 @@ export default function CategoryPage({
 
 const [page, setPage] = useState(1);
 const itemsPerPage = 12;
+
+  if (!authUser || authStatus !== "approved") {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-xl p-8 max-w-sm w-full text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-gray-400" />
+          </div>
+
+          <h2 className="text-lg font-bold text-gray-900 mb-2">
+            접근 제한
+          </h2>
+
+          <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+            세일즈북 기능은 승인된 회원만
+            <br />
+            이용 가능합니다.
+          </p>
+
+          <button
+            onClick={() => router.push("/")}
+            className="w-full h-11 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition cursor-pointer"
+          >
+            메인으로 돌아가기
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!subcategories) {
     return (

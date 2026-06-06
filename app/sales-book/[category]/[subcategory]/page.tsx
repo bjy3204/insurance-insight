@@ -12,10 +12,12 @@ import {
   Highlighter,
   Eraser,
   Trash2,
+   Lock,
 } from "lucide-react";
 import { salesData } from "../../data";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
+import { useRouter } from "next/navigation";
 
 export default function SubCategoryPage({
   params,
@@ -41,7 +43,8 @@ export default function SubCategoryPage({
   const [tool, setTool] = useState<"pen" | "highlighter" | "eraser">("pen");
   const [drawMode, setDrawMode] = useState(false);
 
-  const { authUser } = useAuth();
+  const router = useRouter();
+const { authUser, authStatus } = useAuth();
 
 const [slideNote, setSlideNote] = useState("");
 const [savedSlideNote, setSavedSlideNote] = useState("");
@@ -219,10 +222,39 @@ const saveSlideNote = async () => {
     };
   }, [slides.length]);
 
+  if (!authUser || authStatus !== "approved") {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-xl p-8 max-w-sm w-full text-center">
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Lock className="w-8 h-8 text-gray-400" />
+        </div>
+
+        <h2 className="text-lg font-bold text-gray-900 mb-2">
+          접근 제한
+        </h2>
+
+        <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+          세일즈북 기능은 승인된 회원만
+          <br />
+          이용 가능합니다.
+        </p>
+
+        <button
+          onClick={() => router.push("/")}
+          className="w-full h-11 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition cursor-pointer"
+        >
+          메인으로 돌아가기
+        </button>
+      </div>
+    </div>
+  );
+}
+
   if (slides.length === 0) {
     return (
       <main className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-xl font-black text-gray-900">자료가 없습니다.</div>
+        <div className="text-xl font-black text-gray-900">자료 제작중입니다.</div>
       </main>
     );
   }
