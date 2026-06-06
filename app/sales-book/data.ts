@@ -43,7 +43,7 @@ export const salesData = {
   },
 
   운전자보험: {
-    형사합의금: [
+    "필수 가이드": [
       
     ],
 

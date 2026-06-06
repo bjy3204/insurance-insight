@@ -13,6 +13,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@emailjs/browser": "^4.4.1",
+    "@fontsource/noto-color-emoji": "^5.2.12",
     "@notionhq/client": "^5.21.0",
     "@supabase/supabase-js": "^2.106.1",
     "@upstash/redis": "^1.38.0",

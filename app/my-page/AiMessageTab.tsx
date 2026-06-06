@@ -30,14 +30,15 @@ function getTodaySpecialDays(date: Date): SpecialDay[] {
   const results: SpecialDay[] = [];
 
   const holidays: Record<string, SpecialDay> = {
-    "1-1": { label: "새해 첫날", type: "holiday", emoji: "🎊" },
-    "3-1": { label: "삼일절", type: "holiday", emoji: "🇰🇷" },
-    "5-5": { label: "어린이날", type: "holiday", emoji: "🎈" },
-    "6-6": { label: "현충일", type: "holiday", emoji: "🌹" },
-    "8-15": { label: "광복절", type: "holiday", emoji: "🇰🇷" },
-    "10-3": { label: "개천절", type: "holiday", emoji: "🇰🇷" },
-    "10-9": { label: "한글날", type: "holiday", emoji: "📖" },
-    "12-25": { label: "크리스마스", type: "holiday", emoji: "🎄" },
+"1-1": { label: "신정", type: "anniversary", emoji: "🎍" },
+
+"3-1": { label: "삼일절", type: "anniversary", emoji: "🇰🇷" },
+"5-5": { label: "어린이날", type: "anniversary", emoji: "🎈" },
+"6-6": { label: "현충일", type: "anniversary", emoji: "🇰🇷" },
+"8-15": { label: "광복절", type: "anniversary", emoji: "🇰🇷" },
+"10-3": { label: "개천절", type: "anniversary", emoji: "☀️" },
+"10-9": { label: "한글날", type: "anniversary", emoji: "📝" },
+"12-25": { label: "크리스마스", type: "anniversary", emoji: "🎄" },
   };
 
   const lunarDays: Record<string, SpecialDay> = {};
@@ -154,7 +155,7 @@ addSolarDay(bok.malbok.getMonth() + 1, bok.malbok.getDate(), "말복", "☀️�
   if (seasons[key]) results.push(seasons[key]);
 
 const anniversaries: Record<string, SpecialDay> = {
-  "1-1": { label: "신정", type: "anniversary", emoji: "🎍" },
+ 
   "1-14": { label: "다이어리데이", type: "anniversary", emoji: "📔" },
   "1-27": { label: "초콜릿케이크데이", type: "anniversary", emoji: "🍰" },
 
@@ -163,7 +164,7 @@ const anniversaries: Record<string, SpecialDay> = {
   "2-14": { label: "발렌타인데이", type: "anniversary", emoji: "🍫" },
   "2-22": { label: "고양이의날", type: "anniversary", emoji: "🐱" },
 
-  "3-1": { label: "삼일절", type: "anniversary", emoji: "🇰🇷" },
+ 
   "3-3": { label: "삼겹살데이", type: "anniversary", emoji: "🥓" },
   "3-8": { label: "세계여성의날", type: "anniversary", emoji: "🌷" },
   "3-14": { label: "화이트데이", type: "anniversary", emoji: "🍬" },
@@ -178,7 +179,7 @@ const anniversaries: Record<string, SpecialDay> = {
   "4-22": { label: "지구의날", type: "anniversary", emoji: "🌎" },
 
   "5-2": { label: "오리데이", type: "anniversary", emoji: "🦆" },
-  "5-5": { label: "어린이날", type: "anniversary", emoji: "🎈" },
+
   "5-8": { label: "어버이날", type: "anniversary", emoji: "🌹" },
   "5-14": { label: "식품안전의날", type: "anniversary", emoji: "🥗" },
   "5-15": { label: "스승의날", type: "anniversary", emoji: "📚" },
@@ -186,7 +187,7 @@ const anniversaries: Record<string, SpecialDay> = {
   "5-31": { label: "바다의날", type: "anniversary", emoji: "🌊" },
 "6-1": { label: "의병의날", type: "anniversary", emoji: "🌿" },
   "6-5": { label: "환경의날", type: "anniversary", emoji: "🌱" },
-  "6-6": { label: "현충일", type: "anniversary", emoji: "🇰🇷" },
+
   "6-9": { label: "육구데이", type: "anniversary", emoji: "🐶" },
 
   "7-11": { label: "인구의날", type: "anniversary", emoji: "👨‍👩‍👧‍👦" },
@@ -194,7 +195,7 @@ const anniversaries: Record<string, SpecialDay> = {
   "7-27": { label: "유엔군참전의날", type: "anniversary", emoji: "🕊️" },
 
   "8-8": { label: "세계고양이의날", type: "anniversary", emoji: "🐱" },
-  "8-15": { label: "광복절", type: "anniversary", emoji: "🇰🇷" },
+  
   "8-22": { label: "에너지의날", type: "anniversary", emoji: "⚡" },
 
   "9-2": { label: "구이데이", type: "anniversary", emoji: "🍖" },
@@ -204,8 +205,8 @@ const anniversaries: Record<string, SpecialDay> = {
 
   "10-1": { label: "국군의날", type: "anniversary", emoji: "🪖" },
   "10-2": { label: "노인의날", type: "anniversary", emoji: "👵" },
-  "10-3": { label: "개천절", type: "anniversary", emoji: "☀️" },
-  "10-9": { label: "한글날", type: "anniversary", emoji: "📝" },
+
+
   "10-15": { label: "세계손씻기의날", type: "anniversary", emoji: "🧼" },
   "10-16": { label: "세계식량의날", type: "anniversary", emoji: "🌾" },
   "10-24": { label: "사과데이", type: "anniversary", emoji: "🍎" },
@@ -215,7 +216,7 @@ const anniversaries: Record<string, SpecialDay> = {
   "11-17": { label: "순국선열의날", type: "anniversary", emoji: "🇰🇷" },
 
   "12-5": { label: "자원봉사자의날", type: "anniversary", emoji: "🤝" },
-  "12-25": { label: "크리스마스", type: "anniversary", emoji: "🎄" },
+
   "12-31": { label: "한해 마지막날", type: "anniversary", emoji: "🎆" },
 };
 
