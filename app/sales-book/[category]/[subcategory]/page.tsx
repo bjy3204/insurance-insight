@@ -18,6 +18,7 @@ import { salesData } from "../../data";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 import { useRouter } from "next/navigation";
+import { tooltipData } from "./tooltipData";
 
 export default function SubCategoryPage({
   params,
@@ -42,7 +43,11 @@ const showDriverTooltip =
   category === "운전자보험" &&
   subcategory === "운전자보험 설명서";
 
-  const [current, setCurrent] = useState(0);
+const [current, setCurrent] = useState(0);
+
+const currentTooltips = showDriverTooltip
+  ? tooltipData[current] || []
+  : [];
   const [showFullscreen, setShowFullscreen] = useState(false);
   const [tool, setTool] = useState<"pen" | "highlighter" | "eraser">("pen");
   const [drawMode, setDrawMode] = useState(false);
@@ -643,162 +648,84 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
     draggable={false}
   />
 
-  {showDriverTooltip && current === 9 && (
-  <>
-
-{/* 합의X 기소 */}
-<div
-  className="
-    group
-    absolute
-    left-[36.5%]
-    top-[81%]
-    w-[6%]
-    h-[4%]
-    z-[9999]
-    overflow-visible
-  "
-  onClick={(e) => e.stopPropagation()}
->
-  <img
-    src="/sales-book/운전자보험/설명/기소.png"
-    alt=""
-    className="
-      hidden
-      group-hover:block
-      absolute
-      top-full
-      left-1/2
-      -translate-x-[50%]
-      mt-[7px]
-      !w-[250px]
-      max-w-none
-      rounded-xl
-      shadow-xl
-      bg-white
-      border
-      border-gray-200
-      z-[9999]
-    "
-    draggable={false}
-  />
-</div>
-
-    {/* 기소 */}
+{currentTooltips.map((item, index) => (
+  <div key={index} className="group absolute inset-0 z-[9999] pointer-events-none">
+    {/* 마우스 올리는 영역 */}
     <div
-      className="
-        group
-        absolute
-        left-[65%]
-        top-[58%]
-        w-[8%]
-        h-[4%]
-         z-[9999]
-    overflow-visible
-      "
+      className="absolute pointer-events-auto"
+      style={{
+        left: `${item.x}%`,
+        top: `${item.y}%`,
+        width: `${item.w}%`,
+        height: `${item.h}%`,
+      }}
       onClick={(e) => e.stopPropagation()}
     >
-     <img
-  src="/sales-book/운전자보험/설명/기소.png"
-  alt="기소 설명"
-  className="
-    hidden
-    group-hover:block
-    absolute
-    top-full
-    left-1/2
-    -translate-x-[48%]
-    mt-[-3px]
-    !w-[250px]
-    max-w-none
-    rounded-xl
-    shadow-xl
-    bg-white
-     border
-  border-gray-200
-     z-[9999]
-  "
-  draggable={false}
-/>
-    </div>
-
-    {/* 불기소 */}
-    <div
-      className="
-        group
-        absolute
-        left-[57%]
-        top-[58%]
-        w-[8%]
-        h-[4%]
-         z-[9999]
-    overflow-visible
-      "
-      onClick={(e) => e.stopPropagation()}
-    >
-      <img
-        src="/sales-book/운전자보험/설명/불기소.png"
-        alt="불기소 설명"
-       className="
-    hidden
-    group-hover:block
-    absolute
-     top-full
-    left-1/2
-    -translate-x-[52%]
-    mt-[-3px]
-    !w-[250px]
-    max-w-none
-    rounded-xl
-    shadow-xl
-    bg-white
-     border
-  border-gray-200
-     z-[9999]
-  "
-        draggable={false}
+      <div
+        className={`
+          absolute inset-0
+          ${item.shape === "pill" ? "rounded-full" : "rounded-md"}
+          bg-white/10
+          opacity-0
+          group-hover:opacity-100
+          transition
+        `}
       />
     </div>
 
-    {/* 약식기소 */}
-    <div
-      className="
-        group
-        absolute
-        left-[73.3%]
-        top-[58%]
-        w-[8%]
-        h-[4%]
-         z-[9999]
-    overflow-visible
-      "
-      onClick={(e) => e.stopPropagation()}
-    >
+    {/* 설명 이미지 / 설명 박스 위치는 별도 */}
+    {item.type === "image" && item.image ? (
       <img
-        src="/sales-book/운전자보험/설명/약식기소.png"
-        alt="약식기소 설명"
-        className="
-    hidden
-    group-hover:block
-    absolute
-    top-full
-    left-1/2
-    -translate-x-[48%]
-    mt-[-3px]
-    !w-[250px]
-    max-w-none
-    rounded-xl
-    shadow-xl
-    bg-white
-     border
-  border-gray-200
-     z-[9999]
-  "
+        src={item.image}
+        alt=""
+        className={`
+          hidden
+          group-hover:block
+          absolute
+          ${item.tooltipX || "left-[50%]"}
+          ${item.tooltipY || "top-[50%]"}
+          !w-[250px]
+          max-w-none
+          rounded-xl
+          shadow-xl
+          bg-white
+          border
+          border-gray-200
+          z-[9999]
+        `}
         draggable={false}
       />
-    </div>
-  </>
-)}
+    ) : (
+      <div
+        className={`
+          hidden
+          group-hover:block
+          absolute
+          ${item.tooltipX || "left-[50%]"}
+          ${item.tooltipY || "top-[50%]"}
+          w-[570px]
+          rounded-4xl
+          bg-white
+          border
+          border-gray-200
+          shadow-xl
+          px-5
+          py-4
+          text-center
+          text-[18px]
+          font-bold
+          text-gray-800
+          leading-snug
+          z-[9999]
+        `}
+      >
+        {item.text}
+      </div>
+    )}
+  </div>
+))}
+
+
 
   <canvas
     ref={canvasRef}

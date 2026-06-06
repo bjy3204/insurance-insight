@@ -54,6 +54,11 @@ export const salesData = {
     "/sales-book/운전자보험/운전자보험 설명서/8.png",
     "/sales-book/운전자보험/운전자보험 설명서/9.png",
     "/sales-book/운전자보험/운전자보험 설명서/10.png",
+    "/sales-book/운전자보험/운전자보험 설명서/11.png",
+    "/sales-book/운전자보험/운전자보험 설명서/12.png",
+    "/sales-book/운전자보험/운전자보험 설명서/13.png",
+    "/sales-book/운전자보험/운전자보험 설명서/14.png",
+    "/sales-book/운전자보험/운전자보험 설명서/15.png",
   ],
 },
 };
