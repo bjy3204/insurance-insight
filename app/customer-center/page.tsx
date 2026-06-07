@@ -516,7 +516,47 @@ address: "",
   },
 ];
 
+const nonlifeArsImages = [
+  { name: "AIG손해보험", logo: "/logos/customer-nonlife/aig.png", image: "/ars/nonlife/aig.png" },
+  { name: "DB손해보험", logo: "/logos/customer-nonlife/db.png", image: "/ars/nonlife/db.png" },
+  { name: "KB손해보험", logo: "/logos/customer-nonlife/kb.png", image: "/ars/nonlife/kb.png" },
+  { name: "MG손해보험", logo: "/logos/customer-nonlife/mg.png", image: "/ars/nonlife/mg.png" },
+  { name: "NH농협손해보험", logo: "/logos/customer-nonlife/nh.png", image: "/ars/nonlife/nh.png" },
+  { name: "라이나손해보험", logo: "/logos/customer-nonlife/lina.png", image: "/ars/nonlife/lina.png" },
+  { name: "롯데손해보험", logo: "/logos/customer-nonlife/lotte.png", image: "/ars/nonlife/lotte.png" },
+  { name: "메리츠화재", logo: "/logos/customer-nonlife/meritz.png", image: "/ars/nonlife/meritz.png" },
+  { name: "삼성화재", logo: "/logos/customer-nonlife/samsung.png", image: "/ars/nonlife/samsung.png" },
+  { name: "AXA손해보험", logo: "/logos/customer-etc/axa.png", image: "/ars/nonlife/axa.png" },
+  { name: "예손보험", logo: "/logos/customer-nonlife/yeson.png", image: "/ars/nonlife/yeson.png" },
+  { name: "하나손해보험", logo: "/logos/customer-nonlife/hana.png", image: "/ars/nonlife/hana.png" },
+  { name: "한화손해보험", logo: "/logos/customer-nonlife/hanhwa.png", image: "/ars/nonlife/hanhwa.png" },
+  { name: "현대해상", logo: "/logos/customer-nonlife/hyundai.png", image: "/ars/nonlife/hyundai.png" },
+  { name: "흥국화재", logo: "/logos/customer-nonlife/heungkuk.png", image: "/ars/nonlife/heungkuk.png" },
+];
 
+const lifeArsImages = [
+  { name: "ABL생명", logo: "/logos/customer-life/abllife.png", image: "/ars/life/abl.png" },
+  { name: "AIA생명", logo: "/logos/customer-life/aialife.png", image: "/ars/life/aia.png" },
+  { name: "DB생명", logo: "/logos/customer-life/dblife.png", image: "/ars/life/db.png" },
+  { name: "IBK연금보험", logo: "/logos/customer-life/ibklife.png", image: "/ars/life/ibk.png" },
+  { name: "iM라이프", logo: "/logos/customer-life/imlife.png", image: "/ars/life/im.png" },
+  { name: "KB라이프", logo: "/logos/customer-life/kblife.png", image: "/ars/life/kb.png" },
+  { name: "KDB생명", logo: "/logos/customer-life/kdblife.png", image: "/ars/life/kdb.png" },
+  { name: "교보생명", logo: "/logos/customer-life/kyobolife.png", image: "/ars/life/kyobo.png" },
+  { name: "NH농협생명", logo: "/logos/customer-life/nhlife.png", image: "/ars/life/nh.png" },
+  { name: "동양생명", logo: "/logos/customer-life/dongyanglife.png", image: "/ars/life/dongyang.png" },
+  { name: "라이나생명", logo: "/logos/customer-life/linalife.png", image: "/ars/life/lina.png" },
+  { name: "메트라이프", logo: "/logos/customer-life/metlifelife.png", image: "/ars/life/metlife.png" },
+  { name: "미래에셋생명", logo: "/logos/customer-life/miraeassetlife.png", image: "/ars/life/miraeasset.png" },
+  { name: "삼성생명", logo: "/logos/customer-life/samsunglife.png", image: "/ars/life/samsung.png" },
+  { name: "신한라이프", logo: "/logos/customer-life/shinhanlife.png", image: "/ars/life/shinhan.png" },
+  { name: "처브라이프", logo: "/logos/customer-life/chubblife.png", image: "/ars/life/chubb.png" },
+  { name: "카디프생명", logo: "/logos/customer-life/cardiflife.png", image: "/ars/life/cardif.png" },
+  { name: "푸본현대생명", logo: "/logos/customer-life/fubonlife.png", image: "/ars/life/fubon.png" },
+  { name: "하나생명", logo: "/logos/customer-life/hanalife.png", image: "/ars/life/hana.png" },
+  { name: "한화생명", logo: "/logos/customer-life/hanhwalife.png", image: "/ars/life/hanhwa.png" },
+  { name: "흥국생명", logo: "/logos/customer-life/heungkuklife.png", image: "/ars/life/heungkuk.png" },
+];
 
 type MemoItem = {
   id: string;
@@ -586,7 +626,15 @@ const sensors = useSensors(
 
 const [memoOpen, setMemoOpen] = useState(false);
 const [settingOpen, setSettingOpen] = useState(false);
+const [arsOpen, setArsOpen] = useState(false);
 
+const [arsTab, setArsTab] = useState<"nonlife" | "life">("nonlife");
+const [arsSearch, setArsSearch] = useState("");
+const [selectedArs, setSelectedArs] = useState<any>(null);
+const [arsZoom, setArsZoom] = useState(1);
+const [arsPan, setArsPan] = useState({ x: 0, y: 0 });
+const [arsDragging, setArsDragging] = useState(false);
+const [arsDragStart, setArsDragStart] = useState({ x: 0, y: 0 });
 const [memoSearch, setMemoSearch] = useState("");
 const [memoPage, setMemoPage] = useState(1);
 const [memoTitle, setMemoTitle] = useState("");
@@ -687,7 +735,16 @@ const filteredCompanies =
       )
     : currentCompanies;
 
+useEffect(() => {
+  if (!selectedArs) return;
 
+  const originalOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
+
+  return () => {
+    document.body.style.overflow = originalOverflow;
+  };
+}, [selectedArs]);
 
 
 useEffect(() => {
@@ -921,20 +978,19 @@ const pagedMemos = filteredMemos.slice(
               }`}
             >
               <div className="relative">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSettingOpen(!settingOpen);
-                  }}
-                                   className={`
-                    w-10 h-10 rounded-full border border-gray-200 shadow-sm
-                    hidden md:flex items-center justify-center transition cursor-default
-                    ${settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}
-                  `}
-
-                >
-                  <Pencil className="w-5 h-5 text-gray-400" />
-                </button>
+<button
+  onClick={(e) => {
+    e.stopPropagation();
+    setSettingOpen(!settingOpen);
+  }}
+  className={`
+    w-10 h-10 rounded-full border border-gray-200 shadow-sm
+    flex items-center justify-center transition cursor-default
+    ${settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}
+  `}
+>
+  <Pencil className="w-5 h-5 text-gray-400" />
+</button>
 
                 {settingOpen && (
                   <div
@@ -949,6 +1005,7 @@ const pagedMemos = filteredMemos.slice(
                         setMemoOpen(true);
                         setSettingOpen(false);
                       }}
+                      
                       className="
                         block w-full text-center px-4 py-3 text-sm font-bold
                         text-gray-700 hover:bg-gray-50 transition cursor-default
@@ -972,6 +1029,21 @@ const pagedMemos = filteredMemos.slice(
                         계산기
                       </button>
                     )}
+                    {authStatus === "approved" && (
+  <button
+    onClick={() => {
+      setArsOpen(true);
+      setSettingOpen(false);
+    }}
+    className="
+      block w-full text-center px-4 py-3 text-sm font-bold
+      text-gray-700 hover:bg-gray-50 transition border-t
+      border-gray-100 cursor-default
+    "
+  >
+    ARS 안내
+  </button>
+)}
                   </div>
                 )}
               </div>
@@ -1320,6 +1392,7 @@ const pagedMemos = filteredMemos.slice(
                               toggleMemoVisible(memo.id);
                             }}
                             className={`
+                              hidden md:flex
                               w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default
                               ${
                                 memo.visible
@@ -1864,6 +1937,171 @@ stopPopupMove();
           삭제
         </button>
       </div>
+    </div>
+  </div>
+)}
+
+{arsOpen && (
+  <div className="fixed inset-0 z-[1500] bg-black/50 flex items-center justify-center p-4">
+    <div className="bg-white w-full max-w-5xl h-[88vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="h-14 bg-gray-800 text-white flex items-center justify-between px-5 shrink-0">
+        <p className="text-sm font-bold">보험사 ARS 안내</p>
+
+        <button
+          onClick={() => {
+            setArsOpen(false);
+            setSelectedArs(null);
+            setArsSearch("");
+          }}
+          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="p-5 border-b border-gray-100 shrink-0">
+        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-4">
+          <button
+            onClick={() => setArsTab("nonlife")}
+            className={`rounded-xl py-3 text-sm font-bold ${
+              arsTab === "nonlife"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600"
+            }`}
+          >
+            손해보험
+          </button>
+
+          <button
+            onClick={() => setArsTab("life")}
+            className={`rounded-xl py-3 text-sm font-bold ${
+              arsTab === "life"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600"
+            }`}
+          >
+            생명보험
+          </button>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-200 px-4 py-3 flex items-center gap-3">
+          <Search className="w-5 h-5 text-gray-400" />
+
+          <input
+            value={arsSearch}
+            onChange={(e) => setArsSearch(e.target.value)}
+            placeholder="보험사명을 검색하세요"
+            className="w-full outline-none text-sm bg-transparent"
+          />
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-5">
+        {(() => {
+          const arsList = arsTab === "nonlife" ? nonlifeArsImages : lifeArsImages;
+
+          const filteredArs = arsList.filter((item) =>
+            item.name.toLowerCase().includes(arsSearch.toLowerCase())
+          );
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              {filteredArs.map((item) => (
+                <button
+                  key={item.name}
+                  onClick={() => {
+  setSelectedArs(item);
+  setArsZoom(1);
+  setArsPan({ x: 0, y: 0 });
+}}
+                  className="bg-white border border-gray-200 rounded-3xl p-4 shadow-sm hover:shadow-md transition text-left"
+                >
+                  <img
+                    src={item.logo}
+                    alt={item.name}
+                    className="w-28 h-10 object-contain mb-4"
+                  />
+
+                  <div className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-100">
+                    <img
+                      src={item.image}
+                      alt={`${item.name} ARS 안내`}
+                      className="w-full h-56 object-contain"
+                    />
+                  </div>
+
+                </button>
+              ))}
+            </div>
+          );
+        })()}
+      </div>
+    </div>
+  </div>
+)}
+
+{selectedArs && (
+<div
+  onClick={() => setSelectedArs(null)}
+  onWheel={(e) => e.stopPropagation()}
+  onTouchMove={(e) => e.stopPropagation()}
+  className="fixed inset-0 z-[1600] bg-black/70 flex items-center justify-center p-4 overscroll-none"
+>
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="bg-white w-[720px] max-w-[92vw] h-[65vh] md:h-[88vh] rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+    >
+      <div className="h-14 bg-gray-800 text-white flex items-center justify-between px-5">
+        <p className="text-sm font-bold">{selectedArs.name} ARS 안내</p>
+
+        <button
+          onClick={() => setSelectedArs(null)}
+          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+<div
+  onWheel={(e) => {
+    if (window.innerWidth < 768) return;
+
+    e.preventDefault();
+
+    setArsZoom((prev) => {
+      const next = e.deltaY < 0 ? prev + 0.1 : prev - 0.1;
+      return Math.min(2.5, Math.max(0.7, Number(next.toFixed(2))));
+    });
+  }}
+  onMouseDown={(e) => {
+    if (window.innerWidth < 768) return;
+    setArsDragging(true);
+    setArsDragStart({
+      x: e.clientX - arsPan.x,
+      y: e.clientY - arsPan.y,
+    });
+  }}
+  onMouseMove={(e) => {
+    if (!arsDragging) return;
+    setArsPan({
+      x: e.clientX - arsDragStart.x,
+      y: e.clientY - arsDragStart.y,
+    });
+  }}
+  onMouseUp={() => setArsDragging(false)}
+  onMouseLeave={() => setArsDragging(false)}
+  className="flex-1 overflow-hidden bg-white p-2 flex items-start justify-center"
+>
+  <img
+    src={selectedArs.image}
+    alt={`${selectedArs.name} ARS 안내`}
+    draggable={false}
+    style={{
+      transform: `translate(${arsPan.x}px, ${arsPan.y}px) scale(${arsZoom})`,
+    }}
+    className="w-full h-auto object-contain rounded-xl bg-white origin-top transition-transform duration-75 select-none"
+  />
+</div>
     </div>
   </div>
 )}
