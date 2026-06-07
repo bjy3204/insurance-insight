@@ -8,58 +8,86 @@ export const tooltipData: Record<
     type?: "image" | "text";
     image?: string;
     text?: string;
+    image2?: string;
+tooltipX2?: string;
+tooltipY2?: string;
+tooltipWidth2?: string;
     tooltipX?: string;
     tooltipY?: string;
     shape?: "square" | "pill";
+    borderless?: boolean;
+    tooltipWidth?: string;
+    highlight?: boolean;
   }[]
 > = {
   // 10페이지
   9: [
     {
-      x: 36.5,
-      y: 80,
-      w: 7.5,
-      h: 5.3,
+      x: 34.65,
+      y: 81.5,
+      w: 5.25,
+      h: 5.1,
       type: "image",
       shape: "square",
       image: "/sales-book/운전자보험/설명/기소.png",
-      tooltipX: "left-[39.2%] -translate-x-[50%]",
-      tooltipY: "bottom-[29]",
+      tooltipX: "left-[37.2%] -translate-x-[50%]",
+      tooltipY: "bottom-[15]",
     },
     {
-      x: 65.34,
-      y: 56,
-      w: 7.65,
-      h: 6,
+      x: 67,
+      y: 73.8,
+      w: 8,
+      h: 4.8,
       type: "image",
       shape: "square",
       image: "/sales-book/운전자보험/설명/기소.png",
-      tooltipX: "left-[69%] -translate-x-[48%]",
-      tooltipY: "top-[61.8%]",
+      tooltipX: "left-[70.5%] -translate-x-[48%]",
+      tooltipY: "top-[79%]",
     },
     {
-      x: 57.16,
-      y: 56,
-      w: 7.65,
-      h: 6,
+      x: 58.3,
+      y: 73.8,
+      w: 8,
+      h: 4.8,
       type: "image",
       shape: "square",
       image: "/sales-book/운전자보험/설명/불기소.png",
-      tooltipX: "left-[61%] -translate-x-[50%]",
-      tooltipY: "top-[61.8%]",
+      tooltipX: "left-[62%] -translate-x-[50%]",
+      tooltipY: "top-[79%]",
     },
     {
-      x: 73.56,
-      y: 56,
-      w: 7.65,
-      h: 6,
+      x: 75.4,
+      y: 73.8,
+      w: 8,
+      h: 4.8,
       type: "image",
       shape: "square",
       image: "/sales-book/운전자보험/설명/약식기소.png",
-      tooltipX: "left-[77%] -translate-x-[48%]",
-      tooltipY: "top-[61.8%]",
+      tooltipX: "left-[79.2%] -translate-x-[48%]",
+      tooltipY: "top-[79%]",
     },
+   {
+  x: 66.9,
+  y: 81.5,
+  w: 16.5,
+  h: 5,
+  type: "image",
+  shape: "square",
+
+  image: "/sales-book/운전자보험/설명/재판결과.png",
+  tooltipX: "left-[75%] -translate-x-[50%]",
+  tooltipY: "top-[86.7%]",
+  tooltipWidth: "!w-[480px]",
+
+  image2: "/sales-book/운전자보험/설명/판결.png",
+  tooltipX2: "left-[75.2%] -translate-x-[50%]",
+  tooltipY2: "top-[81.8%]",
+  tooltipWidth2: "!w-[310px]",
+
+  borderless: true,
+},
   ],
+  
 
   // 14페이지
   13: [
@@ -178,4 +206,80 @@ export const tooltipData: Record<
       tooltipY: "top-[87.65%]",
     },
   ],
+
+  // 17페이지
+16: [
+ {
+    x: 7,
+    y: 65.33,
+    w: 8.5,
+    h: 3.45,
+    type: "image",
+    shape: "square",
+    image: "/sales-book/운전자보험/설명/교통사고발생.png",
+    tooltipX: "left-[11.3%] -translate-x-[50%]",
+    tooltipY: "top-[69.12%]",
+    tooltipWidth: "!w-[250px]",
+  },
+  {
+    x: 23.2,
+    y: 52.8,
+    w: 7.3,
+    h: 3.4,
+    type: "image",
+    shape: "square",
+    image: "/sales-book/운전자보험/설명/피해자배상.png",
+    tooltipX: "left-[27%] -translate-x-[50%]",
+    tooltipY: "top-[56.5%]",
+    tooltipWidth: "!w-[250px]",
+  },
+  {
+    x: 39.45,
+    y: 77.5,
+    w: 5.7,
+    h: 3.25,
+    type: "image",
+    shape: "square",
+    image: "/sales-book/운전자보험/설명/형사입건.png",
+    tooltipX: "left-[42.5%] -translate-x-[50%]",
+    tooltipY: "top-[81.2%]",
+    tooltipWidth: "!w-[250px]",
+  },
+  {
+    x: 53.2,
+    y: 57.2,
+    w: 5.7,
+    h: 3.27,
+    type: "image",
+    shape: "square",
+    image: "/sales-book/운전자보험/설명/형사합의.png",
+    tooltipX: "left-[56.3%] -translate-x-[50%]",
+    tooltipY: "top-[60.9%]",
+    tooltipWidth: "!w-[250px]",
+  },
+  {
+    x: 69.7,
+    y: 81.2,
+    w: 7.5,
+    h: 3.3,
+    type: "image",
+    shape: "square",
+    image: "/sales-book/운전자보험/설명/변호사선임.png",
+    tooltipX: "left-[73.4%] -translate-x-[50%]",
+    tooltipY: "top-[84.9%]",
+    tooltipWidth: "!w-[250px]",
+  },
+   {
+    x: 86.5,
+    y: 69.2,
+    w: 5.7,
+    h: 3.3,
+    type: "image",
+    shape: "square",
+    image: "/sales-book/운전자보험/설명/정식재판.png",
+    tooltipX: "left-[89.5%] -translate-x-[50%]",
+    tooltipY: "top-[72.85%]",
+    tooltipWidth: "!w-[250px]",
+  },
+],
 };

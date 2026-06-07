@@ -661,41 +661,60 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div
-        className={`
-          absolute inset-0
-          ${item.shape === "pill" ? "rounded-full" : "rounded-md"}
-          bg-white/10
-          opacity-0
-          group-hover:opacity-100
-          transition
-        `}
-      />
+      {item.highlight !== false && (
+  <div
+    className={`
+      absolute inset-0
+      z-[50]
+      ${item.shape === "pill" ? "rounded-full" : "rounded-md"}
+      bg-white/10
+      opacity-0
+      group-hover:opacity-100
+      transition
+    `}
+  />
+)}
     </div>
 
     {/* 설명 이미지 / 설명 박스 위치는 별도 */}
-    {item.type === "image" && item.image ? (
+   {item.type === "image" && item.image ? (
+  <>
+    <img
+      src={item.image}
+      alt=""
+      className={`
+        hidden
+        group-hover:block
+        absolute
+        ${item.tooltipX || "left-[50%]"}
+        ${item.tooltipY || "top-[50%]"}
+        ${item.tooltipWidth || "!w-[250px]"}
+        max-w-none
+        ${item.borderless ? "" : "rounded-2xl shadow-xl bg-white border border-gray-200"}
+        z-[9999]
+      `}
+      draggable={false}
+    />
+
+    {item.image2 && (
       <img
-        src={item.image}
+        src={item.image2}
         alt=""
         className={`
           hidden
           group-hover:block
           absolute
-          ${item.tooltipX || "left-[50%]"}
-          ${item.tooltipY || "top-[50%]"}
-          !w-[250px]
+          ${item.tooltipX2 || "left-[50%]"}
+          ${item.tooltipY2 || "top-[50%]"}
+          ${item.tooltipWidth2 || "!w-[250px]"}
           max-w-none
-          rounded-xl
-          shadow-xl
-          bg-white
-          border
-          border-gray-200
-          z-[9999]
+          z-[20]
         `}
         draggable={false}
       />
-    ) : (
+    )}
+  </>
+) : (
       <div
         className={`
           hidden
