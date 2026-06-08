@@ -200,7 +200,8 @@ const initialize = async () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
   async (event, session) => {
-    if (event === "USER_UPDATED" || event === "TOKEN_REFRESHED") return;
+    if (event === "USER_UPDATED" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") return;
+
 
 
     // refresh token 만료 시 자동 로그아웃
