@@ -204,16 +204,16 @@ const initialize = async () => {
 
 
     // refresh token 만료 시 자동 로그아웃
-    if (!session) {
-      await supabase.auth.signOut();
-      setAuthUser(null);
-      setAuthNickname(null);
-      setAuthInstagram(null);
-      setAuthStatus(null);
-      setAuthRole(null);
-      setAuthCreatedAt(null);
-      return;
-    }
+if (!session) {
+  setAuthUser(null);
+  setAuthNickname(null);
+  setAuthInstagram(null);
+  setAuthStatus(null);
+  setAuthRole(null);
+  setAuthCreatedAt(null);
+  return;
+}
+
 
     const user = session.user;
     setAuthUser(user);
