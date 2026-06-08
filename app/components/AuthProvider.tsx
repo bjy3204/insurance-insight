@@ -56,51 +56,65 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const [authLoading, setAuthLoading] = useState(true);
   const [memos, setMemos] = useState<MemoItem[]>([]);
 
-  const loadProfile = async (userId: string) => {
-       const { data: profile, error } = await supabase
-      .from("profiles")
-            .select("nickname, instagram_id, status, role, created_at")
+const loadProfile = async (userId: string) => {
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("nickname, instagram_id, status, role, created_at")
+    .eq("id", userId)
+    .maybeSingle();
 
-      .eq("id", userId)
-      .maybeSingle();
+  console.log("profiles userId:", userId);
+  console.log("profiles data:", profile);
+  console.log("profiles error:", error);
 
-    
+  if (error) {
+    console.error("profiles 조회 실패:", error);
+    return;
+  }
 
+  if (!profile) {
+    console.warn("profiles 데이터 없음:", userId);
+    return;
+  }
 
-    setAuthNickname(profile?.nickname || null);
-    setAuthInstagram(profile?.instagram_id || null);
-    setAuthStatus(profile?.status || null);
-    setAuthRole(profile?.role || null);
-    setAuthCreatedAt(profile?.created_at || null);
+  setAuthNickname(profile.nickname || null);
+  setAuthInstagram(profile.instagram_id || null);
+  setAuthStatus(profile.status || null);
+  setAuthRole(profile.role || null);
+  setAuthCreatedAt(profile.created_at || null);
 
-        if (profile?.status === "approved") {
-            const { data: dbMemos } = await supabase
-        .from("user_memos")
-        .select("*")
-        .eq("user_id", userId)
-        .order("pinned", { ascending: false })
-        .order("updated_at", { ascending: false });
-      setMemos(
-        (dbMemos || []).map((m: any) => ({
-          id: m.id,
-          title: m.title || "",
-          content: m.content || "",
-          pinned: m.pinned || false,
-          visible: m.visible || false,
-          color: m.color as MemoItem["color"],
-          x: m.x,
-          y: m.y,
-          createdAt: m.created_at || new Date().toISOString(),
-          updatedAt: m.updated_at || m.created_at || new Date().toISOString(),
-        }))
-      );
+  if (profile.status === "approved") {
+    const { data: dbMemos, error: memoError } = await supabase
+      .from("user_memos")
+      .select("*")
+      .eq("user_id", userId)
+      .order("pinned", { ascending: false })
+      .order("updated_at", { ascending: false });
 
-    } else {
-      const savedMemos = localStorage.getItem("personalMemos");
-      setMemos(savedMemos ? JSON.parse(savedMemos) : []);
+    if (memoError) {
+      console.error("메모 조회 실패:", memoError);
+      return;
     }
 
-  };
+    setMemos(
+      (dbMemos || []).map((m: any) => ({
+        id: m.id,
+        title: m.title || "",
+        content: m.content || "",
+        pinned: m.pinned || false,
+        visible: m.visible || false,
+        color: m.color as MemoItem["color"],
+        x: m.x,
+        y: m.y,
+        createdAt: m.created_at || new Date().toISOString(),
+        updatedAt: m.updated_at || m.created_at || new Date().toISOString(),
+      }))
+    );
+  } else {
+    const savedMemos = localStorage.getItem("personalMemos");
+    setMemos(savedMemos ? JSON.parse(savedMemos) : []);
+  }
+};
 
 
   

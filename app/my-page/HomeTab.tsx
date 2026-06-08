@@ -102,10 +102,10 @@ const moodEmoji: Record<string, string> = {
 // 식물 단계 계산
 // ─────────────────────────────────────────────
 function getPlantStage(totalDays: number): PlantStage {
-  if (totalDays >= 365) return "bloom";
-  if (totalDays >= 180) return "bigtree";
-  if (totalDays >= 90) return "tree";
-  if (totalDays >= 60) return "sapling";
+  if (totalDays >= 600) return "bloom";
+  if (totalDays >= 300) return "bigtree";
+  if (totalDays >= 180) return "tree";
+  if (totalDays >= 90) return "sapling";
   if (totalDays >= 30) return "sprout";
   return "seed";
 }

@@ -303,8 +303,8 @@ const handleResetPassword = async () => {
 
     if (userId) {
       const { error: profileError } = await supabase
-        .from("profiles")
-        .insert({
+.from("profiles")
+.upsert({
   id: userId,
   nickname: signupNickname.trim(),
   instagram_id: signupInstagram.trim(),
@@ -312,10 +312,11 @@ const handleResetPassword = async () => {
   role: "user",
 });
 
-      if (profileError) {
-        alert("회원정보 저장에 실패했습니다.");
-        return;
-      }
+if (profileError) {
+  console.error("profiles 저장 실패:", profileError);
+  alert("회원정보 저장에 실패했습니다. 관리자에게 문의해주세요.");
+  return;
+}
     }
 
     alert("회원가입이 완료되었습니다. 관리자 승인 후 저장 기능을 이용할 수 있습니다.");
