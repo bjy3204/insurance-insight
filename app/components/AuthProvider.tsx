@@ -169,15 +169,32 @@ const loadProfile = async (userId: string) => {
   };
 
   useEffect(() => {
-    const initialize = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const user = session?.user || null;
-      setAuthUser(user);
-      if (user) {
-        await loadProfile(user.id);
-      }
-      setAuthLoading(false);
-    };
+const initialize = async () => {
+  setAuthLoading(true);
+
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession();
+
+  console.log("getSession session:", session);
+  console.log("getSession error:", error);
+
+  const user = session?.user || null;
+  setAuthUser(user);
+
+  if (user) {
+    await loadProfile(user.id);
+  } else {
+    setAuthNickname(null);
+    setAuthInstagram(null);
+    setAuthStatus(null);
+    setAuthRole(null);
+    setAuthCreatedAt(null);
+  }
+
+  setAuthLoading(false);
+};
 
     initialize();
 
