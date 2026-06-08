@@ -132,7 +132,13 @@ export default function MemoStickers() {
 
 const CARD_W = 260;
 const CARD_H = 200; // 스티커 메모 대략적인 높이
-const nextX = Math.max(-CARD_W / 2, Math.min(window.innerWidth - CARD_W / 2, drag.originX + event.clientX - drag.startX));
+const nextX = Math.max(
+  -180,
+  Math.min(
+    window.innerWidth - 80,
+    drag.originX + event.clientX - drag.startX
+  )
+);
 const nextY = Math.max(-CARD_H / 2, Math.min(window.innerHeight - CARD_H / 2, drag.originY + event.clientY - drag.startY));
 
               if (
