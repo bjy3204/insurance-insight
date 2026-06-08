@@ -145,6 +145,13 @@ const defaultMenus = [
   link: "/sales-book",
 },
   {
+    id: "insurance-folder",
+    title: "보험인사이트 폴더",
+    desc: "보험 자료 모음",
+    icon: FolderOpen,
+    link: "https://naver.me/FWTmVFQz",
+  },
+  {
     id: "calculator",
     title: "실비계산기",
     desc: "세대별 실손보험금 계산기",
@@ -171,13 +178,6 @@ const defaultMenus = [
     desc: "은퇴자금 · 연금액 · 국민연금 계산",
     icon: PiggyBank,
     link: "/pension-calculator",
-  },
-  {
-    id: "insurance-folder",
-    title: "보험인사이트 폴더",
-    desc: "보험 자료 모음",
-    icon: FolderOpen,
-    link: "https://naver.me/FWTmVFQz",
   },
   {
     id: "lecture",
