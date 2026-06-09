@@ -321,7 +321,7 @@ export default function Home() {
   if (authUser) {
     loadProfile(authUser.id);
   }
-}, [authUser]);
+}, [authUser, authStatus]);
  
 
 
