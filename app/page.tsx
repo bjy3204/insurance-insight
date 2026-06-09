@@ -2126,27 +2126,7 @@ const saveProfileSettings = async () => {
           <b>{weather.feelsLike ?? "-"}°C</b>
         </div>
 
-      <div className="flex justify-between mt-1">
-  <span>
-    미세먼지
-    <span className="ml-2 text-blue-600 font-bold">
-      {weather.airQuality?.pm10Status || ""}
-    </span>
-  </span>
-
-  <b>{Math.round(weather.airQuality?.pm10 ?? 0)}㎍/㎥</b>
-</div>
-
-<div className="flex justify-between mt-1">
-  <span>
-    초미세먼지
-    <span className="ml-2 text-blue-600 font-bold">
-      {weather.airQuality?.pm25Status || ""}
-    </span>
-  </span>
-
-  <b>{Math.round(weather.airQuality?.pm25 ?? 0)}㎍/㎥</b>
-</div>
+ 
       </div>
     </div>
 
