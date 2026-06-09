@@ -1,6 +1,6 @@
 "use client";
 import DiseaseCodePopup from "./claim-docs/disease-code-popup";
-
+import { getTodaySpecialDays } from "@/lib/specialDays";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
@@ -359,7 +359,7 @@ const [weather, setWeather] = useState<{
   description: string;
   icon: string;
 } | null>(null);
-
+const specialDays = getTodaySpecialDays(new Date());
   const [open, setOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -2082,14 +2082,53 @@ const saveProfileSettings = async () => {
 )}
 </span>
 
-            <span className="text-[15px] font-bold">
-              {weather.region || "서울"}
-            </span>
+        <span className="text-[15px] font-bold">
+  {weather.region || "서울"}
+</span>
 
-           {weather.temp !== undefined && (
-  <span className="text-[15px] font-black">
-    {weather.temp}°C
+{weather.temp !== undefined && (
+  <>
+    <span className="text-[15px] font-black">
+      {weather.temp}°C
+    </span>
+
+   {specialDays.length > 0 && (
+  <span
+  className="
+    group
+    relative
+    inline-flex
+    items-center
+    justify-center
+    text-xs
+    bg-amber-50
+    border
+    border-amber-200
+    text-amber-700
+    px-2.5
+    py-1
+    rounded-full
+    font-medium
+    ml-8
+    transition-all
+    duration-300
+  
+    hover:shadow-sm
+    hover:bg-sky-50
+    hover:border-sky-200
+    hover:text-sky-700
+  "
+>
+  <span className="group-hover:opacity-0">
+    {specialDays[0].emoji} {specialDays[0].label}
   </span>
+
+  <span className="absolute opacity-0 group-hover:opacity-100 transition-opacity">
+     {new Date().getFullYear()}. {new Date().getMonth() + 1}. {new Date().getDate()}
+  </span>
+</span>
+)}
+  </>
 )}
           </div>
 
