@@ -266,7 +266,12 @@ const [ddayPickerMonth, setDdayPickerMonth] = useState(new Date().getMonth());
 
 
 const WEATHER_REGIONS = ["서울","부산","대구","인천","광주","대전","울산","세종","제주"];
-const [weatherRegion, setWeatherRegion] = useState(() => localStorage.getItem("hometab-weather-region") || "서울");
+const [weatherRegion, setWeatherRegion] = useState("서울");
+
+useEffect(() => {
+  const saved = localStorage.getItem("hometab-weather-region");
+  if (saved) setWeatherRegion(saved);
+}, []);
 const [weather, setWeather] = useState<{
   region: string; temp: number; description: string; icon: string;
   daily?: { date: string; temp: number; description: string; icon: string; }[];
