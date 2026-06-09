@@ -188,7 +188,6 @@ const anniversaries: Record<string, SpecialDay> = {
 "6-1": { label: "의병의날", type: "anniversary", emoji: "🌿" },
   "6-5": { label: "환경의날", type: "anniversary", emoji: "🌱" },
 
-  "6-9": { label: "육구데이", type: "anniversary", emoji: "🐶" },
 
   "7-11": { label: "인구의날", type: "anniversary", emoji: "👨‍👩‍👧‍👦" },
   "7-17": { label: "제헌절", type: "anniversary", emoji: "📜" },
