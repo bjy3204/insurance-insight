@@ -1302,10 +1302,12 @@ const matchSearch =
                 {noticeCategories.map((cat) => (
                   <div key={cat.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 bg-gray-50">
                     <span className={`w-3 h-3 rounded-full ${
-                      cat.color === "blue" ? "bg-blue-400" :
-                      cat.color === "yellow" ? "bg-yellow-400" :
-                      cat.color === "red" ? "bg-red-400" :
-                      cat.color === "green" ? "bg-green-400" : "bg-orange-400"
+cat.color === "blue" ? "bg-blue-400" :
+cat.color === "yellow" ? "bg-yellow-400" :
+cat.color === "red" ? "bg-red-400" :
+cat.color === "green" ? "bg-green-400" :
+cat.color === "gray" ? "bg-gray-300" :
+"bg-orange-400"
                     }`} />
                     <span className="text-sm font-bold text-gray-700">{cat.name}</span>
                     <button onClick={() => deleteCategory(cat.id)} className="text-gray-400 hover:text-red-500 transition cursor-pointer ml-1">
@@ -1323,11 +1325,14 @@ const matchSearch =
                     className="flex-1 h-10 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
                   />
                   <div className="hidden sm:flex gap-1.5">
-                    {["blue","yellow","red","green","orange"].map((c) => (
+                    {["blue","yellow","red","green","orange","gray"].map((c) => (
                       <button key={c} onClick={() => setCatForm({ ...catForm, color: c })}
                         className={`w-7 h-7 rounded-full border-2 transition cursor-pointer ${
                           c === "blue" ? "bg-blue-400" : c === "yellow" ? "bg-yellow-400" :
-                          c === "red" ? "bg-red-400" : c === "green" ? "bg-green-400" : "bg-orange-400"
+                         c === "red" ? "bg-red-400" :
+c === "green" ? "bg-green-400" :
+c === "gray" ? "bg-gray-300" :
+"bg-orange-400"
                         } ${catForm.color === c ? "border-gray-800 scale-110" : "border-transparent"}`}
                       />
                     ))}
@@ -1335,11 +1340,14 @@ const matchSearch =
                   <button onClick={saveCategory} className="sm:hidden h-10 px-4 bg-gray-800 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition cursor-pointer shrink-0">추가</button>
                 </div>
                 <div className="flex sm:hidden gap-1.5 items-center">
-                  {["blue","yellow","red","green","orange"].map((c) => (
+                  {["blue","yellow","red","green","orange","gray"].map((c) => (
                     <button key={c} onClick={() => setCatForm({ ...catForm, color: c })}
                       className={`w-8 h-8 rounded-full border-2 transition cursor-pointer ${
                         c === "blue" ? "bg-blue-400" : c === "yellow" ? "bg-yellow-400" :
-                        c === "red" ? "bg-red-400" : c === "green" ? "bg-green-400" : "bg-orange-400"
+                       c === "red" ? "bg-red-400" :
+c === "green" ? "bg-green-400" :
+c === "gray" ? "bg-gray-300" :
+"bg-orange-400"
                       } ${catForm.color === c ? "border-gray-800 scale-110" : "border-transparent"}`}
                     />
                   ))}
@@ -1682,10 +1690,12 @@ const matchSearch =
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             {cat && (
                               <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
-                                cat.color === "blue" ? "bg-blue-100 text-blue-600" :
-                                cat.color === "yellow" ? "bg-yellow-100 text-yellow-700" :
-                                cat.color === "red" ? "bg-red-100 text-red-600" :
-                                cat.color === "green" ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-600"
+                              cat.color === "blue" ? "bg-blue-100 text-blue-600" :
+cat.color === "yellow" ? "bg-yellow-100 text-yellow-700" :
+cat.color === "red" ? "bg-red-100 text-red-600" :
+cat.color === "green" ? "bg-emerald-100 text-emerald-700" :
+cat.color === "gray" ? "bg-gray-100 text-gray-500" :
+"bg-orange-100 text-orange-600"
                               }`}>{cat.name}</span>
                             )}
                             {notice.is_popup && (

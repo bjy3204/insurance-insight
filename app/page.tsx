@@ -4500,11 +4500,12 @@ rel="noopener noreferrer"
                   <>
                     {cat && (
                       <span className={`inline-block w-fit mb-3 px-3 py-1 rounded-lg text-xs font-bold ${
-                        cat.color === "yellow" ? "bg-yellow-100 text-yellow-700" :
-                        cat.color === "red" ? "bg-red-100 text-red-600" :
-                        cat.color === "green" ? "bg-emerald-100 text-emerald-700" :
-                        cat.color === "orange" ? "bg-orange-100 text-orange-600" :
-                        "bg-blue-100 text-blue-600"
+cat.color === "yellow" ? "bg-yellow-100 text-yellow-700" :
+cat.color === "red" ? "bg-red-100 text-red-600" :
+cat.color === "green" ? "bg-emerald-100 text-emerald-700" :
+cat.color === "orange" ? "bg-orange-100 text-orange-600" :
+cat.color === "gray" ? "bg-gray-100 text-gray-500" :
+"bg-blue-100 text-blue-600"
                       }`}>{cat.name}</span>
                     )}
                     <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep mb-2">
@@ -4861,9 +4862,11 @@ setNoticeImageIndex(0);
       ? "bg-red-100 text-red-600"
       : (notice as any).categoryColor === "green" || notice.category === "OPEN"
       ? "bg-emerald-100 text-emerald-700"
-      : (notice as any).categoryColor === "orange"
-      ? "bg-orange-100 text-orange-600"
-      : "bg-blue-100 text-blue-600"
+: (notice as any).categoryColor === "orange"
+? "bg-orange-100 text-orange-600"
+: (notice as any).categoryColor === "gray"
+? "bg-gray-100 text-gray-500"
+: "bg-blue-100 text-blue-600"
   }`}>
     {notice.category}
   </span>
@@ -4944,9 +4947,11 @@ setNoticeImageIndex(0);
       ? "bg-red-100 text-red-600"
       : (notice as any).categoryColor === "green" || notice.category === "OPEN"
       ? "bg-emerald-100 text-emerald-700"
-      : (notice as any).categoryColor === "orange"
-      ? "bg-orange-100 text-orange-600"
-      : "bg-blue-100 text-blue-600"
+: (notice as any).categoryColor === "orange"
+? "bg-orange-100 text-orange-600"
+: (notice as any).categoryColor === "gray"
+? "bg-gray-100 text-gray-500"
+: "bg-blue-100 text-blue-600"
   }`}>
     {notice.category}
   </span>
