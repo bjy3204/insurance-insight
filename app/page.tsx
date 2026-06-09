@@ -624,10 +624,16 @@ const dbNoticesFormatted = dbNotices.map((n: any) => {
     dbId: n.id,
     image_url: n.image_url || null,
     image_urls: n.image_urls || [],
+    is_pinned: n.is_pinned || false,
   };
 });
 
-const allNotices = [...dbNoticesFormatted, ...notices];
+const allNotices = [
+  ...dbNoticesFormatted.filter((n: any) => n.is_pinned),
+  ...dbNoticesFormatted.filter((n: any) => !n.is_pinned),
+  ...notices
+];
+
 const totalNoticePages = Math.ceil(allNotices.length / noticesPerPage);
 
 const pagedNotices = allNotices.slice(
@@ -4838,9 +4844,14 @@ setNoticeImageIndex(0);
 "
         >
           <div className="flex items-center justify-between gap-2 mb-1">
-            <span className="text-xs font-bold text-gray-400">
-              NO. {allNotices.length - allNotices.indexOf(notice)}
-            </span>
+            {(notice as any).is_pinned ? (
+              <span className="text-xs font-bold text-orange-500">📌 고정</span>
+            ) : (
+              <span className="text-xs font-bold text-gray-400">
+                NO. {allNotices.length - allNotices.indexOf(notice)}
+              </span>
+            )}
+
 
                               {!readNoticeIds.includes(notice.id) && notice.category && (
   <span className={`px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap ${
@@ -4914,7 +4925,10 @@ setNoticeImageIndex(0);
             >
               <td className="py-4 text-center text-gray-700 border-b border-gray-100">
 
-                {(notice as any).isDb ? allNotices.length - allNotices.indexOf(notice) : notice.id}
+              {(notice as any).is_pinned
+  ? <span className="text-orange-500">📌</span>
+  : ((notice as any).isDb ? allNotices.length - allNotices.indexOf(notice) : notice.id)
+}
               </td>
 
 

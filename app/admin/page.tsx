@@ -199,12 +199,14 @@ type NoticeDB = {
   content: string;
   category_id: string | null;
   is_popup: boolean;
+  is_pinned: boolean;
   popup_start_date: string | null;
   popup_end_date: string | null;
   image_url: string | null;
   image_urls: string[] | null;
   created_at: string;
 };
+
 
 // 공지 상태
 const [noticeCategories, setNoticeCategories] = useState<NoticeCategory[]>([]);
@@ -214,11 +216,13 @@ const [noticeForm, setNoticeForm] = useState({
   content: "",
   category_id: "",
   is_popup: false,
+  is_pinned: false,
   popup_start_date: "",
   popup_end_date: "",
   image_url: "",
   image_urls: [] as string[],
 });
+
 const [imageUploading, setImageUploading] = useState(false);
 const fileInputRef = useRef<HTMLInputElement>(null);
 const [noticeFormOpen, setNoticeFormOpen] = useState(false);
@@ -495,11 +499,12 @@ useEffect(() => {
   const saveNotice = async () => {
     if (!noticeForm.title.trim() || !noticeForm.content.trim()) return;
     setNoticeSaving(true);
-    if (editingNotice) {
+        if (editingNotice) {
       await supabase.from("notices_db").update({
         title: noticeForm.title, content: noticeForm.content,
         category_id: noticeForm.category_id || null,
         is_popup: noticeForm.is_popup,
+        is_pinned: noticeForm.is_pinned,
         popup_start_date: noticeForm.popup_start_date || null,
         popup_end_date: noticeForm.popup_end_date || null,
         image_url: noticeForm.image_url || null,
@@ -510,22 +515,26 @@ useEffect(() => {
         title: noticeForm.title, content: noticeForm.content,
         category_id: noticeForm.category_id || null,
         is_popup: noticeForm.is_popup,
+        is_pinned: noticeForm.is_pinned,
         popup_start_date: noticeForm.popup_start_date || null,
         popup_end_date: noticeForm.popup_end_date || null,
         image_url: noticeForm.image_url || null,
         image_urls: noticeForm.image_urls || [],
       });
     }
+
     setNoticeForm({
   title: "",
   content: "",
   category_id: "",
   is_popup: false,
+  is_pinned: false,
   popup_start_date: "",
   popup_end_date: "",
   image_url: "",
   image_urls: [],
 });
+
     setNoticeFormOpen(false);
     setEditingNotice(null);
     setNoticeSaving(false);
@@ -1444,6 +1453,7 @@ const matchSearch =
   </div>
 )}
                   </div>
+                  <div className="flex items-center gap-6">
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
                       type="checkbox"
@@ -1451,10 +1461,21 @@ const matchSearch =
                       onChange={(e) => setNoticeForm({ ...noticeForm, is_popup: e.target.checked })}
                       className="w-4 h-4 rounded cursor-pointer"
                     />
-                    <span className="text-sm font-bold text-gray-700">메인 페이지 팝업으로 표시</span>
+                    <span className="text-sm font-bold text-gray-700">팝업 표시</span>
                   </label>
+                                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={noticeForm.is_pinned}
+                      onChange={(e) => setNoticeForm({ ...noticeForm, is_pinned: e.target.checked })}
+                      className="w-4 h-4 rounded cursor-pointer accent-orange-500"
+                    />
+                    <span className="text-sm font-bold text-orange-600">공지 고정</span>
+                  </label>
+                  </div>
+
                   {noticeForm.is_popup && (
-  <div className="flex gap-3 items-center pl-6 relative">
+  <div className="flex gap-2 items-center pl-2 sm:pl-6 relative">
     {(["start", "end"] as const).map((type, index) => {
       const value =
         type === "start"
@@ -1465,14 +1486,14 @@ const matchSearch =
         <div key={type} className="flex items-center gap-2 relative">
           {index === 1 && <span className="text-gray-400">~</span>}
 
-          <span className="text-xs font-bold text-gray-500">
-            {type === "start" ? "시작일" : "종료일"}
-          </span>
+<span className="hidden sm:inline text-xs font-bold text-gray-500">
+  {type === "start" ? "시작일" : "종료일"}
+</span>
 
           <button
             type="button"
             onClick={() => openNoticeDatePicker(type)}
-            className="h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 bg-white flex items-center gap-2"
+          className="h-9 px-2 sm:px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 bg-white flex items-center justify-between gap-2"
           >
             <span className={value ? "text-gray-800" : "text-gray-400"}>
               {value || "연도-월-일"}
@@ -1622,11 +1643,13 @@ const matchSearch =
   content: "",
   category_id: "",
   is_popup: false,
+  is_pinned: false,
   popup_start_date: "",
   popup_end_date: "",
   image_url: "",
   image_urls: [],
-}); }}
+});
+ }}
                       className="flex-1 h-11 rounded-xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-pointer">취소</button>
                     <button onClick={saveNotice} disabled={noticeSaving}
                       className="flex-1 h-11 rounded-xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-pointer disabled:opacity-50">
@@ -1678,16 +1701,18 @@ const matchSearch =
                         <div className="flex gap-2 shrink-0">
                           <button onClick={() => {
                             setEditingNotice(notice);
-                            setNoticeForm({
+                          setNoticeForm({
   title: notice.title,
   content: notice.content,
   category_id: notice.category_id || "",
   is_popup: notice.is_popup,
+  is_pinned: notice.is_pinned || false,
   popup_start_date: notice.popup_start_date || "",
   popup_end_date: notice.popup_end_date || "",
   image_url: notice.image_url || "",
   image_urls: notice.image_urls || [],
 });
+
                             setNoticeFormOpen(true);
                           }} className="h-8 px-3 rounded-xl bg-gray-100 text-gray-600 text-xs font-bold hover:bg-gray-200 transition cursor-pointer">수정</button>
                           <button onClick={() => deleteNotice(notice.id)} className="h-8 px-3 rounded-xl bg-red-50 text-red-500 text-xs font-bold hover:bg-red-100 transition cursor-pointer">삭제</button>
