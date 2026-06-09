@@ -2761,11 +2761,43 @@ const handleRegenerate = () => {
       {/* 오늘의 특별한 날 배지 */}
       {specialDays.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {specialDays.map((d, i) => (
-            <span key={i} className="inline-flex items-center gap-1 text-xs bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1 rounded-full font-medium">
-              {d.emoji} {d.label}
-            </span>
-          ))}
+{specialDays.map((d, i) => (
+  <span
+    key={i}
+    className="
+      group
+      relative
+      inline-flex
+      items-center
+      justify-center
+      gap-1
+      text-xs
+      bg-amber-50
+      border
+      border-amber-200
+      text-amber-700
+      px-2.5
+      py-1
+      rounded-full
+      font-medium
+      transition-all
+      duration-300
+     
+      hover:shadow-sm
+      hover:bg-sky-50
+      hover:border-sky-200
+      hover:text-sky-700
+    "
+  >
+   <span className="group-hover:opacity-0 text-xs font-medium">
+      {d.emoji} {d.label}
+    </span>
+
+    <span className="absolute opacity-0 group-hover:opacity-100 transition-opacity text-xs font-medium">
+      📅 {new Date().getFullYear()}.{String(new Date().getMonth() + 1).padStart(2,"0")}.{String(new Date().getDate()).padStart(2,"0")}
+    </span>
+  </span>
+))}
         </div>
       )}
 
