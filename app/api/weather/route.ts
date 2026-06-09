@@ -12,6 +12,8 @@ const REGION_MAP: Record<string, { lat: number; lon: number }> = {
   제주: { lat: 33.4996, lon: 126.5312 },
 };
 
+
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const region = searchParams.get("region") || "서울";
@@ -19,42 +21,108 @@ export async function GET(request: Request) {
   const apiKey = process.env.OPENWEATHER_API_KEY;
 
   if (!apiKey) {
-    return NextResponse.json({ error: "OPENWEATHER_API_KEY가 없습니다." }, { status: 500 });
+    return NextResponse.json(
+      { error: "OPENWEATHER_API_KEY가 없습니다." },
+      { status: 500 }
+    );
   }
 
-  // 현재 날씨
   const currentUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${location.lat}&lon=${location.lon}&appid=${apiKey}&units=metric&lang=kr`;
-  // 5일 예보 (하루 1개씩 5개 )
+
   const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${location.lat}&lon=${location.lon}&appid=${apiKey}&units=metric&lang=kr`;
 
+  const airUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${location.lat}&lon=${location.lon}&appid=${apiKey}`;
+
   try {
-    const [currentRes, forecastRes] = await Promise.all([
-      fetch(currentUrl, { next: { revalidate: 600 } } ),
+    const [currentRes, forecastRes, airRes] = await Promise.all([
+      fetch(currentUrl, { next: { revalidate: 600 } }),
       fetch(forecastUrl, { next: { revalidate: 600 } }),
+      fetch(airUrl, { next: { revalidate: 600 } }),
     ]);
 
     const currentData = await currentRes.json();
     const forecastData = await forecastRes.json();
+    const airData = await airRes.json();
 
-    // 하루 중 12:00 기준으로 5일치 추출
+ const air = airData.list?.[0];
+
+const pm10 = air?.components?.pm10 ?? 0;
+const pm25 = air?.components?.pm2_5 ?? 0;
+
+const pm10Status =
+  pm10 <= 30
+    ? "좋음"
+    : pm10 <= 80
+    ? "보통"
+    : pm10 <= 150
+    ? "나쁨"
+    : "매우나쁨";
+
+const pm25Status =
+  pm25 <= 15
+    ? "좋음"
+    : pm25 <= 35
+    ? "보통"
+    : pm25 <= 75
+    ? "나쁨"
+    : "매우나쁨";
+
     const daily = forecastData.list
       .filter((item: any) => item.dt_txt.includes("12:00:00"))
       .slice(0, 5)
       .map((item: any) => ({
-        date: item.dt_txt.slice(5, 10), // "MM-DD"
+        date: item.dt_txt.slice(5, 10),
         temp: Math.round(item.main.temp),
+        tempMin: Math.round(item.main.temp_min),
+        tempMax: Math.round(item.main.temp_max),
         description: item.weather?.[0]?.description || "",
         icon: item.weather?.[0]?.icon || "",
       }));
+
+    const todayKey = new Date().toLocaleDateString("sv-SE", {
+  timeZone: "Asia/Seoul",
+});
+
+    const todayForecasts = forecastData.list.filter((item: any) =>
+      item.dt_txt.startsWith(todayKey)
+    );
+
+    const todayTemps = todayForecasts.map((item: any) => item.main.temp);
+
+    const todayTempMin =
+      todayTemps.length > 0
+        ? Math.round(Math.min(...todayTemps))
+        : Math.round(currentData.main.temp_min);
+
+    const todayTempMax =
+      todayTemps.length > 0
+        ? Math.round(Math.max(...todayTemps))
+        : Math.round(currentData.main.temp_max);
 
     return NextResponse.json({
       region,
       temp: Math.round(currentData.main.temp),
       description: currentData.weather?.[0]?.description || "",
       icon: currentData.weather?.[0]?.icon || "",
+
+      tempMin: todayTempMin,
+      tempMax: todayTempMax,
+      humidity: currentData.main.humidity,
+      feelsLike: Math.round(currentData.main.feels_like),
+
+airQuality: {
+  pm10,
+  pm25,
+  pm10Status,
+  pm25Status,
+},
+
       daily,
     });
   } catch {
-    return NextResponse.json({ error: "날씨 정보를 불러오지 못했습니다." }, { status: 500 });
+    return NextResponse.json(
+      { error: "날씨 정보를 불러오지 못했습니다." },
+      { status: 500 }
+    );
   }
 }

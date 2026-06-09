@@ -358,6 +358,17 @@ const [weather, setWeather] = useState<{
   temp: number;
   description: string;
   icon: string;
+  tempMin?: number;
+  tempMax?: number;
+  humidity?: number;
+  feelsLike?: number;
+
+airQuality?: {
+  pm10?: number;
+  pm25?: number;
+  pm10Status?: string;
+  pm25Status?: string;
+};
 } | null>(null);
 const specialDays = getTodaySpecialDays(new Date());
   const [open, setOpen] = useState(false);
@@ -2041,96 +2052,145 @@ const saveProfileSettings = async () => {
         바로가기 만들기
       </button>
 
-      {weather && (
-        <div className="relative">
-          <div
-            onContextMenu={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setWeatherOpen(!weatherOpen);
-            }}
-            className="
-              flex
-              items-center
-              gap-2
-              text-black
-              select-none
-              cursor-default
-            "
-          >
-           <span className="text-[22px] leading-none inline-block">
- {(weather.description || "").includes("비") ? (
-  <span className="inline-block animate-[weatherRain_1.8s_ease-in-out_infinite]">
-    🌧️
-  </span>
-) : (weather.description || "").includes("눈") ? (
-  <span className="inline-block animate-[weatherSnow_3s_ease-in-out_infinite]">
-    ❄️
-  </span>
-) : (weather.description || "").includes("구름") ? (
-  <span className="inline-block animate-[weatherCloud_5s_ease-in-out_infinite]">
-    ☁️
-  </span>
-) : (weather.description || "").includes("맑") ? (
-  <span className="inline-block animate-[weatherSun_10s_linear_infinite]">
-    ☀️
-  </span>
-) : (
-  <span className="inline-block animate-[weatherCloud_5s_ease-in-out_infinite]">
-    ☁️
-  </span>
-)}
-</span>
+{weather && (
+  <div className="relative">
+  <div className="flex items-center gap-2 text-black select-none cursor-default">
+    
+    {/* 날씨만 감싸는 박스 */}
+    <div
+      onContextMenu={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setWeatherOpen(!weatherOpen);
+      }}
+      className="relative group flex items-center gap-2"
+    >
+      {/* 날씨 아이콘 */}
+      <span className="text-[22px] leading-none inline-block">
+        {(weather.description || "").includes("비") ? (
+          <span className="inline-block animate-[weatherRain_1.8s_ease-in-out_infinite]">
+            🌧️
+          </span>
+        ) : (weather.description || "").includes("눈") ? (
+          <span className="inline-block animate-[weatherSnow_3s_ease-in-out_infinite]">
+            ❄️
+          </span>
+        ) : (weather.description || "").includes("구름") ? (
+          <span className="inline-block animate-[weatherCloud_5s_ease-in-out_infinite]">
+            ☁️
+          </span>
+        ) : (weather.description || "").includes("맑") ? (
+          <span className="inline-block animate-[weatherSun_10s_linear_infinite]">
+            ☀️
+          </span>
+        ) : (
+          <span className="inline-block animate-[weatherCloud_5s_ease-in-out_infinite]">
+            ☁️
+          </span>
+        )}
+      </span>
 
-        <span className="text-[15px] font-bold">
-  {weather.region || "서울"}
-</span>
+      <span className="text-[15px] font-bold">
+        {weather.region || "서울"}
+      </span>
 
-{weather.temp !== undefined && (
-  <>
-    <span className="text-[15px] font-black">
-      {weather.temp}°C
+      {weather.temp !== undefined && (
+        <span className="text-[15px] font-black">
+          {weather.temp}°C
+        </span>
+      )}
+
+      {/* 날씨 상세 박스 */}
+      <div className="pointer-events-none absolute -left-6 top-9 z-50 w-48 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-xs text-gray-700 shadow-lg opacity-0 translate-y-1 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0">
+        <div className="font-black text-gray-900 mb-2">
+          {weather.description || "날씨 정보"}
+        </div>
+
+        <div className="flex justify-between">
+          <span>최고기온</span>
+          <b>{weather.tempMax ?? "-"}°C</b>
+        </div>
+
+        <div className="flex justify-between mt-1">
+          <span>최저기온</span>
+          <b>{weather.tempMin ?? "-"}°C</b>
+        </div>
+
+        <div className="flex justify-between mt-1">
+          <span>습도</span>
+          <b>{weather.humidity ?? "-"}%</b>
+        </div>
+
+        <div className="flex justify-between mt-1">
+          <span>체감온도</span>
+          <b>{weather.feelsLike ?? "-"}°C</b>
+        </div>
+
+      <div className="flex justify-between mt-1">
+  <span>
+    미세먼지
+    <span className="ml-2 text-blue-600 font-bold">
+      {weather.airQuality?.pm10Status || ""}
     </span>
-
-   {specialDays.length > 0 && (
-  <span
-  className="
-    group
-    relative
-    inline-flex
-    items-center
-    justify-center
-    text-xs
-    bg-amber-50
-    border
-    border-amber-200
-    text-amber-700
-    px-2.5
-    py-1
-    rounded-full
-    font-medium
-    ml-8
-    transition-all
-    duration-300
-  
-    hover:shadow-sm
-    hover:bg-sky-50
-    hover:border-sky-200
-    hover:text-sky-700
-  "
->
-  <span className="group-hover:opacity-0">
-    {specialDays[0].emoji} {specialDays[0].label}
   </span>
 
-  <span className="absolute opacity-0 group-hover:opacity-100 transition-opacity">
-     {new Date().getFullYear()}. {new Date().getMonth() + 1}. {new Date().getDate()}
+  <b>{Math.round(weather.airQuality?.pm10 ?? 0)}㎍/㎥</b>
+</div>
+
+<div className="flex justify-between mt-1">
+  <span>
+    초미세먼지
+    <span className="ml-2 text-blue-600 font-bold">
+      {weather.airQuality?.pm25Status || ""}
+    </span>
   </span>
-</span>
-)}
-  </>
-)}
-          </div>
+
+  <b>{Math.round(weather.airQuality?.pm25 ?? 0)}㎍/㎥</b>
+</div>
+      </div>
+    </div>
+
+    {/* 데이버튼은 날씨 group 밖 */}
+    {specialDays.length > 0 && (
+      <span
+        onContextMenu={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        className="
+          group
+          relative
+          inline-flex
+          items-center
+          justify-center
+          text-xs
+          bg-amber-50
+          border
+          border-amber-200
+          text-amber-700
+          px-2.5
+          py-1
+          rounded-full
+          font-medium
+          ml-8
+          transition-all
+          duration-300
+          hover:shadow-sm
+          hover:bg-sky-50
+          hover:border-sky-200
+          hover:text-sky-700
+        "
+      >
+        <span className="group-hover:opacity-0 text-xs font-medium">
+          {specialDays[0].emoji} {specialDays[0].label}
+        </span>
+
+        <span className="absolute opacity-0 group-hover:opacity-100 transition-opacity text-xs font-medium">
+         📅  {new Date().getFullYear()}.{String(new Date().getMonth() + 1).padStart(2, "0")}.{String(new Date().getDate()).padStart(2, "0")}
+        </span>
+      </span>
+    )}
+  </div>
 
           {weatherOpen && (
             <div
