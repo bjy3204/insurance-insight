@@ -9,16 +9,8 @@ function absoluteUrl(url: string) {
   return `https://www.korea.kr/${url}`;
 }
 
-function cleanTitle(title: string) {
-  return title
-    .replace(/\s+/g, " ")
-    .replace(/\s*\d{4}\.\d{2}\.\d{2}.*$/, "")
-    .trim();
-}
-
-function pickDate(text: string) {
-  const match = text.match(/\d{4}\.\d{2}\.\d{2}/);
-  return match?.[0] ?? "";
+function cleanText(text: string) {
+  return text.replace(/\s+/g, " ").trim();
 }
 
 export async function GET() {
@@ -30,52 +22,44 @@ export async function GET() {
       },
     });
 
-    if (!res.ok) {
-      return NextResponse.json({ items: [] });
-    }
-
     const html = await res.text();
     const $ = cheerio.load(html);
 
     const items: any[] = [];
 
-    $("a[href*='visualNewsView.do']").each((_, el) => {
-      const $a = $(el);
-      const href = $a.attr("href") ?? "";
+    $("a").each((_, el) => {
+      const href = $(el).attr("href") ?? "";
 
-      const $box = $a.closest("li, .card, .list, .item, div");
-      const text = $box.text().replace(/\s+/g, " ").trim();
+      if (!href.includes("newsId=")) return;
 
-      const img =
-        $a.find("img").first().attr("src") ||
-        $a.find("img").first().attr("data-src") ||
-        $box.find("img").first().attr("src") ||
-        $box.find("img").first().attr("data-src") ||
-        "";
+      const box = $(el).closest("li");
+      const img = box.find("img").first();
 
       const title =
-        $a.attr("title")?.trim() ||
-        $a.find("img").first().attr("alt")?.trim() ||
-        $box.find("img").first().attr("alt")?.trim() ||
-        $a.text().replace(/\s+/g, " ").trim() ||
-        text;
+        cleanText(img.attr("alt") ?? "") ||
+        cleanText($(el).text()) ||
+        cleanText(box.text());
 
-      if (!href || !title) return;
+      const image =
+        img.attr("src") ||
+        img.attr("data-src") ||
+        "";
+
+      if (!title) return;
 
       items.push({
         id: href,
-        title: cleanTitle(title),
+        title,
         subtitle: "",
-        date: pickDate(text || title),
+        date: "",
         department: "대한민국 정책브리핑",
-        image: absoluteUrl(img),
+        image: absoluteUrl(image),
         link: absoluteUrl(href),
       });
     });
 
     const uniqueItems = items.filter(
       (item, index, self) =>
-        item.link &&
         index === self.findIndex((target) => target.link === item.link)
     );
 
@@ -83,10 +67,7 @@ export async function GET() {
       items: uniqueItems.slice(0, 12),
     });
   } catch (error) {
-    console.error("policy-briefing api error:", error);
-
-    return NextResponse.json({
-      items: [],
-    });
+    console.error(error);
+    return NextResponse.json({ items: [] });
   }
 }
