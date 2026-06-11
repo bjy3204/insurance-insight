@@ -37,7 +37,7 @@ import {
   Pin,
   Eye,
   EyeOff,
-  Trash2,
+  Link2,
   Plus,
     Search,
     Pencil,
@@ -137,13 +137,7 @@ const defaultMenus = [
     icon: FileText,
     link: "/claim-docs",
   },
-{
-  id: "sales-book",
-  title: "세일즈북",
-  desc: "상담 세일즈북 자료",
-  icon: BookOpen,
-  link: "/sales-book",
-},
+
   {
     id: "insurance-folder",
     title: "보험인사이트 폴더",
@@ -151,6 +145,14 @@ const defaultMenus = [
     icon: FolderOpen,
     link: "https://naver.me/FWTmVFQz",
   },
+{
+  id: "sales-book",
+  title: "세일즈북",
+  desc: "상담 세일즈북 자료",
+  icon: BookOpen,
+  link: "/sales-book",
+},
+
   {
     id: "calculator",
     title: "실비계산기",
@@ -193,7 +195,13 @@ const defaultMenus = [
     icon: Briefcase,
     link: "/job",
   },
-
+    {
+  id: "use-link",
+  title: "바로가기",
+  desc: "보험·카드뉴스·정책브리핑",
+  icon: Link2,
+  link: "/use-link",
+},
 ];
 
 
