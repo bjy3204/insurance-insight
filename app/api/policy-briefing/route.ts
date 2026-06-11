@@ -25,7 +25,7 @@ export async function GET() {
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64 ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8",
+        "Accept-Language": "ko-KR,ko;q=0.9",
         "Referer": "https://www.korea.kr/",
       },
     } );
@@ -38,21 +38,23 @@ export async function GET() {
     const $ = cheerio.load(html);
     const items: any[] = [];
 
-    $("a").each((_, el) => {
+    $("a[href*='visualNewsView.do']").each((_, el) => {
       const href = $(el).attr("href") ?? "";
-      const img = $(el).find("img").first();
 
-      if (!href.includes("visualNewsView.do")) return;
-      if (!img.length) return;
+      // img 태그로 이미지 찾기
+      let image = $(el).find("img").first().attr("src") || $(el).find("img").first().attr("data-src") || "";
+
+      // img 없으면 style에서 background-image 추출
+      if (!image) {
+        const style = $(el).find("[style]").first().attr("style") ?? "";
+        const bgMatch = style.match(/url\(['"]?([^'")\s]+)['"]?\)/);
+        if (bgMatch) image = bgMatch[1];
+      }
 
       const title =
-        img.attr("alt")?.trim() ||
+        $(el).find("img").first().attr("alt")?.trim() ||
+        $(el).find(".tit, .title, h3, h4, p").first().text().trim() ||
         $(el).text().replace(/\s+/g, " ").trim();
-
-      const image =
-        img.attr("src") ||
-        img.attr("data-src") ||
-        "";
 
       if (!title || !image) return;
 
