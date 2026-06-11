@@ -13,7 +13,6 @@ import { FaInstagram } from "react-icons/fa";
 
 import InsuranceLinks from "./InsuranceLinks";
 import CardNewsLinks from "./CardNewsLinks";
-import PolicyBriefing from "./PolicyBriefing";
 import MemoManager from "@/app/components/MemoManager";
 import MemoStickers from "@/app/components/MemoStickers";
 import { useAuth } from "@/app/components/AuthProvider";
@@ -46,7 +45,7 @@ export default function UseLinkPage() {
   const [deleteMemoConfirmOpen, setDeleteMemoConfirmOpen] = useState(false);
   const [deleteMemoId, setDeleteMemoId] = useState<string | null>(null);
 
-  const [tab, setTab] = useState<"보험" | "카드뉴스" | "정책브리핑">("보험");
+  const [tab, setTab] = useState<"보험" | "카드뉴스">("보험");
   const [search, setSearch] = useState("");
 
   const [settingOpen, setSettingOpen] = useState(false);
@@ -179,8 +178,8 @@ const [memoOpen, setMemoOpen] = useState(false);
 
       <section className="max-w-7xl mx-auto px-5 py-6">
 
-        <div className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
-          {["보험", "카드뉴스", "정책브리핑"].map((item) => (
+        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
+          {["보험", "카드뉴스"].map((item) => (
             <button key={item} onClick={() => setTab(item as any)} className={`rounded-xl py-3 text-sm md:text-base font-bold ${tab === item ? "bg-white text-blue-600 shadow-sm" : "text-gray-600"}`}>
               {item}
             </button>
@@ -188,7 +187,6 @@ const [memoOpen, setMemoOpen] = useState(false);
         </div>
         {tab === "보험" && <InsuranceLinks search={search} />}
         {tab === "카드뉴스" && <CardNewsLinks search={search} />}
-        {tab === "정책브리핑" && <PolicyBriefing search={search} />}
       </section>
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
