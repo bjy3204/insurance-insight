@@ -66,6 +66,12 @@ const links = [
   desc: "건강보험 안내자료",
   url: "https://www.nhis.or.kr/nhis/about/wbhafc01000m01.do",
 },
+{
+  title: "대한민국 정책브리핑",
+  icon: "/CardNews/koreakr.png",
+  desc: "정부 정책 카드뉴스",
+  url: "https://www.korea.kr/multi/visualNewsList.do",
+},
 ];
 
 export default function CardNewsLinks({ search }: Props) {
