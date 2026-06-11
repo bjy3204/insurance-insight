@@ -61,7 +61,7 @@ const links = [
     url: "https://mofe.go.kr/nw/mosfnw/cardNews.do?menuNo=4040600&pageIndex=1",
   },
   {
-  title: "국민건강보험 리플릿",
+  title: "국민건강보험",
   icon: "/CardNews/nhis.png",
   desc: "건강보험 안내자료",
   url: "https://www.nhis.or.kr/nhis/about/wbhafc01000m01.do",
