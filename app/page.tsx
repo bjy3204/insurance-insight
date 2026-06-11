@@ -2265,7 +2265,7 @@ const saveProfileSettings = async () => {
 >
     <div className="flex items-center gap-13 text-center">
       
-                 <div className="flex items-center gap-4 scale-130 mr-6">
+                 <div className="hidden min-[1110px]:flex items-center gap-4 scale-130 mr-6">
 {authLoading ? (
   <div className="h-4 w-20 rounded bg-gray-100 animate-pulse" />
 ) : (
