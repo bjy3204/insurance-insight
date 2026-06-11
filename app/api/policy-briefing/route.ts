@@ -11,12 +11,13 @@ function absoluteUrl(url: string) {
 
 function cleanTitle(title: string) {
   return title
-    .replace(/\s*\d{4}\.\d{2}\.\d{2}\s*.*$/, "")
+    .replace(/\s+/g, " ")
+    .replace(/\s*\d{4}\.\d{2}\.\d{2}.*$/, "")
     .trim();
 }
 
-function pickDate(title: string) {
-  const match = title.match(/\d{4}\.\d{2}\.\d{2}/);
+function pickDate(text: string) {
+  const match = text.match(/\d{4}\.\d{2}\.\d{2}/);
   return match?.[0] ?? "";
 }
 
@@ -33,47 +34,48 @@ export async function GET() {
       return NextResponse.json({ items: [] });
     }
 
-const html = await res.text();
-
-const $ = cheerio.load(html);
-
+    const html = await res.text();
+    const $ = cheerio.load(html);
 
     const items: any[] = [];
 
-$("a").each((_, el) => {
-  const href = $(el).attr("href") ?? "";
-  const img = $(el).find("img").first();
+    $("a[href*='visualNewsView.do']").each((_, el) => {
+      const $a = $(el);
+      const href = $a.attr("href") ?? "";
 
-  if (!href) return;
-  if (!img.length) return;
+      const $box = $a.closest("li, .card, .list, .item, div");
+      const text = $box.text().replace(/\s+/g, " ").trim();
 
-  const title =
-    img.attr("alt")?.trim() ||
-    $(el).text().replace(/\s+/g, " ").trim();
+      const img =
+        $a.find("img").first().attr("src") ||
+        $a.find("img").first().attr("data-src") ||
+        $box.find("img").first().attr("src") ||
+        $box.find("img").first().attr("data-src") ||
+        "";
 
-  const image = img.attr("src") || img.attr("data-src") || "";
+      const title =
+        $a.attr("title")?.trim() ||
+        $a.find("img").first().attr("alt")?.trim() ||
+        $box.find("img").first().attr("alt")?.trim() ||
+        $a.text().replace(/\s+/g, " ").trim() ||
+        text;
 
-  if (!title || !image) return;
+      if (!href || !title) return;
 
-  const text = $(el).text().replace(/\s+/g, " ").trim();
-
-  const departmentMatch = text.match(
-    /(외교부|소방청|보건복지부|질병관리청|금융위원회|금융감독원|고용노동부|행정안전부|국토교통부|기획재정부|국세청|식품의약품안전처|환경부|교육부|문화체육관광부|방송미디어통신위원회)/
-  );
-
-  items.push({
-    id: href,
-    title: cleanTitle(title),
-    subtitle: "",
-    date: pickDate(title),
-    department: departmentMatch?.[1] ?? "대한민국 정책브리핑",
-    image: absoluteUrl(image),
-    link: absoluteUrl(href),
-  });
-});
+      items.push({
+        id: href,
+        title: cleanTitle(title),
+        subtitle: "",
+        date: pickDate(text || title),
+        department: "대한민국 정책브리핑",
+        image: absoluteUrl(img),
+        link: absoluteUrl(href),
+      });
+    });
 
     const uniqueItems = items.filter(
       (item, index, self) =>
+        item.link &&
         index === self.findIndex((target) => target.link === item.link)
     );
 
