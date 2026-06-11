@@ -31,13 +31,13 @@ export const metadata: Metadata = {
 
     description: "보험사전산, 상품공시실, 고객센터",
 
-    url: "https://insurance-insight.vercel.app",
+    url: "https://bohuminsight.com",
 
     siteName: "보험인사이트",
 
     images: [
       {
-        url: "https://insurance-insight.vercel.app/og-image.png",
+        url: "https://bohuminsight.com/og-image.png",
         width: 1200,
         height: 630,
         alt: "보험인사이트",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
 verification: {
   other: {
     "naver-site-verification":
-      "a654287d085037758c4cb85c081e5dad47a451a3",
+      "05260703e2145a99997577afa0c4ee375a57b183",
 
     "google-site-verification":
       "nSorRb0EXXKrURSL9GCftAVHtg25EKr7tTgCveyRknw",
