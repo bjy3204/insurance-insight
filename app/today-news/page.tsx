@@ -143,10 +143,19 @@ const formatExchange = (label: string, value: number) => {
     });
   }
 
+  const splitNumber = (value: string) => {
+  const [integer, decimal] = value.split(".");
+  return { integer, decimal };
+};
+
   return value.toLocaleString("ko-KR", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
+};
+const splitNumber = (value: string) => {
+  const [integer, decimal] = value.split(".");
+  return { integer, decimal };
 };
 
 const EXCHANGE_LINKS: Record<string, string> = {
@@ -1013,9 +1022,25 @@ duration-200
      
                   </div>
 
-                  <p className="text-2xl font-black text-gray-900 mt-2 tracking-tight">
-                    {formatExchange(item.label, item.value)}
-                  </p>
+<p className="text-2xl font-black mt-2 tracking-tight">
+  {(() => {
+    const { integer, decimal } = splitNumber(
+      formatExchange(item.label, item.value)
+    );
+
+    return (
+<>
+  <span className="text-gray-900">{integer}</span>
+  {decimal && (
+    <>
+      <span className="text-gray-900">.</span>
+      <span className="text-gray-500">{decimal}</span>
+    </>
+  )}
+</>
+    );
+  })()}
+</p>
 
                   <p
                     className={`
@@ -1122,9 +1147,25 @@ duration-200
             </p>
           </div>
 
-          <p className="text-2xl font-black text-gray-900 mt-2 tracking-tight">
-{formatMarketValue(item)}
-          </p>
+<p className="text-2xl font-black mt-2 tracking-tight">
+  {(() => {
+    const { integer, decimal } = splitNumber(
+      formatMarketValue(item)
+    );
+
+    return (
+<>
+  <span className="text-gray-900">{integer}</span>
+  {decimal && (
+    <>
+      <span className="text-gray-900">.</span>
+      <span className="text-gray-500">{decimal}</span>
+    </>
+  )}
+</>
+    );
+  })()}
+</p>
 
           <p
             className={`
