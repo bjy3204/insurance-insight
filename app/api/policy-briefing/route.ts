@@ -33,11 +33,11 @@ export async function GET() {
       return NextResponse.json({ items: [] });
     }
 
-    const html = await res.text();
+const html = await res.text();
 
-    if (!html) {
-      return NextResponse.json({ items: [] });
-    }
+return NextResponse.json({
+  htmlStart: html.slice(0, 1000),
+});
 
     const $ = cheerio.load(html);
     const items: any[] = [];
