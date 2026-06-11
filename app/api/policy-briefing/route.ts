@@ -1,57 +1,85 @@
 import { NextResponse } from "next/server";
+import * as cheerio from "cheerio";
 
-const API_KEY = process.env.POLICY_BRIEFING_API_KEY ?? "";
+function absoluteUrl(url: string) {
+  if (!url) return "";
+  if (url.startsWith("http" )) return url;
+  if (url.startsWith("//")) return `https:${url}`;
+  if (url.startsWith("/" )) return `https://www.korea.kr${url}`;
+  return `https://www.korea.kr/${url}`;
+}
 
-function formatDate(dateStr: string) {
-  const match = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-  if (!match) return dateStr;
-  return `${match[3]}.${match[1]}.${match[2]}`;
+function cleanTitle(title: string ) {
+  return title.replace(/\s*\d{4}\.\d{2}\.\d{2}\s*.*$/, "").trim();
+}
+
+function pickDate(title: string) {
+  const match = title.match(/\d{4}\.\d{2}\.\d{2}/);
+  return match?.[0] ?? "";
 }
 
 export async function GET() {
   try {
-    const today = new Date();
-    const end = today.toISOString().slice(0, 10).replace(/-/g, "");
-    const start = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000)
-      .toISOString().slice(0, 10).replace(/-/g, "");
+    const res = await fetch("https://www.korea.kr/multi/visualNewsList.do", {
+      cache: "no-store",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64 ) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "ko-KR,ko;q=0.9",
+        "Referer": "https://www.korea.kr/",
+      },
+    } );
 
-    const url = `https://apis.data.go.kr/1371000/policyNewsService/policyNewsList?serviceKey=${encodeURIComponent(API_KEY )}&startDate=${start}&endDate=${end}`;
-
-    const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
       return NextResponse.json({ items: [], error: `HTTP ${res.status}` });
     }
 
-    const xml = await res.text();
-
-    const itemMatches = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)];
+    const html = await res.text();
+    const $ = cheerio.load(html);
     const items: any[] = [];
 
-    for (const match of itemMatches) {
-      const block = match[1];
+    $("a[href*='visualNewsView.do']").each((_, el) => {
+      const href = $(el).attr("href") ?? "";
 
-      const get = (tag: string) =>
-        block.match(new RegExp(`<${tag}><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>`))?.[1]?.trim() ||
-        block.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`))?.[1]?.trim() || "";
+      // img 태그로 이미지 찾기
+      let image = $(el).find("img").first().attr("src") || $(el).find("img").first().attr("data-src") || "";
 
-      const title = get("Title");
-      const image = get("ThumbnailUrl");
-      const link = get("OriginalUrl");
-      const dept = get("MinisterCode");
-      const date = formatDate(get("ApproveDate"));
-      const id = get("NewsItemId");
+      // img 없으면 style에서 background-image 추출
+      if (!image) {
+        const style = $(el).find("[style]").first().attr("style") ?? "";
+        const bgMatch = style.match(/url\(['"]?([^'")\s]+)['"]?\)/);
+        if (bgMatch) image = bgMatch[1];
+      }
 
-      if (!title) continue;
+      const title =
+        $(el).find("img").first().attr("alt")?.trim() ||
+        $(el).find(".tit, .title, h3, h4, p").first().text().trim() ||
+        $(el).text().replace(/\s+/g, " ").trim();
 
-      items.push({ id, title, subtitle: "", date, department: dept || "대한민국 정책브리핑", image, link });
-    }
+      if (!title || !image) return;
 
-    const sorted = [
-      ...items.filter((i) => i.image),
-      ...items.filter((i) => !i.image),
-    ];
+      const text = $(el).text().replace(/\s+/g, " ").trim();
+      const departmentMatch = text.match(
+        /(외교부|소방청|보건복지부|질병관리청|금융위원회|금융감독원|고용노동부|행정안전부|국토교통부|기획재정부|국세청|식품의약품안전처|환경부|교육부|문화체육관광부|방송미디어통신위원회)/
+      );
 
-    return NextResponse.json({ items: sorted.slice(0, 12) });
+      items.push({
+        id: href,
+        title: cleanTitle(title),
+        subtitle: "",
+        date: pickDate(title),
+        department: departmentMatch?.[1] ?? "대한민국 정책브리핑",
+        image: absoluteUrl(image),
+        link: absoluteUrl(href),
+      });
+    });
+
+    const uniqueItems = items.filter(
+      (item, index, self) =>
+        index === self.findIndex((target) => target.link === item.link)
+    );
+
+    return NextResponse.json({ items: uniqueItems.slice(0, 12) });
 
   } catch (e: any) {
     return NextResponse.json({ items: [], error: e.message });
