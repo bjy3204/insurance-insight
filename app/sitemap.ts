@@ -3,49 +3,49 @@ import { MetadataRoute } from "next";
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
-      url: "https://insurance-insight.vercel.app",
+      url: "https://bohuminsight.com",
       lastModified: new Date(),
       priority: 1,
     },
 
     {
-      url: "https://insurance-insight.vercel.app/insurance-system",
+      url: "https://bohuminsight.com/insurance-system",
       lastModified: new Date(),
       priority: 0.9,
     },
 
     {
-      url: "https://insurance-insight.vercel.app/customer-center",
+      url: "https://bohuminsight.com/customer-center",
       lastModified: new Date(),
       priority: 0.9,
     },
 
     {
-      url: "https://insurance-insight.vercel.app/product-public",
+      url: "https://bohuminsight.com/product-public",
       lastModified: new Date(),
       priority: 0.9,
     },
 
     {
-      url: "https://insurance-insight.vercel.app/calculator",
+      url: "https://bohuminsight.com/calculator",
       lastModified: new Date(),
       priority: 0.9,
     },
 
     {
-      url: "https://insurance-insight.vercel.app/money-value",
+      url: "https://bohuminsight.com/money-value",
       lastModified: new Date(),
       priority: 0.8,
     },
 
     {
-      url: "https://insurance-insight.vercel.app/saving-calculator",
+      url: "https://bohuminsight.com/saving-calculator",
       lastModified: new Date(),
       priority: 0.8,
     },
 
     {
-      url: "https://insurance-insight.vercel.app/pension-calculator",
+      url: "https://bohuminsight.com/pension-calculator",
       lastModified: new Date(),
       priority: 0.8,
     },

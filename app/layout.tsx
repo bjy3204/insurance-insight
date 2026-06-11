@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://insurance-insight.vercel.app"),
+  metadataBase: new URL("https://bohuminsight.com"),
 
   title: "보험인사이트",
 

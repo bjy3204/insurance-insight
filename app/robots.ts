@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
     },
 
     sitemap:
-      "https://insurance-insight.vercel.app/sitemap.xml",
+      "https://bohuminsight.com/sitemap.xml",
   };
 }
