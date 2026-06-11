@@ -40,7 +40,7 @@ const memoColorOptions: { value: MemoItem["color"]; className: string }[] = [
 ];
 
 export default function UseLinkPage() {
-  const { memos, saveMemos } = useAuth();
+  const { memos, saveMemos, authStatus } = useAuth();
   const [selectedMemo, setSelectedMemo] = useState<MemoItem | null>(null);
   const [memoEditPopupPosition, setMemoEditPopupPosition] = useState({ x: 0, y: 0 });
   const [deleteMemoConfirmOpen, setDeleteMemoConfirmOpen] = useState(false);
@@ -152,21 +152,23 @@ const [memoOpen, setMemoOpen] = useState(false);
           메모장
         </button>
 
-        <button
-          onClick={() => {
-            window.dispatchEvent(
-              new CustomEvent("open-calculator")
-            );
-            setSettingOpen(false);
-          }}
-          className="
-            block w-full text-center px-4 py-3 text-sm font-bold
-            text-gray-700 hover:bg-gray-50 transition border-t
-            border-gray-100 cursor-default
-          "
-        >
-          계산기
-        </button>
+        {authStatus === "approved" && (
+  <button
+    onClick={() => {
+      window.dispatchEvent(
+        new CustomEvent("open-calculator")
+      );
+      setSettingOpen(false);
+    }}
+    className="
+      block w-full text-center px-4 py-3 text-sm font-bold
+      text-gray-700 hover:bg-gray-50 transition border-t
+      border-gray-100 cursor-default
+    "
+  >
+    계산기
+  </button>
+)}
       </div>
     )}
   </div>
