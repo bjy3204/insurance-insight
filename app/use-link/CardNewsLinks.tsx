@@ -60,6 +60,12 @@ const links = [
     desc: "경제정책 카드뉴스",
     url: "https://mofe.go.kr/nw/mosfnw/cardNews.do?menuNo=4040600&pageIndex=1",
   },
+  {
+  title: "국민건강보험 리플릿",
+  icon: "/CardNews/nhis.png",
+  desc: "건강보험 안내자료",
+  url: "https://www.nhis.or.kr/nhis/about/wbhafc01000m01.do",
+},
 ];
 
 export default function CardNewsLinks({ search }: Props) {

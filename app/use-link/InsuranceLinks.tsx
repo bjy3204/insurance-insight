@@ -80,6 +80,18 @@ const links = [
     desc: "의료정보 통계자료",
     url: "https://www.hira.or.kr/bbsDummy.do?pgmid=HIRAA020045010000",
   },
+  {
+  title: "비급여 정보 포털",
+  icon: "/Insurancelink/non-covered.png",
+  desc: "비급여 진료비 정보",
+  url: "https://www.nhis.or.kr/nbinfo/index.do",
+},
+{
+  title: "치매시설정보",
+  icon: "/Insurancelink/dementia-facility.png",
+  desc: "치매시설 정보 조회",
+  url: "https://ansim.nid.or.kr/service/facility_list.aspx",
+},
 ];
 
 export default function InsuranceLinks({ search }: Props) {
