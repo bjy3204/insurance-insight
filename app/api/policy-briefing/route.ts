@@ -35,11 +35,17 @@ export async function GET() {
 
 const html = await res.text();
 
-return NextResponse.json({
-  htmlStart: html.slice(0, 1000),
-});
+const $ = cheerio.load(html);
 
-    const $ = cheerio.load(html);
+const links = $("a")
+  .map((_, el) => $(el).attr("href") ?? "")
+  .get()
+  .filter((href) => href.includes("visual") || href.includes("multi"))
+  .slice(0, 30);
+
+return NextResponse.json({
+  links,
+});
     const items: any[] = [];
 
     $("a").each((_, el) => {
