@@ -340,10 +340,7 @@ const sortedWeatherItems = useMemo(() => {
     try {
       setLoading(true);
 
-      const searchKeyword =
-  keyword === "전체"
-    ? "보험 금융 경제 금감원 실손보험 손해보험 생명보험"
-    : keyword;
+const searchKeyword = keyword;
 
       const res = await fetch(
         `/api/naver-news?query=${encodeURIComponent(searchKeyword)}&display=10`,
