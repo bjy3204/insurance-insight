@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     const isAll = rawQuery === "전체";
 
 const query = isAll
-  ? "보험 OR 보험사 OR 실손보험 OR 손해보험 OR 생명보험"
+  ? "보험"
   : rawQuery;
 
     const res = await fetch(
@@ -24,7 +24,7 @@ const query = isAll
           "X-Naver-Client-Id": process.env.NAVER_CLIENT_ID || "",
           "X-Naver-Client-Secret": process.env.NAVER_CLIENT_SECRET || "",
         },
-        next: { revalidate: 300 },
+        cache: "no-store",
       }
     );
 
