@@ -77,12 +77,12 @@ tooltipWidth2?: string;
   image: "/sales-book/운전자보험/설명/재판결과.png",
   tooltipX: "left-[75%] -translate-x-[50%]",
   tooltipY: "top-[86.7%]",
-  tooltipWidth: "!w-[480px]",
+  tooltipWidth: "!w-[400px]",
 
   image2: "/sales-book/운전자보험/설명/판결.png",
   tooltipX2: "left-[75.2%] -translate-x-[50%]",
-  tooltipY2: "top-[81.8%]",
-  tooltipWidth2: "!w-[310px]",
+  tooltipY2: "top-[82.1%]",
+  tooltipWidth2: "!w-[210px]",
 
   borderless: true,
 },
