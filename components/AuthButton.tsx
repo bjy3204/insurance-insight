@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/lib/supabase";
 import { X } from "lucide-react";
+import Image from "next/image";
 
 type VariantType = "full" | "label" | "menu";
 type ModeType = "login" | "signup";
@@ -23,6 +24,7 @@ function AuthPopup({
   onLogin,
 onSignup,
 onResetPassword,
+onKakaoLogin,
 }: {
   mode: ModeType;
   setMode: React.Dispatch<React.SetStateAction<ModeType>>;
@@ -38,6 +40,7 @@ onResetPassword,
   onLogin: () => void;
   onSignup: () => void;
   onResetPassword: () => void;
+  onKakaoLogin: (type: "login" | "signup") => void;
 }) {
   return (
     <div
@@ -150,6 +153,28 @@ onResetPassword,
             {mode === "login" ? "로그인하기" : "회원가입하기"}
           </button>
 
+{mode === "login" && (
+ <button
+  onClick={() => onKakaoLogin("login")}
+  className="
+    h-11
+    w-full
+    rounded-xl
+    bg-[#FEE500]
+    text-sm
+    font-bold
+    text-[#191919]
+    cursor-pointer
+    transition
+    hover:bg-[#f6dc00]
+  "
+>
+  카카오 로그인
+</button>
+)}
+
+
+
           {mode === "login" && (
   <button
     onClick={onResetPassword}
@@ -249,7 +274,24 @@ await onAuthChange?.();
 onMenuClose?.();
 };
 
- 
+const handleKakaoLogin = async (
+  type: "login" | "signup"
+) => {
+  localStorage.setItem("kakao_auth_mode", type);
+
+  await supabase.auth.signOut();
+
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "kakao",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    alert(error.message);
+  }
+};
 
 const handleResetPassword = async () => {
   if (!email.trim()) {
@@ -403,6 +445,7 @@ if (profileError) {
             onLogin={handleLogin}
             onSignup={handleSignup}
             onResetPassword={handleResetPassword}
+            onKakaoLogin={handleKakaoLogin}
           />,
           document.body
         )

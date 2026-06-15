@@ -253,12 +253,13 @@ export default function Home() {
     useEffect(() => {
       const loadProfile = async (userId: string) => {
 
-       const { data: profile } = await supabase
-      .from("profiles")
-      .select("personal_menus, menu_order, quick_menu_keys, read_notice_ids, read_press_ids, hidden_menu_ids")
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("personal_menus, menu_order, quick_menu_keys, read_notice_ids, read_press_ids, hidden_menu_ids, kakao_connected")
+  .eq("id", userId)
+  .maybeSingle();
 
-      .eq("id", userId)
-      .maybeSingle();
+  setKakaoConnected(!!profile?.kakao_connected);
 
     if (profile?.personal_menus
  && Array.isArray(profile.personal_menus)) {
@@ -383,6 +384,8 @@ const specialDays = getTodaySpecialDays(new Date());
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [profileSettingOpen, setProfileSettingOpen] = useState(false);
+  const [kakaoConnected, setKakaoConnected] = useState(false);
+const [kakaoConnecting, setKakaoConnecting] = useState(false);
 const [editNickname, setEditNickname] = useState("");
 const [editInstagram, setEditInstagram] = useState("");
 const [pinCheckPassword, setPinCheckPassword] = useState("");
@@ -1949,6 +1952,68 @@ const saveProfileSettings = async () => {
 
 };
 
+const handleKakaoConnect = async () => {
+  setKakaoConnecting(true);
+
+  const { error } = await supabase.auth.linkIdentity({
+    provider: "kakao",
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    setKakaoConnecting(false);
+    alert(error.message);
+    return;
+  }
+
+  await supabase
+    .from("profiles")
+    .update({ kakao_connected: true })
+    .eq("id", authUser.id);
+
+  setKakaoConnected(true);
+  setKakaoConnecting(false);
+};
+
+const handleKakaoDisconnect = async () => {
+  if (!authUser?.id) return;
+
+  const ok = confirm("카카오 연결을 해제하시겠습니까?");
+  if (!ok) return;
+
+  const { data, error } = await supabase.auth.getUserIdentities();
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  const kakaoIdentity = data.identities.find(
+    (identity: any) => identity.provider === "kakao"
+  );
+
+  if (!kakaoIdentity) {
+    alert("카카오 연결 정보를 찾을 수 없습니다.");
+    return;
+  }
+
+  const { error: unlinkError } = await supabase.auth.unlinkIdentity(kakaoIdentity);
+
+  if (unlinkError) {
+    alert(unlinkError.message);
+    return;
+  }
+
+  await supabase
+    .from("profiles")
+    .update({ kakao_connected: false })
+    .eq("id", authUser.id);
+
+  setKakaoConnected(false);
+  alert("카카오 연결이 해제되었습니다.");
+};
 
   const sendMessage = async () => {
   if (!fixMessage.trim() && !addMessage.trim()) {
@@ -3211,6 +3276,53 @@ hover:-translate-y-1
           />
         </div>
 
+        <div className="pt-3 border-t border-gray-100">
+  <p className="mb-2 text-xs font-bold text-gray-500">
+    카카오 로그인
+  </p>
+
+{kakaoConnected ? (
+  <button
+    onClick={handleKakaoDisconnect}
+    className="
+      h-11
+      w-full
+      rounded-xl
+      border
+      border-red-200
+      bg-red-50
+      text-sm
+      font-bold
+      text-red-600
+      cursor-pointer
+      transition
+      hover:bg-red-100
+    "
+  >
+    카카오 연결 해제
+  </button>
+) : (
+  <button
+    onClick={handleKakaoConnect}
+    disabled={kakaoConnecting}
+    className="
+      h-11
+      w-full
+      rounded-xl
+      bg-[#FEE500]
+      text-sm
+      font-bold
+      text-[#191919]
+      cursor-pointer
+      transition
+      hover:bg-[#f6dc00]
+    "
+  >
+    {kakaoConnecting ? "연결중..." : "카카오 연결하기"}
+  </button>
+)}
+</div>
+
         <button
           onClick={saveProfileSettings}
           className="h-11 w-full rounded-xl bg-gray-900 text-sm font-bold text-white hover:bg-gray-800 cursor-pointer"
@@ -3561,30 +3673,26 @@ hover:-translate-y-1
   </>
 )}
 
-    <button
-  onClick={(e) => {
-    e.stopPropagation();
+   {authUser && (
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
 
-    if (!authUser) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
+      setEditNickname(authNickname || "");
+      setEditInstagram(authInstagram || "");
 
-    setEditNickname(authNickname || "");
-    setEditInstagram(authInstagram || "");
+      setCurrentPassword("");
+      setNewPassword("");
+      setNewPasswordConfirm("");
 
-    setCurrentPassword("");
-    setNewPassword("");
-    setNewPasswordConfirm("");
-
-    setProfileSettingOpen(true);
-    setUserMenuOpen(false);
-  }}
+      setProfileSettingOpen(true);
+      setUserMenuOpen(false);
+    }}
     className="block w-full px-4 py-3 text-center text-sm font-bold text-gray-700 hover:bg-gray-50 border-t border-gray-100 cursor-default"
->
-  개인설정
-
-</button>
+  >
+    개인설정
+  </button>
+)}
 
 <button
   onClick={() => {

@@ -63,7 +63,8 @@ type Profile = {
   status: string | null;
   role: string | null;
   created_at: string | null;
-   linked_subscriber_id: string | null;
+  linked_subscriber_id: string | null;
+  kakao_connected: boolean | null;
 };
 
 // --- 구독자 타입 ---
@@ -431,7 +432,7 @@ useEffect(() => {
   const fetchProfiles = async () => {
     const { data } = await supabase
       .from("profiles")
-      .select("id, nickname, instagram_id, status, role, created_at, linked_subscriber_id")
+      .select("id, nickname, instagram_id, status, role, created_at, linked_subscriber_id, kakao_connected")
       .order("created_at", { ascending: false });
     setProfiles((data as Profile[]) || []);
   };
@@ -1215,8 +1216,16 @@ const matchSearch =
                   <div key={profile.id} onClick={() => setSelectedProfile(profile)} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition cursor-default">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <p className="text-base font-black text-gray-900">{profile.nickname || "(닉네임 없음)"}</p>
-                        <p className="text-sm text-gray-400 mt-0.5">{profile.instagram_id ? `@${profile.instagram_id}` : "인스타 없음"}</p>
+<div className="flex items-center gap-1.5 flex-wrap">
+  <p className="text-base font-black text-gray-900">{profile.nickname || "(닉네임 없음)"}</p>
+  {profile.kakao_connected && (
+    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 border border-yellow-200">
+      카카오
+    </span>
+  )}
+</div>
+<p className="text-sm text-gray-400 mt-0.5">{profile.instagram_id ? `@${profile.instagram_id}` : "인스타 없음"}</p>
+
                       </div>
                       <div className="flex flex-col items-end gap-1">
                         <span className={`text-xs font-bold px-3 py-1 rounded-full ${STATUS_COLOR[profile.status || ""] || "bg-gray-100 text-gray-500"}`}>
