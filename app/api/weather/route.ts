@@ -34,6 +34,15 @@ export async function GET(request: Request) {
   const airUrl = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${location.lat}&lon=${location.lon}&appid=${apiKey}`;
 
   try {
+    const descriptionMap: Record<string, string> = {
+  맑음: "맑음",
+  구름조금: "구름 조금",
+  튼구름: "구름 많음",
+  온흐림: "흐림",
+  실비: "비",
+  소낙비: "소나기",
+  눈: "눈",
+};
     const [currentRes, forecastRes, airRes] = await Promise.all([
       fetch(currentUrl, { next: { revalidate: 600 } }),
       fetch(forecastUrl, { next: { revalidate: 600 } }),
@@ -75,7 +84,7 @@ const pm25Status =
         temp: Math.round(item.main.temp),
         tempMin: Math.round(item.main.temp_min),
         tempMax: Math.round(item.main.temp_max),
-        description: item.weather?.[0]?.description || "",
+        description: descriptionMap[item.weather?.[0]?.description || ""] || item.weather?.[0]?.description || "",
         icon: item.weather?.[0]?.icon || "",
       }));
 
@@ -99,10 +108,16 @@ const pm25Status =
         ? Math.round(Math.max(...todayTemps))
         : Math.round(currentData.main.temp_max);
 
+        const rawDescription = currentData.weather?.[0]?.description || "";
+
+
+const description =
+  descriptionMap[rawDescription] || rawDescription;
+
     return NextResponse.json({
       region,
       temp: Math.round(currentData.main.temp),
-      description: currentData.weather?.[0]?.description || "",
+      description,
       icon: currentData.weather?.[0]?.icon || "",
 
       tempMin: todayTempMin,
