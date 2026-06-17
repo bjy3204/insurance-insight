@@ -1867,7 +1867,7 @@ const startUserBtnDrag = (e: React.PointerEvent) => {
     const nextX = userBtnDragRef.current.originX + dx;
     const nextY = userBtnDragRef.current.originY + dy;
 
-const limitedX = Math.min(Math.max(nextX, -24), window.innerWidth - 95);
+const limitedX = Math.min(Math.max(nextX, -24), window.innerWidth - 80);
 const limitedY = Math.min(Math.max(nextY, -window.innerHeight + 150), 100);
 
 
