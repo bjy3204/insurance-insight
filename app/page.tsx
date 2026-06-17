@@ -406,6 +406,15 @@ const passwordResultSuccessRef = useRef(false);
   const [pcQuickOpen, setPcQuickOpen] = useState(false);
 const [pcQuickDirection, setPcQuickDirection] = useState<"up" | "down">("up");
 const [pcQuickPos, setPcQuickPos] = useState({ x: 0, y: 0 });
+const [userBtnPos, setUserBtnPos] = useState({ x: 0, y: 0 });
+
+const userBtnDragRef = useRef<{
+  startX: number;
+  startY: number;
+  originX: number;
+  originY: number;
+  moved: boolean;
+} | null>(null);
 
 const pcQuickWrapRef = useRef<HTMLDivElement | null>(null);
 const pcQuickDragRef = useRef<{
@@ -1835,6 +1844,48 @@ setPcQuickPos({
   window.addEventListener("pointerup", handleUp);
 
 };
+
+const startUserBtnDrag = (e: React.PointerEvent) => {
+  userBtnDragRef.current = {
+    startX: e.clientX,
+    startY: e.clientY,
+    originX: userBtnPos.x,
+    originY: userBtnPos.y,
+    moved: false,
+  };
+
+  const handleMove = (event: PointerEvent) => {
+    if (!userBtnDragRef.current) return;
+
+    const dx = event.clientX - userBtnDragRef.current.startX;
+    const dy = event.clientY - userBtnDragRef.current.startY;
+
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      userBtnDragRef.current.moved = true;
+    }
+
+    const nextX = userBtnDragRef.current.originX + dx;
+    const nextY = userBtnDragRef.current.originY + dy;
+
+const limitedX = Math.min(Math.max(nextX, -24), window.innerWidth - 95);
+const limitedY = Math.min(Math.max(nextY, -window.innerHeight + 150), 100);
+
+
+
+
+    setUserBtnPos({ x: limitedX, y: limitedY });
+  };
+
+  const handleUp = () => {
+    window.removeEventListener("pointermove", handleMove);
+    window.removeEventListener("pointerup", handleUp);
+  };
+
+  window.addEventListener("pointermove", handleMove);
+  window.addEventListener("pointerup", handleUp);
+};
+
+
 
 const handleCheckPin = async () => {
   if (!authUser || !pinCheckPassword) return;
@@ -3549,15 +3600,20 @@ hover:-translate-y-1
 </div>
 
 <button
+  onPointerDown={startUserBtnDrag}
   onClick={(e) => {
     e.stopPropagation();
+    if (userBtnDragRef.current?.moved) return;
     setUserMenuOpen(!userMenuOpen);
+  }}
+  style={{
+    transform: `translate(${userBtnPos.x}px, ${userBtnPos.y}px)`,
   }}
   className="
     fixed
     left-6
     bottom-24
-    z-40
+    z-[9999]
     w-14
     h-14
     rounded-full
@@ -3567,35 +3623,38 @@ hover:-translate-y-1
     items-center
     justify-center
     hover:shadow-2xl
-    hover:-translate-y-0.5
-    transition-all
-    duration-200
+
+    touch-none
   "
 >
   <User className="w-6 h-6 text-white" />
-
   {hasUpdate && (
     <span className="absolute right-1.5 top-1.5 w-2.5 h-2.5 rounded-full bg-red-500" />
   )}
 </button>
 
+
 {userMenuOpen && (
-  <div
-    onClick={(e) => e.stopPropagation()}
-    className="
-      fixed
-      left-6
-      bottom-40
-      z-50
-      w-40
-      rounded-2xl
-      bg-white
-      border
-      border-gray-200
-      shadow-xl
-      overflow-hidden
-    "
-  >
+ <div
+  onClick={(e) => e.stopPropagation()}
+  style={{
+    transform: `translate(${userBtnPos.x}px, ${userBtnPos.y}px)`,
+  }}
+  className="
+    fixed
+    left-6
+    bottom-40
+    z-[9999]
+    w-40
+    rounded-2xl
+    bg-white
+    border
+    border-gray-200
+    shadow-xl
+    overflow-hidden
+  "
+>
+
        <AuthButton
   variant="menu"
   user={authUser}
