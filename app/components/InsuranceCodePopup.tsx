@@ -64,6 +64,8 @@ function sortByFav(list: string[], favs: string[]): string[] {
 function SortableRow({
   name,
   editMode,
+  rowEditMode,
+  onStartRowEdit,
   isFav,
   code,
   password,
@@ -71,10 +73,12 @@ function SortableRow({
   onChangeCode,
   onChangePassword,
 }: {
-  name: string;
-  editMode: boolean;
-  isFav: boolean;
-  code: string;
+name: string;
+editMode: boolean;
+rowEditMode: boolean;
+onStartRowEdit: () => void;
+isFav: boolean;
+code: string;
   password: string;
   onToggleFav: () => void;
   onChangeCode: (v: string) => void;
@@ -82,6 +86,7 @@ function SortableRow({
 }) {
   const { setNodeRef, transform, transition, isDragging, attributes, listeners } =
     useSortable({ id: name });
+
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -92,11 +97,12 @@ function SortableRow({
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
+<div
+  ref={setNodeRef}
+  style={style}
+  onDoubleClick={() => onStartRowEdit()}
+  {...attributes}
+  {...listeners}
       className="grid gap-3 items-center px-4 py-3 rounded-2xl border border-gray-100 bg-white
         hover:-translate-y-[1px] hover:shadow hover:border-gray-200
         transition-all duration-150 select-none"
@@ -124,28 +130,28 @@ function SortableRow({
       <span className="text-sm font-bold text-gray-800 truncate">{name}</span>
 
       {/* 코드 */}
-      {editMode ? (
+      {editMode || rowEditMode ? (
         <input
           value={code}
           onChange={(e) => onChangeCode(e.target.value)}
           onClick={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
           placeholder="코드"
-          className="h-9 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-blue-400 w-full cursor-text"
+          className="h-9 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-gray-400 w-full cursor-text"
         />
       ) : (
         <span className="text-sm text-gray-700 truncate">{code}</span>
       )}
 
       {/* 비번 */}
-      {editMode ? (
+      {editMode || rowEditMode ? (
         <input
           value={password}
           onChange={(e) => onChangePassword(e.target.value)}
           onClick={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
           placeholder="비밀번호"
-          className="h-9 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-blue-400 w-full cursor-text"
+          className="h-9 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-gray-400 w-full cursor-text"
         />
       ) : (
         <span className="text-sm text-gray-700 truncate">{password}</span>
@@ -162,7 +168,7 @@ export default function InsuranceCodePopup() {
   const [tab, setTab] = useState<Tab>("nonlife");
   const [search, setSearch] = useState("");
   const [editMode, setEditMode] = useState(false);
-
+const [rowEditMode, setRowEditMode] = useState(false);
   const [codes, setCodes] = useState<CodeMap>({});
   const [nonlifeOrder, setNonlifeOrder] = useState<string[]>(DEFAULT_NONLIFE);
   const [lifeOrder, setLifeOrder] = useState<string[]>(DEFAULT_LIFE);
@@ -387,18 +393,24 @@ export default function InsuranceCodePopup() {
                 보험사 코드
               </div>
               <div className="flex items-center gap-2">
-                {editMode ? (
+                {editMode || rowEditMode ? (
                   <>
                     <button
                       onMouseDown={(e) => e.stopPropagation()}
-                      onClick={cancelEdit}
+                      onClick={() => {
+  cancelEdit();
+  setRowEditMode(false);
+}}
                       className="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-bold transition"
                     >
                       취소
                     </button>
                     <button
                       onMouseDown={(e) => e.stopPropagation()}
-                      onClick={save}
+                      onClick={() => {
+  save();
+  setRowEditMode(false);
+}}
                       className="h-8 px-3 rounded-xl bg-white text-gray-800 hover:bg-gray-100 text-sm font-bold transition"
                     >
                       저장
@@ -480,11 +492,13 @@ export default function InsuranceCodePopup() {
                       const entry = (editMode ? tempCodes : codes)[name] ?? { code: "", password: "" };
                       const isFav = (editMode ? tempFavs : currentFavs).includes(name);
                       return (
-                        <SortableRow
-                          key={name}
-                          name={name}
-                          editMode={editMode}
-                          isFav={isFav}
+<SortableRow
+  key={name}
+  name={name}
+  editMode={editMode}
+  rowEditMode={rowEditMode}
+  onStartRowEdit={() => setRowEditMode(true)}
+  isFav={isFav}
                           code={entry.code}
                           password={entry.password}
                           onToggleFav={() => toggleFav(name)}
