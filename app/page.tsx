@@ -2268,6 +2268,7 @@ const handleKakaoDisconnect = async () => {
           inline-flex
           items-center
           justify-center
+          min-w-[110px]
           text-xs
           bg-amber-50
           border
