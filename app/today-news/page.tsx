@@ -198,18 +198,20 @@ const getDescriptionClamp = (title: string) => {
 
 const getWeatherIcon = (description: string) => {
   if (description.includes("맑")) return "☀️";
+  if (description.includes("흐림")) return "☁️";
   if (description.includes("구름")) return "☁️";
   if (description.includes("비")) return "🌧️";
   if (description.includes("눈")) return "❄️";
-  return "☀️";
+  return "☁️";
 };
 
 const getWeatherAnimation = (description: string) => {
   if (description.includes("맑")) return "animate-[weatherSun_14s_linear_infinite]";
+  if (description.includes("흐림")) return "animate-[weatherCloud_6s_ease-in-out_infinite]";
   if (description.includes("구름")) return "animate-[weatherCloud_6s_ease-in-out_infinite]";
   if (description.includes("비")) return "animate-[weatherRain_3s_ease-in-out_infinite]";
   if (description.includes("눈")) return "animate-[weatherSnow_8s_linear_infinite]";
-  return "animate-[weatherSun_14s_linear_infinite]";
+  return "animate-[weatherCloud_6s_ease-in-out_infinite]";
 };
 
 function SortableWeatherCard({ item }: { item: WeatherItem }) {

@@ -2200,7 +2200,8 @@ const handleKakaoDisconnect = async () => {
           <span className="inline-block animate-[weatherSnow_3s_ease-in-out_infinite]">
             ❄️
           </span>
-        ) : (weather.description || "").includes("구름") ? (
+        ) : (weather.description || "").includes("흐림") ||
+     (weather.description || "").includes("구름") ? (
           <span className="inline-block animate-[weatherCloud_5s_ease-in-out_infinite]">
             ☁️
           </span>
