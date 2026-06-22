@@ -141,7 +141,7 @@ const defaultMenus = [
   {
     id: "insurance-folder",
     title: "보험인사이트 폴더",
-    desc: "보험 자료 모음",
+    desc: "비밀번호 : 카카오톡 공지",
     icon: FolderOpen,
     link: "https://naver.me/FWTmVFQz",
   },
