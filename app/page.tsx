@@ -198,7 +198,7 @@ const defaultMenus = [
     {
   id: "use-link",
   title: "바로가기",
-  desc: "보험·카드뉴스·정책브리핑",
+  desc: "보험 업무에 필요한 바로가기",
   icon: Link2,
   link: "/use-link",
 },
