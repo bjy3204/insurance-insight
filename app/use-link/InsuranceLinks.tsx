@@ -66,7 +66,7 @@ const links = [
     title: "금융감독원 보도자료",
     icon: "/Insurancelink/press-release.png",
     desc: "최신 보도자료 확인",
-    url: "https://www.fsc.go.kr/no010102",
+    url: "https://www.fss.or.kr/fss/bbs/B0000188/list.do?menuNo=200218",
   },
   {
     title: "금융감독원 분쟁사례",
