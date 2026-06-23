@@ -399,12 +399,13 @@ const saveSlideNote = async () => {
       >
         <ChevronLeft className="w-6 h-6" />
       </button>
-      <img
-        src={slides[current]}
-        alt=""
-        className="w-full h-auto rounded-2xl bg-white border-0 outline-none block"
-        draggable={false}
-      />
+<img
+  src={slides[current]}
+  alt=""
+  onContextMenu={(e) => e.preventDefault()}
+  className="w-full h-auto rounded-2xl bg-white border-0 outline-none block"
+  draggable={false}
+/>
       <button
         onClick={nextSlide}
         className="absolute right-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border border-gray-200 shadow flex items-center justify-center hover:bg-white transition cursor-pointer"
@@ -501,14 +502,22 @@ const saveSlideNote = async () => {
                 </h2>
               </div>
 
-              <div className="bg-gray-50 rounded-3xl border border-gray-200 p-2 h-[190px] flex items-center justify-center overflow-hidden">
-                <img
-                  src={slides[current]}
-                  alt=""
-                  className="w-full h-full object-contain rounded-2xl bg-white shadow-lg"
-                  draggable={false}
-                />
-              </div>
+              <div
+  onClick={openFullscreen}
+  className="bg-gray-50 rounded-3xl border border-gray-200 p-2 h-[190px] flex items-center justify-center overflow-hidden cursor-pointer"
+>
+<img
+  src={slides[current]}
+  alt=""
+  style={{
+    WebkitTouchCallout: "none",
+    WebkitUserSelect: "none",
+    userSelect: "none",
+  }}
+  className="w-full h-full object-contain rounded-2xl bg-white shadow-lg"
+  draggable={false}
+/>
+</div>
 
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <button
@@ -640,13 +649,18 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
   }}
   className="relative max-w-screen max-h-screen overflow-visible"
 >
-  <img
-    src={slides[current]}
-    alt=""
-    onContextMenu={(e) => e.preventDefault()}
-    className="max-w-screen max-h-screen object-contain select-none"
-    draggable={false}
-  />
+<img
+  src={slides[current]}
+  alt=""
+  onContextMenu={(e) => e.preventDefault()}
+  style={{
+    WebkitTouchCallout: "none",
+    WebkitUserSelect: "none",
+    userSelect: "none",
+  }}
+  className="max-w-screen max-h-screen object-contain select-none"
+  draggable={false}
+/>
 
 {currentTooltips.map((item, index) => (
   <div key={index} className="group absolute inset-0 z-[9999] pointer-events-none">
