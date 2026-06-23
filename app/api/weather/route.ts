@@ -80,7 +80,7 @@ const pm25Status =
       .filter((item: any) => item.dt_txt.includes("12:00:00"))
       .slice(0, 5)
       .map((item: any) => ({
-        date: item.dt_txt.slice(5, 10),
+        date: item.dt_txt.slice(0, 10),
         temp: Math.round(item.main.temp),
         tempMin: Math.round(item.main.temp_min),
         tempMax: Math.round(item.main.temp_max),

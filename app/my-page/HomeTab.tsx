@@ -480,17 +480,23 @@ useEffect(() => {
   if (!authUser) return;
   const loadWidgets = async () => {
     const { data } = await supabase
-      .from("customer_settings")
-      .select("dday_label, dday_date, bgm_color")
-
-      .eq("user_id", authUser.id)
-      .maybeSingle();
-    if (data) {
+  .from("customer_settings")
+  .select("dday_label, dday_date, bgm_color, weather_region")
+  .eq("user_id", authUser.id)
+  .maybeSingle();
+ if (data) {
   setDdayWidgetLabel(data.dday_label || "");
   setDdayWidgetDate(data.dday_date || "");
-  const localColor = localStorage.getItem("bgm-color");
-  if (!localColor && data.bgm_color) setBgmColor(data.bgm_color as "pink" | "yellow" | "blue" | "green" | "gray");
 
+  const localColor = localStorage.getItem("bgm-color");
+  if (!localColor && data.bgm_color) {
+    setBgmColor(data.bgm_color as "pink" | "yellow" | "blue" | "green" | "gray");
+  }
+
+  if (data.weather_region) {
+    setWeatherRegion(data.weather_region);
+    localStorage.setItem("hometab-weather-region", data.weather_region);
+  }
 }
 
   };
@@ -930,7 +936,9 @@ const diaryEndPage = Math.min(
         {weather.daily.map((day) => (
           <div key={day.date} className="flex flex-col items-center gap-1">
             <span className="text-[13px] font-bold text-gray-400">
-                           {new Date(`2000-${day.date}T00:00:00`).toLocaleDateString("ko-KR", { weekday: "short" })}
+                           {new Date(`${day.date}T00:00:00`).toLocaleDateString("ko-KR", {
+  weekday: "short",
+})}
 
             </span>
 
@@ -971,7 +979,24 @@ const diaryEndPage = Math.min(
           {WEATHER_REGIONS.map((r) => (
             <button
               key={r}
-              onClick={() => { setWeatherRegion(r); setWeatherContextMenu(null); }}
+              onClick={async () => {
+  setWeatherRegion(r);
+  setWeatherContextMenu(null);
+
+  localStorage.setItem("hometab-weather-region", r);
+
+  if (authUser) {
+    await supabase
+      .from("customer_settings")
+      .upsert(
+        {
+          user_id: authUser.id,
+          weather_region: r,
+        },
+        { onConflict: "user_id" }
+      );
+  }
+}}
               className={`w-full px-4 py-2.5 text-sm font-bold text-left hover:bg-gray-50 transition ${r === weatherRegion ? "text-blue-600" : "text-gray-700"}`}
             >
               {r}
