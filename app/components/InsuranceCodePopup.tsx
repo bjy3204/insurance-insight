@@ -283,12 +283,13 @@ const [rowEditMode, setRowEditMode] = useState(false);
     setEditMode(false);
   };
 
-  const handleOpen = () => {
-    setPopupPos({ x: 0, y: 0 });
-    setEditMode(false);
-    setSearch("");
-    setOpen(true);
-  };
+const handleOpen = () => {
+  setPopupPos({ x: 0, y: 0 });
+  setEditMode(false);
+  setRowEditMode(false);
+  setSearch("");
+  setOpen(true);
+};
 
     useEffect(() => {
   const handler = () => handleOpen();
@@ -425,13 +426,17 @@ const [rowEditMode, setRowEditMode] = useState(false);
                     수정
                   </button>
                 )}
-                <button
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onClick={() => { cancelEdit(); setOpen(false); }}
-                  className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+<button
+  onMouseDown={(e) => e.stopPropagation()}
+  onClick={() => {
+    cancelEdit();
+    setRowEditMode(false);
+    setOpen(false);
+  }}
+  className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
+>
+  <X className="w-5 h-5" />
+</button>
               </div>
             </div>
 
@@ -489,7 +494,10 @@ const [rowEditMode, setRowEditMode] = useState(false);
                 <SortableContext items={displayList} strategy={verticalListSortingStrategy}>
                   <div className="flex flex-col gap-1.5">
                     {displayList.map((name) => {
-                      const entry = (editMode ? tempCodes : codes)[name] ?? { code: "", password: "" };
+                      const entry = (editMode || rowEditMode ? tempCodes : codes)[name] ?? {
+  code: "",
+  password: "",
+};
                       const isFav = (editMode ? tempFavs : currentFavs).includes(name);
                       return (
 <SortableRow
@@ -497,7 +505,10 @@ const [rowEditMode, setRowEditMode] = useState(false);
   name={name}
   editMode={editMode}
   rowEditMode={rowEditMode}
-  onStartRowEdit={() => setRowEditMode(true)}
+  onStartRowEdit={() => {
+  setTempCodes(codes);
+  setRowEditMode(true);
+}}
   isFav={isFav}
                           code={entry.code}
                           password={entry.password}
