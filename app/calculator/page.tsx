@@ -1030,11 +1030,13 @@ const calculateGen5 = () => {
 
   const mildUncoveredDeductible = Math.round(mildUncoveredAmount * 0.5);
 
-  // 5세대 입원 비중증 비급여 보장한도: 300만원
-  const mildUncoveredPay = Math.min(
-    Math.max(mildUncoveredAmount - mildUncoveredDeductible, 0),
-    3000000
-  );
+// 5세대 입원 비중증 비급여 보장한도: 병의원 300만원, 상급종합병원 1000만원
+const mildUncoveredLimit = hospitalType === "advanced" ? 10000000 : 3000000;
+const mildUncoveredPay = Math.min(
+  Math.max(mildUncoveredAmount - mildUncoveredDeductible, 0),
+  mildUncoveredLimit
+);
+
 
   const total =
     coveredAmount +
