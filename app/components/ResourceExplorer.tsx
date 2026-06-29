@@ -98,6 +98,8 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
   const [selectedFile, setSelectedFile] = useState<DisplayItem | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewFiles, setPreviewFiles] = useState<DisplayItem[]>([]);
+  const [previewIndex, setPreviewIndex] = useState(0);
   const [deleteConfirm, setDeleteConfirm] = useState<DisplayItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -538,6 +540,21 @@ const downloadBlob = async (signedUrl: string, fileName: string) => {
     if (isImage || isPdf) {
       const { data } = await supabase.storage.from("resources").createSignedUrl(filePath, 300);
       if (data?.signedUrl) {
+        const imageFiles = displayItems.filter(
+  (f) =>
+    !f.isFolder &&
+    (
+      f.mimetype?.startsWith("image/") ||
+      /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(f.displayName)
+    )
+);
+
+const idx = imageFiles.findIndex(
+  (f) => f.storageName === item.storageName
+);
+
+setPreviewFiles(imageFiles);
+setPreviewIndex(idx);
         setPreviewUrl(data.signedUrl);
         setSelectedFile(item);
         setPreviewOpen(true);
@@ -546,6 +563,70 @@ const downloadBlob = async (signedUrl: string, fileName: string) => {
     }
     handleDownload(item);
   };
+
+  const movePrevImage = async () => {
+  if (previewFiles.length <= 1) return;
+
+  const nextIndex =
+    previewIndex === 0
+      ? previewFiles.length - 1
+      : previewIndex - 1;
+
+  const nextFile = previewFiles[nextIndex];
+
+  const parentPath = getCurrentParentPath();
+
+const fileRec = fileRecords.find(
+  (f) =>
+    f.folder_path === parentPath &&
+    f.display_name === nextFile.displayName &&
+    f.storage_path.endsWith(nextFile.storageName)
+);
+
+  if (!fileRec) return;
+
+  const { data } = await supabase.storage
+    .from("resources")
+    .createSignedUrl(fileRec.storage_path, 300);
+
+  if (!data?.signedUrl) return;
+
+  setPreviewIndex(nextIndex);
+  setSelectedFile(nextFile);
+  setPreviewUrl(data.signedUrl);
+};
+
+const moveNextImage = async () => {
+  if (previewFiles.length <= 1) return;
+
+  const nextIndex =
+    previewIndex === previewFiles.length - 1
+      ? 0
+      : previewIndex + 1;
+
+  const nextFile = previewFiles[nextIndex];
+
+const parentPath = getCurrentParentPath();
+
+const fileRec = fileRecords.find(
+  (f) =>
+    f.folder_path === parentPath &&
+    f.display_name === nextFile.displayName &&
+    f.storage_path.endsWith(nextFile.storageName)
+);
+
+  if (!fileRec) return;
+
+  const { data } = await supabase.storage
+    .from("resources")
+    .createSignedUrl(fileRec.storage_path, 300);
+
+  if (!data?.signedUrl) return;
+
+  setPreviewIndex(nextIndex);
+  setSelectedFile(nextFile);
+  setPreviewUrl(data.signedUrl);
+};
 
   const toggleSelect = (name: string) => {
     setSelectedItems(prev => {
@@ -961,37 +1042,45 @@ const downloadBlob = async (signedUrl: string, fileName: string) => {
                 </button>
               </div>
             </div>
-            <div className="flex-1 overflow-auto flex items-center justify-center px-0 py-7 bg-gray-50">
-              {(selectedFile.mimetype?.startsWith("image/") || /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(selectedFile.displayName)) ? (
-                <img
-                  src={previewUrl}
-                  alt={selectedFile.displayName}
-                  className="max-w-[90%] max-h-[80vh] rounded-2xl shadow object-contain"
-                />
-              ) : (
-                <iframe src={previewUrl} className="w-full h-[70vh] rounded-2xl border-0" title={selectedFile.displayName} />
-              )}
+            <div className="relative flex-1 overflow-auto flex items-center justify-center px-0 py-7 bg-gray-50">
+  {(selectedFile.mimetype?.startsWith("image/") || /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(selectedFile.displayName)) ? (
+    <>
+      {previewFiles.length > 1 && (
+        <>
+          <button
+            onClick={movePrevImage}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow text-gray-600 text-2xl flex items-center justify-center cursor-pointer hover:bg-gray-100 hover:text-gray-900 transition"
+          >
+            ‹
+          </button>
+
+          <button
+            onClick={moveNextImage}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow text-gray-600 text-2xl flex items-center justify-center cursor-pointer hover:bg-gray-100 hover:text-gray-900 transition"
+          >
+            ›
+          </button>
+        </>
+      )}
+
+      <img
+        src={previewUrl}
+        alt={selectedFile.displayName}
+        className="max-w-[90%] max-h-[80vh] rounded-2xl shadow object-contain"
+      />
+    </>
+  ) : (
+    <iframe src={previewUrl} className="w-full h-[70vh] rounded-2xl border-0" title={selectedFile.displayName} />
+  )}
+</div>
+            
             </div>
           </div>
-        </div>
+      
       )}
 
       {/* ── 단일 삭제 확인 ── */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-[10001] bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm">
-            <p className="text-gray-800 font-bold text-center mb-2">{deleteConfirm.isFolder ? "폴더" : "파일"} 삭제</p>
-            <p className="text-gray-500 text-sm text-center mb-6">
-              <span className="font-semibold text-gray-700">"{deleteConfirm.displayName}"</span>을(를) 삭제하시겠습니까?
-              {deleteConfirm.isFolder && <span className="block text-red-400 text-xs mt-1">폴더 안의 모든 파일이 삭제됩니다.</span>}
-            </p>
-            <div className="flex gap-3">
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-3 rounded-2xl bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200 transition cursor-pointer">취소</button>
-              <button onClick={() => handleDelete(deleteConfirm)} className="flex-1 py-3 rounded-2xl bg-red-500 text-white font-semibold hover:bg-red-600 transition cursor-pointer">삭제</button>
-            </div>
-          </div>
-        </div>
-      )}
+     
 
       {/* ── 다중 삭제 확인 ── */}
       {bulkDeleteConfirm && (
