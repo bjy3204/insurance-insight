@@ -1080,7 +1080,37 @@ const fileRec = fileRecords.find(
       )}
 
       {/* ── 단일 삭제 확인 ── */}
-     
+     {deleteConfirm && (
+  <div className="fixed inset-0 z-[10001] bg-black/40 flex items-center justify-center p-4">
+    <div className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm">
+      <p className="text-gray-800 font-bold text-center mb-2">자료 삭제</p>
+      <p className="text-gray-500 text-sm text-center mb-6">
+        <span className="font-semibold text-gray-700">
+          {deleteConfirm.displayName}
+        </span>
+        을 삭제하시겠습니까?
+        <span className="block text-red-400 text-xs mt-1">
+          삭제된 파일은 복구할 수 없습니다
+        </span>
+      </p>
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => setDeleteConfirm(null)}
+          className="flex-1 py-3 rounded-2xl bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200 transition cursor-pointer"
+        >
+          취소
+        </button>
+        <button
+          onClick={() => handleDelete(deleteConfirm)}
+          className="flex-1 py-3 rounded-2xl bg-red-500 text-white font-semibold hover:bg-red-600 transition cursor-pointer"
+        >
+          삭제
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* ── 다중 삭제 확인 ── */}
       {bulkDeleteConfirm && (
