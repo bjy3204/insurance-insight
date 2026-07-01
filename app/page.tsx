@@ -2705,11 +2705,15 @@ target={
       >
         <Icon className="w-10 h-10 mb-4 text-blue-600" />
 
-        <h2 className="text-lg font-bold">{menu.title}</h2>
+<h2 className="text-lg font-bold">{menu.title}</h2>
 
-        <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
-          {menu.desc}
-        </p>
+<p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
+  {menu.id === "insurance-folder"
+    ? authStatus === "approved"
+      ? "비밀번호 : 1234"
+      : "비밀번호 : 카카오톡 공지"
+    : menu.desc}
+</p>
             </a>
     );
   })}
