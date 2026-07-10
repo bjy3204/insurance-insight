@@ -101,9 +101,11 @@ onKakaoLogin,
   <br />
   PC-모바일 연동, 구독자료 다운, 히든 기능 사용 가능합니다
   <br />
-  <span className="text-blue-500 font-bold">
-    구독하신 인스타그램 아이디를 정확히 입력해 주세요 !
-  </span>
+<span className="text-blue-500 font-bold">
+  {mode === "login"
+    ? "구독하신 후 아래 회원가입을 먼저 진행해주세요 !"
+    : "구독자 확인을 위해 인스타아이디를 정확히 입력해 주세요 !"}
+</span>
 </div>
 
         <div className="space-y-3">
