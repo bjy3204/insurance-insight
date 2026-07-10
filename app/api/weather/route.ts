@@ -49,6 +49,8 @@ export async function GET(request: Request) {
       fetch(airUrl, { next: { revalidate: 600 } }),
     ]);
 
+
+    
     const currentData = await currentRes.json();
     const forecastData = await forecastRes.json();
     const airData = await airRes.json();

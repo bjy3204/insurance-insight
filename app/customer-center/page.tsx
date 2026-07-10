@@ -28,9 +28,11 @@ import {
   Search,
   Home,
   Printer,
+  Monitor,
+  Headset,
   MapPin,
-  
-    StickyNote,
+
+  StickyNote,
   X,
   NotebookPen,
   Pin,
@@ -49,6 +51,8 @@ const nonlifeCompanies = [
     claimPdf: "/claims/nonlife/db.pdf",
     dentalPdf: "/claims/nonlife-dental/db.pdf",
     phone: "1588-0100",
+    monitoring: "1566-0757",
+    helpDesk: "02-2262-1241",
     fax: "0505-181-4862",
     zipcode: "54966",
     address: "전북 전주시 완산구 서원로 99, 전주우체국 사서함 15호 DB손해보험 사고접수팀",
@@ -60,6 +64,8 @@ const nonlifeCompanies = [
     claimPdf: "/claims/nonlife/samsung.pdf",
     dentalPdf: "/claims/nonlife-dental/samsung.pdf",
     phone: "1588-5114",
+    monitoring: "1566-0553",
+    helpDesk: "1899-5005",
     fax: "0505-162-0872",
     zipcode: "07275",
     address: "서울 영등포구 영등포로5길 19, 동아프라임밸리 504호 삼성화재 장기보험접수팀",
@@ -71,6 +77,8 @@ const nonlifeCompanies = [
     claimPdf: "/claims/nonlife/hanhwa.pdf",
     dentalPdf: "/claims/nonlife-dental/hanhwa.pdf",
     phone: "1566-8000",
+    monitoring: "1670-1882",
+    helpDesk: "02-316-0111",
     fax: "0505-779-1004",
     zipcode: "04386",
     address: "서울시 용산구 한강대로 38길 35, 태승빌딩 4층 장기보험접수팀",
@@ -82,6 +90,8 @@ const nonlifeCompanies = [
     claimPdf: "/claims/nonlife/hyundai.pdf",
     dentalPdf: "/claims/nonlife-dental/hyundai.pdf",
     phone: "1588-5656",
+    monitoring: "1577-3223",
+    helpDesk: "02-2628-4567",
     fax: "0507-774-6060",
     zipcode: "07275",
     address: "서울시 영등포구 문래로 28길 25, 세미콜론문래 S타워 8층 현대해상 장기보험 사고접수 담당",
@@ -93,6 +103,8 @@ const nonlifeCompanies = [
     claimPdf: "/claims/nonlife/meritz.pdf",
     dentalPdf: "/claims/nonlife-dental/meritz.pdf",
     phone: "1566-7711",
+    monitoring: "1577-7711",
+    helpDesk: "02-3786-2777",
     fax: "0505-021-3400",
     zipcode: "14623",
     address: "경기도 부천시 원미구 송내대로 80, 6층 사고접수파트",
@@ -104,6 +116,8 @@ const nonlifeCompanies = [
     claimPdf: "/claims/nonlife/lotte.pdf",
     dentalPdf: "/claims/nonlife-dental/lotte.pdf",
     phone: "1588-3344",
+    monitoring: "1600-5182",
+    helpDesk: "1599-8260",
     fax: "0507-333-9999",
     zipcode: "07254",
     address: "서울시 용산구 원효로90길 11, 용산더프라임빌딩 업무동 20층 롯데손해보험 장기사고접수파트",
@@ -115,6 +129,8 @@ const nonlifeCompanies = [
     claimPdf: "/claims/nonlife/kb.pdf",
     dentalPdf: "/claims/nonlife-dental/kb.pdf",
     phone: "1544-0114",
+    monitoring: "1544-0019",
+    helpDesk: "1544-8119",
     fax: "0505-136-6500",
     zipcode: "04027",
     address: "서울시 마포구 양화로 19(합정동) KB손해보험 합정빌딩 19층 인보험사고접수센터",
@@ -126,6 +142,8 @@ const nonlifeCompanies = [
     claimPdf: "/claims/nonlife/mg.pdf",
     dentalPdf: "/claims/nonlife-dental/mg.pdf",
     phone: "1588-5959",
+    monitoring: "",
+    helpDesk: "02-3788-2261",
     fax: "0505-088-1646",
     zipcode: "07294",
     address: "서울시 영등포구 문래북로 56, 하스오토메이션코리아 6층 예별손해보험(주) 장기보험금 접수처",
@@ -137,6 +155,8 @@ const nonlifeCompanies = [
     claimPdf: "/claims/nonlife/nh.pdf",
     dentalPdf: "/claims/nonlife-dental/nh.pdf",
     phone: "1644-9000",
+    monitoring: "1644-9600",
+    helpDesk: "1644-0096",
     fax: "0505-060-7000",
     zipcode: "03736",
     address: "서울특별시 서대문구 경기대로58, 경기빌딩 503호 농협손해보험 사고접수팀",
@@ -148,6 +168,8 @@ const nonlifeCompanies = [
     claimPdf: "/claims/nonlife/hana.pdf",
     dentalPdf: "/claims/nonlife-dental/hana.pdf",
     phone: "1566-3000",
+    monitoring: "1660-4590",
+    helpDesk: "1660-4290",
     fax: "0504-3764-0765",
     zipcode: "03137",
     address: "서울 종로구 창경궁로 117(하나손해보험빌딩, 인의동) 6층 장기일반 보상접수센터",
@@ -159,6 +181,8 @@ const nonlifeCompanies = [
     claimPdf: "/claims/nonlife/heungkuk.pdf",
     dentalPdf: "/claims/nonlife-dental/heungkuk.pdf",
     phone: "1688-1688",
+    monitoring: "1688-6997",
+    helpDesk: "031-786-8088",
     fax: "0504-800-0700",
     zipcode: "07254",
     address: "서울특별시 영등포구 버드나루로2길 7(영등포동2가) 흥국생명빌딩 9층 접수담당자",
@@ -170,6 +194,8 @@ const nonlifeCompanies = [
     claimPdf: "/claims/nonlife/aig.pdf",
     dentalPdf: "/claims/nonlife-dental/aig.pdf",
     phone: "1544-2792",
+    monitoring: "1600-4600",
+    helpDesk: "02-2260-6855",
     fax: "02-2011-4607",
     zipcode: "57987",
     address: "전남 순천시 순천우체국사서함 28",
@@ -181,6 +207,8 @@ const nonlifeCompanies = [
     claimPdf: "/claims/nonlife/lina.pdf",
     dentalPdf: "/claims/nonlife-dental/lina.pdf",
     phone: "1566-5800",
+    monitoring: "1566-0757",
+    helpDesk: "02-6922-5100",
     fax: "02-6742-3992",
     zipcode: "03187",
     address: "서울시 종로구 종로 6 광화문우체국 사서함 386(서린동)",
@@ -195,6 +223,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/kyobolife.pdf",
     dentalPdf: "/claims/life-dental/kyobolife.pdf",
     phone: "1588-1001",
+    monitoring: "1588-1636",
+    helpDesk: "02-721-3130",
     fax: "고객센터 문의",
     zipcode: "07291",
     address:
@@ -208,6 +238,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/shinhanlife.pdf",
     dentalPdf: "/claims/life-dental/shinhanlife.pdf",
     phone: "1588-5580",
+    monitoring: "1522-2285",
+    helpDesk: "02-3455-4119",
     fax: "고객센터 문의",
     zipcode: "04535",
     address:
@@ -221,6 +253,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/samsunglife.pdf",
     dentalPdf: "/claims/life-dental/samsunglife.pdf",
     phone: "1588-3114",
+    monitoring: "1588-3115",
+    helpDesk: "02-311-4500",
     fax: "고객센터 문의",
     zipcode: "",
     address: "부산우체국 사서함 189 삼성생명 사고보험금 접수 담당",
@@ -233,6 +267,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/kdblife.pdf",
     dentalPdf: "/claims/life-dental/kdblife.pdf",
     phone: "1588-4040",
+    monitoring: "1588-4040",
+    helpDesk: "02-6303-2771",
     fax: "02-2669-7939",
     zipcode: "07261",
     address:
@@ -246,6 +282,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/kblife.pdf",
     dentalPdf: "/claims/life-dental/kblife.pdf",
     phone: "1588-3374",
+    monitoring: "1899-3800",
+    helpDesk: "1899-3899",
     fax: "02-6220-9912",
     zipcode: "06253",
     address:
@@ -259,6 +297,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/heungkuklife.pdf",
     dentalPdf: "/claims/life-dental/heungkuklife.pdf",
     phone: "1588-2288",
+    monitoring: "1877-7006",
+    helpDesk: "031-786-8088",
     fax: "고객센터 문의",
     zipcode: "07254",
     address:
@@ -272,6 +312,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/dblife.pdf",
     dentalPdf: "/claims/life-dental/dblife.pdf",
     phone: "1588-3131",
+    monitoring: "02-6470-7911",
+    helpDesk: "02-2119-5151",
     fax: "0505-129-3134",
     zipcode: "04799",
     address:
@@ -285,6 +327,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/dongyanglife.pdf",
     dentalPdf: "/claims/life-dental/dongyanglife.pdf",
     phone: "1577-1004",
+    monitoring: "080-899-1004",
+    helpDesk: "02-728-9900",
     fax: "02-3289-4517",
     zipcode: "28510",
     address:
@@ -298,6 +342,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/abllife.pdf",
     dentalPdf: "/claims/life-dental/abllife.pdf",
     phone: "1588-6500",
+    monitoring: "1566-1002",
+    helpDesk: "02-3787-8583",
     fax: "02-3299-5544",
     zipcode: "03116",
     address:
@@ -311,6 +357,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/linalife.pdf",
     dentalPdf: "/claims/life-dental/linalife.pdf",
     phone: "1588-0058",
+    monitoring: "1588-2442",
+    helpDesk: "02-3781-2006",
     fax: "02-6944-1200",
     zipcode: "03156",
     address:
@@ -324,6 +372,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/hanhwalife.pdf",
     dentalPdf: "/claims/life-dental/hanhwalife.pdf",
     phone: "1588-6363",
+    monitoring: "1800-6633",
+    helpDesk: "1522-6379",
     fax: "고객센터 문의",
     zipcode: "04513",
     address:
@@ -337,6 +387,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/hanalife.pdf",
     dentalPdf: "/claims/life-dental/hanalife.pdf",
     phone: "1577-1112",
+    monitoring: "1577-1112",
+    helpDesk: "02-3709-8602",
     fax: "고객센터 문의",
     zipcode: "04538",
     address:
@@ -350,6 +402,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/miraeassetlife.pdf",
     dentalPdf: "/claims/life-dental/miraeassetlife.pdf",
     phone: "1588-0220",
+    monitoring: "1544-4422",
+    helpDesk: "02-3271-4848",
     fax: "고객센터 문의",
     zipcode: "07208",
     address:
@@ -363,6 +417,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/nhlife.pdf",
     dentalPdf: "/claims/life-dental/nhlife.pdf",
     phone: "1544-4000",
+    monitoring: "1588-2442",
+    helpDesk: "1644-9940",
     fax: "02-6971-6040",
     zipcode: "04156",
     address:
@@ -376,6 +432,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/aialife.pdf",
     dentalPdf: "/claims/life-dental/aialife.pdf",
     phone: "1588-9898",
+    monitoring: "1588-2513",
+    helpDesk: "02-3786-2777",
     fax: "02-2021-4540",
     zipcode: "04511",
     address:
@@ -389,6 +447,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/chubblife.pdf",
     dentalPdf: "/claims/life-dental/chubblife.pdf",
     phone: "1599-4600",
+    monitoring: "1599-4600",
+    helpDesk: "1599-4646",
     fax: "02-3480-7801",
     zipcode: "06162",
     address:
@@ -402,6 +462,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/fubonlife.pdf",
     dentalPdf: "/claims/life-dental/fubonlife.pdf",
     phone: "1577-3311",
+    monitoring: "",
+    helpDesk: "080-860-1212",
     fax: "0505-106-0311",
     zipcode: "07327",
     address:
@@ -415,6 +477,8 @@ const lifeCompanies = [
     claimPdf: "/claims/life/imlife.pdf",
     dentalPdf: "/claims/life-dental/imlife.pdf",
     phone: "1588-4770",
+    monitoring: "1588-4770",
+    helpDesk: "02-2087-9594",
     fax: "0505-083-5420",
     zipcode: "07261",
     address:
@@ -1205,9 +1269,78 @@ const pagedMemos = filteredMemos.slice(
 
               </div>
 
-              {/* 정보 */}
+{/* 정보 */}
 <div className="space-y-5">
 
+{(tab === "nonlife" || tab === "life") && (
+  <>
+  {/* 인콜모니터링 */}
+<div className="flex gap-3">
+  <Monitor className="w-5 h-5 text-gray-400 mt-1 shrink-0" />
+
+  <div>
+    <p className="text-sm text-gray-400 mb-1">
+      인콜모니터링
+    </p>
+
+    {company.monitoring ? (
+      <a
+        href={`tel:${company.monitoring.replace(/-/g, "")}`}
+        className="
+          block
+          text-lg
+          font-bold
+          text-gray-800
+          transition-colors
+          hover:text-blue-600
+          cursor-pointer
+        "
+      >
+        {company.monitoring}
+      </a>
+    ) : (
+      <div className="text-lg font-bold invisible">
+        0000-0000
+      </div>
+    )}
+  </div>
+</div>
+
+  {/* 헬프데스크 */}
+<div className="flex gap-3">
+  <Headset className="w-5 h-5 text-gray-400 mt-1 shrink-0" />
+
+  <div>
+    <p className="text-sm text-gray-400 mb-1">
+      헬프데스크
+    </p>
+
+    {company.helpDesk ? (
+      <a
+        href={`tel:${company.helpDesk.replace(/-/g, "")}`}
+        className="
+          block
+          text-lg
+          font-bold
+          text-gray-800
+          transition-colors
+          hover:text-blue-600
+          cursor-pointer
+        "
+      >
+        {company.helpDesk}
+      </a>
+    ) : (
+      <div className="text-lg font-bold invisible">
+        0000-0000
+      </div>
+    )}
+  </div>
+</div>
+  </>
+)}
+
+    {/* 팩스번호 */}
   {company.fax && (
     <div className="flex gap-3">
       <Printer className="w-5 h-5 text-gray-400 mt-1 shrink-0" />
@@ -1224,6 +1357,7 @@ const pagedMemos = filteredMemos.slice(
     </div>
   )}
 
+  {/* 주소 */}
   {company.address && (
   <>
     <div className="flex gap-3">
