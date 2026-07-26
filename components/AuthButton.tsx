@@ -514,29 +514,54 @@ if (profileError) {
             로그아웃
           </button>
         ) : (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setMode("login");
-              setAuthOpen(true);
-            }}
-            className="
-              block
-              w-full
-              px-4
-              py-3
-              text-center
-              text-sm
-              font-bold
-              text-gray-700
-              hover:bg-gray-50
-              cursor-default
-            "
-          >
-            로그인
-          </button>
-        )}
+  <div>
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setMode("login");
+        setAuthOpen(true);
+      }}
+      className="
+        block
+        w-full
+        px-4
+        py-3
+        text-center
+        text-sm
+        font-bold
+        text-gray-700
+        hover:bg-gray-50
+        cursor-default
+      "
+    >
+      로그인
+    </button>
 
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setMode("signup");
+        setAuthOpen(true);
+      }}
+      className="
+        block
+        w-full
+        px-4
+        py-3
+        text-center
+        text-sm
+        font-bold
+        text-gray-700
+        border-t
+        border-gray-100
+        hover:bg-blue-50
+        cursor-default
+      "
+    >
+      회원가입
+    </button>
+  </div>
+)}
         {popup}
       </>
     );
