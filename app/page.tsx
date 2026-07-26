@@ -2694,6 +2694,7 @@ if (menu.id === "sales-book") {
 }}
 target={
   menu.title === "보험인사이트 폴더" ||
+  menu.id === "subscriber-folder" ||
   menu.id === "auto-claim" ||
   menu.isPersonal
     ? "_blank"
