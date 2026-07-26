@@ -3,6 +3,7 @@ import DiseaseCodePopup from "./claim-docs/disease-code-popup";
 import { getTodaySpecialDays } from "@/lib/specialDays";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+
 import {
   LIFE_DATA_YEAR,
   lifeExpectancyData,
@@ -47,7 +48,8 @@ import {
   Percent,
   Users,
   Send,
-BookOpen
+BookOpen,
+LibraryBig
 } from "lucide-react";
 
 import AuthButton from "@/components/AuthButton";
@@ -99,6 +101,14 @@ const defaultMenus = [
   icon: User,
   link: "/my-page",
   isDefault: true,
+},
+{
+  id: "subscriber-folder",
+  title: "구독자료 폴더",
+  desc: "비밀번호 : 6565",
+  icon: LibraryBig,
+  link: "https://naver.me/GuCQV09i",
+  approvedOnly: true,
 },
   {
     id: "insurance-system",
@@ -236,6 +246,7 @@ type MenuItem = {
   icon: any;
   iconKey?: PersonalMenuIconKey;
   isPersonal?: boolean;
+  approvedOnly?: boolean;
 };
 
 
@@ -2633,8 +2644,11 @@ setMenuSortOpen(true);
 >
 
 
-        {mainMenuManageMode === "normal" &&
-  menus.filter(menu => !hiddenMenuIds.includes(menu.id)).map((menu) => {
+{mainMenuManageMode === "normal" &&
+  menus
+    .filter((menu) => !hiddenMenuIds.includes(menu.id))
+    .filter((menu) => !menu.approvedOnly || authStatus === "approved")
+    .map((menu) => {
     const Icon = menu.icon;
 
 
@@ -5561,13 +5575,17 @@ setNoticeImageIndex(0);
       collisionDetection={closestCenter}
       onDragEnd={handleMenuSortDragEnd}
     >
-      <SortableContext
-        items={tempMenus.map((menu) => menu.id)}
-        strategy={rectSortingStrategy}
-      >
+<SortableContext
+  items={tempMenus
+    .filter((menu) => !menu.approvedOnly || authStatus === "approved")
+    .map((menu) => menu.id)}
+  strategy={rectSortingStrategy}
+>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
-          {tempMenus.map((menu) => (
-      <SortableMenuSortCard
+{tempMenus
+  .filter((menu) => !menu.approvedOnly || authStatus === "approved")
+  .map((menu) => (
+  <SortableMenuSortCard
     key={menu.id}
     menu={menu}
     tempHiddenMenuIds={tempHiddenMenuIds}
