@@ -3,6 +3,7 @@ import DiseaseCodePopup from "./claim-docs/disease-code-popup";
 import { getTodaySpecialDays } from "@/lib/specialDays";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import FortuneCookie from "./components/FortuneCookie";
 
 import {
   LIFE_DATA_YEAR,
@@ -254,7 +255,7 @@ type MenuItem = {
 export default function Home() {
    const { authUser, authNickname, authInstagram, authStatus, authRole, authCreatedAt, authLoading, refreshAuth, memos, saveMemos } = useAuth();
  
-
+const [fortuneOpen, setFortuneOpen] = useState(false);
 
     const [menus, setMenus] = useState<MenuItem[]>(defaultMenus);
   const [hiddenMenuIds, setHiddenMenuIds] = useState<string[]>([]);
@@ -2112,6 +2113,13 @@ const handleKakaoDisconnect = async () => {
   return (
     <>
     <main className="min-h-screen bg-gray-100">
+
+        <FortuneCookie
+    open={fortuneOpen}
+    onClose={() => setFortuneOpen(false)}
+  />
+
+      
       {/* 헤더 */}
       <header className="relative z-40 bg-white border-b shadow-sm">
         <div className="max-w-[1500px] mx-auto px-5 py-6">
@@ -2267,47 +2275,78 @@ const handleKakaoDisconnect = async () => {
       </div>
     </div>
 
-    {/* 데이버튼은 날씨 group 밖 */}
-    {specialDays.length > 0 && (
-      <span
-        onContextMenu={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-        className="
-          group
-          relative
-          inline-flex
-          items-center
-          justify-center
-          min-w-[110px]
-          text-xs
-          bg-amber-50
-          border
-          border-amber-200
-          text-amber-700
-          px-2.5
-          py-1
-          rounded-full
-          font-medium
-          ml-8
-          transition-all
-          duration-300
-          hover:shadow-sm
-          hover:bg-sky-50
-          hover:border-sky-200
-          hover:text-sky-700
-        "
-      >
-        <span className="group-hover:opacity-0 text-xs font-medium">
-          {specialDays[0].emoji} {specialDays[0].label}
-        </span>
+{/* 기념일 · 날짜 · 포춘쿠키 버튼 */}
+<button
+  type="button"
+  onClick={(e) => {
+    e.stopPropagation();
+    setFortuneOpen(true);
+  }}
+  onContextMenu={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }}
+  className={`
+    group
+    relative
+    ml-8
+    inline-flex
+    min-w-[110px]
+    items-center
+    justify-center
+    rounded-full
+    border
+    px-2.5
+    py-1
+    text-xs
+    font-medium
+    transition-all
+    duration-300
+    cursor-default
 
-        <span className="absolute opacity-0 group-hover:opacity-100 transition-opacity text-xs font-medium">
-         📅  {new Date().getFullYear()}.{String(new Date().getMonth() + 1).padStart(2, "0")}.{String(new Date().getDate()).padStart(2, "0")}
-        </span>
+    ${
+      specialDays.length > 0
+        ? `
+          border-amber-200
+          bg-amber-50
+          text-amber-700
+          hover:border-sky-200
+          hover:bg-sky-50
+          hover:text-sky-700
+          hover:shadow-sm
+        `
+        : `
+          border-sky-200
+          bg-sky-50
+          text-sky-700
+          shadow-sm
+        `
+    }
+  `}
+>
+  {specialDays.length > 0 ? (
+    <>
+      {/* 평소에는 기념일 */}
+      <span className="text-xs font-medium transition-opacity group-hover:opacity-0">
+        {specialDays[0].emoji} {specialDays[0].label}
       </span>
-    )}
+
+      {/* 마우스를 올리면 날짜 */}
+      <span className="absolute text-xs font-medium opacity-0 transition-opacity group-hover:opacity-100">
+        📅 {new Date().getFullYear()}.
+        {String(new Date().getMonth() + 1).padStart(2, "0")}.
+        {String(new Date().getDate()).padStart(2, "0")}
+      </span>
+    </>
+  ) : (
+    /* 기념일이 없으면 날짜 항상 표시 */
+    <span className="text-xs font-medium">
+      📅 {new Date().getFullYear()}.
+      {String(new Date().getMonth() + 1).padStart(2, "0")}.
+      {String(new Date().getDate()).padStart(2, "0")}
+    </span>
+  )}
+</button>
   </div>
 
           {weatherOpen && (

@@ -1,0 +1,172 @@
+.wrapper {
+  position: fixed;
+  z-index: 9999;
+
+  width: 230px;
+  min-height: 210px;
+
+  cursor: default;
+  user-select: none;
+  touch-action: none;
+
+  transition:
+    width 0.3s ease,
+    min-height 0.3s ease;
+}
+
+.wrapper:active {
+  cursor: default;
+}
+
+.openedWrapper {
+  width: 300px;
+  min-height: 210px;
+}
+
+.cookieImage {
+  display: block;
+  width: 100%;
+  height: auto;
+
+  object-fit: contain;
+  pointer-events: none;
+
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.18));
+
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.wrapper:not(.openedWrapper):hover .cookieImage {
+  transform: translateY(-4px) rotate(-1deg);
+}
+
+.brokenImage {
+  width: 300px;
+  margin: 0 auto;
+  animation: cookieOpen 0.35s ease-out;
+}
+
+.closeButton {
+  position: absolute;
+  z-index: 10;
+
+  width: 30px;
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.95);
+  color: #4b5563;
+
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* 닫힌 쿠키 */
+.wrapper:not(.openedWrapper) .closeButton {
+  top: 25px;
+  right: 15px;
+}
+
+/* 열린 쿠키 */
+.openedWrapper .closeButton {
+  top: 50px;
+  right: 10px;
+}
+
+.closeButton:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.guide {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+
+  width: 210px;
+
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.guide strong {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.guide span {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.message {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+
+  width: 170px;
+
+  transform: translate(-50%, -50%);
+
+  color: #3f342d;
+  text-align: center;
+
+  font-family: "Kyobo", cursive;
+  font-size: 16px;
+  font-weight: normal;
+  line-height: 1.2;
+
+  pointer-events: none;
+
+  animation: messageShow 0.45s ease-out;
+}
+
+@keyframes cookieOpen {
+  from {
+    opacity: 0.5;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes messageShow {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -42%) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* 모바일에서는 표시하지 않음 */
+@media (max-width: 767px) {
+  .wrapper {
+    display: none;
+  }
+}
