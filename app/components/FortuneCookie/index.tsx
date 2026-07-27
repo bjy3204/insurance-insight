@@ -133,14 +133,15 @@ const [position, setPosition] = useState<Position>({
     if (dragRef.current?.moved || opened) return;
 
     const today = getKoreaDate();
+/*
+ * 오늘 처음 열 때 랜덤 문구 선택
+ * 선택된 문구는 오늘 하루 동안 저장됨
+ */
+const randomIndex = Math.floor(
+  Math.random() * fortunes.length
+);
 
-    /*
-     * 날짜별로 문구를 결정
-     * 같은 날짜에는 같은 문구가 선택됨
-     */
-    const dateNumber = Number(today.replaceAll("-", ""));
-    const selectedFortune =
-      fortunes[dateNumber % fortunes.length];
+const selectedFortune = fortunes[randomIndex];
 
     setFortune(selectedFortune);
     setOpened(true);
