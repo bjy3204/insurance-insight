@@ -570,7 +570,7 @@ const sortedPress = [...PRESS.items].sort(
 );
 
 const filteredPress = sortedPress.filter((item) =>
-  `${item.title} ${item.date} ${item.source} ${item.body}`
+  `${item.title} ${item.date} ${item.source}`
     .toLowerCase()
     .includes(pressSearch.toLowerCase())
 );
