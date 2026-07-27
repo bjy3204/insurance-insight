@@ -1614,21 +1614,7 @@ originY: memoEditPopupPos.y,
         w-64
       "
     >
-    {termsDictionary.map((item) => (
-      <button
-        key={item.title}
-        onClick={() => {
-          setSelectedTerm(item);
-
-setSelectedItem(0);
-setTermsOpen(false);
-        }}
-        className="w-full px-4 py-3 rounded-xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transitionr"
-      >
-        <p className="text-sm font-bold text-gray-800">{item.title}</p>
-        <p className="text-xs text-gray-400 mt-1">{item.subtitle}</p>
-      </button>
-    ))}
+  
     <button
   onClick={() => {
   setPressOpen(true);
@@ -1639,20 +1625,17 @@ setTermsOpen(false);
   localStorage.setItem("press-version", PRESS.version);
   setShowPressDot(false);
 }}
-  className="
-    w-full
-    px-4
-    py-3
-    rounded-xl
-    bg-white
-    border
-    border-gray-200
-    text-left
-    hover:border-blue-300
-    hover:bg-blue-50
-    transition
-    cursor-pointer
-  "
+className="
+  w-full
+  px-4
+  py-3
+  rounded-xl
+  bg-gray-100
+  text-left
+  hover:bg-blue-50
+  hover:text-blue-600
+  transition
+"
 >
   <div className="flex items-center gap-2">
   <p className="text-sm font-bold text-gray-800">
