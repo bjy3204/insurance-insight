@@ -1,5 +1,5 @@
 export const PRESS = {
-  version: "2",
+  version: "3",
 
   items: [{
   id: 94,

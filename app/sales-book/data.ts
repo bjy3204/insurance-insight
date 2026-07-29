@@ -78,4 +78,24 @@ export const salesData = {
 "/sales-book/운전자보험/운전자보험 설명서/32.png",
   ],
 },
+
+니즈환기: {
+  "노후준비": [
+    "/sales-book/니즈환기/노후준비/1.png",
+    "/sales-book/니즈환기/노후준비/2.png",
+    "/sales-book/니즈환기/노후준비/3.png",
+    "/sales-book/니즈환기/노후준비/4.png",
+    "/sales-book/니즈환기/노후준비/5.png",
+    "/sales-book/니즈환기/노후준비/6.png",
+    "/sales-book/니즈환기/노후준비/7.png",
+    "/sales-book/니즈환기/노후준비/8.png",
+    "/sales-book/니즈환기/노후준비/9.png",
+    "/sales-book/니즈환기/노후준비/10.png",
+    "/sales-book/니즈환기/노후준비/11.png",
+    "/sales-book/니즈환기/노후준비/12.png",
+    "/sales-book/니즈환기/노후준비/13.png",
+    "/sales-book/니즈환기/노후준비/14.png",
+    "/sales-book/니즈환기/노후준비/15.png",
+  ],
+},
 };
