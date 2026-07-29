@@ -55,7 +55,7 @@ const nonlifeCompanies = [
   { id: "samsung", name: "삼성화재", image: "samsung.png", link: "https://login.samsungfire.com/nl/p/login/ui/SPGENLP00000", browser: "edge" },
   { id: "hanhwa", name: "한화손해보험", image: "hanhwa.png", link: "https://portal.hwgeneralins.com/3rdParty/loginFormPage_v2.jsp?NONCE=iwmKuN0CUA%2Be9S3zIn4WzShJvbqEpDaiGYgQbkuYULVCWnFwGDlI37sAMYCCoH82mUV6NkYAA14Ehyn8ITphPw%3D%3D&UURL=https%3A%2F%2Fportal.hwgeneralins.com%2Fnls3%2Ffcs", browser: "edge" },
   { id: "hyundai", name: "현대해상", image: "hyundai.png", link: "https://sp.hi.co.kr/websquare/websquare.html?w2xPath=/common/xml/Login.xml", browser: "chrome" },
-  { id: "meritz", name: "메리츠화재", image: "meritz.png", link: "https://nsso.meritzfire.com/LoginServer/loginFormPageMulti.jsp?InitechEamNoCacheNonce=uTpZR8wBJB%2BJmin5PocQlw%3D%3D", browser: "edge" },
+  { id: "meritz", name: "메리츠화재", image: "meritz.png", link: "https://sales.meritzfire.com", browser: "edge" },
   { id: "lotte", name: "롯데손해보험", image: "lotte.png", link: "https://lottero.lotteins.co.kr/ncrmwebroot/webfw/html/nawlogon.jsp", browser: "edge" },
   { id: "kb", name: "KB손해보험", image: "kb.png", link: "https://nsales.kbinsure.co.kr/eus/ch/ch_index.jsp", browser: "chrome" },
   { id: "mg", name: "MG손해보험", image: "mg.png", link: "https://mganet.mggeneralins.com/jsp/browserGuide.jsp", browser: "edge" },
