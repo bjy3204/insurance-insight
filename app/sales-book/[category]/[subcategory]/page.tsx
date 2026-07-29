@@ -350,7 +350,7 @@ const saveSlideNote = async () => {
           <img
             src={slide}
             alt=""
-            onContextMenu={(e) => e.preventDefault()}
+            
             className="w-full aspect-video object-contain rounded-xl block"
             draggable={false}
           />
@@ -402,7 +402,7 @@ const saveSlideNote = async () => {
 <img
   src={slides[current]}
   alt=""
-  onContextMenu={(e) => e.preventDefault()}
+  
   className="w-full h-auto rounded-2xl bg-white border-0 outline-none block"
   draggable={false}
 />
@@ -482,7 +482,7 @@ const saveSlideNote = async () => {
 <img
   src={slide}
   alt=""
-  onContextMenu={(e) => e.preventDefault()}
+  
   className="w-full aspect-video object-contain rounded-xl block"
   draggable={false}
 />
@@ -652,7 +652,7 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
 <img
   src={slides[current]}
   alt=""
-  onContextMenu={(e) => e.preventDefault()}
+  
   style={{
     WebkitTouchCallout: "none",
     WebkitUserSelect: "none",
