@@ -62,6 +62,7 @@ import { useAuth } from "@/app/components/AuthProvider";
 import { FaInstagram } from "react-icons/fa";
 import emailjs from "@emailjs/browser";
 import { notices, noticeVersion } from "./notice/notices";
+import { SALES_BOOK_VERSION } from "./sales-book/data";
 import HospitalInfoPopup from "./claim-docs/hospital-info";
 import { PRESS } from "./product-public/press";
 import {
@@ -643,6 +644,7 @@ const [popupNoticeImageIndex, setPopupNoticeImageIndex] = useState(0);
 const noticesPerPage = 10;
 
 const [hasUpdate, setHasUpdate] = useState(false);
+const [hasSalesBookUpdate, setHasSalesBookUpdate] = useState(false);
 const [readNoticeIds, setReadNoticeIds] = useState<(number | string)[]>([]);
 const [dbNotices, setDbNotices] = useState<any[]>([]);
 const [dbCategories, setDbCategories] = useState<any[]>([]);
@@ -1053,6 +1055,14 @@ if (savedReadPressIds) {
 useEffect(() => {
   memoOpenRef.current = memoOpen;
 }, [memoOpen]);
+
+useEffect(() => {
+  const viewedVersion = Number(
+    localStorage.getItem("sales-book-viewed-version") || 0
+  );
+
+  setHasSalesBookUpdate(viewedVersion < SALES_BOOK_VERSION);
+}, []);
 
 useEffect(() => {
   const savedRegion =
@@ -2727,9 +2737,17 @@ if (menu.id === "sales-book") {
     return;
   }
 
+  localStorage.setItem(
+    "sales-book-viewed-version",
+    SALES_BOOK_VERSION.toString()
+  );
+
+  setHasSalesBookUpdate(false);
+
   window.location.href = "/sales-book";
   return;
 }
+
 }}
 target={
   menu.title === "보험인사이트 폴더" ||
@@ -2759,7 +2777,15 @@ target={
       >
         <Icon className="w-10 h-10 mb-4 text-blue-600" />
 
-<h2 className="text-lg font-bold">{menu.title}</h2>
+<div className="flex items-center gap-2">
+  <h2 className="text-lg font-bold">{menu.title}</h2>
+
+  {menu.id === "sales-book" && hasSalesBookUpdate && (
+    <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-1 text-[10px] font-bold leading-none text-blue-600">
+      Update
+    </span>
+  )}
+</div>
 
 <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
   {menu.id === "insurance-folder"

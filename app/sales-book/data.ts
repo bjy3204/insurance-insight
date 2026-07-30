@@ -1,3 +1,5 @@
+export const SALES_BOOK_VERSION = 2;
+
 export const salesData = {
   암보험: {
     니즈환기: [
