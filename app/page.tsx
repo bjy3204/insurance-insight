@@ -107,7 +107,7 @@ const defaultMenus = [
 {
   id: "subscriber-folder",
   title: "구독자료 폴더",
-  desc: "비밀번호 : 6565",
+  desc: "비밀번호 : 7070",
   icon: LibraryBig,
   link: "https://naver.me/GuCQV09i",
   approvedOnly: true,
