@@ -193,6 +193,7 @@ const defaultMenus = [
     icon: PiggyBank,
     link: "/pension-calculator",
   },
+  /*
   {
     id: "lecture",
     title: "강의일정",
@@ -200,13 +201,15 @@ const defaultMenus = [
     icon: CalendarDays,
     link: "/lecture",
   },
+  */
   {
     id: "job",
     title: "이직 컨설팅",
-    desc: "보험 조직 연결 컨설팅 플랫폼",
+    desc: "보험 조직 연결 컨설팅",
     icon: Briefcase,
     link: "/job",
   },
+  
     {
   id: "use-link",
   title: "바로가기",
@@ -2695,6 +2698,7 @@ setMenuSortOpen(true);
 
 {mainMenuManageMode === "normal" &&
   menus
+  .filter((menu) => menu.id !== "lecture")
     .filter((menu) => !hiddenMenuIds.includes(menu.id))
     .filter((menu) => !menu.approvedOnly || authStatus === "approved")
     .map((menu) => {
@@ -5643,12 +5647,13 @@ setNoticeImageIndex(0);
     >
 <SortableContext
   items={tempMenus
+    .filter((menu) => menu.id !== "lecture")
     .filter((menu) => !menu.approvedOnly || authStatus === "approved")
     .map((menu) => menu.id)}
-  strategy={rectSortingStrategy}
 >
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
 {tempMenus
+  .filter((menu) => menu.id !== "lecture")
   .filter((menu) => !menu.approvedOnly || authStatus === "approved")
   .map((menu) => (
   <SortableMenuSortCard
