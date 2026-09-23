@@ -127,13 +127,7 @@ const defaultMenus = [
     link: "/customer-center",
   },
 
-  {
-  id: "auto-claim",
-  title: "보험금 청구",
-  desc: "무료 청구 프로그램 (추천인코드 TREE)",
-  icon: Send,
-  link: "https://openarena.co.kr/autoclaim/login",
-},
+
 
   {
     id: "product-public",
