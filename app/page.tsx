@@ -145,6 +145,14 @@ const defaultMenus = [
   },
 
   {
+  id: "auto-claim",
+  title: "보험금 청구",
+  desc: "무료 청구 프로그램 (추천인코드 TREE)",
+  icon: Send,
+  link: "https://openarena.co.kr/autoclaim/login",
+},
+
+  {
     id: "insurance-folder",
     title: "보험인사이트 폴더",
     desc: "비밀번호 : 카카오톡 공지",
