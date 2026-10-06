@@ -191,3 +191,34 @@ html, body {
   overflow-y: auto;
 }
 
+
+/* Resize press dialogs with the browser's bottom-right resize handle on desktop. */
+@media (min-width: 768px) {
+  [data-press-resizable="true"] {
+    width: min(64rem, calc(100vw - 32px));
+    height: min(83vh, calc(100dvh - 40px));
+    resize: both;
+    min-width: 360px;
+    min-height: 320px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100dvh - 40px);
+  }
+  body:has([data-site-footer="true"]) [data-press-resizable="true"] {
+    height: min(83vh, calc(100dvh - 105px));
+    max-height: calc(100dvh - 105px);
+  }
+}
+
+/* Shared anchor for insurance codes, press releases and claim information. */
+[data-page-floating-control="true"] {
+  position: fixed;
+  left: 24px;
+  bottom: 96px;
+  width: 56px;
+  height: 56px;
+}
+
+@media (max-width: 767px) {
+  [data-news-topic-scroll] { scrollbar-width: none; -ms-overflow-style: none; }
+  [data-news-topic-scroll]::-webkit-scrollbar { display: none; }
+}

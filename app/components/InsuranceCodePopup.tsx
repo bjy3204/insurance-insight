@@ -386,7 +386,8 @@ const handleOpen = () => {
     <>
       {/* ── 왼쪽 하단 자물쇠 버튼 ── */}
       <button
-        onClick={handleOpen}
+        data-page-floating-control="true"
+  onClick={handleOpen}
         className="
           fixed left-6 bottom-24 z-40
           w-14 h-14 rounded-full bg-gray-800 shadow-lg

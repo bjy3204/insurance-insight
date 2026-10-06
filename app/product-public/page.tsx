@@ -448,7 +448,6 @@ const sensors = useSensors(
   })
 );
   
- const [termsOpen, setTermsOpen] = useState(false);
 const [selectedTerm, setSelectedTerm] = useState<any>(null);
 const [pressOpen, setPressOpen] = useState(false);
 const [selectedPress, setSelectedPress] = useState<any>(null);
@@ -1551,9 +1550,17 @@ originY: memoEditPopupPos.y,
       </div>
       </>
       
-     {/* 약관 사전 아이콘 */}
+     {/* 보도자료 바로 열기 */}
 <button
-  onClick={() => setTermsOpen(!termsOpen)}
+  data-page-floating-control="true"
+  aria-label="보도자료 열기"
+  onClick={() => {
+    setPressOpen(true);
+    setSelectedPress(null);
+    setPressSearch("");
+    try { localStorage.setItem("press-version", PRESS.version); } catch { /* Reading news remains available without storage. */ }
+    setShowPressDot(false);
+  }}
   className="
     fixed
     left-6
@@ -1579,70 +1586,6 @@ originY: memoEditPopupPos.y,
  
 </button>
 
-{/* 메뉴 */}
-{termsOpen && (
-  <div
-    onClick={() => setTermsOpen(false)}
-    className="fixed inset-0 z-[9999]"
-  >
-    <div
-      onClick={(e) => e.stopPropagation()}
-      className="
-        fixed
-        left-6
-        bottom-40
-        z-40
-        bg-white
-        border
-        border-gray-200
-        shadow-xl
-        rounded-2xl
-        p-3
-        flex
-        flex-col
-        gap-2
-        w-64
-      "
-    >
-  
-    <button
-  onClick={() => {
-  setPressOpen(true);
-  setTermsOpen(false);
-  setSelectedPress(null);
-  setPressSearch("");
-
-  localStorage.setItem("press-version", PRESS.version);
-  setShowPressDot(false);
-}}
-className="
-  w-full
-  px-4
-  py-3
-  rounded-xl
-  bg-gray-100
-  text-left
-  hover:bg-blue-50
-  hover:text-blue-600
-  transition
-"
->
-  <div className="flex items-center gap-2">
-  <p className="text-sm font-bold text-gray-800">
-    보도자료
-  </p>
-
-  
-</div>
-
-  <p className="text-xs text-gray-400 mt-1">
-    금융위 보도자료 모음
-  </p>
-</button>
-      </div>
-  </div>
-)}
-
 {/* 보도자료 팝업 */}
 {pressOpen && (
   <div
@@ -1652,12 +1595,12 @@ className="
     
     className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
   >
-    <div data-popup-frame="true"
+    <div data-popup-frame="true" data-press-resizable="true"
       onClick={(e) => e.stopPropagation()}
       style={{
         transform: `translate(${pressPopupPos.x}px, ${pressPopupPos.y}px)`,
       }}
-      className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
+      className="bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden h-[92vh] flex flex-col"
     >
 
       <div

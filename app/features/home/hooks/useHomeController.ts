@@ -6,7 +6,6 @@ import { getTodaySpecialDays } from "@/lib/specialDays";
 
 import { supabase } from "@/lib/supabase";
 import { lifeExpectancyData } from "@/app/pension-calculator/lifeExpectancyData";
-import { npsOldAgeTable, npsDisabilityTable, npsSurvivorTable } from "@/app/pension-calculator/npsTableData";
 import { useAuth } from "@/app/components/AuthProvider";
 import emailjs from "@emailjs/browser";
 import { notices } from "@/app/notice/notices";
@@ -17,7 +16,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 import { MemoItem, defaultMenus, personalMenuIcons, PersonalMenuItem } from "../data";
 
 export function useHomeController() {
-const { fortuneOpen, setFortuneOpen, menus, setMenus, hiddenMenuIds, setHiddenMenuIds, tempHiddenMenuIds, setTempHiddenMenuIds, today, setToday, total, setTotal, showInstall, setShowInstall, deferredPrompt, setDeferredPrompt, weatherRegion, setWeatherRegion, weatherOpen, setWeatherOpen, weather, setWeather, open, setOpen, noticeOpen, setNoticeOpen, userMenuOpen, setUserMenuOpen, profileSettingOpen, setProfileSettingOpen, kakaoConnected, setKakaoConnected, kakaoConnecting, setKakaoConnecting, editNickname, setEditNickname, editInstagram, setEditInstagram, pinCheckPassword, setPinCheckPassword, pinCheckResult, setPinCheckResult, newPassword, setNewPassword, currentPassword, setCurrentPassword, newPasswordConfirm, setNewPasswordConfirm, passwordResultOpen, setPasswordResultOpen, passwordResultSuccess, setPasswordResultSuccess, passwordResultRef, passwordResultSuccessRef, quickOpen, setQuickOpen, pcQuickOpen, setPcQuickOpen, pcQuickDirection, setPcQuickDirection, pcQuickPos, setPcQuickPos, userBtnPos, setUserBtnPos, userBtnDragRef, pcQuickWrapRef, pcQuickDragRef, settingOpen, setSettingOpen, memoOpen, setMemoOpen, resourceOpen, setResourceOpen, memoOpenRef, menuSortOpen, setMenuSortOpen, tempMenus, setTempMenus, menuAddOpen, setMenuAddOpen, personalMenus, setPersonalMenus, tempPersonalMenus, setTempPersonalMenus, newMenuTitle, setNewMenuTitle, newMenuDesc, setNewMenuDesc, newMenuLink, setNewMenuLink, newMenuIcon, setNewMenuIcon, menuManageMode, setMenuManageMode, selectedPersonalMenuId, setSelectedPersonalMenuId, selectedDeleteMenuIds, setSelectedDeleteMenuIds, editingOriginalMenu, setEditingOriginalMenu, editIconOpen, setEditIconOpen, mainMenuManageMode, setMainMenuManageMode, popupPositions, setPopupPositions, popupZIndexes, setPopupZIndexes, popupZIndexRef, dragPopupRef, memoTitle, setMemoTitle, memoContent, setMemoContent, memoColor, setMemoColor, memoSearch, setMemoSearch, memoPage, setMemoPage, memoAddOpen, setMemoAddOpen, selectedMemo, setSelectedMemo, deleteMemoConfirmOpen, setDeleteMemoConfirmOpen, deleteMemoId, setDeleteMemoId, hospitalOpen, setHospitalOpen, diseaseOpen, setDiseaseOpen, pressOpen, setPressOpen, selectedPress, setSelectedPress, pressSearch, setPressSearch, pressPage, setPressPage, lifeOpen, setLifeOpen, npsTableOpen, setNpsTableOpen, npsTableTab, setNpsTableTab, npsSearch, setNpsSearch, bankRateOpen, setBankRateOpen, bankRateMonth, setBankRateMonth, bankRates, setBankRates, bankBaseDate, setBankBaseDate, cmPinOpen, setCmPinOpen, cmPinState, setCmPinState, cmPinStep, setCmPinStep, cmPinInput, setCmPinInput, cmPinConfirm, setCmPinConfirm, cmPinError, setCmPinError, cmPinInputRef, cmPinStepRef, quickMenuKeys, setQuickMenuKeys, tempQuickMenuKeys, setTempQuickMenuKeys, contextMenu, setContextMenu, deleteConfirmOpen, setDeleteConfirmOpen, quickLimitOpen, setQuickLimitOpen, quickMenuSelectOpen, setQuickMenuSelectOpen, quickDeleteConfirmOpen, setQuickDeleteConfirmOpen, quickDeleteKey, setQuickDeleteKey, saveConfirmOpen, setSaveConfirmOpen, saveConfirmType, setSaveConfirmType, saveConfirmMessage, setSaveConfirmMessage, menuLinkAlertOpen, setMenuLinkAlertOpen, lifeGender, setLifeGender, lifeAge, setLifeAge, noticePage, setNoticePage, selectedNotice, setSelectedNotice, noticeImageIndex, setNoticeImageIndex, popupNoticeImageIndex, setPopupNoticeImageIndex, fixMessage, setFixMessage, addMessage, setAddMessage, contact, setContact, hasUpdate, setHasUpdate, hasSalesBookUpdate, setHasSalesBookUpdate, readNoticeIds, setReadNoticeIds, dbNotices, setDbNotices, dbCategories, setDbCategories, popupNotice, setPopupNotice, popupNoticeClosed, setPopupNoticeClosed, readPressIds, setReadPressIds } = useHomeState();
+const { fortuneOpen, setFortuneOpen, menus, setMenus, hiddenMenuIds, setHiddenMenuIds, tempHiddenMenuIds, setTempHiddenMenuIds, today, setToday, total, setTotal, showInstall, setShowInstall, deferredPrompt, setDeferredPrompt, weatherRegion, setWeatherRegion, weatherOpen, setWeatherOpen, weather, setWeather, open, setOpen, noticeOpen, setNoticeOpen, userMenuOpen, setUserMenuOpen, profileSettingOpen, setProfileSettingOpen, kakaoConnected, setKakaoConnected, kakaoConnecting, setKakaoConnecting, editNickname, setEditNickname, editInstagram, setEditInstagram, pinCheckPassword, setPinCheckPassword, pinCheckResult, setPinCheckResult, newPassword, setNewPassword, currentPassword, setCurrentPassword, newPasswordConfirm, setNewPasswordConfirm, passwordResultOpen, setPasswordResultOpen, passwordResultSuccess, setPasswordResultSuccess, passwordResultRef, passwordResultSuccessRef, quickOpen, setQuickOpen, pcQuickOpen, setPcQuickOpen, pcQuickDirection, setPcQuickDirection, pcQuickPos, setPcQuickPos, userBtnPos, setUserBtnPos, userBtnDragRef, pcQuickWrapRef, pcQuickDragRef, settingOpen, setSettingOpen, memoOpen, setMemoOpen, resourceOpen, setResourceOpen, memoOpenRef, menuSortOpen, setMenuSortOpen, tempMenus, setTempMenus, menuAddOpen, setMenuAddOpen, personalMenus, setPersonalMenus, tempPersonalMenus, setTempPersonalMenus, newMenuTitle, setNewMenuTitle, newMenuDesc, setNewMenuDesc, newMenuLink, setNewMenuLink, newMenuIcon, setNewMenuIcon, menuManageMode, setMenuManageMode, selectedPersonalMenuId, setSelectedPersonalMenuId, selectedDeleteMenuIds, setSelectedDeleteMenuIds, editingOriginalMenu, setEditingOriginalMenu, editIconOpen, setEditIconOpen, mainMenuManageMode, setMainMenuManageMode, popupPositions, setPopupPositions, popupZIndexes, setPopupZIndexes, popupZIndexRef, dragPopupRef, memoTitle, setMemoTitle, memoContent, setMemoContent, memoColor, setMemoColor, memoSearch, setMemoSearch, memoPage, setMemoPage, memoAddOpen, setMemoAddOpen, selectedMemo, setSelectedMemo, deleteMemoConfirmOpen, setDeleteMemoConfirmOpen, deleteMemoId, setDeleteMemoId, hospitalOpen, setHospitalOpen, diseaseOpen, setDiseaseOpen, pressOpen, setPressOpen, selectedPress, setSelectedPress, pressSearch, setPressSearch, pressPage, setPressPage, lifeOpen, setLifeOpen, npsTableOpen, setNpsTableOpen, bankRateOpen, setBankRateOpen, bankRateMonth, setBankRateMonth, bankRates, setBankRates, bankBaseDate, setBankBaseDate, cmPinOpen, setCmPinOpen, cmPinState, setCmPinState, cmPinStep, setCmPinStep, cmPinInput, setCmPinInput, cmPinConfirm, setCmPinConfirm, cmPinError, setCmPinError, cmPinInputRef, cmPinStepRef, quickMenuKeys, setQuickMenuKeys, tempQuickMenuKeys, setTempQuickMenuKeys, contextMenu, setContextMenu, deleteConfirmOpen, setDeleteConfirmOpen, quickLimitOpen, setQuickLimitOpen, quickMenuSelectOpen, setQuickMenuSelectOpen, quickDeleteConfirmOpen, setQuickDeleteConfirmOpen, quickDeleteKey, setQuickDeleteKey, saveConfirmOpen, setSaveConfirmOpen, saveConfirmType, setSaveConfirmType, saveConfirmMessage, setSaveConfirmMessage, menuLinkAlertOpen, setMenuLinkAlertOpen, lifeGender, setLifeGender, lifeAge, setLifeAge, noticePage, setNoticePage, selectedNotice, setSelectedNotice, noticeImageIndex, setNoticeImageIndex, popupNoticeImageIndex, setPopupNoticeImageIndex, fixMessage, setFixMessage, addMessage, setAddMessage, contact, setContact, hasUpdate, setHasUpdate, hasSalesBookUpdate, setHasSalesBookUpdate, readNoticeIds, setReadNoticeIds, dbNotices, setDbNotices, dbCategories, setDbCategories, popupNotice, setPopupNotice, popupNoticeClosed, setPopupNoticeClosed, readPressIds, setReadPressIds } = useHomeState();
 const { authUser, authNickname, authInstagram, authStatus, authRole, authCreatedAt, authLoading, refreshAuth, memos, saveMemos } = useAuth();
 
 const sensors = useSensors(
@@ -191,18 +190,6 @@ const expectAge =
 const sickStartAge =
   Number(lifeAge || 0) + healthyYears;
 
-const currentNpsTable =
-  npsTableTab === "노령연금"
-    ? npsOldAgeTable
-    : npsTableTab === "장애연금"
-    ? npsDisabilityTable
-    : npsSurvivorTable;
-
-const filteredNpsTable = currentNpsTable.filter((row: any) =>
-  `${row.income} ${row.premium}`
-    .replaceAll(",", "")
-    .includes(npsSearch.replaceAll(",", ""))
-);
 
 const quickMenuOptions = [
   {
@@ -244,7 +231,7 @@ setPressOpen(true);
   },
   {
     key: "nps",
-    title: "국민연금 예상 연금월액표",
+    title: "국민연금표",
     action: () => {
       resetPopupPosition("nps");
 setNpsTableOpen(true);
@@ -253,7 +240,7 @@ setNpsTableOpen(true);
   },
       {
     key: "bankRate",
-    title: "예금금리 비교",
+    title: "예금 금리 비교",
     action: () => {
       resetPopupPosition("bankRate");
       setBankRateOpen(true);
@@ -1388,10 +1375,6 @@ lifeOpen,
 setLifeOpen,
 npsTableOpen,
 setNpsTableOpen,
-npsTableTab,
-setNpsTableTab,
-npsSearch,
-setNpsSearch,
 bankRateOpen,
 setBankRateOpen,
 bankRateMonth,
@@ -1469,7 +1452,6 @@ expectAge,
 sickStartAge,
 readPressIds,
 setReadPressIds,
-filteredNpsTable,
 quickMenuOptions,
 filteredPress,
 PRESS_PER_PAGE,

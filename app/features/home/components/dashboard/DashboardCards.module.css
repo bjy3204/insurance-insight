@@ -59,13 +59,12 @@
 .week { font-size:14px; font-weight:550; color:#7186aa; margin:0 0 7px; }
 .days { flex:1; grid-template-rows:repeat(6,minmax(0,1fr)); align-items:center; }
 .day { position:relative; height:34px; font-size:14px; font-weight:500; border-radius:50%; max-width:36px; width:100%; margin:auto; }
-.calendarCard > .heading:has(.calendarModeButton) { padding-left:16px; }
-.calendarModeButton { width:25px; height:28px; padding:0; border:0; border-radius:7px; display:grid; place-items:center; background:transparent; transition:background-color .2s ease; }
-.calendarModeButton:hover { background:#edf4ff; }
-.clockZone { color:#7083a8; font-size:14px; white-space:nowrap; }
-.clockBody { flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:0 16px 24px; }
-.digitalClock { font-size:56px; font-weight:650; line-height:1.2; letter-spacing:1px; font-variant-numeric:tabular-nums; white-space:nowrap; color:#0b1432; }
-.clockDate { font-size:16px; color:#7083a8; }
+.calendarCard > .heading:has(.calendarPageLink) { padding-left:16px; }
+.calendarPageLink { width:25px; height:28px; padding:0; border:0; border-radius:7px; display:grid; place-items:center; background:transparent; transition:background-color .2s ease; }
+.calendarPageLink:hover { background:#edf4ff; }
+.marketPageLink { width:25px; height:28px; padding:0; border:0; border-radius:7px; display:grid; place-items:center; background:transparent; cursor:pointer; transition:background-color .2s ease; }
+.marketPageLink:hover { background:#edf4ff; }
+.marketPageLink:focus-visible { outline:2px solid #0864ff; outline-offset:3px; }
 .day:hover { background:#edf5ff; }
 .sunday { color:#fb2548; } .saturday { color:#0864ff; } .outside { opacity:.35; }
 .selected,.selected:hover { background:#0864ff; color:white; }

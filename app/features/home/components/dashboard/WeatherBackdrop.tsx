@@ -5,7 +5,7 @@ import styles from "./DashboardCards.module.css";
 
 const phases = ["night","day","dusk","dawn"] as const;
 export default function WeatherBackdrop({condition,weights}:{condition:WeatherCondition;weights:LightWeights}) {
-  const [scene,setScene] = useState<{active:WeatherCondition;previous:WeatherCondition|null}>({active:"clear",previous:null});
+  const [scene,setScene] = useState<{active:WeatherCondition;previous:WeatherCondition|null}>({active:condition,previous:null});
   useEffect(() => {
     let active = true;
     // Decode the new condition's four assets before exposing it; keep the previous

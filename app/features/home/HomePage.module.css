@@ -1,6 +1,6 @@
 .page {
   min-height: 100vh;
-  background: #f5f5fc;
+  background: #f6f6fa;
 }
 .footer {
   position: fixed;
@@ -16,7 +16,7 @@
 .desktopOnly { display: none; }
 .quickLinks { display: none; }
 @media (min-width: 768px) {
-  .page { padding-bottom: 69px; }
+  .page { padding-bottom: 69px; background: var(--background, #f6f6fa); }
   .footer { height: 69px; }
   .desktopOnly { display: block; }
   .desktopHeader { height: 54px; display: flex; align-items: center; justify-content: space-between; position: relative; }

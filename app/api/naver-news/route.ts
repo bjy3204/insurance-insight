@@ -7,7 +7,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
 
     const rawQuery = searchParams.get("query") || "전체";
-    const display = searchParams.get("display") || "10";
+    const requestedDisplay = Number(searchParams.get("display") || "10");
+    const display = Number.isFinite(requestedDisplay) ? Math.min(100, Math.max(1, Math.trunc(requestedDisplay))) : 10;
 
     const isAll = rawQuery === "전체";
 
@@ -47,7 +48,7 @@ const items = data.items || [];
 
 return NextResponse.json({
   query,
-  items: items.slice(0, 10),
+  items: items.slice(0, display),
 });
 
   } catch {

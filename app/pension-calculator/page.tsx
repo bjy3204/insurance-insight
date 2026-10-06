@@ -23,11 +23,7 @@ Plus,
 Pencil,
 } from "lucide-react";
 
-import {
-  npsOldAgeTable,
-  npsDisabilityTable,
-  npsSurvivorTable,
-} from "./npsTableData";
+import NpsTableModal from "@/app/components/NpsTableModal";
 import {
   LIFE_DATA_YEAR,
   lifeExpectancyData,
@@ -51,9 +47,9 @@ import {
 
 import { CSS } from "@dnd-kit/utilities";
 import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
+import CalculatorPageLayout from '@/app/components/CalculatorPageLayout';
 
 type TabType = "retire" | "pension" | "lump" | "nps";
-type NpsTableTab = "노령연금" | "장애연금" | "유족연금";
 type LifeGender = "남성" | "여성";
 
 type MemoItem = {
@@ -105,29 +101,17 @@ function SortableMemoCard({
   );
 }
 
-export default function PensionCalculatorPage() {
-  const { authUser, authStatus, memos, saveMemos } = useAuth();
+export default function PensionCalculatorPage() {  const { authUser, authStatus, memos, saveMemos } = useAuth();
 
   const [tab, setTab] = useState<TabType>("retire");
 
   const [npsTableOpen, setNpsTableOpen] = useState(false);
 
 
-const [npsTableTab, setNpsTableTab] = useState<NpsTableTab>("노령연금");
 const [lifeGender, setLifeGender] = useState<LifeGender>("남성");
-const [npsSearch, setNpsSearch] = useState("");
-const [pensionInfoOpen, setPensionInfoOpen] = useState(false);
 const [lifeOpen, setLifeOpen] = useState(false);
-const [npsPopupPos, setNpsPopupPos] = useState({ x: 0, y: 0 });
 const [lifePopupPos, setLifePopupPos] = useState({ x: 0, y: 0 });
 
-const npsDragRef = useRef({
-  isDragging: false,
-  startX: 0,
-  startY: 0,
-  originX: 0,
-  originY: 0,
-});
 
 const lifeDragRef = useRef({
   isDragging: false,
@@ -139,9 +123,9 @@ const lifeDragRef = useRef({
 
 const movePopup = (
   e: React.MouseEvent,
-  type: "nps" | "life"
+  type: "life"
 ) => {
-  const drag = type === "nps" ? npsDragRef.current : lifeDragRef.current;
+  const drag = lifeDragRef.current;
   if (!drag.isDragging) return;
 
   const nextPos = {
@@ -149,21 +133,17 @@ const movePopup = (
     y: drag.originY + e.clientY - drag.startY,
   };
 
-  if (type === "nps") {
-    setNpsPopupPos(nextPos);
-  } else {
-    setLifePopupPos(nextPos);
-  }
+  setLifePopupPos(nextPos);
 };
 
 const stopPopupMove = () => {
-  npsDragRef.current.isDragging = false;
+
   lifeDragRef.current.isDragging = false;
 };
 
 const closeNpsPopup = () => {
   setNpsTableOpen(false);
-  setNpsPopupPos({ x: 0, y: 0 });
+
 };
 
 const closeLifePopup = () => {
@@ -701,19 +681,7 @@ survivor: [
     nps:
       "월 납입보험료를 기준으로 국민연금 예상 수령액을 간편하게 확인할 수 있습니다.",
   };
-const currentNpsTable =
-  npsTableTab === "노령연금"
-    ? npsOldAgeTable
-    : npsTableTab === "장애연금"
-    ? npsDisabilityTable
-    : npsSurvivorTable;
 
-const filteredNpsTable = currentNpsTable.filter((row: any) =>
-  
-  `${row.income} ${row.premium}`
-    .replaceAll(",", "")
-    .includes(npsSearch.replaceAll(",", ""))
-);
 const lifeAgeNumber = lifeAge === "" ? null : Number(lifeAge);
 
 const selectedLife =
@@ -819,6 +787,14 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
                     </button>
 
                     <HeaderUtilityItems onClose={() => setSettingOpen(false)} />
+                    <button
+                      onClick={() => { setNpsTableOpen(true); setSettingOpen(false); }}
+                      className="block w-full text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default"
+                    >국민연금표</button>
+                    <button
+                      onClick={() => { setLifeOpen(true); setSettingOpen(false); }}
+                      className="block w-full text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default"
+                    >기대수명 계산기</button>
                   </div>
                 )}
               </div>
@@ -828,7 +804,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <CalculatorPageLayout>
         <div data-tab-group="true" className="grid grid-cols-2 md:grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
   <button
     onClick={() => setTab("retire")}
@@ -1222,281 +1198,8 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
   )}
 </div>
         </div>
-      </div>
-<button
-  onClick={() => setPensionInfoOpen(!pensionInfoOpen)}
-  className="
-    fixed
-    left-6
-    bottom-24
-   z-[999]
-    w-14
-    h-14
-    rounded-full
-    bg-gray-800
-    shadow-lg
-    flex
-    items-center
-    justify-center
-    hover:shadow-2xl
-    hover:-translate-y-0.5
-    transition-all
-    duration-200
-   
-  "
->
-  <FileText className="w-6 h-6 text-white" />
-</button>
-{pensionInfoOpen && (
-  <div
-    onClick={() => setPensionInfoOpen(false)}
-    className="fixed inset-0 z-[9999]"
-  >
-    <div
-      onClick={(e) => e.stopPropagation()}
-      className="
-        fixed
-        left-6
-        bottom-40
-        z-40
-        bg-white
-        border
-        border-gray-200
-        shadow-xl
-        rounded-2xl
-        p-3
-        flex
-        flex-col
-        gap-2
-        w-64
-      "
-    >
-    <button
-      onClick={() => {
-        setNpsTableOpen(true);
-        setPensionInfoOpen(false);
-      }}
-      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition"
-    >
-      <p className="text-sm font-bold text-gray-800">
-        국민연금 예상연금월액표
-      </p>
-      <p className="text-xs text-gray-400 mt-1">
-        노령 · 장애 · 유족연금 기준표
-      </p>
-    </button>
-
-    <button
-      onClick={() => {
-        setLifeOpen(true);
-        setPensionInfoOpen(false);
-      }}
-      className="w-full px-4 py-3 rounded-2xl bg-gray-100 text-left hover:bg-blue-50 hover:text-blue-600 transition "
-    >
-      <p className="text-sm font-bold text-gray-800">
-        평균 기대수명 계산기
-      </p>
-      <p className="text-xs text-gray-400 mt-1">
-        기대여명 · 건강기간 · 유병기간 계산
-      </p>
-    </button>
-      </div>
-  </div>
-)}
-
-{npsTableOpen && (
-  <div
-    onMouseMove={(e) => movePopup(e, "nps")}
-    onMouseUp={stopPopupMove}
-    onMouseLeave={stopPopupMove}
-    className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
-  >
-   <div data-popup-frame="true"
-  onClick={(e) => e.stopPropagation()}
-  style={{
-    transform: `translate(${npsPopupPos.x}px, ${npsPopupPos.y}px)`,
-  }}
-  className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
->
-      <div
-  onMouseDown={(e) => {
-  if (window.innerWidth < 768) return;
-
-  npsDragRef.current = {
-    isDragging: true,
-    startX: e.clientX,
-    startY: e.clientY,
-    originX: npsPopupPos.x,
-    originY: npsPopupPos.y,
-  };
-}}
-  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
->
-        <div className="font-bold flex items-center gap-2">
-          <FileText className="w-5 h-5" />
-          국민연금 예상연금월액표
-        </div>
-
-        <button data-popup-close="true"
-  onClick={closeNpsPopup}
-          className="
-  cursor-pointer
-  w-9
-  h-9
-  rounded-full
-  flex
-  items-center
-  justify-center
-  hover:bg-white/10
-  transition
-"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-
-      <div className="p-5 flex-1 min-h-0 flex flex-col">
-        <div data-tab-group="true" className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-5">
-          {(["노령연금", "장애연금", "유족연금"] as NpsTableTab[]).map((item) => (
-            <button
-              key={item}
-              onClick={() => {
-                setNpsTableTab(item);
-                setNpsSearch("");
-              }}
-              className={`rounded-xl py-3 text-sm font-bold transition ${
-                npsTableTab === item
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-600"
-              }`}
-            >
-              {item}
-            </button>
-          ))}
-        </div>
-
-        <div className="relative mb-4">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-
-          <input
-            value={
-  npsSearch
-    ? Number(npsSearch.replaceAll(",", "")).toLocaleString()
-    : ""
-}
-onChange={(e) =>
-  setNpsSearch(
-    e.target.value.replaceAll(",", "").replace(/[^0-9]/g, "")
-  )
-}
-            placeholder="보험료 또는 기준소득월액 검색"
-            className="w-full rounded-2xl border border-gray-200 pl-11 pr-4 py-3 text-sm outline-none"
-          />
-        </div>
-
-        <div className="overflow-auto flex-1 border border-gray-200 rounded-2xl">
-          <table className="w-full min-w-[900px] text-sm">
-            <thead className="bg-gray-50 text-gray-500 sticky top-0 z-10">
-  <tr>
-    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">
-      번호
-    </th>
-
-    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">
-      기준소득월액
-    </th>
-
-    <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">
-      보험료
-    </th>
-
-    {npsTableTab === "노령연금" ? (
-      <>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">10년</th>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">15년</th>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">20년</th>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">25년</th>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">30년</th>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">35년</th>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">40년</th>
-      </>
-    ) : npsTableTab === "장애연금" ? (
-      <>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">장애1급</th>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">장애2급</th>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">장애3급</th>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">장애4급</th>
-      </>
-    ) : (
-      <>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">10년 미만</th>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">10~20년</th>
-        <th className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">20년 이상</th>
-      </>
-    )}
-  </tr>
-</thead>
-
-            <tbody>
-  {filteredNpsTable.map((row: any, index: number) => (
-    <tr key={index} className="hover:bg-gray-50">
-      <td className="py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap">
-        {row.no?.toLocaleString()}
-      </td>
-
-      <td className="py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap">
-        {row.income?.toLocaleString()}
-      </td>
-
-      <td className="py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap">
-        {row.premium?.toLocaleString()}
-      </td>
-
-      {npsTableTab === "노령연금" ? (
-        <>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year10?.toLocaleString()}</td>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year15?.toLocaleString()}</td>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year20?.toLocaleString()}</td>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year25?.toLocaleString()}</td>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year30?.toLocaleString()}</td>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year35?.toLocaleString()}</td>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year40?.toLocaleString()}</td>
-        </>
-      ) : npsTableTab === "장애연금" ? (
-        <>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.grade1?.toLocaleString()}</td>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.grade2?.toLocaleString()}</td>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.grade3?.toLocaleString()}</td>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.grade4Lump?.toLocaleString()}</td>
-        </>
-      ) : (
-        <>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.under10?.toLocaleString()}</td>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.between10And20?.toLocaleString()}</td>
-          <td className="py-3 px-3 text-center border-b border-gray-100">{row.year20?.toLocaleString()}</td>
-        </>
-      )}
-    </tr>
-  ))}
-</tbody>
-          </table>
-
-          {filteredNpsTable.length === 0 && (
-            <div className="text-center text-sm text-gray-400 py-10">
-              검색 결과가 없습니다
-            </div>
-          )}
-          
-        </div>
-        <p className="text-xs text-gray-500 leading-relaxed mt-4 px-1">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;본 표는 2026년 국민연금 예상연금월액표 기준이며,
-  실제 수령액은 가입이력 · 재평가율 · 연금개시연령 ·
-  부양가족연금액 및 제도 변경 등에 따라 달라질 수 있습니다. (단위 :원)
-</p>
-      </div>
-    </div>
-  </div>
-)}
+      </CalculatorPageLayout>
+{npsTableOpen && <NpsTableModal onClose={closeNpsPopup} />}
 {lifeOpen && (
   <div
     onMouseMove={(e) => movePopup(e, "life")}
@@ -2269,7 +1972,7 @@ function InputBox({
         {label}
       </label>
 
-      <div className="relative">
+      <div data-calculator-field="true" className="relative">
         <input
           type="text"
           inputMode={decimal ? "decimal" : "numeric"}

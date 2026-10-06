@@ -4,7 +4,7 @@ import { ChevronUp, ChevronDown, Plus, LayoutGrid } from "lucide-react";
 import styles from "../HomePage.module.css";
 import type { HomeController } from "../hooks/useHomeController";
 export default function QuickMenuPanel({ controller, inRow = false }: { controller: HomeController; inRow?: boolean }) {
-const { authStatus, setOpen, setUserMenuOpen, pcQuickOpen, setPcQuickOpen, pcQuickDirection, pcQuickPos, pcQuickWrapRef, pcQuickDragRef, setMemoOpen, mainMenuManageMode, resetPopupPosition, quickMenuKeys, setTempQuickMenuKeys, setContextMenu, setQuickMenuSelectOpen, quickMenuOptions, openPcQuickMenu, startPcQuickDrag } = controller;
+const { authStatus, setUserMenuOpen, pcQuickOpen, setPcQuickOpen, pcQuickDirection, pcQuickPos, pcQuickWrapRef, pcQuickDragRef, setMemoOpen, mainMenuManageMode, resetPopupPosition, quickMenuKeys, setTempQuickMenuKeys, setContextMenu, setQuickMenuSelectOpen, quickMenuOptions, openPcQuickMenu, startPcQuickDrag } = controller;
 return (<>{mainMenuManageMode === "normal" && (
   <div
     ref={pcQuickWrapRef}
@@ -134,8 +134,8 @@ return (<>{mainMenuManageMode === "normal" && (
   px-4
   text-sm
   font-bold
-  text-gray-700
-  hover:bg-gray-50
+  text-blue-600
+  hover:bg-blue-50
   transition
   cursor-default
   flex
@@ -148,16 +148,6 @@ return (<>{mainMenuManageMode === "normal" && (
   오늘의 뉴스
 </button>
 
-        <button
-          onClick={() => {
-            resetPopupPosition("message");
-            setOpen(true);
-            setPcQuickOpen(false);
-          }}
-          className="w-full h-[48px] px-4 text-sm font-bold text-blue-600 hover:bg-blue-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
-        >
-          보험나무에게 메세지 보내기
-        </button>
       </div>
     )}
 
@@ -323,8 +313,8 @@ return (<>{mainMenuManageMode === "normal" && (
     px-4
     text-sm
     font-bold
-    text-gray-700
-    hover:bg-gray-50
+    text-blue-600
+    hover:bg-blue-50
     transition
     cursor-default
     flex
@@ -337,16 +327,6 @@ return (<>{mainMenuManageMode === "normal" && (
   오늘의 뉴스
 </button>
 
-        <button
-          onClick={() => {
-            resetPopupPosition("message");
-            setOpen(true);
-            setPcQuickOpen(false);
-          }}
-          className="w-full h-[48px] px-4 text-sm font-bold text-blue-600 hover:bg-blue-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
-        >
-          보험나무에게 메세지 보내기
-        </button>
       </div>
     )}
   </div>

@@ -1,0 +1,10 @@
+@media (max-width: 767px) {
+  .panel {
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%);
+    width: min(340px, calc(100vw - 24px)) !important;
+    height: min(560px, calc(100dvh - 24px)) !important;
+  }
+  .resize { display: none; }
+}

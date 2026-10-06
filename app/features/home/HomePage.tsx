@@ -35,7 +35,7 @@ import MemoDetailDialog from "./components/MemoDetailDialog";
 import HospitalDialog from "./components/HospitalDialog";
 import DiseaseDialog from "./components/DiseaseDialog";
 import BankRatesDialog from "./components/BankRatesDialog";
-import PensionTableDialog from "./components/PensionTableDialog";
+import NpsTableModal from "@/app/components/NpsTableModal";
 import LifeExpectancyDialog from "./components/LifeExpectancyDialog";
 import PressDialog from "./components/PressDialog";
 import PersonalSpacePinDialog from "./components/PersonalSpacePinDialog";
@@ -127,7 +127,7 @@ return ((
 
 <BankRatesDialog controller={controller} />
 
-<PensionTableDialog controller={controller} />
+{controller.npsTableOpen && <NpsTableModal onClose={() => controller.setNpsTableOpen(false)} />}
 
 <LifeExpectancyDialog controller={controller} />
 <PressDialog controller={controller} />

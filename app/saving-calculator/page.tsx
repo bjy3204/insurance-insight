@@ -42,6 +42,8 @@ import {
 
 import { CSS } from "@dnd-kit/utilities";
 import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
+import CalculatorPageLayout from '@/app/components/CalculatorPageLayout';
+import CalculatorOptionButton from '@/app/components/CalculatorOptionButton';
 
 type CalcType = "deposit" | "saving";
 type InterestType = "simple" | "year" | "quarter" | "month";
@@ -621,7 +623,7 @@ const principal = monthly * months;
                       }}
                       className="block w-full text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default"
                     >
-                      주요 은행 금리
+                      예금 금리
                     </button>
                   </div>
                 )}
@@ -632,7 +634,7 @@ const principal = monthly * months;
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <CalculatorPageLayout>
         {/* 탭 */}
 <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7">
   <button
@@ -731,38 +733,38 @@ const principal = monthly * months;
             </label>
 
             <div className="grid grid-cols-3 gap-2">
-  <button
+  <CalculatorOptionButton
     onClick={() => setTaxRate(15.4)}
-    className={`rounded-2xl py-3 font-bold border ${
+    className={`border ${
       taxRate === 15.4
         ? "bg-blue-50 text-blue-600 border-blue-600"
         : "bg-white text-gray-600 border-gray-200"
     }`}
   >
     일반과세
-  </button>
+  </CalculatorOptionButton>
 
-  <button
+  <CalculatorOptionButton
     onClick={() => setTaxRate(9.5)}
-    className={`rounded-2xl py-3 font-bold border ${
+    className={`border ${
       taxRate === 9.5
         ? "bg-blue-50 text-blue-600 border-blue-600"
         : "bg-white text-gray-600 border-gray-200"
     }`}
   >
     세금우대
-  </button>
+  </CalculatorOptionButton>
 
-  <button
+  <CalculatorOptionButton
     onClick={() => setTaxRate(0)}
-    className={`rounded-2xl py-3 font-bold border ${
+    className={`border ${
       taxRate === 0
         ? "bg-blue-50 text-blue-600 border-blue-600"
         : "bg-white text-gray-600 border-gray-200"
     }`}
   >
     비과세
-  </button>
+  </CalculatorOptionButton>
 </div>
           </div>
 
@@ -797,7 +799,7 @@ const principal = monthly * months;
  
 </div>
         </div>
-      </div>
+      </CalculatorPageLayout>
 
       
 {bankRateOpen && (
@@ -1484,7 +1486,7 @@ function InputBox({
         {label}
       </label>
 
-      <div className="relative">
+      <div data-calculator-field="true" className="relative">
         <input
           type="text"
           inputMode={decimal ? "decimal" : "numeric"}
@@ -1521,15 +1523,15 @@ function SelectButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
+    <CalculatorOptionButton
       onClick={onClick}
       className={`
-        min-h-12 rounded-2xl font-bold text-sm transition px-2 py-2
+        transition
         ${active ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"}
       `}
     >
       {children}
-    </button>
+    </CalculatorOptionButton>
   );
 }
 

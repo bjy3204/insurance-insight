@@ -72,7 +72,7 @@ return (<>{contextMenu && (
       className="
         block
         w-full
-        text-left
+        text-center
         px-4
         py-3
         text-sm
@@ -124,7 +124,7 @@ return (<>{contextMenu && (
       className="
         block
         w-full
-        text-left
+        text-center
         px-4
         py-3
         text-sm

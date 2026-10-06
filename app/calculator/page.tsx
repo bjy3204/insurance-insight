@@ -40,6 +40,7 @@ import { Menu,
 
 import { FaInstagram } from "react-icons/fa";
 import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
+import CalculatorPageLayout from '@/app/components/CalculatorPageLayout';
 import MedicalHistoryModal from './components/MedicalHistoryModal';
 
 const generations = [
@@ -1106,7 +1107,7 @@ const pagedMemos = filteredMemos.slice(
         </div>
       </header>
 
-      <section className="max-w-7xl mx-auto px-5 py-6">
+      <CalculatorPageLayout>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {generations.map((item) => (
             <button
@@ -1170,7 +1171,7 @@ const pagedMemos = filteredMemos.slice(
           </h3>
 
           <div className="space-y-4">
-            <div>
+            <div data-calculator-field="true">
               <label className="text-sm font-bold text-gray-500">
                 외래 한도
               </label>
@@ -1226,7 +1227,7 @@ const pagedMemos = filteredMemos.slice(
               </div>
             </div>
 
-            <div>
+            <div data-calculator-field="true">
               <label className="text-sm font-bold text-gray-500">
                 급여
               </label>
@@ -1247,7 +1248,7 @@ const pagedMemos = filteredMemos.slice(
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            <div data-calculator-field="true">
               <label className="text-sm font-bold text-gray-500">
                 중증 비급여
               </label>
@@ -1260,7 +1261,7 @@ const pagedMemos = filteredMemos.slice(
               />
             </div>
 
-            <div>
+            <div data-calculator-field="true">
               <label className="text-sm font-bold text-gray-500">
                 비중증 비급여
               </label>
@@ -1285,7 +1286,7 @@ const pagedMemos = filteredMemos.slice(
           </h3>
 
           <div className="space-y-4">
-            <div>
+            <div data-calculator-field="true">
               <label className="text-sm font-bold text-gray-500">
                 {generation === "gen1" ? "통원 한도" : "외래 한도"}
               </label>
@@ -1344,12 +1345,12 @@ const pagedMemos = filteredMemos.slice(
 )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              <div data-calculator-field="true">
                 <label className="text-sm font-bold text-gray-500">급여</label>
                 <input type="text" value={formatNumber(covered)} onChange={(e) => setCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
               </div>
 
-              <div>
+              <div data-calculator-field="true">
                 <label className="text-sm font-bold text-gray-500">비급여</label>
                 <input type="text" value={formatNumber(uncovered)} onChange={(e) => setUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
               </div>
@@ -1366,7 +1367,7 @@ const pagedMemos = filteredMemos.slice(
             </h3>
 
             <div className="space-y-4">
-              <div>
+              <div data-calculator-field="true">
                 <label className="text-sm font-bold text-gray-500">
                   약제비 한도
                 </label>
@@ -1382,12 +1383,12 @@ const pagedMemos = filteredMemos.slice(
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div data-calculator-field="true">
                   <label className="text-sm font-bold text-gray-500">급여</label>
                   <input type="text" value={formatNumber(medicineCovered)} onChange={(e) => setMedicineCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
 
-                <div>
+                <div data-calculator-field="true">
                   <label className="text-sm font-bold text-gray-500">비급여</label>
                   <input type="text" value={formatNumber(medicineUncovered)} onChange={(e) => setMedicineUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
@@ -1454,7 +1455,7 @@ const pagedMemos = filteredMemos.slice(
               </div>
             </div>
 
-            <div>
+            <div data-calculator-field="true">
               <label className="text-sm font-bold text-gray-500">
                 급여 금액
               </label>
@@ -1484,7 +1485,7 @@ const pagedMemos = filteredMemos.slice(
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            <div>
+            <div data-calculator-field="true">
               <label className="text-sm font-bold text-gray-500">
                 중증 비급여
               </label>
@@ -1503,7 +1504,7 @@ const pagedMemos = filteredMemos.slice(
               />
             </div>
 
-            <div>
+            <div data-calculator-field="true">
               <label className="text-sm font-bold text-gray-500">
                 비중증 비급여
               </label>
@@ -1528,7 +1529,7 @@ const pagedMemos = filteredMemos.slice(
     ) : (
       <>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          <div data-calculator-field="true">
             <label className="text-sm font-bold text-gray-500">
               급여 금액
             </label>
@@ -1545,7 +1546,7 @@ const pagedMemos = filteredMemos.slice(
             />
           </div>
 
-          <div>
+          <div data-calculator-field="true">
             <label className="text-sm font-bold text-gray-500">
               비급여 금액
             </label>
@@ -1562,7 +1563,7 @@ const pagedMemos = filteredMemos.slice(
             />
           </div>
 
-          <div>
+          <div data-calculator-field="true">
             <label className="text-sm font-bold text-gray-500">
               입원일수
             </label>
@@ -1613,7 +1614,7 @@ const pagedMemos = filteredMemos.slice(
           </div>
 
           {roomType === "premium" && (
-            <div className="md:col-span-2">
+            <div data-calculator-field="true" className="md:col-span-2">
               <label className="text-sm font-bold text-gray-500">
                 상급병실료 차액
               </label>
@@ -1698,7 +1699,7 @@ const pagedMemos = filteredMemos.slice(
 >
   {!(generation === "gen5" && specialType === "mild") && (
     <>
-      <div>
+      <div data-calculator-field="true">
         <label className="text-sm font-bold text-gray-500">
           도수치료
         </label>
@@ -1717,7 +1718,7 @@ const pagedMemos = filteredMemos.slice(
         />
       </div>
 
-      <div>
+      <div data-calculator-field="true">
         <label className="text-sm font-bold text-gray-500">
           비급여주사
         </label>
@@ -1738,7 +1739,7 @@ const pagedMemos = filteredMemos.slice(
     </>
   )}
 
-  <div>
+  <div data-calculator-field="true">
     <label className="text-sm font-bold text-gray-500">
       MRI/MRA
     </label>
@@ -1799,7 +1800,7 @@ const pagedMemos = filteredMemos.slice(
             실제 보험금은 가입시기, 특약, 병원급, 한도, 약관에 따라 달라질 수 있습니다.
           </p>
         </div>
-      </section>
+      </CalculatorPageLayout>
 
      
 

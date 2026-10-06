@@ -110,8 +110,8 @@ export default function WeatherCard({ onFortune }: { onFortune: () => void }) {
   const mix = (day:number[],night:number[],alpha=1) => `rgb(${day.map((value,i) => Math.round(value+(night[i]-value)*light.night)).join(" ")} / ${alpha})`;
   const appearance = {"--night-weight":light.night,"--day-weight":1-light.night,"--weather-text":mix([11,20,50],[255,255,255]),"--weather-secondary":mix([51,65,85],[241,245,255])} as CSSProperties;
   return <article className={styles.card} aria-label="오늘의 날씨">
-    <div className={styles.weatherTop} data-phase={phase} style={appearance}>
-      <WeatherBackdrop condition={weather?.condition || "clear"} weights={light} />
+    <div key={weather ? 'weather-ready' : 'weather-loading'} className={styles.weatherTop} data-phase={weather ? phase : 'loading'} style={weather ? appearance : undefined}>
+      {weather && <WeatherBackdrop condition={weather.condition} weights={light} />}
       <div className={styles.heading}>
         <div className={styles.weatherTitle}><h2>오늘의 날씨</h2><div className={styles.location}>
           <button type="button" onClick={locate} title="현재 위치 날씨" aria-label="현재 위치 날씨" disabled={busy}><MapPin /></button>
@@ -119,7 +119,7 @@ export default function WeatherCard({ onFortune }: { onFortune: () => void }) {
         </div></div>
         <button type="button" className={styles.iconButton} onClick={onFortune} title="오늘의 한마디" aria-label="오늘의 한마디"><Cookie /></button>
       </div>
-      <div className={styles.weatherMain}><WeatherIcon condition={weather?.condition || "clear"} night={phase === "night"} /><div><div className={styles.temperature}>{weather ? `${weather.temp}°C` : "—"}</div><div className={styles.description}>{weather ? names[weather.condition] : busy ? "날씨 확인 중" : "날씨 정보"}</div></div></div>
+      <div className={styles.weatherMain}>{weather && <WeatherIcon condition={weather.condition} night={phase === "night"} />}<div><div className={styles.temperature}>{weather ? `${weather.temp}°C` : "—"}</div><div className={styles.description}>{weather ? names[weather.condition] : "날씨 확인 중"}</div></div></div>
       {error && <p role="status" className={styles.error} style={{ padding: "0 15px", marginTop: 0 }}>{error}</p>}
     </div>
     <div className={styles.forecast}>{weather?.days.map(day => {

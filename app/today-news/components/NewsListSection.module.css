@@ -1,0 +1,19 @@
+.section { margin-top:24px; }
+.section > h2 { padding-left:12px; margin-bottom:12px; color:#18243b; font-size:20px; font-weight:750; }
+.list { background:#fff; border:1px solid #e2e6ed; border-radius:16px; padding:0 24px; }
+.list > a { display:flex; align-items:start; justify-content:space-between; gap:24px; padding:18px 0; border-bottom:1px solid #edf0f4; }
+.list > a:last-child { border-bottom:0; }
+.list h3 { color:#29384e; font-size:17px; font-weight:650; line-height:1.6; word-break:keep-all; }
+.list a:hover h3 { color:#2859a1; }
+.list a p { font-size:14px; color:#8a95a4; margin-top:6px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; }
+.list a > span { flex-shrink:0; font-size:12px; color:#95a1af; margin-top:4px; }
+.empty { text-align:center; padding:30px 0; font-size:13px; color:#8a95a4; }
+@media(max-width:767px) { .list { padding:0 18px; } .list > a { flex-direction:column; gap:8px; } .list h3 { font-size:16px; } }
+.tabs { display:flex; gap:24px; margin-bottom:14px; border-bottom:1px solid #e2e6ed; }
+.tabs button { padding:12px 2px; border-bottom:2px solid transparent; color:#7a8596; font-size:18px; font-weight:650; cursor:pointer; white-space:nowrap; transition:color 150ms ease, background-color 150ms ease; }
+.tabs button[aria-selected=true] { color:#18243b; border-bottom-color:#3574db; }
+@media (hover:hover) {
+  .tabs button:hover { color:#46658d; background-color:#edf2fa; }
+}
+.tabs button:focus-visible, .nearby:focus-visible { outline:2px solid #3574db; outline-offset:3px; }
+@media(max-width:767px) { .tabs { gap:18px; justify-content:center; } .tabs button { font-size:14px; padding:12px 0; } }

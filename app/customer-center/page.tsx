@@ -592,7 +592,7 @@ const nonlifeArsImages = [
   { name: "메리츠화재", logo: "/logos/customer-nonlife/meritz.png", image: "/ars/nonlife/meritz.png" },
   { name: "삼성화재", logo: "/logos/customer-nonlife/samsung.png", image: "/ars/nonlife/samsung.png" },
   { name: "AXA손해보험", logo: "/logos/customer-etc/axa.png", image: "/ars/nonlife/axa.png" },
-  { name: "예손보험", logo: "/logos/customer-nonlife/yeson.png", image: "/ars/nonlife/yeson.png" },
+  { name: "예별손해보험", logo: "/logos/customer-nonlife/yeson.png", image: "/ars/nonlife/yeson.png" },
   { name: "하나손해보험", logo: "/logos/customer-nonlife/hana.png", image: "/ars/nonlife/hana.png" },
   { name: "한화손해보험", logo: "/logos/customer-nonlife/hanhwa.png", image: "/ars/nonlife/hanhwa.png" },
   { name: "현대해상", logo: "/logos/customer-nonlife/hyundai.png", image: "/ars/nonlife/hyundai.png" },
@@ -798,13 +798,19 @@ const allCompanies = [
   ...etcCompanies,
 ];
 
+const normalizedSearch = search.toLowerCase().replace(/\s+/g, "");
 const filteredCompanies =
-  search.trim() !== ""
-    ? allCompanies.filter((company) =>
-        company.name
-          .toLowerCase()
-          .includes(search.toLowerCase())
-      )
+  normalizedSearch !== ""
+    ? allCompanies.filter((company) => {
+        const searchNames =
+          company.name === "MG손해보험"
+            ? [company.name, "예별손해보험"]
+            : [company.name];
+
+        return searchNames.some((name) =>
+          name.toLowerCase().replace(/\s+/g, "").includes(normalizedSearch)
+        );
+      })
     : currentCompanies;
 
 useEffect(() => {
@@ -2127,8 +2133,9 @@ stopPopupMove();
         {(() => {
           const arsList = arsTab === "nonlife" ? nonlifeArsImages : lifeArsImages;
 
+          const normalizedArsSearch = arsSearch.toLowerCase().replace(/\s+/g, "");
           const filteredArs = arsList.filter((item) =>
-            item.name.toLowerCase().includes(arsSearch.toLowerCase())
+            item.name.toLowerCase().replace(/\s+/g, "").includes(normalizedArsSearch)
           );
 
           return (

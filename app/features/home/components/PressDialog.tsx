@@ -9,10 +9,10 @@ return (<>{pressOpen && (
   <div
   className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
 >
-    <div data-popup-frame="true"
+    <div data-popup-frame="true" data-press-resizable="true"
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("press")}
-  className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
+  className="bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden h-[92vh] flex flex-col"
 >
       <div
   onPointerDown={(e) => startPopupDrag("press", e)}

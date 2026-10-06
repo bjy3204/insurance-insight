@@ -1357,6 +1357,7 @@ left-0
       
 {/* 정보 메뉴 버튼 */}
 <button
+  data-page-floating-control="true"
   onClick={() => setInfoMenuOpen(!infoMenuOpen)}
   className="
     fixed

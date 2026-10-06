@@ -52,6 +52,7 @@ import {
 
 import { CSS } from "@dnd-kit/utilities";
 import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
+import CalculatorPageLayout from '@/app/components/CalculatorPageLayout';
 
 
 // ─────────────────────────────────────────────
@@ -715,7 +716,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
       </header>
 
       {/* 본문 */}
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <CalculatorPageLayout>
         {/* 탭 */}
         <div data-tab-group="true" className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-7">
           <button
@@ -764,7 +765,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                 : "현재자산"}
             </label>
 
-            <div className="relative">
+            <div data-calculator-field="true" className="relative">
               <input
                 type="text"
                 inputMode="numeric"
@@ -798,7 +799,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                   물가상승률 (%)
                 </label>
 
-                <div className="relative">
+                <div data-calculator-field="true" className="relative">
                   <input
                     type="text"
                     inputMode="decimal"
@@ -825,7 +826,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                   기간 (년)
                 </label>
 
-                <div className="relative">
+                <div data-calculator-field="true" className="relative">
                   <input
                     type="text"
                     inputMode="numeric"
@@ -856,7 +857,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                   현재환율
                 </label>
 
-                <div className="relative">
+                <div data-calculator-field="true" className="relative">
 <input
   type="text"
   inputMode="numeric"
@@ -891,7 +892,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                   비교환율
                 </label>
 
-                <div className="relative">
+                <div data-calculator-field="true" className="relative">
                   <input
                     type="text"
                     inputMode="numeric"
@@ -1037,7 +1038,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
 
           
         </div>
-      </div>
+      </CalculatorPageLayout>
 
 
 

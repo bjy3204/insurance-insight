@@ -11,7 +11,7 @@ import styles from './MedicalHistoryModal.module.css';
 export default function MedicalHistoryModal({ onClose }: { onClose: () => void }) {
   const [generationId, setGenerationId] = useState('gen1');
   const [periodIndex, setPeriodIndex] = useState(0);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [overviewType, setOverviewType] = useState<'medical' | 'exemption'>('medical');
   const generation = medicalGenerations.find(item => item.id === generationId);
   const period = generation?.periods[periodIndex];
