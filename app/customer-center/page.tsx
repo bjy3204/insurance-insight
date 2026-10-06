@@ -1433,7 +1433,7 @@ const pagedMemos = filteredMemos.slice(
           메모장
         </div>
 
-        <button
+        <button data-popup-close="true"
           onClick={() => setMemoOpen(false)}
           className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 hover:cursor-pointer transition"
         >
@@ -1688,7 +1688,7 @@ onClick={(e) => e.stopPropagation()}
             />
           ))}
 
-          <button
+          <button data-popup-close="true"
             onClick={() => {
   setMemoAddOpen(false);
   stopPopupMove();
@@ -1872,7 +1872,7 @@ stopPopupMove();
             />
           ))}
 
-          <button
+          <button data-popup-close="true"
             onClick={() => {
   setSelectedMemo(null);
   setMemoEditPopupPos({ x: 0, y: 0 });
@@ -2081,7 +2081,7 @@ stopPopupMove();
       <div className="h-14 bg-gray-800 text-white flex items-center justify-between px-5 shrink-0">
         <p className="text-sm font-bold">보험사 ARS 안내</p>
 
-        <button
+        <button data-popup-close="true"
           onClick={() => {
             setArsOpen(false);
             setSelectedArs(null);
@@ -2188,7 +2188,7 @@ stopPopupMove();
       <div className="h-14 bg-gray-800 text-white flex items-center justify-between px-5">
         <p className="text-sm font-bold">{selectedArs.name} ARS 안내</p>
 
-        <button
+        <button data-popup-close="true"
           onClick={() => setSelectedArs(null)}
           className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
         >
@@ -2283,7 +2283,7 @@ stopPopupMove();
     {selectedCompany.name} {selectedPdfTitle}
   </p>
 
-  <button
+  <button data-popup-close="true"
     onClick={() => {
       setSelectedCompany(null);
       setClaimPopupPos({ x: 0, y: 0 });

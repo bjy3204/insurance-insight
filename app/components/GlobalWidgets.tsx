@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import MemoStickers from "./MemoStickers";
 import Calculator from "./Calculator";
+import ScheduleReminders from "@/app/features/home/components/dashboard/ScheduleReminders";
 
 export default function GlobalWidgets() {
   const pathname = usePathname();
@@ -12,6 +13,7 @@ export default function GlobalWidgets() {
     <>
       {!isSalesBook && <MemoStickers />}
       <Calculator />
+      <ScheduleReminders />
     </>
   );
 }

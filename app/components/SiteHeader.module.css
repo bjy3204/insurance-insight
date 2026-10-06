@@ -1,0 +1,64 @@
+.header {
+  position: relative;
+  z-index: 40;
+  background: #fff;
+  border-bottom: 1px solid #aeb4bd;
+  color: #25292f;
+  cursor: default;
+}
+.inner { max-width: 1500px; margin: 0 auto; padding: 24px 20px; }
+.main h1 { font-size: 24px; font-weight: 700; letter-spacing: -1px; }
+.main h1 + p { font-size: 14px; color: #6b7280; margin-top: 6px; }
+.main button { cursor: pointer; }
+.header h1, .header h1 + p { cursor: default; }
+.main button:focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
+.main :global(.shadow-sm) { box-shadow: none; }
+.main :global(.rounded-2xl) { border-radius: 8px; }
+.main :global(.gap-10) { gap: 36px; }
+.main :global(.gap-13) { gap: 36px; }
+
+.main :global(.font-black) { font-weight: 650; }
+.main :global(.rounded-full.border) { border-radius: 999px; }
+.main button:global(.h-12) { border-radius: 999px; }
+@media (min-width: 768px) {
+  .main:has([class*="desktopHeader"]) h1 + p { margin-top: 2px; }
+  .main:has([class*="desktopHeader"]) .inner { padding-top: 12px; padding-bottom: 12px; }
+  .inner { padding-top: 22px; padding-bottom: 22px; }
+  .main :global(.h-12) { height: 38px; font-size: 13px; }
+  .main :global(.ml-8) { margin-left: 24px; }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  .main :global(.left-6) { left: 0; }
+  .main :global(.right-6) { right: 0; }
+  .main :global(.gap-10) { gap: 20px; }
+  .main :global(.gap-13) { gap: 20px; }
+  .main :global(.min-\[1110px\]\:flex) { display: none; }
+}
+@media (max-width: 767px) {
+  .inner { padding: 20px 18px; }
+  .main h1 { font-size: 21px; }
+  .main h1 + p { font-size: 12px; }
+}
+
+.main button[data-header-date] { cursor: default; }
+
+/* Date and member label share dimensions without affecting auth popup badges. */
+.main button[data-header-date] {
+  box-sizing: border-box;
+  height: 35px;
+  padding: 5px 16px;
+  border-width: 1px;
+  border-color: #d8edf9;
+  font-size: 14.3px;
+  line-height: 20px;
+  font-weight: 550;
+}
+.main button[data-header-date] > span {
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: inherit;
+}
+
+@media (min-width: 768px) {
+  .main [data-header-total] { margin-left: 12px; }
+}

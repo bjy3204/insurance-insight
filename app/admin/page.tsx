@@ -1996,7 +1996,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
         </div>
 
-        <button
+        <button data-popup-close="true"
           onClick={() => {
             setSelectedProfile(null);
             setProfileSubSearch("");
@@ -2142,7 +2142,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
           <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl flex flex-col max-h-[80vh]">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">이번 달 명단에 추가</h2>
-              <button onClick={() => setIsSelectPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
+              <button data-popup-close="true" onClick={() => setIsSelectPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -2185,7 +2185,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
           <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">{subForm.id ? "구독자 정보 수정" : "새 구독자 마스터 등록"}</h2>
-              <button onClick={() => setIsSubPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
+              <button data-popup-close="true" onClick={() => setIsSubPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -2311,7 +2311,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                   <UserPlus className="w-4 h-4" />
                   새 구독자 등록
                 </button>
-                <button onClick={() => setIsAllSubPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-white border border-gray-200 hover:bg-gray-100 text-gray-500 transition  cursor-pointer">
+                <button data-popup-close="true" onClick={() => setIsAllSubPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-white border border-gray-200 hover:bg-gray-100 text-gray-500 transition  cursor-pointer">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -2506,7 +2506,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
     <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
       <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2"><NotebookPen className="w-5 h-5" />메모장</div>
-        <button onClick={() => setIsMemoOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"><X className="w-5 h-5" /></button>
+        <button data-popup-close="true" onClick={() => setIsMemoOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"><X className="w-5 h-5" /></button>
       </div>
       <div className="p-4 flex gap-3">
         <div className="relative flex-1">
@@ -2580,7 +2580,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
           {memoColorOptions.map((color) => (
             <button key={color.value} type="button" onClick={() => setMemoColor(color.value)} className={`w-7 h-7 rounded-full border transition hover:scale-105 ${memoColor === color.value ? "ring-2 ring-gray-400 ring-offset-2" : ""} ${color.className}`} />
           ))}
-          <button onClick={() => setMemoAddOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"><X className="w-5 h-5" /></button>
+          <button data-popup-close="true" onClick={() => setMemoAddOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"><X className="w-5 h-5" /></button>
         </div>
       </div>
       <input value={memoTitle} onChange={(e) => setMemoTitle(e.target.value)} placeholder="메모 제목" className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none mb-3" />
@@ -2604,7 +2604,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
           {memoColorOptions.map((color) => (
             <button key={color.value} type="button" onClick={() => { changeMemoColor(selectedMemo.id, color.value); setSelectedMemo({ ...selectedMemo, color: color.value }); }} className={`w-7 h-7 rounded-full border transition hover:scale-105 ${selectedMemo.color === color.value ? "ring-2 ring-gray-400 ring-offset-2" : ""} ${color.className}`} />
           ))}
-          <button onClick={() => { setSelectedMemo(null); setMemoEditPopupPos({ x: 0, y: 0 }); memoEditDragRef.current = { isDragging: false, startX: 0, startY: 0, originX: 0, originY: 0 }; }} className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"><X className="w-5 h-5" /></button>
+          <button data-popup-close="true" onClick={() => { setSelectedMemo(null); setMemoEditPopupPos({ x: 0, y: 0 }); memoEditDragRef.current = { isDragging: false, startX: 0, startY: 0, originX: 0, originY: 0 }; }} className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"><X className="w-5 h-5" /></button>
         </div>
       </div>
       <input value={selectedMemo.title} onChange={(e) => setSelectedMemo({ ...selectedMemo, title: e.target.value })} placeholder="메모 제목" className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm font-bold outline-none mb-3" />

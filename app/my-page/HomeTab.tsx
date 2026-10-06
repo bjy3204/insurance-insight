@@ -1069,7 +1069,7 @@ const diaryEndPage = Math.min(
       <Trash2 className="w-4 h-4 text-red-400" />
     </button>
 
-    <button
+    <button data-popup-close="true"
       onClick={() => setDdayWidgetEditOpen(false)}
       className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer"
     >
@@ -1560,7 +1560,7 @@ const diaryEndPage = Math.min(
     <div onClick={(e) => e.stopPropagation()} className="bg-white w-[90%] max-w-lg rounded-3xl shadow-xl flex flex-col">
       <div className="flex items-center justify-between px-6 pt-6 pb-4">
         <h2 className="text-xl font-black text-gray-900">일정 수정</h2>
-        <button onClick={() => setTodayEventEditOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer">
+        <button data-popup-close="true" onClick={() => setTodayEventEditOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer">
           <X className="w-5 h-5" />
         </button>
       </div>
@@ -1749,7 +1749,7 @@ const diaryEndPage = Math.min(
     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg min-h-[520px] flex flex-col overflow-hidden">
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
         <h3 className="text-xl font-black text-gray-900">메모 추가</h3>
-        <button
+        <button data-popup-close="true"
           onClick={() => setPrivateMemoAddOpen(false)}
           className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-yellow-50 transition cursor-pointer"
         >
@@ -1934,7 +1934,7 @@ const diaryEndPage = Math.min(
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg min-h-[520px] flex flex-col overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <h3 className="text-xl font-black text-gray-900">{editingDiary ? "일기 수정" : "일기 쓰기"}</h3>
-              <button
+              <button data-popup-close="true"
                 onClick={() => { setDiaryOpen(false); setEditingDiary(null); }}
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer"
               >
@@ -2127,7 +2127,7 @@ const diaryEndPage = Math.min(
                 >
                   <Trash2 className="w-4 h-4 text-red-400" />
                 </button>
-                <button
+                <button data-popup-close="true"
                   onClick={() => setViewingDiary(null)}
                   className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer"
                 >
@@ -2171,7 +2171,7 @@ const diaryEndPage = Math.min(
             <Trash2 className="w-4 h-4 text-red-400" />
           </button>
 
-          <button
+          <button data-popup-close="true"
             onClick={() => setViewingMemo(null)}
             className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer"
           >
@@ -2199,7 +2199,7 @@ const diaryEndPage = Math.min(
           메모 수정
         </h3>
 
-        <button
+        <button data-popup-close="true"
           onClick={() => setEditingMemo(null)}
           className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-yellow-50 transition cursor-pointer"
         >

@@ -132,7 +132,7 @@ setItems(rows);
             상병코드 검색
           </div>
 
-          <button
+          <button data-popup-close="true"
             onClick={closePopup}
             className="cursor-pointer w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition"
           >

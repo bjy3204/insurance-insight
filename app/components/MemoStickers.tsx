@@ -196,7 +196,7 @@ const nextY = Math.max(-CARD_H / 2, Math.min(window.innerHeight - CARD_H / 2, dr
               {memo.title}
             </h3>
 
-            <button
+            <button data-popup-close="true"
               onClick={(e) => {
                 e.stopPropagation();
                 hideMemoSticker(memo.id);

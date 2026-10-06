@@ -1,0 +1,81 @@
+.page {
+  min-height: 100vh;
+  background: #f5f5fc;
+}
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: #fff;
+  border-top: 1px solid #aeb4bd;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.desktopOnly { display: none; }
+.quickLinks { display: none; }
+@media (min-width: 768px) {
+  .page { padding-bottom: 69px; }
+  .footer { height: 69px; }
+  .desktopOnly { display: block; }
+  .desktopHeader { height: 54px; display: flex; align-items: center; justify-content: space-between; position: relative; }
+  .headerLogo { position: absolute; left: 50%; transform: translateX(-50%); text-align: center; white-space: nowrap; }
+  .headerLogo h1 { font-size: 28px; color: #0560ff; }
+  .headerLogo p { font-size: 14px; }
+  .counters { display: flex; gap: 28px; align-items: center; text-align: left; }
+  .counters > div + div { border-left: 1px solid #dce4f0; padding-left: 28px; }
+  .counters span { display: block; color: #56668c; font-size: 11px; }
+  .counters strong { display: block; font-size: 17px; color: #101735; }
+  .counters > div:first-child strong { color: #0560ff; }
+  .headerActions { display: flex; align-items: center; gap: 18px; margin-left: auto; }
+  .headerMember { position: relative; }
+  button.nickname { display: flex; align-items: center; gap: 8px; background: #f0f6ff; border: 1px solid #e3edfc; border-radius: 999px; padding: 7px 13px; color: #0560ff; font-weight: 700; font-size: 14px; max-width: 210px; margin-right: 16px; cursor: default; transition: transform .2s ease, box-shadow .2s ease; }
+  button.nickname:hover { transform: translateY(-2px); box-shadow: 0 4px 10px #24517a15; }
+  .headerActions button.nickname { cursor: default; }
+  .nickname > div > span:first-child { padding: 0; height: auto; background: transparent; border: 0; font-size: 14px; color: inherit; transform: none; box-shadow: none; }
+  .headerIcon { width: 40px; height: 40px; display: grid; place-items: center; position: relative; color: #52618b; border-radius: 10px; }
+  .headerIcon:hover { background: #f0f6ff; }
+  .headerIcon svg { width: 28px; height: 28px; }
+  .headerIcon i { position: absolute; background: #ff254b; width: 8px; height: 8px; border-radius: 50%; top: 4px; right: 5px; }
+  .headerDropdown { position: absolute; top: calc(100% + 12px); right: 0; width: 170px; background: white; border: 1px solid #e5ebf4; border-radius: 14px; box-shadow: 0 8px 24px #182b4820; overflow: hidden; z-index: 1000; }
+  .headerDropdown button { display: block; width: 100%; padding: 13px 16px; font-size: 14px; font-weight: 600; text-align: center; color: #33405d; }
+  .headerDropdown button + button { border-top: 1px solid #edf1f7; }
+  .headerDropdown button:hover { background: #f2f7ff; }
+  .headerAuth > div { display: flex; gap: 10px; }
+  .headerAuth button { width: auto; min-width: 82px; padding: 9px 16px; border: 1px solid #cedaeb; border-radius: 9px; color: #0560ff; font-size: 14px; }
+  .headerAuth button + button { background: #0560ff; color: white; border-color: #0560ff; }
+  .page .menuSection { padding-top: 24px; padding-bottom: 24px; }
+  .menuGrid, .menuSortDialog :global(.grid-cols-1) { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+  .menuSortDialog { max-width: 1024px; }
+  .menuSortDialog button[data-menu-action] { cursor: pointer; }
+  .menuGrid > a, .menuSortDialog :global(.min-h-\[190px\]) { border-radius: 20px; }
+  .menuGrid > a[data-menu-id="admin"] { background: #2563eb; }
+  .menuGrid > a:hover, .menuSortDialog :global(.min-h-\[190px\]):hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / .1), 0 2px 4px -2px rgb(0 0 0 / .1); }
+  .quickLinks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; max-width: 1500px; margin: 0 auto 28px; padding: 0 40px; }
+  .quickLinks a { display: flex; align-items: center; justify-content: center; gap: 14px; color: #526a99; font-size: 16px; cursor: default; padding: 10px 16px; min-height: 64px; border: 1px solid #eef2f7; border-radius: 20px; background: white; box-shadow: 0 2px 8px #24517a05; transition: transform .2s ease, box-shadow .2s ease; }
+  .quickLinks img { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
+  .quickLinks a:hover { transform: translateY(-2px); box-shadow: 0 6px 16px #24517a12; }
+  .quickMenuCard { position: relative; min-width: 0; z-index: 60; }
+  .quickMenuCard [data-pc-quick-menu] { border-radius: 14px; box-shadow: 0 6px 18px #24517a10; }
+  .quickMenuCard [data-pc-quick-menu] button { height: 51px; min-height: 50px; padding: 14px; font-size: 15px; line-height: 22px; font-weight: 600; }
+  button.quickMenuTrigger { min-height: 64px; height: 100%; gap: 14px; font-size: 16px; font-weight: 400; border-radius: 24px; background: white; border-color: #eef2f7; color: #526a99; box-shadow: 0 2px 8px #24517a05; }
+  .quickMenuTrigger > svg { flex-shrink: 0; }
+  button.quickMenuTrigger:hover { box-shadow: 0 6px 16px #24517a12; }
+  button.quickMenuTrigger[aria-expanded="true"] { background: #0560ff; border-color: #0560ff; color: white; }
+  .installOverlay { position: fixed; inset: 0; z-index: 9999; background: #0005; display: grid; place-items: center; padding: 24px; }
+  .installOverlay > div { position: relative; background: white; border-radius: 18px; width: 380px; padding: 26px; font-size: 14px; }
+  .installOverlay h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+  .installOverlay > div > button:first-child { position: absolute; top: 16px; right: 16px; }
+  .installOverlay > div > button:last-child { margin-top: 22px; background: #0560ff; color: white; width: 100%; padding: 10px; border-radius: 9px; }
+}
+@media (min-width: 768px) and (max-width: 1000px) {
+  .counters { gap: 12px; }
+  .counters > div + div { padding-left: 12px; }
+  .counters strong { font-size: 18px; }
+  .headerActions { gap: 6px; }
+  .headerAuth button { min-width: 65px; padding: 8px; }
+  button.nickname { font-size: 14px; padding: 7px 10px; max-width: 140px; margin-right: 10px; }
+  .quickLinks { margin-left: auto; margin-right: auto; }
+  .quickLinks a { gap: 8px; font-size: 14px; }
+}

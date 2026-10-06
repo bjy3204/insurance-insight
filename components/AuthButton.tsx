@@ -74,7 +74,7 @@ onKakaoLogin,
             {mode === "login" ? "로그인" : "회원가입"}
           </h2>
 
-          <button
+          <button data-popup-close="true"
             onClick={onClose}
              className="
     w-9
@@ -461,7 +461,7 @@ if (profileError) {
             <span
   className="
     px-3
-    h-8
+    h-[28px]
     rounded-full
     bg-sky-50
     border
@@ -473,7 +473,7 @@ if (profileError) {
     items-center
     justify-center
     transition
-    hover:-translate-y-[1px]
+    hover:-translate-y-[0.5px]
     hover:shadow-md
     cursor-default
   "

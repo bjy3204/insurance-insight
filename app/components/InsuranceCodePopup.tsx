@@ -426,7 +426,7 @@ const handleOpen = () => {
                     수정
                   </button>
                 )}
-<button
+<button data-popup-close="true"
   onMouseDown={(e) => e.stopPropagation()}
   onClick={() => {
     cancelEdit();

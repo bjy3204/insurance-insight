@@ -1,0 +1,84 @@
+{
+  "generator": "Built-in image_gen",
+  "reference": "dashboard-preview.png",
+  "assets": [
+    {
+      "file": "clear-dawn.png",
+      "condition": "clear",
+      "phase": "dawn",
+      "prompt": "Edit the supplied riverside skyline image. Output ONE photorealistic panoramic background image only, same exact camera framing, bridge, skyline, tower and river position, same aspect ratio. Change ONLY weather, season where needed, and illumination. WEATHER: clear sky, very few wispy clouds. TIME: sunrise, soft pale pink and golden light near horizon, morning atmosphere. Maintain convincing natural lighting for that weather (overcast/rain/snow must not become sunny during dawn/dusk), calm subdued detailed real landscape suitable behind dashboard text. Preserve geometry across all variants so dissolves align. No text, no UI, no collage."
+    },
+    {
+      "file": "cloudy-day.png",
+      "condition": "cloudy",
+      "phase": "day",
+      "prompt": "Edit the supplied riverside skyline image. Output ONE photorealistic panoramic background image only, same exact camera framing, bridge, skyline, tower and river position, same aspect ratio. Change ONLY weather, season where needed, and illumination. WEATHER: overcast with layered dense gray clouds, no visible sun and no blue sky. TIME: daylight. Maintain convincing natural lighting for that weather (overcast/rain/snow must not become sunny during dawn/dusk), calm subdued detailed real landscape suitable behind dashboard text. Preserve geometry across all variants so dissolves align. No text, no UI, no collage."
+    },
+    {
+      "file": "cloudy-dusk.png",
+      "condition": "cloudy",
+      "phase": "dusk",
+      "prompt": "Edit the supplied riverside skyline image. Output ONE photorealistic panoramic background image only, same exact camera framing, bridge, skyline, tower and river position, same aspect ratio. Change ONLY weather, season where needed, and illumination. WEATHER: overcast with layered dense gray clouds, no visible sun and no blue sky. TIME: sunset twilight, restrained warm peach glow near horizon filtered through the weather. Maintain convincing natural lighting for that weather (overcast/rain/snow must not become sunny during dawn/dusk), calm subdued detailed real landscape suitable behind dashboard text. Preserve geometry across all variants so dissolves align. No text, no UI, no collage."
+    },
+    {
+      "file": "cloudy-night.png",
+      "condition": "cloudy",
+      "phase": "night",
+      "prompt": "Edit the supplied riverside skyline image. Output ONE photorealistic panoramic background image only, same exact camera framing, bridge, skyline, tower and river position, same aspect ratio. Change ONLY weather, season where needed, and illumination. WEATHER: overcast with layered dense gray clouds, no visible sun and no blue sky. TIME: nighttime, navy sky, illuminated windows and bridge lights reflected in water. Maintain convincing natural lighting for that weather (overcast/rain/snow must not become sunny during dawn/dusk), calm subdued detailed real landscape suitable behind dashboard text. Preserve geometry across all variants so dissolves align. No text, no UI, no collage."
+    },
+    {
+      "file": "cloudy-dawn.png",
+      "condition": "cloudy",
+      "phase": "dawn",
+      "prompt": "Edit the supplied riverside skyline image. Output ONE photorealistic panoramic background image only, same exact camera framing, bridge, skyline, tower and river position, same aspect ratio. Change ONLY weather, season where needed, and illumination. WEATHER: overcast with layered dense gray clouds, no visible sun and no blue sky. TIME: sunrise, soft pale pink and golden light near horizon, morning atmosphere. Maintain convincing natural lighting for that weather (overcast/rain/snow must not become sunny during dawn/dusk), calm subdued detailed real landscape suitable behind dashboard text. Preserve geometry across all variants so dissolves align. No text, no UI, no collage."
+    },
+    {
+      "file": "rain-day.png",
+      "condition": "rain",
+      "phase": "day",
+      "prompt": "Edit the supplied riverside skyline image. Output ONE photorealistic panoramic background image only, same exact camera framing, bridge, skyline, tower and river position, same aspect ratio. Change ONLY weather, season where needed, and illumination. WEATHER: rainy weather, wet city and river banks, fine natural rain streaks and rain ripples across river, dense rain clouds. TIME: daylight. Maintain convincing natural lighting for that weather (overcast/rain/snow must not become sunny during dawn/dusk), calm subdued detailed real landscape suitable behind dashboard text. Preserve geometry across all variants so dissolves align. No text, no UI, no collage."
+    },
+    {
+      "file": "rain-dusk.png",
+      "condition": "rain",
+      "phase": "dusk",
+      "prompt": "Edit the supplied riverside skyline image. Output ONE photorealistic panoramic background image only, same exact camera framing, bridge, skyline, tower and river position, same aspect ratio. Change ONLY weather, season where needed, and illumination. WEATHER: rainy weather, wet city and river banks, fine natural rain streaks and rain ripples across river, dense rain clouds. TIME: sunset twilight, restrained warm peach glow near horizon filtered through the weather. Maintain convincing natural lighting for that weather (overcast/rain/snow must not become sunny during dawn/dusk), calm subdued detailed real landscape suitable behind dashboard text. Preserve geometry across all variants so dissolves align. No text, no UI, no collage."
+    },
+    {
+      "file": "rain-night.png",
+      "condition": "rain",
+      "phase": "night",
+      "prompt": "Edit the supplied riverside skyline image. Output ONE photorealistic panoramic background image only, same exact camera framing, bridge, skyline, tower and river position, same aspect ratio. Change ONLY weather, season where needed, and illumination. WEATHER: rainy weather, wet city and river banks, fine natural rain streaks and rain ripples across river, dense rain clouds. TIME: nighttime, navy sky, illuminated windows and bridge lights reflected in water. Maintain convincing natural lighting for that weather (overcast/rain/snow must not become sunny during dawn/dusk), calm subdued detailed real landscape suitable behind dashboard text. Preserve geometry across all variants so dissolves align. No text, no UI, no collage."
+    },
+    {
+      "file": "rain-dawn.png",
+      "condition": "rain",
+      "phase": "dawn",
+      "prompt": "Edit the supplied riverside skyline image. Output ONE photorealistic panoramic background image only, same exact camera framing, bridge, skyline, tower and river position, same aspect ratio. Change ONLY weather, season where needed, and illumination. WEATHER: rainy weather, wet city and river banks, fine natural rain streaks and rain ripples across river, dense rain clouds. TIME: sunrise, soft pale pink and golden light near horizon, morning atmosphere. Maintain convincing natural lighting for that weather (overcast/rain/snow must not become sunny during dawn/dusk), calm subdued detailed real landscape suitable behind dashboard text. Preserve geometry across all variants so dissolves align. No text, no UI, no collage."
+    },
+    {
+      "file": "snow-day.png",
+      "condition": "snow",
+      "phase": "day",
+      "prompt": "Edit the supplied riverside skyline image. Output ONE photorealistic panoramic background image only, same exact camera framing, bridge, skyline, tower and river position, same aspect ratio. Change ONLY weather, season where needed, and illumination. WEATHER: winter snowfall, gently falling snowflakes, light snow on banks and rooftops, cold atmosphere. TIME: daylight. Maintain convincing natural lighting for that weather (overcast/rain/snow must not become sunny during dawn/dusk), calm subdued detailed real landscape suitable behind dashboard text. Preserve geometry across all variants so dissolves align. No text, no UI, no collage."
+    },
+    {
+      "file": "snow-dusk.png",
+      "condition": "snow",
+      "phase": "dusk",
+      "prompt": "Edit the supplied riverside skyline image. Output ONE photorealistic panoramic background image only, same exact camera framing, bridge, skyline, tower and river position, same aspect ratio. Change ONLY weather, season where needed, and illumination. WEATHER: winter snowfall, gently falling snowflakes, light snow on banks and rooftops, cold atmosphere. TIME: sunset twilight, restrained warm peach glow near horizon filtered through the weather. Maintain convincing natural lighting for that weather (overcast/rain/snow must not become sunny during dawn/dusk), calm subdued detailed real landscape suitable behind dashboard text. Preserve geometry across all variants so dissolves align. No text, no UI, no collage."
+    },
+    {
+      "file": "snow-night.png",
+      "condition": "snow",
+      "phase": "night",
+      "prompt": "Edit the supplied riverside skyline image. Output ONE photorealistic panoramic background image only, same exact camera framing, bridge, skyline, tower and river position, same aspect ratio. Change ONLY weather, season where needed, and illumination. WEATHER: winter snowfall, gently falling snowflakes, light snow on banks and rooftops, cold atmosphere. TIME: nighttime, navy sky, illuminated windows and bridge lights reflected in water. Maintain convincing natural lighting for that weather (overcast/rain/snow must not become sunny during dawn/dusk), calm subdued detailed real landscape suitable behind dashboard text. Preserve geometry across all variants so dissolves align. No text, no UI, no collage."
+    },
+    {
+      "file": "snow-dawn.png",
+      "condition": "snow",
+      "phase": "dawn",
+      "prompt": "Edit the supplied riverside skyline image. Output ONE photorealistic panoramic background image only, same exact camera framing, bridge, skyline, tower and river position, same aspect ratio. Change ONLY weather, season where needed, and illumination. WEATHER: winter snowfall, gently falling snowflakes, light snow on banks and rooftops, cold atmosphere. TIME: sunrise, soft pale pink and golden light near horizon, morning atmosphere. Maintain convincing natural lighting for that weather (overcast/rain/snow must not become sunny during dawn/dusk), calm subdued detailed real landscape suitable behind dashboard text. Preserve geometry across all variants so dissolves align. No text, no UI, no collage."
+    }
+  ]
+}

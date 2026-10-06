@@ -621,7 +621,7 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
   </button>
 </div>
 
-          <button
+          <button data-popup-close="true"
             onClick={(e) => {
   e.stopPropagation();
   closeFullscreen();

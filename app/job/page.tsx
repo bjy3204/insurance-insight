@@ -732,7 +732,7 @@ const currentCompanies = filteredCompanies.slice(
           INSURANCE TREE
         </div>
 
-        <button
+        <button data-popup-close="true"
           type="button"
           onClick={() => setCareerOpen(false)}
           className="cursor-pointer w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition"
@@ -793,7 +793,7 @@ const currentCompanies = filteredCompanies.slice(
           조직 상세
         </div>
 
-        <button
+        <button data-popup-close="true"
           type="button"
           onClick={() => setSelectedCompany(null)}
           className="cursor-pointer w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition"
@@ -951,7 +951,7 @@ const currentCompanies = filteredCompanies.slice(
                 메모장
               </div>
       
-              <button
+              <button data-popup-close="true"
                 onClick={() => setMemoOpen(false)}
                 className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 hover:cursor-pointer transition"
               >
@@ -1158,7 +1158,7 @@ const currentCompanies = filteredCompanies.slice(
                   />
                 ))}
       
-                <button
+                <button data-popup-close="true"
                   onClick={() => setMemoAddOpen(false)}
                   className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"
                 >
@@ -1272,7 +1272,7 @@ const currentCompanies = filteredCompanies.slice(
                   />
                 ))}
       
-                <button
+                <button data-popup-close="true"
                   onClick={() => {
                     setSelectedMemo(null);
                     setMemoEditPopupPos({ x: 0, y: 0 });

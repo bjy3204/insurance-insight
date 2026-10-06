@@ -807,7 +807,7 @@ updateData.pin_changed_at = new Date().toISOString();
     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-visible">
       <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between rounded-t-3xl">
         <span className="font-bold text-sm">{urlPopupMeta[urlPopupType].label}</span>
-        <button
+        <button data-popup-close="true"
           onClick={() => setUrlPopupType(null)}
           className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
         >
@@ -907,7 +907,7 @@ updateData.pin_changed_at = new Date().toISOString();
       <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
         <span className="font-bold text-sm">홈 메뉴 변경</span>
 
-        <button
+        <button data-popup-close="true"
           onClick={() => setHomeMenuSettingOpen(false)}
          className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
         >
@@ -1165,7 +1165,7 @@ className={`relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm t
               <span className="font-bold text-sm flex items-center gap-2">
                 <Settings className="w-4 h-4" /> 개인 설정
               </span>
-              <button
+              <button data-popup-close="true"
                 onClick={() => setSettingPanelOpen(false)}
                 className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
               >
@@ -1372,7 +1372,7 @@ className={`relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm t
                 <NotebookPen className="w-5 h-5" />
                 메모장
               </div>
-              <button
+              <button data-popup-close="true"
                 onClick={() => setMemoOpen(false)}
                 className="w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition cursor-pointer"
               >
@@ -1613,7 +1613,7 @@ className={`relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm t
                     } ${color.className}`}
                   />
                 ))}
-                <button
+                <button data-popup-close="true"
                   onClick={() => setSelectedMemo(null)}
                   className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"
                 >
@@ -1798,7 +1798,7 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <span className="font-bold text-gray-900">스프레드시트 URL 설정</span>
-              <button onClick={() => setUrlInputOpen(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer">
+              <button data-popup-close="true" onClick={() => setUrlInputOpen(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer">
                 <X className="w-4 h-4 text-gray-500" />
               </button>
             </div>

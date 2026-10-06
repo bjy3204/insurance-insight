@@ -1,0 +1,3 @@
+.editor,.editor * { cursor:default; }
+.editor button,.editor button * { cursor:pointer; }
+.editor button:disabled,.editor button:disabled * { cursor:default; }

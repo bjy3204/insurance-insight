@@ -270,7 +270,7 @@ const findInstructor = (name: string) =>
                 강의 상세
               </div>
 
-              <button
+              <button data-popup-close="true"
                 type="button"
                 onClick={() => setSelectedLecture(null)}
                 className="
@@ -404,7 +404,7 @@ const findInstructor = (name: string) =>
           강사정보보기
         </div>
 
-        <button
+        <button data-popup-close="true"
           type="button"
           onClick={() => setSelectedInstructor(null)}
           className="

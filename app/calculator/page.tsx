@@ -2126,7 +2126,7 @@ const pagedMemos = filteredMemos.slice(
           메모장
         </div>
 
-        <button
+        <button data-popup-close="true"
           onClick={() => setMemoOpen(false)}
           className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 hover:cursor-pointer transition"
         >
@@ -2370,7 +2370,7 @@ const pagedMemos = filteredMemos.slice(
             />
           ))}
 
-          <button
+          <button data-popup-close="true"
             onClick={() => setMemoAddOpen(false)}
             className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"
           >
@@ -2484,7 +2484,7 @@ const pagedMemos = filteredMemos.slice(
             />
           ))}
 
-          <button
+          <button data-popup-close="true"
             onClick={() => {
   setSelectedMemo(null);
   setMemoEditPopupPos({ x: 0, y: 0 });
@@ -2788,7 +2788,7 @@ duration-200
 실손 사전
         </div>
 
-        <button
+        <button data-popup-close="true"
   onClick={closeDictionaryPopup}
   className="
   cursor-pointer

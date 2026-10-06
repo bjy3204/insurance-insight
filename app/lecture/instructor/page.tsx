@@ -321,7 +321,7 @@ const currentInstructors = filteredInstructors.slice(
           강사정보보기
         </div>
 
-        <button
+        <button data-popup-close="true"
   type="button"
   onClick={() => setSelectedInstructor(null)}
   className="

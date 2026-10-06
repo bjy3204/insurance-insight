@@ -1146,7 +1146,7 @@ const pagedMemos = filteredMemos.slice(
                 {manageMode === "favorite" ? "즐겨찾기 설정" : "메뉴 위치 변경"}
               </div>
 
-             <button
+             <button data-popup-close="true"
   onMouseDown={(e) => e.stopPropagation()}
   onClick={closeManagePopup}
   className="
@@ -1347,7 +1347,7 @@ const pagedMemos = filteredMemos.slice(
           메모장
         </div>
 
-        <button
+        <button data-popup-close="true"
           onClick={() => setMemoOpen(false)}
           className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 hover:cursor-pointer transition"
         >
@@ -1597,7 +1597,7 @@ const pagedMemos = filteredMemos.slice(
                   />
                 ))}
 
-                <button
+                <button data-popup-close="true"
                   onClick={() => {
   setMemoAddOpen(false);
   setMemoAddPopupPosition({ x: 0, y: 0 });
@@ -1770,7 +1770,7 @@ const pagedMemos = filteredMemos.slice(
                   />
                 ))}
 
-                <button
+                <button data-popup-close="true"
                   onClick={() => {
   setSelectedMemo(null);
   setMemoEditPopupPosition({ x: 0, y: 0 });

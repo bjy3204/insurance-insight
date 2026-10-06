@@ -1352,7 +1352,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
           국민연금 예상연금월액표
         </div>
 
-        <button
+        <button data-popup-close="true"
   onClick={closeNpsPopup}
           className="
   cursor-pointer
@@ -1545,7 +1545,7 @@ onChange={(e) =>
           기대수명 계산기
         </div>
 
-        <button
+        <button data-popup-close="true"
   onClick={closeLifePopup}
           className="
   cursor-pointer
@@ -1719,7 +1719,7 @@ onChange={(e) =>
           메모장
         </div>
 
-        <button
+        <button data-popup-close="true"
           onClick={() => setMemoOpen(false)}
           className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 hover:cursor-pointer transition"
         >
@@ -1926,7 +1926,7 @@ onChange={(e) =>
             />
           ))}
 
-          <button
+          <button data-popup-close="true"
             onClick={() => setMemoAddOpen(false)}
             className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"
           >
@@ -2040,7 +2040,7 @@ onChange={(e) =>
             />
           ))}
 
-          <button
+          <button data-popup-close="true"
             onClick={() => {
               setSelectedMemo(null);
               setMemoEditPopupPos({ x: 0, y: 0 });

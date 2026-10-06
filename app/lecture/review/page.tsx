@@ -468,7 +468,7 @@ const currentReviews = selectedReviews.slice(
                 강사 정보 보기
               </button>
 
-              <button
+              <button data-popup-close="true"
                 onClick={() => setSelectedLecture(null)}
                 className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/10 transition shrink-0"
               >
@@ -492,7 +492,7 @@ const currentReviews = selectedReviews.slice(
               {popupMode === "lecture" ? "강의정보 자세히보기" : "강사정보보기"}
             </p>
 
-            <button
+            <button data-popup-close="true"
               onClick={() => setSelectedLecture(null)}
               className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/10 transition"
             >

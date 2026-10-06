@@ -739,7 +739,7 @@ const fileRec = fileRecords.find(
                 <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleUpload} />
               </>
             )}
-            <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition cursor-pointer">
+            <button data-popup-close="true" onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition cursor-pointer">
               <X className="w-4 h-4 text-gray-500" />
             </button>
           </div>
@@ -1037,7 +1037,7 @@ const fileRec = fileRecords.find(
                 <button onClick={() => handleDownload(selectedFile)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold transition cursor-pointer">
                   <Download className="w-4 h-4" />다운로드
                 </button>
-                <button onClick={() => setPreviewOpen(false)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition cursor-pointer">
+                <button data-popup-close="true" onClick={() => setPreviewOpen(false)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition cursor-pointer">
                   <X className="w-4 h-4 text-gray-500" />
                 </button>
               </div>

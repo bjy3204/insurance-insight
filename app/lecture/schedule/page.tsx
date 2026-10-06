@@ -435,7 +435,7 @@ const numberColor =
           강의 상세
         </div>
 
-        <button
+        <button data-popup-close="true"
           onClick={() => setSelectedLecture(null)}
           className="
   cursor-pointer

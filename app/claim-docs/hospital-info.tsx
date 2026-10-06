@@ -171,7 +171,7 @@ const toggleType = (type: string) => {
             병원정보 검색
           </div>
 
-          <button
+          <button data-popup-close="true"
   onClick={closePopup}
   className="
     cursor-pointer

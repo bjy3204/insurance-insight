@@ -795,7 +795,7 @@ export default function CalendarPage() {
                   <Plus className="w-3.5 h-3.5" strokeWidth={2} />
                   일정 추가
                 </button>
-                <button
+                <button data-popup-close="true"
                   onClick={() => setShowMobileDayPopup(false)}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition"
                 >
@@ -866,7 +866,7 @@ export default function CalendarPage() {
           >
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-black text-gray-900">{editingEvent ? "일정 수정" : "일정 추가"}</h3>
-              <button onClick={() => { setShowEventModal(false); resetForm(); }} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition">
+              <button data-popup-close="true" onClick={() => { setShowEventModal(false); resetForm(); }} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition">
                 <X className="w-4 h-4" />
               </button>
             </div>

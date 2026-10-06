@@ -226,7 +226,7 @@ const [memoOpen, setMemoOpen] = useState(false);
                     className={`w-7 h-7 rounded-full border transition hover:scale-105 ${selectedMemo.color === color.value ? "ring-2 ring-gray-400 ring-offset-2" : ""} ${color.className}`}
                   />
                 ))}
-                <button onClick={() => { setSelectedMemo(null); setMemoEditPopupPosition({ x: 0, y: 0 }); }}
+                <button data-popup-close="true" onClick={() => { setSelectedMemo(null); setMemoEditPopupPosition({ x: 0, y: 0 }); }}
                   className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer">
                   <X className="w-5 h-5" />
                 </button>

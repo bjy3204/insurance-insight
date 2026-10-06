@@ -40,6 +40,13 @@ const [position, setPosition] = useState<Position>({
 });
   const [ready, setReady] = useState(false);
   const [isPc, setIsPc] = useState(false);
+  const [fontStatus, setFontStatus] = useState<"loading" | "loaded" | "failed">("loading");
+  useEffect(() => {
+    if (window.innerWidth < 768) return;
+    let active = true;
+    void document.fonts.load('16px "Kyobo"', "오늘의 한마디").then(faces => { if (active) setFontStatus(faces.length ? "loaded" : "failed"); }).catch(() => { if (active) setFontStatus("failed"); });
+    return () => { active = false; };
+  }, []);
 
   const dragRef = useRef<{
     startX: number;
@@ -281,7 +288,7 @@ style={{
       onPointerDown={handlePointerDown}
       onClick={handleOpen}
     >
-      <button
+      <button data-popup-close="true"
         type="button"
         className={styles.closeButton}
         onClick={handleClose}
@@ -309,8 +316,8 @@ style={{
 
 
 
-      {opened && (
-        <div className={styles.message}>
+      {opened && fontStatus !== "loading" && (
+        <div className={styles.message} style={fontStatus === "failed" ? { fontFamily: "inherit" } : undefined}>
           {fortune}
         </div>
       )}

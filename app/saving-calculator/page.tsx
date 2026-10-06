@@ -862,7 +862,7 @@ const principal = monthly * months;
           주요 은행 {bankRateMonth}개월 예금 금리
         </div>
 
-        <button
+        <button data-popup-close="true"
           onClick={() => setBankRateOpen(false)}
           className="
             cursor-pointer
@@ -983,7 +983,7 @@ const principal = monthly * months;
           메모장
         </div>
 
-        <button
+        <button data-popup-close="true"
           onClick={() => setMemoOpen(false)}
           className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 hover:cursor-pointer transition"
         >
@@ -1190,7 +1190,7 @@ const principal = monthly * months;
             />
           ))}
 
-          <button
+          <button data-popup-close="true"
             onClick={() => setMemoAddOpen(false)}
             className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"
           >
@@ -1304,7 +1304,7 @@ const principal = monthly * months;
             />
           ))}
 
-          <button
+          <button data-popup-close="true"
             onClick={() => {
               setSelectedMemo(null);
               setMemoEditPopupPos({ x: 0, y: 0 });
