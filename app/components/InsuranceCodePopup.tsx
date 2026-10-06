@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Lock, X, Search, Star } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
@@ -65,6 +65,7 @@ function SortableRow({
   name,
   editMode,
   rowEditMode,
+  focusCode,
   onStartRowEdit,
   isFav,
   code,
@@ -76,7 +77,8 @@ function SortableRow({
 name: string;
 editMode: boolean;
 rowEditMode: boolean;
-onStartRowEdit: () => void;
+focusCode: boolean;
+onStartRowEdit: (top: number) => void;
 isFav: boolean;
 code: string;
   password: string;
@@ -85,7 +87,16 @@ code: string;
   onChangePassword: (v: string) => void;
 }) {
   const { setNodeRef, transform, transition, isDragging, attributes, listeners } =
-    useSortable({ id: name });
+    useSortable({ id: name, disabled: rowEditMode });
+
+  const codeInputRef = useRef<HTMLInputElement>(null);
+  useLayoutEffect(() => {
+    if (!focusCode) return;
+    const input = codeInputRef.current;
+    if (!input) return;
+    input.focus({ preventScroll: true });
+    input.setSelectionRange(input.value.length, input.value.length);
+  }, [focusCode]);
 
 
   const style: React.CSSProperties = {
@@ -99,8 +110,9 @@ code: string;
   return (
 <div
   ref={setNodeRef}
+  data-company-name={name}
   style={style}
-  onDoubleClick={() => onStartRowEdit()}
+  onDoubleClick={(e) => onStartRowEdit(e.currentTarget.getBoundingClientRect().top)}
   {...attributes}
   {...listeners}
       className="grid gap-3 items-center px-4 py-3 rounded-2xl border border-gray-100 bg-white
@@ -132,10 +144,12 @@ code: string;
       {/* 코드 */}
       {editMode || rowEditMode ? (
         <input
+          ref={codeInputRef}
           value={code}
           onChange={(e) => onChangeCode(e.target.value)}
           onClick={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
           placeholder="코드"
           className="h-9 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-gray-400 w-full cursor-text"
         />
@@ -150,6 +164,7 @@ code: string;
           onChange={(e) => onChangePassword(e.target.value)}
           onClick={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
           placeholder="비밀번호"
           className="h-9 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-gray-400 w-full cursor-text"
         />
@@ -169,6 +184,17 @@ export default function InsuranceCodePopup() {
   const [search, setSearch] = useState("");
   const [editMode, setEditMode] = useState(false);
 const [rowEditMode, setRowEditMode] = useState(false);
+  const [editingRow, setEditingRow] = useState<string | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const pendingRowTop = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list || !editingRow || pendingRowTop.current === null) return;
+    const row = Array.from(list.querySelectorAll<HTMLElement>("[data-company-name]"))
+      .find((element) => element.dataset.companyName === editingRow);
+    if (row) list.scrollTop += row.getBoundingClientRect().top - pendingRowTop.current;
+    pendingRowTop.current = null;
+  }, [editingRow, rowEditMode]);
   const [codes, setCodes] = useState<CodeMap>({});
   const [nonlifeOrder, setNonlifeOrder] = useState<string[]>(DEFAULT_NONLIFE);
   const [lifeOrder, setLifeOrder] = useState<string[]>(DEFAULT_LIFE);
@@ -250,6 +276,7 @@ const [rowEditMode, setRowEditMode] = useState(false);
 
   // ── 저장 ─────────────────────────────────────────────────
   const save = async () => {
+    setEditingRow(null);
     setCodes(tempCodes);
     setNonlifeOrder(tempNonlifeOrder);
     setLifeOrder(tempLifeOrder);
@@ -275,6 +302,7 @@ const [rowEditMode, setRowEditMode] = useState(false);
   };
 
   const cancelEdit = () => {
+    setEditingRow(null);
     setTempCodes(codes);
     setTempNonlifeOrder(nonlifeOrder);
     setTempLifeOrder(lifeOrder);
@@ -287,6 +315,7 @@ const handleOpen = () => {
   setPopupPos({ x: 0, y: 0 });
   setEditMode(false);
   setRowEditMode(false);
+  setEditingRow(null);
   setSearch("");
   setOpen(true);
 };
@@ -376,7 +405,7 @@ const handleOpen = () => {
           className="fixed inset-0 z-[1500] bg-black/40 flex items-center justify-center p-3 md:p-4"
           onClick={() => { if (!editMode) setOpen(false); }}
         >
-          <div
+          <div data-popup-frame="true"
             style={{ transform: `translate(${popupPos.x}px, ${popupPos.y}px)` }}
             className="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
@@ -442,7 +471,7 @@ const handleOpen = () => {
 
             {/* 탭 + 검색 */}
             <div className="px-5 pt-4 pb-2 flex flex-col gap-3">
-              <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1">
+              <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1">
                 <button
                   onClick={() => { setTab("nonlife"); setSearch(""); }}
                   className={`rounded-xl py-2.5 text-sm font-bold transition ${
@@ -485,7 +514,7 @@ const handleOpen = () => {
             </div>
 
             {/* 목록 */}
-            <div className="flex-1 overflow-y-auto px-5 pb-5">
+            <div ref={listRef} className="flex-1 overflow-y-auto px-5 pb-5">
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
@@ -504,9 +533,12 @@ const handleOpen = () => {
   key={name}
   name={name}
   editMode={editMode}
-  rowEditMode={rowEditMode}
-  onStartRowEdit={() => {
-  setTempCodes(codes);
+  rowEditMode={rowEditMode && editingRow === name}
+  focusCode={editingRow === name}
+  onStartRowEdit={(top) => {
+  pendingRowTop.current = top;
+  if (!editMode && !rowEditMode) setTempCodes(codes);
+  setEditingRow(name);
   setRowEditMode(true);
 }}
   isFav={isFav}

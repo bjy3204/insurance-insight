@@ -10,7 +10,7 @@ return (<>{noticeOpen && (
   onClick={() => setNoticeOpen(false)}
   className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
 >
-         <div
+         <div data-popup-frame="true"
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("notice")}
   className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[80vh] flex flex-col"

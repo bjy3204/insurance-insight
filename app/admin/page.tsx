@@ -30,7 +30,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
+import { Menu,
   ArrowLeft,
   Search,
   Users,
@@ -54,6 +54,7 @@ import {
   EyeOff,
   Pin,
 } from "lucide-react";
+import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
 
 // --- 기존 회원 타입 ---
 type Profile = {
@@ -1076,10 +1077,10 @@ const matchSearch =
   return (
     <main className="min-h-screen bg-gray-50 pb-24 relative">
       {/* 헤더 */}
-      <header className="sticky top-0 z-40 bg-white border-b shadow-sm">
+      <header data-page-header="true" className="sticky top-0 z-40 bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
          <div className="relative flex items-center justify-center">
-  <Link href="/" className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center">
+  <Link data-header-control="true" href="/" className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center">
     <ArrowLeft className="w-5 h-5 text-black" />
   </Link>
   <div className="text-center">
@@ -1087,17 +1088,17 @@ const matchSearch =
       <Settings className="w-7 h-7 text-blue-600" />
       <h1 className="text-2xl font-black text-gray-900">관리자 페이지</h1>
     </div>
-    <p className="text-sm text-gray-500 mt-1">승인 회원 및 구독자 관리</p>
+    
   </div>
 
   {/* 연필 아이콘 + 드롭다운 */}
   <div className={`absolute right-0 top-1/2 -translate-y-1/2 ${isPencilOpen ? "z-[1000]" : "z-40"}`}>
     <div className="relative">
-      <button
+      <button data-header-control="true"
         onClick={(e) => { e.stopPropagation(); setIsPencilOpen(!isPencilOpen); }}
-        className={`w-10 h-10 rounded-full border border-gray-200 shadow-sm hidden md:flex items-center justify-center transition cursor-default ${isPencilOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}`}
+        className={`w-10 h-10 rounded-full border border-gray-200 shadow-sm flex items-center justify-center transition cursor-default ${isPencilOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}`}
       >
-        <Pencil className="w-5 h-5 text-gray-400" />
+        <Menu className="w-5 h-5 text-gray-400" />
       </button>
 
       {isPencilOpen && (
@@ -1111,12 +1112,7 @@ const matchSearch =
           >
             메모장
           </button>
-          <button
-            onClick={() => { window.dispatchEvent(new CustomEvent("open-calculator")); setIsPencilOpen(false); }}
-            className="block w-full text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default"
-          >
-            계산기
-          </button>
+          <HeaderUtilityItems onClose={() => setIsPencilOpen(false)} />
         </div>
 
       )}
@@ -1129,7 +1125,7 @@ const matchSearch =
 
       <section className="max-w-7xl mx-auto px-5 py-6">
         {/* 꽉 차는 탭 메뉴 */}
-        <div className="w-full flex bg-gray-200 p-1 rounded-2xl mb-7">
+        <div data-tab-group="true" className="w-full flex bg-gray-200 p-1 rounded-2xl mb-7">
           <button
             onClick={() => setAdminTab("members")}
             className={`flex-1 py-3.5 text-sm md:text-base font-bold rounded-xl transition ${
@@ -2139,7 +2135,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
       {/* ==================== 팝업 1: 월별 리스트에 추가할 사람 선택 ==================== */}
       {isSelectPopupOpen && (
         <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4" onClick={() => setIsSelectPopupOpen(false)}>
-          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl flex flex-col max-h-[80vh]">
+          <div data-popup-frame="true" onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl flex flex-col max-h-[80vh]">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">이번 달 명단에 추가</h2>
               <button data-popup-close="true" onClick={() => setIsSelectPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
@@ -2254,7 +2250,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
   onMouseUp={handleDragEnd}
   onClick={(e) => { if (e.target === e.currentTarget) setIsAllSubPopupOpen(false); }}
 >
-          <div
+          <div data-popup-frame="true"
   onClick={(e) => e.stopPropagation()}
   style={{ transform: typeof window !== "undefined" && window.innerWidth >= 768 ? `translate(${popupPos.x}px, ${popupPos.y}px)` : "none" }}
   className="w-full max-w-5xl h-[88vh] rounded-3xl bg-white shadow-xl flex flex-col overflow-hidden"
@@ -2321,7 +2317,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                 
               {/* 탭 3개 및 검색창 */}
               <div className="mb-2">
-                <div className="flex bg-gray-200 p-1 rounded-xl w-full  mb-3">
+                <div data-tab-group="true" className="flex bg-gray-200 p-1 rounded-xl w-full  mb-3">
   <button onClick={() => setAllSubTab("all")} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${allSubTab === "all" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
     전체목록 <span className="text-xs font-black ml-1">{allSubscribers.length}</span>
   </button>
@@ -2503,7 +2499,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 {/* 메모장 팝업 */}
 {isMemoOpen && (
   <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
+    <div data-popup-frame="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
       <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2"><NotebookPen className="w-5 h-5" />메모장</div>
         <button data-popup-close="true" onClick={() => setIsMemoOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"><X className="w-5 h-5" /></button>

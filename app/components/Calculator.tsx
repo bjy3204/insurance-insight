@@ -1,7 +1,7 @@
 "use client";
+import { useWidgetSessionState } from './useWidgetSessionState';
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useAuth } from "./AuthProvider";
 
 type HistoryItem = {
   expression: string;
@@ -11,40 +11,39 @@ type HistoryItem = {
 export default function Calculator() {
  
 
-  const { authUser, authStatus } = useAuth();
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-  const [display, setDisplay] = useState("0");
-  const [expression, setExpression] = useState("");
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [waitingForOperand, setWaitingForOperand] = useState(false);
-  const [operator, setOperator] = useState<string | null>(null);
-  const [prevValue, setPrevValue] = useState<string | null>(null);
-  const [justCalculated, setJustCalculated] = useState(false);
+  const [isOpen, setIsOpen] = useWidgetSessionState("calculator:isOpen", false);
+  const [showHistory, setShowHistory] = useWidgetSessionState("calculator:showHistory", false);
+  const [display, setDisplay] = useWidgetSessionState("calculator:display", "0");
+  const [expression, setExpression] = useWidgetSessionState("calculator:expression", "");
+  const [history, setHistory] = useWidgetSessionState<HistoryItem[]>("calculator:history", []);
+  const [waitingForOperand, setWaitingForOperand] = useWidgetSessionState("calculator:waitingForOperand", false);
+  const [operator, setOperator] = useWidgetSessionState<string | null>("calculator:operator", null);
+  const [prevValue, setPrevValue] = useWidgetSessionState<string | null>("calculator:prevValue", null);
+  const [justCalculated, setJustCalculated] = useWidgetSessionState("calculator:justCalculated", false);
 
   // 드래그 상태
-  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [pos, setPos, positionReady, positionRestored] = useWidgetSessionState("calculator:pos", { x: 0, y: 0 });
   const [initialized, setInitialized] = useState(false);
   const dragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const calcRef = useRef<HTMLDivElement>(null);
 
   // 리사이즈 상태
-  const [size, setSize] = useState({ width: 340, height: 560 });
+  const [size, setSize] = useWidgetSessionState("calculator:size", { width: 340, height: 560 });
   const resizing = useRef(false);
   const resizeStart = useRef({ x: 0, y: 0, w: 0, h: 0 });
 
   // 초기 위치 설정 (화면 오른쪽 하단)
   useEffect(() => {
-    if (!initialized) {
-      setPos({
+    if (positionReady && !initialized) {
+      if (!positionRestored) setPos({
         x: window.innerWidth - 360,
         y: window.innerHeight - 600,
       });
       setInitialized(true);
     }
-  }, [initialized]);
+  }, [initialized, positionReady, positionRestored, setPos]);
 
   
 
@@ -272,7 +271,7 @@ export default function Calculator() {
      
 
             {/* 계산기 본체 */}
-      {authUser && authStatus === "approved" && isOpen && initialized && (
+      {isOpen && initialized && (
 
                 <div
           ref={calcRef}

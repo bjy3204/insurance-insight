@@ -875,7 +875,7 @@ return (
           className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center sm:hidden"
           onClick={() => setShowMobileDayPopup(false)}
         >
-          <div
+          <div data-popup-frame="true"
             className="bg-white w-[90%] rounded-3xl shadow-xl max-h-[70vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >

@@ -6,7 +6,7 @@ export default function LifeExpectancyDialog({ controller }: { controller: HomeC
 const { startPopupDrag, getPopupStyle, lifeOpen, setLifeOpen, lifeGender, setLifeGender, lifeAge, setLifeAge, selectedLife, expectYears, sickYears, healthyYears, expectAge, sickStartAge } = controller;
 return (<>{lifeOpen && (
   <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-    <div
+    <div data-popup-frame="true"
   style={getPopupStyle("life")}
   className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
 >
@@ -38,7 +38,7 @@ return (<>{lifeOpen && (
       </div>
 
       <div className="p-5 overflow-y-auto">
-        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
+        <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
           {(["남성", "여성"] as const).map((item) => (
             <button
               key={item}

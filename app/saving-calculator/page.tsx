@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 
 
-import {
+import { Menu,
   ArrowLeft,
   Landmark,
   Newspaper,
@@ -41,6 +41,7 @@ import {
 } from "@dnd-kit/sortable";
 
 import { CSS } from "@dnd-kit/utilities";
+import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
 
 type CalcType = "deposit" | "saving";
 type InterestType = "simple" | "year" | "quarter" | "month";
@@ -538,10 +539,10 @@ const principal = monthly * months;
   return (
     <main className="min-h-screen bg-gray-100 pb-24">
       {/* 헤더 */}
-      <header className="bg-white border-b border-black shadow-sm">
+      <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link
+            <Link data-header-control="true"
               href="/"
               className="
   absolute
@@ -567,9 +568,7 @@ const principal = monthly * months;
                   예금 · 적금 계산기
                 </h1>
               </div>
-              <p className="text-sm text-gray-500 mt-1">
-                단리 · 복리 만기금액 계산
-              </p>
+              
             </div>
 
                         <div
@@ -578,19 +577,19 @@ const principal = monthly * months;
               }`}
             >
               <div className="relative">
-                <button
+                <button data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
                   }}
                                    className={`
                     w-10 h-10 rounded-full border border-gray-200 shadow-sm
-                    hidden md:flex items-center justify-center transition cursor-default
+                    flex items-center justify-center transition cursor-default
                     ${settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}
                   `}
 
                 >
-                  <Pencil className="w-5 h-5 text-gray-400" />
+                  <Menu className="w-5 h-5 text-gray-400" />
                 </button>
 
                 {settingOpen && (
@@ -614,21 +613,16 @@ const principal = monthly * months;
                       메모장
                     </button>
 
-                    {authStatus === "approved" && (
-                      <button
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent("open-calculator"));
-                          setSettingOpen(false);
-                        }}
-                        className="
-                          block w-full text-center px-4 py-3 text-sm font-bold
-                          text-gray-700 hover:bg-gray-50 transition border-t
-                          border-gray-100 cursor-default
-                        "
-                      >
-                        계산기
-                      </button>
-                    )}
+                    <HeaderUtilityItems onClose={() => setSettingOpen(false)} />
+                    <button
+                      onClick={() => {
+                        setSettingOpen(false);
+                        setBankRateOpen(true);
+                      }}
+                      className="block w-full text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default"
+                    >
+                      주요 은행 금리
+                    </button>
                   </div>
                 )}
               </div>
@@ -640,7 +634,7 @@ const principal = monthly * months;
 
       <div className="max-w-5xl mx-auto px-4 py-6">
         {/* 탭 */}
-<div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7">
+<div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7">
   <button
     onClick={() => {
       setType("saving");
@@ -806,30 +800,6 @@ const principal = monthly * months;
       </div>
 
       
-<button
-  onClick={() => setBankRateOpen(true)}
-  className="
-    fixed
-    left-6
-    bottom-24
-    z-[999]
-    w-14
-    h-14
-    rounded-full
-    bg-gray-800
-    shadow-lg
-    flex
-    items-center
-    justify-center
-    hover:shadow-2xl
-    hover:-translate-y-0.5
-    transition-all
-    duration-200
-  "
->
-  <Percent className="w-6 h-6 text-white" />
-</button>
-
 {bankRateOpen && (
   <div
     onMouseMove={moveBankPopup}
@@ -837,7 +807,7 @@ const principal = monthly * months;
     onMouseLeave={stopBankPopupMove}
     className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
   >
-    <div
+    <div data-popup-frame="true"
   style={{
     transform: `translate(${bankPopupPos.x}px, ${bankPopupPos.y}px)`,
   }}
@@ -881,7 +851,7 @@ const principal = monthly * months;
       </div>
 
       <div className="p-5 overflow-y-auto">
-        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
+        <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
   <button
     onClick={() => setBankRateMonth("12")}
     className={`rounded-xl py-3 text-sm font-bold transition ${
@@ -976,7 +946,7 @@ const principal = monthly * months;
 
 {memoOpen && (
   <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
+    <div data-popup-frame="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
       <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2">
           <NotebookPen className="w-5 h-5" />
@@ -1447,7 +1417,8 @@ const principal = monthly * months;
 
 
       {/* 하단 고정 메뉴 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+      <>
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a href="https://naver.me/xsZ8mk7H" className="py-3 flex flex-col items-center gap-1">
             <Newspaper className="w-5 h-5" />
@@ -1465,6 +1436,7 @@ const principal = monthly * months;
           </a>
         </div>
       </div>
+      </>
     </main>
   );
 }

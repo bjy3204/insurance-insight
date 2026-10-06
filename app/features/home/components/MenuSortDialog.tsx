@@ -14,7 +14,7 @@ return (<>{menuSortOpen && (
   onClick={() => setContextMenu(null)}
   className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
 >
-   <div
+   <div data-popup-frame="true"
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("menuSort")}
   className={`${styles.menuSortDialog} bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col`}

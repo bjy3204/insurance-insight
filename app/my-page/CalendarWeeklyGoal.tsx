@@ -432,10 +432,10 @@ export default function CalendarPage() {
   return (
     <main className="min-h-screen bg-gray-100 pb-24">
       {/* 헤더 */}
-      <header className="bg-white border-b border-black shadow-sm">
+      <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <Link
+            <Link data-header-control="true"
               href="/"
               className="w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
             >
@@ -447,10 +447,10 @@ export default function CalendarPage() {
                 <CalendarDays className="w-7 h-7 text-blue-600" />
                 <h1 className="text-2xl font-black text-gray-900">캘린더</h1>
               </div>
-              <p className="text-sm text-gray-500 mt-1">일정과 체크리스트를 관리하세요</p>
+              
             </div>
 
-            <div className="w-11 h-11" />
+            <div data-header-spacer="true" className="w-11 h-11" />
           </div>
         </div>
       </header>
@@ -773,7 +773,7 @@ export default function CalendarPage() {
           className="fixed inset-0 z-[60] bg-black/40 flex items-end justify-center sm:hidden"
           onClick={() => setShowMobileDayPopup(false)}
         >
-          <div
+          <div data-popup-frame="true"
             className="bg-white w-full rounded-t-3xl shadow-xl max-h-[70vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
@@ -860,7 +860,7 @@ export default function CalendarPage() {
           className="fixed inset-0 z-[70] bg-black/40 flex items-center justify-center p-4"
           onClick={() => { setShowEventModal(false); resetForm(); }}
         >
-          <div
+          <div data-popup-frame="true"
             className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >

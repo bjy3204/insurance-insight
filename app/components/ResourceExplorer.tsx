@@ -1030,7 +1030,7 @@ const fileRec = fileRecords.find(
       {/* ── 미리보기 팝업 ── */}
       {previewOpen && selectedFile && previewUrl && (
         <div className="fixed inset-0 z-[10000] bg-black/70 flex items-center justify-center p-4" onClick={() => setPreviewOpen(false)}>
-          <div className="relative bg-white rounded-3xl shadow-2xl overflow-hidden max-w-2xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div data-popup-frame="true" className="relative bg-white rounded-3xl shadow-2xl overflow-hidden max-w-2xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <span className="font-bold text-gray-800 truncate text-sm">{selectedFile.displayName}</span>
               <div className="flex items-center gap-2">

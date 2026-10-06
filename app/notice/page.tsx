@@ -6,12 +6,12 @@ export default function NoticePage() {
   return (
     <main className="min-h-screen bg-gray-100 pb-20">
       {/* 헤더 */}
-      <header className="bg-white border-b shadow-sm">
+      <header data-page-header="true" className="bg-white border-b shadow-sm">
         <div className="max-w-5xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
             
             {/* 뒤로가기 */}
-            <Link
+            <Link data-header-control="true"
               href="/"
               className="
                 absolute
@@ -39,9 +39,7 @@ export default function NoticePage() {
                   공지사항
                 </h1>
 
-                <p className="text-sm text-gray-500 mt-1">
-                  보험인사이트 업데이트 및 공지 안내
-                </p>
+                
               </div>
             </div>
           </div>

@@ -3,6 +3,8 @@
 import {
   DndContext,
   closestCenter,
+  type CollisionDetection,
+  type DragEndEvent,
   PointerSensor,
   TouchSensor,
   useSensor,
@@ -27,7 +29,7 @@ import InsuranceCodePopup from "@/app/components/InsuranceCodePopup";
 
 
 
-import {
+import { Menu,
   Monitor,
   ArrowLeft,
   Newspaper,
@@ -47,6 +49,9 @@ import {
 
 
 import { FaInstagram } from "react-icons/fa";
+import { reorderWithinFavoriteGroup } from '@/lib/insurance-order';
+import SiteFooter from '@/app/components/SiteFooter';
+import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
 
 
 
@@ -99,7 +104,7 @@ type Company = {
 };
 
 type InsuranceTab = "nonlife" | "life";
-type ManageMode = "favorite" | "sort";
+
 
 type MemoItem = {
   id: string;
@@ -178,6 +183,7 @@ function CompanyCard({
         flex items-center justify-center animate-in fade-in zoom-in-95
         cursor-default
         hover:-translate-y-1 hover:border-gray-300 hover:shadow-md
+        md:border-0 md:rounded-[20px] md:shadow md:hover:-translate-y-[2px] md:hover:shadow-md
       "
     >
       {showStar && (
@@ -274,12 +280,13 @@ function SortableCompanyCard({
         className={`
           group relative bg-white rounded-3xl h-36 md:h-40 px-3 md:px-5
           border border-gray-200 shadow-sm flex items-center justify-center
+          md:border-0 md:rounded-[20px]
           transition-all duration-200 cursor-default
           animate-in fade-in zoom-in-95
           ${
             isDragging
-              ? "z-50 shadow-2xl scale-[1.02]"
-              : "hover:-translate-y-1 hover:border-gray-300 hover:shadow-md"
+              ? "z-50 shadow-2xl md:shadow-2xl scale-[1.02]"
+              : "hover:-translate-y-1 hover:border-gray-300 hover:shadow-md md:shadow md:hover:-translate-y-[2px] md:hover:shadow-md"
           }
         `}
       >
@@ -352,7 +359,7 @@ const [deleteMemoId, setDeleteMemoId] = useState<string | null>(null);
 const [manageSaveConfirmOpen, setManageSaveConfirmOpen] = useState(false);
 
   const [manageOpen, setManageOpen] = useState(false);
-  const [manageMode, setManageMode] = useState<ManageMode>("favorite");
+
   const [manageTab, setManageTab] = useState<InsuranceTab>("nonlife");
 
   const [nonlifeItems, setNonlifeItems] = useState<Company[]>(nonlifeCompanies);
@@ -420,7 +427,7 @@ const [memoEditDragInfo, setMemoEditDragInfo] = useState<null | {
   };
 
       useEffect(() => {
-    if (!authUser) {
+    if (!authUser || authStatus !== "approved") {
       const savedNonlifeOrder = localStorage.getItem("nonlife-order");
       const savedLifeOrder = localStorage.getItem("life-order");
       const savedNonlifeFavorites = localStorage.getItem("nonlife-favorites");
@@ -486,7 +493,7 @@ const [memoEditDragInfo, setMemoEditDragInfo] = useState<null | {
     };
 
     loadFromDB();
-  }, [authUser]);
+  }, [authUser, authStatus]);
 
 
 
@@ -633,8 +640,7 @@ useEffect(() => {
     tempLifeFavorites,
   ]);
 
-  const openManagePopup = (mode: ManageMode) => {
-    setManageMode(mode);
+  const openManagePopup = () => {
     setManageTab(tab);
     setTempNonlifeItems(nonlifeItems);
     setTempLifeItems(lifeItems);
@@ -701,77 +707,24 @@ useEffect(() => {
     );
   };
 
-  const handleTempSortDragEnd = (event: any) => {
-    const { active, over } = event;
-
-    if (!over || active.id === over.id) return;
-
-    if (manageTab === "nonlife") {
-      setTempNonlifeItems((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-
-        return arrayMove(items, oldIndex, newIndex);
-      });
-
-      return;
-    }
-
-    setTempLifeItems((items) => {
-      const oldIndex = items.findIndex((item) => item.id === active.id);
-      const newIndex = items.findIndex((item) => item.id === over.id);
-
-      return arrayMove(items, oldIndex, newIndex);
+  const groupedCollisionDetection: CollisionDetection = (args) => {
+    const favorites = getTempFavorites(manageTab);
+    const activeIsFavorite = favorites.includes(String(args.active.id));
+    return closestCenter({
+      ...args,
+      droppableContainers: args.droppableContainers.filter((container) =>
+        favorites.includes(String(container.id)) === activeIsFavorite
+      ),
     });
   };
 
-  const handleFavoriteDragEnd = (event: any) => {
-  const { active, over } = event;
+  const handleTempSortDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over) return;
+    const favorites = getTempFavorites(manageTab);
+    const setter = manageTab === "nonlife" ? setTempNonlifeItems : setTempLifeItems;
+    setter((items) => reorderWithinFavoriteGroup(items, favorites, String(active.id), String(over.id)));
+  };
 
-  if (!over || active.id === over.id) return;
-
-  if (manageTab === "nonlife") {
-    setTempNonlifeItems((items) => {
-      const favoriteIds = tempNonlifeFavorites;
-      const favoriteItems = items.filter((item) =>
-        favoriteIds.includes(item.id)
-      );
-      const normalItems = items.filter(
-        (item) => !favoriteIds.includes(item.id)
-      );
-
-      const oldIndex = favoriteItems.findIndex(
-        (item) => item.id === active.id
-      );
-      const newIndex = favoriteItems.findIndex(
-        (item) => item.id === over.id
-      );
-
-      return [...arrayMove(favoriteItems, oldIndex, newIndex), ...normalItems];
-    });
-
-    return;
-  }
-
-  setTempLifeItems((items) => {
-    const favoriteIds = tempLifeFavorites;
-    const favoriteItems = items.filter((item) =>
-      favoriteIds.includes(item.id)
-    );
-    const normalItems = items.filter(
-      (item) => !favoriteIds.includes(item.id)
-    );
-
-    const oldIndex = favoriteItems.findIndex(
-      (item) => item.id === active.id
-    );
-    const newIndex = favoriteItems.findIndex(
-      (item) => item.id === over.id
-    );
-
-    return [...arrayMove(favoriteItems, oldIndex, newIndex), ...normalItems];
-  });
-};
 
     
 
@@ -940,10 +893,10 @@ const pagedMemos = filteredMemos.slice(
 
   return (
     <main className="min-h-screen bg-gray-100 pb-24">
-      <header className="bg-white border-b border-black shadow-sm">
+      <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link
+            <Link data-header-control="true"
               href="/"
               className="
                 absolute left-0 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl
@@ -961,9 +914,7 @@ const pagedMemos = filteredMemos.slice(
                 </h1>
               </div>
 
-              <p className="text-sm text-gray-500 mt-1">
-                보험사 전산 바로가기
-              </p>
+              
             </div>
 
             <div
@@ -972,7 +923,7 @@ const pagedMemos = filteredMemos.slice(
               }`}
             >
               <div className="relative">
-                <button
+                <button data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
@@ -983,7 +934,7 @@ const pagedMemos = filteredMemos.slice(
                     ${settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}
                   `}
                 >
-                  <Settings className="w-5 h-5 text-gray-400" />
+                  <Menu className="w-5 h-5 text-gray-400" />
                 </button>
 
                 {settingOpen && (
@@ -1002,50 +953,27 @@ const pagedMemos = filteredMemos.slice(
                         setSettingOpen(false);
                       }}
                       className="
-                        hidden md:block w-full text-center px-4 py-3 text-sm font-bold
+                        block w-full text-center px-4 py-3 text-sm font-bold
                         text-gray-700 hover:bg-gray-50 transition cursor-default
                       "
                     >
                       메모장
                     </button>
 
-                                        {authStatus === "approved" && (
-                      <button
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent("open-calculator"));
-                          setSettingOpen(false);
-                        }}
-                        className="
-                          hidden md:block w-full text-center px-4 py-3 text-sm font-bold
-                          text-gray-700 hover:bg-gray-50 transition border-t
-                          border-gray-100 cursor-default
-                        "
-                      >
-                        계산기
-                      </button>
-                    )}
+                                        <HeaderUtilityItems onClose={() => setSettingOpen(false)} />
 
+
+                    
 
                     <button
-                      onClick={() => openManagePopup("favorite")}
-                                           className="
-                        block w-full text-center로 px-4 py-3 text-sm font-bold
-                        text-gray-700 hover:bg-gray-50 transition border-t
-                        border-gray-100 cursor-default
-                      "
-                    >
-                      즐겨찾기
-                    </button>
-
-                    <button
-                      onClick={() => openManagePopup("sort")}
+                      onClick={() => openManagePopup()}
                       className="
                         block w-full text-center px-4 py-3 text-sm font-bold
                         text-gray-700 hover:bg-gray-50 transition border-t
                         border-gray-100 cursor-default
                       "
                     >
-                      위치변경
+                      즐겨찾기
                     </button>
                   </div>
                 )}
@@ -1056,7 +984,7 @@ const pagedMemos = filteredMemos.slice(
       </header>
 
       <div className="w-full px-6 py-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7">
+        <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7">
           <button
             onClick={() => setTab("nonlife")}
             className={`rounded-xl py-3 font-bold transition ${
@@ -1116,7 +1044,7 @@ const pagedMemos = filteredMemos.slice(
 
       {manageOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4">
-          <div
+          <div data-popup-frame="true"
             style={{
               transform: `translate(${popupPosition.x}px, ${popupPosition.y}px)`,
             }}
@@ -1143,7 +1071,7 @@ const pagedMemos = filteredMemos.slice(
             >
               <div className="font-bold flex items-center gap-2">
                 <Settings className="w-5 h-5" />
-                {manageMode === "favorite" ? "즐겨찾기 설정" : "메뉴 위치 변경"}
+                즐겨찾기
               </div>
 
              <button data-popup-close="true"
@@ -1167,13 +1095,7 @@ const pagedMemos = filteredMemos.slice(
             </div>
 
             <div className="px-5 pt-5">
-              <p className="text-sm text-gray-500 leading-relaxed break-keep mb-4">
-                {manageMode === "favorite"
-                  ? "자주 사용하는 보험사를 별표로 선택하면 상단에 먼저 표시됩니다."
-                  : "보험사 카드를 드래그해 원하는 순서로 변경하세요."}
-              </p>
-
-              <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1">
+              <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1">
                 <button
                   onClick={() => setManageTab("nonlife")}
                   className={`rounded-xl py-3 font-bold transition ${
@@ -1199,93 +1121,26 @@ const pagedMemos = filteredMemos.slice(
             </div>
 
             <div className="flex-1 overflow-y-auto p-5">
-            {manageMode === "favorite" && (
-  <DndContext
-    sensors={sensors}
-    collisionDetection={closestCenter}
-    onDragEnd={handleFavoriteDragEnd}
-  >
-    <SortableContext
-      items={tempCurrentItems
-        .filter((item) => getTempFavorites(manageTab).includes(item.id))
-        .map((item) => item.id)}
-      strategy={rectSortingStrategy}
-    >
-      <div className="w-full grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6 place-items-stretch">
-        {tempCurrentItems.map((company) => {
-          const isFavorite = getTempFavorites(manageTab).includes(company.id);
-
-          if (isFavorite) {
-            return (
-              <SortableCompanyCard
-                key={company.id}
-                company={company}
-                type={manageTab}
-                showStar
-                starActive
-                disabled={false}
-                onToggleFavorite={() => toggleTempFavorite(company.id)}
-              />
-            );
-          }
-
-          return (
-            <CompanyCard
-              key={company.id}
-              company={company}
-              type={manageTab}
-              showStar
-              disableLink
-              favorite={false}
-              onToggleFavorite={() => toggleTempFavorite(company.id)}
-            />
-          );
-        })}
-      </div>
-    </SortableContext>
-  </DndContext>
-)}
-
-              {manageMode === "sort" && (
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleTempSortDragEnd}
-                >
-                  <SortableContext
-                    items={getTempItems(manageTab)
-  .filter((item) => !getTempFavorites(manageTab).includes(item.id))
-  .map((item) => item.id)}
-                  >
-                    <div className="w-full grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6 place-items-stretch">
-                     {getTempItems(manageTab)
-  .filter((company) => getTempFavorites(manageTab).includes(company.id))
-  .map((company) => (
-    <CompanyCard
-  key={company.id}
-  company={company}
-  type={manageTab}
-  showStar
-  disableLink
-  favorite
-  onToggleFavorite={() => toggleTempFavorite(company.id)}
-/>
-  ))}
-
-{getTempItems(manageTab)
-  .filter((company) => !getTempFavorites(manageTab).includes(company.id))
-  .map((company) => (
-    <SortableCompanyCard
-  key={company.id}
-  company={company}
-  type={manageTab}
-  disabled={false}
-/>
-  ))}
-                    </div>
-                  </SortableContext>
-                </DndContext>
-              )}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={groupedCollisionDetection}
+                onDragEnd={handleTempSortDragEnd}
+              >
+                <SortableContext items={tempCurrentItems.map((company) => company.id)} strategy={rectSortingStrategy}>
+                  <div className="w-full grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6 place-items-stretch">
+                    {tempCurrentItems.map((company) => (
+                      <SortableCompanyCard
+                        key={company.id}
+                        company={company}
+                        type={manageTab}
+                        showStar
+                        starActive={getTempFavorites(manageTab).includes(company.id)}
+                        onToggleFavorite={() => toggleTempFavorite(company.id)}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             </div>
 
             <div className="border-t border-gray-100 bg-white p-4 flex gap-3 justify-center">
@@ -1340,7 +1195,7 @@ const pagedMemos = filteredMemos.slice(
 
       {memoOpen && (
   <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
+    <div data-popup-frame="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
       <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2">
           <NotebookPen className="w-5 h-5" />
@@ -1970,7 +1825,9 @@ setSelectedMemo(null);
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+      <>
+        <SiteFooter desktopOnly />
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a
             href="https://naver.me/xsZ8mk7H"
@@ -2003,6 +1860,7 @@ setSelectedMemo(null);
           </a>
         </div>
       </div>
+      </>
       <InsuranceCodePopup />
 
     </main>

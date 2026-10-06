@@ -6,7 +6,7 @@ export default function BankRatesDialog({ controller }: { controller: HomeContro
 const { open, startPopupDrag, getPopupStyle, bankRateOpen, setBankRateOpen, bankRateMonth, setBankRateMonth, bankRates, bankBaseDate } = controller;
 return (<>{bankRateOpen && (
   <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-    <div
+    <div data-popup-frame="true"
       style={getPopupStyle("bankRate")}
       className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
     >
@@ -37,7 +37,7 @@ return (<>{bankRateOpen && (
       </div>
 
       <div className="p-5 overflow-y-auto">
-        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
+        <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
           <button
             onClick={() => setBankRateMonth("12")}
             className={`rounded-xl py-3 text-sm font-bold transition ${

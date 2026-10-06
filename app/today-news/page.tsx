@@ -31,6 +31,7 @@ import {
   rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import SiteFooter from '@/app/components/SiteFooter';
 
 type NewsItem = {
   title: string;
@@ -531,10 +532,10 @@ useEffect(() => {
   return (
     <main className="min-h-screen bg-gray-100 pb-24">
       {/* 헤더 */}
-      <header className="bg-white border-b border-black shadow-sm">
+      <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link
+            <Link data-header-control="true"
               href="/"
               className="
                 absolute
@@ -562,9 +563,7 @@ useEffect(() => {
                 </h1>
               </div>
 
-              <p className="text-sm text-gray-500 mt-1">
-                보험 · 금융 · 경제 · 모닝뉴스 
-              </p>
+              
             </div>
           </div>
         </div>
@@ -1200,7 +1199,9 @@ duration-200
       </div>
 
       {/* 하단 고정 메뉴 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+      <>
+        <SiteFooter desktopOnly />
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a
             href="https://naver.me/xsZ8mk7H"
@@ -1227,6 +1228,7 @@ duration-200
           </a>
         </div>
       </div>
+      </>
       {/* 메모 수정 팝업 */}
 {selectedMemo && (
   <div

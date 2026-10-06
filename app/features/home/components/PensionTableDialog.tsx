@@ -10,7 +10,7 @@ return (<>{npsTableOpen && (
     onClick={() => setNpsTableOpen(false)}
     className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
   >
-    <div
+    <div data-popup-frame="true"
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("nps")}
   className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
@@ -43,7 +43,7 @@ return (<>{npsTableOpen && (
       </div>
 
       <div className="p-5 flex-1 min-h-0 flex flex-col">
-        <div className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-5">
+        <div data-tab-group="true" className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-5">
           {(["노령연금", "장애연금", "유족연금"] as NpsTableTab[]).map((item) => (
             <button
               key={item}

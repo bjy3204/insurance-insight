@@ -281,10 +281,10 @@ const saveSlideNote = async () => {
   return (
     <>
       <main className="min-h-screen bg-gray-100 overflow-x-hidden">
-        <header className="bg-white border-b border-black shadow-sm">
+        <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
           <div className="max-w-7xl mx-auto px-6 py-6">
             <div className="relative flex items-center justify-center">
-              <Link
+              <Link data-header-control="true"
                 href={`/sales-book/${encodeURIComponent(category)}`}
                 className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
               >
@@ -295,7 +295,7 @@ const saveSlideNote = async () => {
                 <h1 className="text-2xl font-black text-gray-900">
                   {category}
                 </h1>
-                <p className="text-sm text-gray-500 mt-1">{subcategory}</p>
+                
               </div>
 
               <button

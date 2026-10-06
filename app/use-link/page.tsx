@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
+import { Menu,
   ArrowLeft,
   Link2,
   Newspaper,
@@ -16,6 +16,8 @@ import CardNewsLinks from "./CardNewsLinks";
 import MemoManager from "@/app/components/MemoManager";
 import MemoStickers from "@/app/components/MemoStickers";
 import { useAuth } from "@/app/components/AuthProvider";
+import SiteFooter from '@/app/components/SiteFooter';
+import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
 
 type MemoItem = {
   id: string;
@@ -97,10 +99,10 @@ const [memoOpen, setMemoOpen] = useState(false);
   return (
     <main className="min-h-screen bg-gray-50 pb-24">
       {/* 헤더 */}
-      <header className="bg-white border-b shadow-sm">
+      <header data-page-header="true" className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <a href="/" className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center">
+            <a data-header-control="true" href="/" className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center">
               <ArrowLeft className="w-5 h-5 text-black" />
             </a>
             <div className="text-center">
@@ -108,7 +110,7 @@ const [memoOpen, setMemoOpen] = useState(false);
                 <Link2 className="w-7 h-7 text-blue-600" />
                 <h1 className="text-2xl font-black text-gray-900">바로가기</h1>
               </div>
-              <p className="text-sm text-gray-500 mt-1">보험 업무에 필요한 바로가기 모음</p>
+              
             </div>
             <div
   className={`absolute right-0 top-1/2 -translate-y-1/2 ${
@@ -116,18 +118,18 @@ const [memoOpen, setMemoOpen] = useState(false);
   }`}
 >
   <div className="relative">
-    <button
+    <button data-header-control="true"
       onClick={(e) => {
         e.stopPropagation();
         setSettingOpen(!settingOpen);
       }}
       className={`
         w-10 h-10 rounded-full border border-gray-200 shadow-sm
-        hidden md:flex items-center justify-center transition cursor-default
+        flex items-center justify-center transition cursor-default
         ${settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}
       `}
     >
-      <Pencil className="w-5 h-5 text-gray-400" />
+      <Menu className="w-5 h-5 text-gray-400" />
     </button>
 
     {settingOpen && (
@@ -151,23 +153,7 @@ const [memoOpen, setMemoOpen] = useState(false);
           메모장
         </button>
 
-        {authStatus === "approved" && (
-  <button
-    onClick={() => {
-      window.dispatchEvent(
-        new CustomEvent("open-calculator")
-      );
-      setSettingOpen(false);
-    }}
-    className="
-      block w-full text-center px-4 py-3 text-sm font-bold
-      text-gray-700 hover:bg-gray-50 transition border-t
-      border-gray-100 cursor-default
-    "
-  >
-    계산기
-  </button>
-)}
+        <HeaderUtilityItems onClose={() => setSettingOpen(false)} />
       </div>
     )}
   </div>
@@ -178,7 +164,7 @@ const [memoOpen, setMemoOpen] = useState(false);
 
       <section className="max-w-7xl mx-auto px-5 py-6">
 
-        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
+        <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
           {["보험", "카드뉴스"].map((item) => (
             <button key={item} onClick={() => setTab(item as any)} className={`rounded-xl py-3 text-sm md:text-base font-bold ${tab === item ? "bg-white text-blue-600 shadow-sm" : "text-gray-600"}`}>
               {item}
@@ -189,7 +175,9 @@ const [memoOpen, setMemoOpen] = useState(false);
         {tab === "카드뉴스" && <CardNewsLinks search={search} />}
       </section>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
+      <>
+        <SiteFooter desktopOnly />
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50 md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a href="https://naver.me/xsZ8mk7H" target="_blank" rel="noopener noreferrer" className="py-3 flex flex-col items-center gap-1">
             <Newspaper className="w-5 h-5" />
@@ -205,6 +193,7 @@ const [memoOpen, setMemoOpen] = useState(false);
           </a>
         </div>
       </div>
+      </>
 
 <MemoManager open={memoOpen} onClose={() => setMemoOpen(false)} />
 <MemoStickers />

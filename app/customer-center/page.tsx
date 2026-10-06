@@ -22,7 +22,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 
-import {
+import { Menu,
   ArrowLeft,
   Phone,
   Search,
@@ -42,6 +42,7 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
 
 const nonlifeCompanies = [
   {
@@ -673,6 +674,7 @@ function SortableMemoCard({
 
 export default function CustomerCenterPage() {
   const { authUser, authStatus, memos, saveMemos } = useAuth();
+  const canViewArs = Boolean(authUser && authStatus === "approved");
 
   const [search, setSearch] = useState("");
 const [tab, setTab] = useState("nonlife");
@@ -695,6 +697,12 @@ const [arsOpen, setArsOpen] = useState(false);
 const [arsTab, setArsTab] = useState<"nonlife" | "life">("nonlife");
 const [arsSearch, setArsSearch] = useState("");
 const [selectedArs, setSelectedArs] = useState<any>(null);
+useEffect(() => {
+  if (!canViewArs) {
+    setArsOpen(false);
+    setSelectedArs(null);
+  }
+}, [canViewArs]);
 const [arsZoom, setArsZoom] = useState(1);
 const [arsPan, setArsPan] = useState({ x: 0, y: 0 });
 const [arsDragging, setArsDragging] = useState(false);
@@ -998,12 +1006,12 @@ const pagedMemos = filteredMemos.slice(
     <main className="min-h-screen bg-gray-50 pb-10">
 
      {/* 헤더 */}
-<header className="bg-white border-b shadow-sm">
+<header data-page-header="true" className="bg-white border-b shadow-sm">
   <div className="max-w-7xl mx-auto px-6 py-6">
 
     <div className="relative flex items-center justify-center">
 
-      <a
+      <a data-header-control="true"
   href="/"
  className="
   absolute
@@ -1031,9 +1039,7 @@ const pagedMemos = filteredMemos.slice(
           </h1>
         </div>
 
-        <p className="text-sm text-gray-500 mt-1">
-          고객센터 · 팩스번호 · 등기주소 안내
-        </p>
+        
       </div>
 
                   <div
@@ -1042,7 +1048,7 @@ const pagedMemos = filteredMemos.slice(
               }`}
             >
               <div className="relative">
-<button
+<button data-header-control="true"
   onClick={(e) => {
     e.stopPropagation();
     setSettingOpen(!settingOpen);
@@ -1053,7 +1059,7 @@ const pagedMemos = filteredMemos.slice(
     ${settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}
   `}
 >
-  <Pencil className="w-5 h-5 text-gray-400" />
+  <Menu className="w-5 h-5 text-gray-400" />
 </button>
 
                 {settingOpen && (
@@ -1078,24 +1084,11 @@ const pagedMemos = filteredMemos.slice(
                       메모장
                     </button>
 
-                    {authStatus === "approved" && (
-                      <button
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent("open-calculator"));
-                          setSettingOpen(false);
-                        }}
-                        className="
-                          block w-full text-center px-4 py-3 text-sm font-bold
-                          text-gray-700 hover:bg-gray-50 transition border-t
-                          border-gray-100 cursor-default
-                        "
-                      >
-                        계산기
-                      </button>
-                    )}
-                    {authStatus === "approved" && (
+                    <HeaderUtilityItems onClose={() => setSettingOpen(false)} />
+                    {canViewArs && (
   <button
     onClick={() => {
+      if (!canViewArs) return;
       setArsOpen(true);
       setSettingOpen(false);
     }}
@@ -1134,7 +1127,7 @@ const pagedMemos = filteredMemos.slice(
         </div>
 
         {/* 탭 */}
-<div className="grid grid-cols-2 md:grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
+<div data-tab-group="true" className="grid grid-cols-2 md:grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
 
   <button
     onClick={() => setTab("nonlife")}
@@ -1185,7 +1178,7 @@ const pagedMemos = filteredMemos.slice(
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 
           {filteredCompanies.map((company: any) => (
-            <div
+            <div data-menu-card="true"
               key={company.name}
               className="
                 bg-white
@@ -1426,7 +1419,7 @@ const pagedMemos = filteredMemos.slice(
 
 {memoOpen && (
   <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
+    <div data-popup-frame="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
       <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2">
           <NotebookPen className="w-5 h-5" />
@@ -2075,9 +2068,9 @@ stopPopupMove();
   </div>
 )}
 
-{arsOpen && (
+{canViewArs && arsOpen && (
   <div className="fixed inset-0 z-[1500] bg-black/50 flex items-center justify-center p-4">
-    <div className="bg-white w-full max-w-5xl h-[88vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+    <div data-popup-frame="true" className="bg-white w-full max-w-5xl h-[88vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
       <div className="h-14 bg-gray-800 text-white flex items-center justify-between px-5 shrink-0">
         <p className="text-sm font-bold">보험사 ARS 안내</p>
 
@@ -2094,7 +2087,7 @@ stopPopupMove();
       </div>
 
       <div className="p-5 border-b border-gray-100 shrink-0">
-        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-4">
+        <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-4">
           <button
             onClick={() => setArsTab("nonlife")}
             className={`rounded-xl py-3 text-sm font-bold ${
@@ -2174,14 +2167,14 @@ stopPopupMove();
   </div>
 )}
 
-{selectedArs && (
+{canViewArs && selectedArs && (
 <div
   onClick={() => setSelectedArs(null)}
   onWheel={(e) => e.stopPropagation()}
   onTouchMove={(e) => e.stopPropagation()}
   className="fixed inset-0 z-[1600] bg-black/70 flex items-center justify-center p-4 overscroll-none"
 >
-    <div
+    <div data-popup-frame="true"
       onClick={(e) => e.stopPropagation()}
       className="bg-white w-[720px] max-w-[92vw] h-[65vh] md:h-[88vh] rounded-3xl overflow-hidden shadow-2xl flex flex-col"
     >
@@ -2249,7 +2242,7 @@ stopPopupMove();
   className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4"
 >
 
-    <div
+    <div data-popup-frame="true"
   style={{
     transform: `translate(${claimPopupPos.x}px, ${claimPopupPos.y}px)`,
   }}

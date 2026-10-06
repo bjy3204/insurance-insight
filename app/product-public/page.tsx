@@ -25,7 +25,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import Link from "next/link";
 
-import {
+import { Menu,
   Building2,
   ArrowLeft,
   Search,
@@ -46,6 +46,8 @@ import {
 
 import { FaInstagram } from "react-icons/fa";
 import { PRESS } from "./press";
+import SiteFooter from '@/app/components/SiteFooter';
+import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
 
 const nonlifeCompanies = [
   ["DB손해보험", "db.png", "https://www.idbins.com/FWMAIV1534.do", "1588-0100"],
@@ -780,10 +782,10 @@ const pagedMemos = filteredMemos.slice(
 
   return (
     <main className="min-h-screen bg-gray-50 pb-24">
-      <header className="sticky top-0 z-50 bg-white border-b shadow-sm">
+      <header data-page-header="true" className="sticky top-0 z-50 bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link
+            <Link data-header-control="true"
               href="/"
              className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
             >
@@ -798,9 +800,7 @@ const pagedMemos = filteredMemos.slice(
                 </h1>
               </div>
 
-              <p className="text-sm text-gray-500 mt-1">
-                보험사별 상품공시실 바로가기
-              </p>
+              
             </div>
 
                         <div
@@ -809,18 +809,18 @@ const pagedMemos = filteredMemos.slice(
               }`}
             >
               <div className="relative">
-                <button
+                <button data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
                   }}
                   className={`
                     w-10 h-10 rounded-full border border-gray-200 shadow-sm
-                    hidden md:flex items-center justify-center transition cursor-default
+                    flex items-center justify-center transition cursor-default
                     ${settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}
                   `}
                 >
-                  <Pencil className="w-5 h-5 text-gray-400" />
+                  <Menu className="w-5 h-5 text-gray-400" />
                 </button>
 
                 {settingOpen && (
@@ -844,21 +844,7 @@ const pagedMemos = filteredMemos.slice(
                       메모장
                     </button>
 
-                    {authStatus === "approved" && (
-                      <button
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent("open-calculator"));
-                          setSettingOpen(false);
-                        }}
-                        className="
-                          block w-full text-center px-4 py-3 text-sm font-bold
-                          text-gray-700 hover:bg-gray-50 transition border-t
-                          border-gray-100 cursor-default
-                        "
-                      >
-                        계산기
-                      </button>
-                    )}
+                    <HeaderUtilityItems onClose={() => setSettingOpen(false)} />
                   </div>
                 )}
               </div>
@@ -880,7 +866,7 @@ const pagedMemos = filteredMemos.slice(
           />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
+        <div data-tab-group="true" className="grid grid-cols-2 md:grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
           <button
             onClick={() => setTab("nonlife")}
             className={`rounded-xl py-3 text-sm md:text-base font-bold ${
@@ -941,7 +927,7 @@ const pagedMemos = filteredMemos.slice(
             }
 
             return (
-  <div
+  <div data-menu-card="true"
   key={name}
   className="
   bg-white
@@ -993,7 +979,8 @@ const pagedMemos = filteredMemos.slice(
   transition-all
   duration-200
   active:scale-[0.97]
-  hover:bg-gray-200
+  hover:bg-[#e5e7eb]
+  hover:text-[#374151]
 "
 >
   <span className="hidden md:inline">
@@ -1018,7 +1005,7 @@ const pagedMemos = filteredMemos.slice(
 
 {memoOpen && (
   <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
+    <div data-popup-frame="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
       <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2">
           <NotebookPen className="w-5 h-5" />
@@ -1527,7 +1514,9 @@ originY: memoEditPopupPos.y,
   </div>
 )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+      <>
+        <SiteFooter desktopOnly />
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a
             href="https://naver.me/xsZ8mk7H"
@@ -1560,6 +1549,7 @@ originY: memoEditPopupPos.y,
           </a>
         </div>
       </div>
+      </>
       
      {/* 약관 사전 아이콘 */}
 <button
@@ -1662,7 +1652,7 @@ className="
     
     className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
   >
-    <div
+    <div data-popup-frame="true"
       onClick={(e) => e.stopPropagation()}
       style={{
         transform: `translate(${pressPopupPos.x}px, ${pressPopupPos.y}px)`,
@@ -1951,7 +1941,7 @@ className="
     
     className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
   >
-    <div
+    <div data-popup-frame="true"
       onClick={(e) => e.stopPropagation()}
       style={{
         transform: `translate(${termPopupPos.x}px, ${termPopupPos.y}px)`,

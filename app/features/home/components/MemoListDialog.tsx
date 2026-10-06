@@ -12,7 +12,7 @@ return (<>{memoOpen && (
   onClick={() => setContextMenu(null)}
   className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4"
 >
-          <div
+          <div data-popup-frame="true"
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("memo")}
   className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col"

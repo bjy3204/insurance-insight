@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
-import {
+import { Menu,
   Home,
   Settings,
   X,
@@ -63,6 +63,7 @@ import CalendarTab from "./CalendarTab";
 import AiMessageTab from "./AiMessageTab";
 import NoticeTab from "./NoticeTab";
 import CalculatorComp from "@/app/components/Calculator";
+import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
 
 // ─────────────────────────────────────────────
 // 타입 정의
@@ -638,12 +639,12 @@ updateData.pin_changed_at = new Date().toISOString();
     <div className="min-h-screen bg-gray-100 pb-24">
 
       {/* ── 헤더 ── */}
-      <header className="bg-white border-b border-black shadow-sm overflow-visible">
+      <header data-page-header="true" className="bg-white border-b border-black shadow-sm overflow-visible">
   <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
 
             {/* 홈 버튼 */}
-            <button
+            <button data-header-control="true"
               onClick={() => router.push("/")}
               className="absolute left-0 w-11 h-11 rounded-xl border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 shadow-sm transition cursor-pointer"
             >
@@ -662,22 +663,20 @@ updateData.pin_changed_at = new Date().toISOString();
     </h1>
   </div>
 
-  <p className="text-sm text-gray-500 mt-1">
-    나만의 비밀공간으로 이용하세요 !
-  </p>
+  
 </div>
 
             {/* 설정 드롭다운 */}
             <div ref={settingRef} className={`absolute right-0 top-1/2 -translate-y-1/2 ${settingOpen ? "z-[1000]" : "z-40"}`}>
 
               <div className="relative">
-                <button
+                <button data-header-control="true"
                   onClick={(e) => { e.stopPropagation(); setSettingOpen(!settingOpen); }}
                   className={`w-10 h-10 rounded-full border border-gray-200 shadow-sm flex items-center justify-center transition cursor-pointer ${
                     settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"
                   }`}
                 >
-                  <Settings className="w-5 h-5 text-gray-500" />
+                  <Menu className="w-5 h-5 text-gray-500" />
                 </button>
 
                 {settingOpen && (
@@ -691,12 +690,7 @@ updateData.pin_changed_at = new Date().toISOString();
                     >
                       메모장
                     </button>
-                    <button
-                      onClick={() => { setSettingOpen(false); setTimeout(() => window.dispatchEvent(new Event("open-calculator")), 50); }}
-                      className="block w-full text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-b border-gray-100 cursor-pointer"
-                    >
-                      계산기
-                    </button>
+                    <HeaderUtilityItems onClose={() => setSettingOpen(false)} />
 
 <button
   onClick={() => {
@@ -726,7 +720,7 @@ updateData.pin_changed_at = new Date().toISOString();
 <div className="w-full px-6 pt-3 pb-0 max-w-7xl mx-auto">
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleTabDragEnd}>
       <SortableContext items={tabs.map(t => t.id)} strategy={rectSortingStrategy}>
-        <div className="grid grid-cols-3 md:grid-cols-5 bg-gray-200 rounded-2xl p-1 mb-5">
+        <div data-tab-group="true" className="grid grid-cols-3 md:grid-cols-5 bg-gray-200 rounded-2xl p-1 mb-5">
           {tabs.map((tab) => (
             <SortableTab key={tab.id} tab={tab} activeTab={activeTab} setActiveTab={setActiveTab} />
           ))}
@@ -903,7 +897,7 @@ updateData.pin_changed_at = new Date().toISOString();
 
       {homeMenuSettingOpen && (
  <div className="fixed inset-0 z-[250] bg-black/40 flex items-center justify-center px-3 py-4 md:p-4">
-  <div className="bg-white rounded-3xl shadow-2xl w-full max-w-[360px] md:max-w-2xl h-[82vh] md:h-auto overflow-hidden flex flex-col">
+  <div data-popup-frame="true" className="bg-white rounded-3xl shadow-2xl w-full max-w-[360px] md:max-w-2xl h-[82vh] md:h-auto overflow-hidden flex flex-col">
       <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
         <span className="font-bold text-sm">홈 메뉴 변경</span>
 
@@ -1362,7 +1356,7 @@ className={`relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm t
           onClick={() => setMemoOpen(false)}
           className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4"
         >
-          <div
+          <div data-popup-frame="true"
             onClick={(e) => e.stopPropagation()}
             className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col"
           >

@@ -1,0 +1,18 @@
+.viewer { position:relative; flex:1; min-height:0; overflow:hidden; margin:0 20px 16px; touch-action:none; user-select:none; background:#fff; }
+.canvas { position:absolute; top:0; left:0; transform-origin:0 0; }
+.table { width:100%; border-collapse:collapse; font-size:14px; line-height:1.5; text-align:center; }
+.table th,.table td { border:1px solid #dce5f0; padding:9px 7px; white-space:pre-line; vertical-align:middle; }
+.table th { font-weight:600; color:#344d73; }
+.table .label { min-width:150px; max-width:210px; }
+.table .highlight th,.table .highlight td { background:#f0f5fc; }
+.table .categoryHead { background:#edf2f9; }
+.table .dentalNote { color:#c43442; font-weight:600; }
+.generation1 { background:#e2edff; color:#355786; }
+.generation2 { background:#e9e3f8; color:#635382; }
+.generation3 { background:#ddf1eb; color:#3b7165; }
+.generation4 { background:#fff0d8; color:#896731; }
+.generation5 { background:#f8e3ec; color:#8b526e; }
+.section { width:32px; min-width:32px; padding:12px 8px; writing-mode:vertical-rl; text-orientation:upright; letter-spacing:2px; font-size:14px; font-weight:500; }
+.note { text-align:left; min-width:230px; }
+.line { display:block; }
+.fine { display:block; font-size:12px; line-height:1.5; font-weight:400; }

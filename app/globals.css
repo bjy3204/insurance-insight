@@ -29,6 +29,102 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Shared page header controls, including mobile utility menus. */
+[data-header-control="true"] {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
+  border: 1px solid #dce3ee;
+  border-radius: 10px;
+  background-color: transparent;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #52618b;
+  cursor: pointer;
+  transition: background-color .2s ease;
+}
+[data-header-control="true"] svg {
+  width: 28px;
+  height: 28px;
+  color: inherit;
+  cursor: inherit;
+}
+[data-header-control="true"]:hover { background-color: #f0f6ff; }
+[data-header-control="true"] svg.lucide-menu,
+[data-header-control="true"] svg.lucide-arrow-left {
+  width: 24px;
+  height: 24px;
+}
+[data-header-control="true"]:focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
+[data-header-spacer="true"] { width: 40px; height: 40px; }
+
+/* Desktop page backgrounds; cards and mobile backgrounds keep their styles. */
+@media (min-width: 768px) {
+  :root { --background: #f6f6fa; }
+  .min-h-screen { background-color: var(--background); }
+  header[data-page-header="true"] {
+    height: 79px;
+    border-bottom: 1px solid #aeb4bd;
+    box-shadow: none;
+    cursor: default;
+  }
+  header[data-page-header="true"] h1,
+  header[data-page-header="true"] p {
+    cursor: default;
+  }
+  header[data-page-header="true"] > div:first-child {
+    height: 78px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  [data-tab-group="true"] {
+    background-color: #e5e7eb;
+    border-radius: 16px;
+    padding: 4px;
+    gap: 0;
+  }
+  [data-tab-group="true"] > button {
+    height: 48px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 24px;
+  }
+  [data-tab-group="true"] > button.bg-white {
+    background-color: #fff;
+    color: #2563eb;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);
+  }
+  [data-menu-card="true"] {
+    border-width: 0;
+    border-radius: 20px;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / .1), 0 1px 2px -1px rgb(0 0 0 / .1);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  [data-menu-card="true"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / .1), 0 2px 4px -2px rgb(0 0 0 / .1);
+  }
+  [data-popup-frame="true"] {
+    max-height: min(83vh, calc(100dvh - 40px));
+  }
+  body:has([data-site-footer="true"]) [data-popup-frame="true"] {
+    max-height: min(83vh, calc(100dvh - 105px));
+  }
+  body:has([data-site-footer="true"]) .fixed.inset-0:has(> [data-popup-frame="true"]) {
+    padding-top: 12px;
+    padding-bottom: 81px;
+  }
+}
+
 /* Shared desktop popup close control; mobile controls retain their layout. */
 @media (min-width: 768px) {
   button[data-popup-close="true"] {

@@ -1374,7 +1374,7 @@ const diaryEndPage = Math.min(
   {bgmEditOpen && (
   <div className="fixed inset-0 z-[9998] bg-black/40 flex items-center justify-center" onClick={() => setBgmEditOpen(false)}>
 
-      <div className="bg-white rounded-3xl shadow-2xl p-5 w-80 max-h-[70vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <div data-popup-frame="true" className="bg-white rounded-3xl shadow-2xl p-5 w-80 max-h-[70vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-base font-black text-gray-900 mb-3">BGM 목록</h3>
         <div className="flex gap-1 mb-3">
           {(["전체", "노동요", "싸이월드"] as const).map((cat) => (

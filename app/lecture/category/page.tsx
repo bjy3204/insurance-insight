@@ -81,10 +81,10 @@ const findInstructor = (name: string) =>
 
   return (
     <main className="min-h-screen bg-gray-100 pb-40">
-      <header className="bg-white border-b border-black shadow-sm">
+      <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <Link
+            <Link data-header-control="true"
               href="/lecture"
               className="
                 w-11
@@ -110,12 +110,10 @@ const findInstructor = (name: string) =>
                 </h1>
               </div>
 
-              <p className="text-sm text-gray-500 mt-1">
-                분야별 강의를 확인하세요
-              </p>
+              
             </div>
 
-            <div className="w-11 h-11" />
+            <div data-header-spacer="true" className="w-11 h-11" />
           </div>
         </div>
       </header>
@@ -169,7 +167,7 @@ const findInstructor = (name: string) =>
     );
   })
     .map((lecture) => (
-      <div
+      <div data-menu-card="true"
         key={lecture.id}
         className="
           bg-white
@@ -260,7 +258,7 @@ const findInstructor = (name: string) =>
   onClick={() => setSelectedLecture(null)}
   className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center"
 >
-          <div
+          <div data-popup-frame="true"
   onClick={(e) => e.stopPropagation()}
   className="bg-white w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:max-w-5xl h-[88vh] rounded-t-3xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col"
 >
@@ -394,7 +392,7 @@ const findInstructor = (name: string) =>
   onClick={() => setSelectedInstructor(null)}
   className="fixed inset-0 z-[60] bg-black/40 flex items-end sm:items-center justify-center"
 >
-    <div
+    <div data-popup-frame="true"
   onClick={(e) => e.stopPropagation()}
   className="bg-white w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:max-w-5xl h-[88vh] rounded-t-3xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col"
 >

@@ -9,7 +9,7 @@ import { useAuth } from "@/app/components/AuthProvider";
 
 
 import { lectureFormLinks } from "./formLinks";
-import {
+import { Menu,
   ArrowLeft,
   CalendarDays,
   Search,
@@ -47,6 +47,7 @@ import {
 } from "@dnd-kit/sortable";
 
 import { CSS } from "@dnd-kit/utilities";
+import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
 
 type MemoItem = {
   id: string;
@@ -478,11 +479,11 @@ const calendarDays = [
     <main className="min-h-screen bg-gray-100 pb-24">
       
       {/* 상단 */}
-      <header className="bg-white border-b border-black shadow-sm">
+      <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
 
-            <Link
+            <Link data-header-control="true"
               href="/"
               className="
                absolute
@@ -510,9 +511,7 @@ const calendarDays = [
                 </h1>
               </div>
 
-              <p className="text-sm text-gray-500 mt-1">
-                보험업계 일정 공유 플랫폼
-              </p>
+              
             </div>
 
                         <div
@@ -521,19 +520,19 @@ const calendarDays = [
               }`}
             >
               <div className="relative">
-                <button
+                <button data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
                   }}
                                     className={`
                     w-10 h-10 rounded-full border border-gray-200 shadow-sm
-                    hidden md:flex items-center justify-center transition cursor-default
+                    flex items-center justify-center transition cursor-default
                     ${settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}
                   `}
 
                 >
-                  <Pencil className="w-5 h-5 text-gray-400" />
+                  <Menu className="w-5 h-5 text-gray-400" />
                 </button>
 
                 {settingOpen && (
@@ -557,21 +556,7 @@ const calendarDays = [
                       메모장
                     </button>
 
-                    {authStatus === "approved" && (
-                      <button
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent("open-calculator"));
-                          setSettingOpen(false);
-                        }}
-                        className="
-                          block w-full text-center px-4 py-3 text-sm font-bold
-                          text-gray-700 hover:bg-gray-50 transition border-t
-                          border-gray-100 cursor-default
-                        "
-                      >
-                        계산기
-                      </button>
-                    )}
+                    <HeaderUtilityItems onClose={() => setSettingOpen(false)} />
                   </div>
                 )}
               </div>
@@ -740,7 +725,7 @@ transition
   </div>
 )}
             {activeLectures.map((lecture) => (
-              <div
+              <div data-menu-card="true"
                 key={lecture.id}
                 className="
   bg-white
@@ -882,7 +867,7 @@ transition
     }}
     className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center"
   >
-    <div
+    <div data-popup-frame="true"
       onClick={(e) => e.stopPropagation()}
       className="bg-white w-[calc(100%-24px)] sm:max-w-5xl h-[88vh] rounded-t-3xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col"
     >
@@ -1331,7 +1316,7 @@ transition
 
 {memoOpen && (
   <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
+    <div data-popup-frame="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
       <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2">
           <NotebookPen className="w-5 h-5" />

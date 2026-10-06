@@ -1,6 +1,6 @@
 .row { display:none; }
 @media(min-width:768px) { .row { display:grid; grid-template-columns:repeat(3,minmax(420px,1fr)); gap:14px; max-width:1500px; width:100%; margin:0 auto 24px; padding:0 40px; overflow-x:auto; scrollbar-width:thin; scrollbar-color:#b9cee9 #edf3fa; } }
-.card { height:320px; min-width:0; display:flex; flex-direction:column; overflow:hidden; border:1px solid #e8eff8; border-radius:20px; background:#fff; box-shadow:0 3px 12px #21375905; color:#0b1432; font-size:14px; }
+.card { height:340px; min-width:0; display:flex; flex-direction:column; overflow:hidden; border:1px solid #e8eff8; border-radius:20px; background:#fff; box-shadow:0 3px 12px #21375905; color:#0b1432; font-size:14px; }
 .card,.card *, .dialog,.dialog *, .reminderPanel,.reminderPanel * { cursor:default; }
 .card button,.card button *, .dialog button,.dialog button *, .reminderPanel button,.reminderPanel button * { cursor:pointer; }
 .card button:disabled,.card button:disabled *, .dialog button:disabled,.dialog button:disabled * { cursor:default; }
@@ -33,7 +33,7 @@
 .temperature { font-size:42px; line-height:1.1; font-weight:700; letter-spacing:0px; }
 .description { margin-top:7px; font-size:16px; font-weight:650; }
 .weatherTop .location button,.weatherTop .location svg,.weatherTop .iconButton { color:var(--weather-secondary,#29486d); transition:color 15s linear; }
-.forecast { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); flex:1; padding:16px 8px 11px; text-align:center; gap:2px; }
+.forecast { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); align-items:center; flex:1; padding:12px 8px; text-align:center; gap:2px; }
 .forecastDay { font-size:14px; color:#576e95; }
 .forecastDay svg { display:block; margin:12px auto 10px; width:32px; height:32px; }
 .forecastDay strong { font-size:14px; color:#182641; white-space:nowrap; font-weight:600; }
@@ -59,7 +59,13 @@
 .week { font-size:14px; font-weight:550; color:#7186aa; margin:0 0 7px; }
 .days { flex:1; grid-template-rows:repeat(6,minmax(0,1fr)); align-items:center; }
 .day { position:relative; height:34px; font-size:14px; font-weight:500; border-radius:50%; max-width:36px; width:100%; margin:auto; }
-.calendarCard > .heading:has(h2 > svg) {  padding-left:32px; }
+.calendarCard > .heading:has(.calendarModeButton) { padding-left:16px; }
+.calendarModeButton { width:25px; height:28px; padding:0; border:0; border-radius:7px; display:grid; place-items:center; background:transparent; transition:background-color .2s ease; }
+.calendarModeButton:hover { background:#edf4ff; }
+.clockZone { color:#7083a8; font-size:14px; white-space:nowrap; }
+.clockBody { flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:0 16px 24px; }
+.digitalClock { font-size:56px; font-weight:650; line-height:1.2; letter-spacing:1px; font-variant-numeric:tabular-nums; white-space:nowrap; color:#0b1432; }
+.clockDate { font-size:16px; color:#7083a8; }
 .day:hover { background:#edf5ff; }
 .sunday { color:#fb2548; } .saturday { color:#0864ff; } .outside { opacity:.35; }
 .selected,.selected:hover { background:#0864ff; color:white; }

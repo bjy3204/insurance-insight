@@ -5,7 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 
-import {
+import { Menu,
   ArrowLeft,
   CircleDollarSign,
   Newspaper,
@@ -21,7 +21,6 @@ import {
   X,
 } from "lucide-react";
 
-import CurrencyConverter from "@/app/components/CurrencyConverter";
 import {
   LineChart,
   Line,
@@ -52,6 +51,7 @@ import {
 } from "@dnd-kit/sortable";
 
 import { CSS } from "@dnd-kit/utilities";
+import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
 
 
 // ─────────────────────────────────────────────
@@ -626,10 +626,10 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
     <>
     <main className="min-h-screen bg-gray-100 pb-24">
       {/* 헤더 */}
-      <header className="bg-white border-b border-black shadow-sm">
+      <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link
+            <Link data-header-control="true"
   href="/"
   className="
     absolute
@@ -657,9 +657,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                 </h1>
               </div>
 
-              <p className="text-sm text-gray-500 mt-1">
-                물가상승률·환율 기준 현재·미래 화폐가치 계산
-              </p>
+              
             </div>
 
                        <div
@@ -668,19 +666,19 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
               }`}
             >
               <div className="relative">
-                <button
+                <button data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
                   }}
                                     className={`
                     w-10 h-10 rounded-full border border-gray-200 shadow-sm
-                    hidden md:flex items-center justify-center transition cursor-default
+                    flex items-center justify-center transition cursor-default
                     ${settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}
                   `}
 
                 >
-                  <Pencil className="w-5 h-5 text-gray-400" />
+                  <Menu className="w-5 h-5 text-gray-400" />
                 </button>
 
                 {settingOpen && (
@@ -704,21 +702,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                       메모장
                     </button>
 
-                   {authStatus === "approved" && (
-  <button
-    onClick={() => {
-      window.dispatchEvent(new CustomEvent("open-calculator"));
-      setSettingOpen(false);
-    }}
-    className="
-      block w-full text-center px-4 py-3 text-sm font-bold
-      text-gray-700 hover:bg-gray-50 transition border-t
-      border-gray-100 cursor-default
-    "
-  >
-    계산기
-  </button>
-)}
+                   <HeaderUtilityItems onClose={() => setSettingOpen(false)} />
 
 
                   </div>
@@ -733,7 +717,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
       {/* 본문 */}
       <div className="max-w-5xl mx-auto px-4 py-6">
         {/* 탭 */}
-        <div className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-7">
+        <div data-tab-group="true" className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-7">
           <button
             onClick={() => setType("future")}
             className={`rounded-xl py-3 font-bold transition ${
@@ -1059,7 +1043,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
 
 {memoOpen && (
   <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
+    <div data-popup-frame="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
       <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2">
           <NotebookPen className="w-5 h-5" />
@@ -1529,71 +1513,9 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
   </div>
 )}
 
-    {/* 환율 변환기 버튼 (승인 구독자 전용) */}
-
-{authStatus === "approved" && (
-
-  <button
-
-    onClick={() => window.dispatchEvent(new CustomEvent("open-currency-converter"))}
-
-    className="
-
-      fixed
-
-      left-6
-
-      bottom-24
-
-      z-40
-
-      w-14
-
-      h-14
-
-      rounded-full
-
-      bg-gray-800
-
-      shadow-lg
-
-      flex
-
-      items-center
-
-      justify-center
-
-      hover:shadow-2xl
-
-      hover:-translate-y-0.5
-
-      transition-all
-
-      duration-200
-
-    "
-
-  >
-
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-
-      <path d="M8 3L4 7l4 4"/>
-
-      <path d="M4 7h16"/>
-
-      <path d="M16 21l4-4-4-4"/>
-
-      <path d="M20 17H4"/>
-
-    </svg>
-
-  </button>
-
- )}
-
-
       {/* 하단 고정 메뉴 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+      <>
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a
             href="https://naver.me/xsZ8mk7H"
@@ -1620,13 +1542,13 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
           </a>
         </div>
       </div>
+      </>
 
 
 
                    </main>
 
       {/* 환율 변환기 */}
-      <CurrencyConverter />
 
     </>
   );

@@ -145,7 +145,7 @@ const toggleType = (type: string) => {
   onMouseLeave={stopPopupMove}
   className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
 >
-     <div
+     <div data-popup-frame="true"
   onClick={(e) => e.stopPropagation()}
   style={{
     transform: `translate(${popupPos.x}px, ${popupPos.y}px)`,
@@ -193,7 +193,7 @@ const toggleType = (type: string) => {
           
 
           <div className="mb-5">
-            <div className="grid grid-cols-4 bg-gray-200 rounded-2xl p-1 gap-1">
+            <div data-tab-group="true" className="grid grid-cols-4 bg-gray-200 rounded-2xl p-1 gap-1">
               {["전체", ...hospitalTypes].map((item) => {
                 const active = selectedType === item;
 
@@ -520,6 +520,7 @@ const toggleType = (type: string) => {
     font-medium
     text-gray-400
     hover:text-gray-600
+    cursor-pointer
     transition
   "
 >

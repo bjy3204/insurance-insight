@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import MemoStickers from "./MemoStickers";
 import Calculator from "./Calculator";
+import CurrencyConverter from "./CurrencyConverter";
 import ScheduleReminders from "@/app/features/home/components/dashboard/ScheduleReminders";
 
 export default function GlobalWidgets() {
@@ -13,6 +14,7 @@ export default function GlobalWidgets() {
     <>
       {!isSalesBook && <MemoStickers />}
       <Calculator />
+      <CurrencyConverter />
       <ScheduleReminders />
     </>
   );

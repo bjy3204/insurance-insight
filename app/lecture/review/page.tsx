@@ -169,10 +169,10 @@ const currentReviews = selectedReviews.slice(
 );
   return (
    <main className="min-h-screen bg-gray-100 pb-35 overflow-x-hidden">
-      <header className="bg-white border-b border-black shadow-sm">
+      <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <Link
+            <Link data-header-control="true"
               href="/lecture"
               className="w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
             >
@@ -187,12 +187,10 @@ const currentReviews = selectedReviews.slice(
                 </h1>
               </div>
 
-              <p className="text-sm text-gray-500 mt-1">
-                수강생들의 실제 후기를 작성해 주세요 !
-              </p>
+              
             </div>
 
-            <div className="w-11 h-11" />
+            <div data-header-spacer="true" className="w-11 h-11" />
           </div>
         </div>
       </header>
@@ -257,7 +255,7 @@ const currentReviews = selectedReviews.slice(
           )}
 
           {currentLectures.map((lecture) => (
-            <div
+            <div data-menu-card="true"
               key={lecture.lectureTitle}
               className="bg-white rounded-3xl border border-gray-200 p-5 shadow-sm flex flex-col h-[215px] transition hover:-translate-y-1 hover:shadow-md"
             >

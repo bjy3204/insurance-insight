@@ -2,7 +2,6 @@
 
 import styles from "./HomePage.module.css";
 import ResourceExplorer from "@/app/components/ResourceExplorer";
-import CurrencyConverter from "@/app/components/CurrencyConverter";
 import { useHomeController } from "./hooks/useHomeController";
 import FortuneWidget from "./components/FortuneWidget";
 import MainHeader from "./components/MainHeader";
@@ -143,7 +142,6 @@ return ((
       )}
 
  {/* 환율 변환기 (승인 구독자 전용 - 컴포넌트 내부에서 권한 체크) */}
-        <CurrencyConverter />
 
        
 

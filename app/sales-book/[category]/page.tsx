@@ -95,10 +95,10 @@ const pagedSubcategories = filteredSubcategories.slice(
 
   return (
     <main className="min-h-screen bg-gray-100">
-      <header className="bg-white border-b border-black shadow-sm">
+      <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link
+            <Link data-header-control="true"
               href="/sales-book"
               className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
             >
@@ -114,9 +114,7 @@ const pagedSubcategories = filteredSubcategories.slice(
                 </h1>
               </div>
 
-              <p className="text-sm text-gray-500 mt-1">
-                현재 자료 제작중 입니다 !
-              </p>
+              
             </div>
           </div>
         </div>
@@ -140,7 +138,7 @@ const pagedSubcategories = filteredSubcategories.slice(
       </div>
 
       <div className="max-w-7xl mx-auto px-4 pb-6">
-        <div className="bg-white rounded-3xl border border-gray-200 shadow-sm flex h-[82vh]">
+        <div data-popup-frame="true" className="bg-white rounded-3xl border border-gray-200 shadow-sm flex h-[82vh]">
           <aside
             style={{ flex: "0 0 190px" }}
             className="hidden md:block border-r border-gray-200 bg-gray-100 py-4 px-4 overflow-y-auto"
@@ -211,7 +209,7 @@ const pagedSubcategories = filteredSubcategories.slice(
             {viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 pr-3 pt-3 pb-5">
                 {pagedSubcategories.map((subcategory) => (
-                  <Link
+                  <Link data-menu-card="true"
                     key={subcategory}
                     href={`/sales-book/${encodeURIComponent(
                       category

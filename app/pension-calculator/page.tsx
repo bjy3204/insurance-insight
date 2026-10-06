@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 
 
-import {
+import { Menu,
   ArrowLeft,
   PiggyBank,
   Newspaper,
@@ -50,6 +50,7 @@ import {
 } from "@dnd-kit/sortable";
 
 import { CSS } from "@dnd-kit/utilities";
+import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
 
 type TabType = "retire" | "pension" | "lump" | "nps";
 type NpsTableTab = "노령연금" | "장애연금" | "유족연금";
@@ -742,10 +743,10 @@ const expectAge = Number(lifeAge || 0) + expectYears;
 const sickStartAge = Number(lifeAge || 0) + healthyYears;
   return (
     <main className="min-h-screen bg-gray-100 pb-24">
-      <header className="bg-white border-b border-black shadow-sm">
+      <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link
+            <Link data-header-control="true"
   href="/"
   className="
     absolute
@@ -772,9 +773,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
                 </h1>
               </div>
 
-              <p className="text-sm text-gray-500 mt-1">
-                은퇴자금 · 연금액 · 국민연금 계산
-              </p>
+              
             </div>
 
                         <div
@@ -783,19 +782,19 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
               }`}
             >
               <div className="relative">
-                <button
+                <button data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
                   }}
                                     className={`
                     w-10 h-10 rounded-full border border-gray-200 shadow-sm
-                    hidden md:flex items-center justify-center transition cursor-default
+                    flex items-center justify-center transition cursor-default
                     ${settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}
                   `}
 
                 >
-                  <Pencil className="w-5 h-5 text-gray-400" />
+                  <Menu className="w-5 h-5 text-gray-400" />
                 </button>
 
                 {settingOpen && (
@@ -819,21 +818,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
                       메모장
                     </button>
 
-                    {authStatus === "approved" && (
-                      <button
-                        onClick={() => {
-                          window.dispatchEvent(new CustomEvent("open-calculator"));
-                          setSettingOpen(false);
-                        }}
-                        className="
-                          block w-full text-center px-4 py-3 text-sm font-bold
-                          text-gray-700 hover:bg-gray-50 transition border-t
-                          border-gray-100 cursor-default
-                        "
-                      >
-                        계산기
-                      </button>
-                    )}
+                    <HeaderUtilityItems onClose={() => setSettingOpen(false)} />
                   </div>
                 )}
               </div>
@@ -844,7 +829,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
       </header>
 
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
+        <div data-tab-group="true" className="grid grid-cols-2 md:grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
   <button
     onClick={() => setTab("retire")}
     className={`rounded-xl py-3 font-bold transition ${
@@ -1326,7 +1311,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
     onMouseLeave={stopPopupMove}
     className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
   >
-   <div
+   <div data-popup-frame="true"
   onClick={(e) => e.stopPropagation()}
   style={{
     transform: `translate(${npsPopupPos.x}px, ${npsPopupPos.y}px)`,
@@ -1371,7 +1356,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
       </div>
 
       <div className="p-5 flex-1 min-h-0 flex flex-col">
-        <div className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-5">
+        <div data-tab-group="true" className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-5">
           {(["노령연금", "장애연금", "유족연금"] as NpsTableTab[]).map((item) => (
             <button
               key={item}
@@ -1519,7 +1504,7 @@ onChange={(e) =>
     onMouseLeave={stopPopupMove}
     className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
   >
-    <div
+    <div data-popup-frame="true"
   onClick={(e) => e.stopPropagation()}
   style={{
     transform: `translate(${lifePopupPos.x}px, ${lifePopupPos.y}px)`,
@@ -1564,7 +1549,7 @@ onChange={(e) =>
       </div>
 
       <div className="p-5 overflow-y-auto">
-        <div className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
+        <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
           {(["남성", "여성"] as LifeGender[]).map((item) => (
             <button
               key={item}
@@ -1712,7 +1697,7 @@ onChange={(e) =>
 
 {memoOpen && (
   <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
+    <div data-popup-frame="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
       <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2">
           <NotebookPen className="w-5 h-5" />
@@ -2180,7 +2165,8 @@ onChange={(e) =>
   </div>
 )}
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+      <>
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a href="https://naver.me/xsZ8mk7H" className="py-3 flex flex-col items-center gap-1">
             <Newspaper className="w-5 h-5" />
@@ -2198,6 +2184,7 @@ onChange={(e) =>
           </a>
         </div>
       </div>
+      </>
     </main>
   );
 }

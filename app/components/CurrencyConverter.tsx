@@ -1,4 +1,5 @@
 "use client";
+import { useWidgetSessionState } from './useWidgetSessionState';
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthProvider";
@@ -116,25 +117,24 @@ type CalcOp = "÷" | "×" | "−" | "+" | null;
 export default function CurrencyConverter() {
   const { authUser, authStatus } = useAuth();
 
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useWidgetSessionState("currency:isOpen", false);
   const [initialized, setInitialized] = useState(false);
-  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [pos, setPos, positionReady, positionRestored] = useWidgetSessionState("currency:pos", { x: 0, y: 0 });
   const dragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const calcRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState({ width: 340, height: 620 });
+  const [size, setSize] = useWidgetSessionState("currency:size", { width: 340, height: 620 });
   const resizing = useRef(false);
   const resizeStart = useRef({ x: 0, y: 0, w: 0, h: 0 });
   const [theme, setTheme] = useState<"dark" | "light">("dark");
-  const themeLoaded = useRef(false);
   const [rates, setRates] = useState<Record<string, number>>({});
   const [rateDate, setRateDate] = useState("");
   const [rateTime, setRateTime] = useState("");
   const [loading, setLoading] = useState(false);
-  const [fromCurrency, setFromCurrency] = useState("USD");
-  const [toCurrency, setToCurrency] = useState("KRW");
-  const [inputValue, setInputValue] = useState("1");
-  const [activeInput, setActiveInput] = useState<"from" | "to">("from");
+  const [fromCurrency, setFromCurrency] = useWidgetSessionState("currency:fromCurrency", "USD");
+  const [toCurrency, setToCurrency] = useWidgetSessionState("currency:toCurrency", "KRW");
+  const [inputValue, setInputValue] = useWidgetSessionState("currency:inputValue", "1");
+  const [activeInput, setActiveInput] = useWidgetSessionState<"from" | "to">("currency:activeInput", "from");
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [pickerTarget, setPickerTarget] = useState<"from" | "to">("from");
 
@@ -161,17 +161,16 @@ export default function CurrencyConverter() {
     closeBtnHov: isDark ? "#3a3a3c"  : "#e5e5ea",
   };
 
-  if (!authUser || authStatus !== "approved") return null;
-
   return <CurrencyConverterInner
     authUser={authUser}
+    authStatus={authStatus}
     isOpen={isOpen} setIsOpen={setIsOpen}
-    initialized={initialized} setInitialized={setInitialized}
+    initialized={initialized} setInitialized={setInitialized} positionReady={positionReady} positionRestored={positionRestored}
     pos={pos} setPos={setPos}
     dragging={dragging} dragOffset={dragOffset} calcRef={calcRef}
     size={size} setSize={setSize}
     resizing={resizing} resizeStart={resizeStart}
-    theme={theme} setTheme={setTheme} themeLoaded={themeLoaded}
+    theme={theme} setTheme={setTheme}
     rates={rates} setRates={setRates}
     rateDate={rateDate} setRateDate={setRateDate}
     rateTime={rateTime} setRateTime={setRateTime}
@@ -189,13 +188,14 @@ export default function CurrencyConverter() {
 function CurrencyConverterInner(props: any) {
   const {
     authUser,
+    authStatus,
     isOpen, setIsOpen,
-    initialized, setInitialized,
+    initialized, setInitialized, positionReady, positionRestored,
     pos, setPos,
     dragging, dragOffset, calcRef,
     size, setSize,
     resizing, resizeStart,
-    theme, setTheme, themeLoaded,
+    theme, setTheme,
     rates, setRates,
     rateDate, setRateDate,
     rateTime, setRateTime,
@@ -217,11 +217,11 @@ function CurrencyConverterInner(props: any) {
 
   // 초기 위치
   useEffect(() => {
-    if (!initialized) {
-      setPos({ x: 20, y: Math.max(20, window.innerHeight - 640) });
+    if (positionReady && !initialized) {
+      if (!positionRestored) setPos({ x: 20, y: Math.max(20, window.innerHeight - 640) });
       setInitialized(true);
     }
-  }, [initialized, setInitialized, setPos]);
+  }, [initialized, positionReady, positionRestored, setInitialized, setPos]);
 
   // 외부 이벤트로 열기
   useEffect(() => {
@@ -232,20 +232,28 @@ function CurrencyConverterInner(props: any) {
 
   // 테마 로드
   useEffect(() => {
-    if (!authUser || themeLoaded.current) return;
-    themeLoaded.current = true;
+    let cancelled = false;
+    if (!authUser || authStatus !== "approved") {
+      const saved = localStorage.getItem("currency_converter_theme");
+      setTheme(saved === "light" ? "light" : "dark");
+      return;
+    }
+    setTheme("dark");
     supabase.from("profiles").select("currency_converter_theme").eq("id", authUser.id).single()
-      .then(({ data }) => { if (data?.currency_converter_theme) setTheme(data.currency_converter_theme); });
-  }, [authUser, setTheme, themeLoaded]);
+      .then(({ data }) => { if (!cancelled && (data?.currency_converter_theme === "light" || data?.currency_converter_theme === "dark")) setTheme(data.currency_converter_theme); });
+    return () => { cancelled = true; };
+  }, [authUser, authStatus, setTheme]);
 
   // 테마 토글 + 저장
   const toggleTheme = useCallback(() => {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
-    if (authUser) {
+    if (authUser && authStatus === "approved") {
       supabase.from("profiles").update({ currency_converter_theme: next }).eq("id", authUser.id).then();
+    } else {
+      localStorage.setItem("currency_converter_theme", next);
     }
-  }, [theme, setTheme, authUser]);
+  }, [theme, setTheme, authUser, authStatus]);
 
   // 환율 데이터
   const fetchRates = useCallback(async () => {

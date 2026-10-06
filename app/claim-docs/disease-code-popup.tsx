@@ -107,7 +107,7 @@ setItems(rows);
   onMouseLeave={stopPopupMove}
   className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
 >
-      <div
+      <div data-popup-frame="true"
   style={{
     transform: `translate(${popupPos.x}px, ${popupPos.y}px)`,
   }}

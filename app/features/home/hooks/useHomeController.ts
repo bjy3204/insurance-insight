@@ -261,25 +261,23 @@ setNpsTableOpen(true);
       setPcQuickOpen(false);
     },
   },
-  // 승인 구독자 전용 - 환율 변환기
-  ...(authStatus === "approved" ? [{
-    key: "currencyConverter",
+  // 로그인 없이 사용하는 도구
+  { key: "currencyConverter",
     title: "환율 변환기",
     action: () => {
       window.dispatchEvent(new CustomEvent("open-currency-converter"));
       setQuickOpen(false);
       setPcQuickOpen(false);
     },
-  }] : []),
-  ...(authStatus === "approved" ? [{
-  key: "calculator",
+  },
+  { key: "calculator",
   title: "계산기",
   action: () => {
     window.dispatchEvent(new CustomEvent("open-calculator"));
     setQuickOpen(false);
     setPcQuickOpen(false);
   },
-}] : []),
+},
 ...(authStatus === "approved" ? [{
   key: "insuranceCode",
   title: "보험사 코드",

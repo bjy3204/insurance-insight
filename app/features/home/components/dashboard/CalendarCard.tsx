@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Plus, ArrowLeft, Bell, Pencil, Trash2 } from "lucide-react";
+import { CalendarDays, Clock3, ChevronLeft, ChevronRight, Plus, ArrowLeft, Bell, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import DashboardDialog from "./DashboardDialog";
 import CalendarEventModal from "@/app/components/calendar/CalendarEventModal";
@@ -13,8 +13,31 @@ import styles from "./DashboardCards.module.css";
 const colors: Record<string, string> = { white: "#a1aec1", blue: "#176bff", red: "#fa4268", green: "#13ad88", yellow: "#e9ad18" };
 const dateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 const emptyEvent = (date: string): Event => ({ id: "", title: "", content: "", date, time: "", place: "", memo: "", icon: "📅", color: "blue" });
+const DISPLAY_MODE_KEY = "home-calendar-display-mode";
+const koreaTimeFormatter = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
+const koreaDayFormatter = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", year: "numeric", month: "long", day: "numeric", weekday: "long" });
 
 export default function CalendarCard({ userId, approved, loading }: { userId: string | null; approved: boolean; loading: boolean }) {
+  const [displayMode, setDisplayMode] = useState<"calendar" | "clock">("calendar");
+  const [modeReady, setModeReady] = useState(false);
+  const [clockNow, setClockNow] = useState<Date | null>(null);
+  useEffect(() => {
+    try { if (localStorage.getItem(DISPLAY_MODE_KEY) === "clock") setDisplayMode("clock"); } catch { /* The toggle still works if storage is unavailable. */ }
+    setModeReady(true);
+  }, []);
+  useEffect(() => {
+    if (displayMode !== "clock") return;
+    const update = () => setClockNow(new Date());
+    update();
+    const timer = window.setInterval(update, 1000);
+    window.addEventListener("focus", update);
+    return () => { window.clearInterval(timer); window.removeEventListener("focus", update); };
+  }, [displayMode]);
+  const toggleDisplayMode = () => {
+    const next = displayMode === "calendar" ? "clock" : "calendar";
+    setDisplayMode(next);
+    try { localStorage.setItem(DISPLAY_MODE_KEY, next); } catch { /* Keep the selected mode in memory. */ }
+  };
   const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [selected, setSelected] = useState(() => koreaDate());
   const [listDate, setListDate] = useState<string | null>(null);
@@ -102,8 +125,14 @@ export default function CalendarCard({ userId, approved, loading }: { userId: st
   const closeDraft = useCallback(() => { if (!saving) setDraft(null); }, [saving]);
   const closeReminder = useCallback(() => setReminderEvent(null), []);
   const today = koreaDate();
-  return <article className={`${styles.card} ${styles.calendarCard}`} aria-label="내 일정 캘린더" data-calendar-card>
-    {listDate ? <>
+  return <article className={`${styles.card} ${styles.calendarCard}`} aria-label={displayMode === "clock" ? "한국시간 디지털 시계" : "내 일정 캘린더"} data-calendar-card>
+    {!modeReady ? null : displayMode === "clock" ? <>
+      <div className={styles.heading}><h2><button className={styles.calendarModeButton} onClick={toggleDisplayMode} aria-label="캘린더로 전환" title="캘린더로 전환"><Clock3 /></button>현재 시각</h2></div>
+      <div className={styles.clockBody}>
+        <time className={styles.digitalClock} dateTime={clockNow?.toISOString()}>{clockNow ? koreaTimeFormatter.format(clockNow) : "--:--:--"}</time>
+        <p className={styles.clockDate}>{clockNow ? koreaDayFormatter.format(clockNow) : ""}</p>
+      </div>
+    </> : listDate ? <>
       <div className={styles.heading}><button className={styles.iconButton} aria-label="달력으로 돌아가기" onClick={() => setListDate(null)}><ArrowLeft /></button><h2>{Number(listDate.slice(5, 7))}월 {Number(listDate.slice(8))}일</h2><button className={styles.iconButton} aria-label="일정 추가" title="일정 추가" disabled={!ready || saving} onClick={() => open(emptyEvent(listDate))}><Plus /></button></div>
       <div className={`${styles.scheduleList} ${styles.scroll}`}>
         {dayEvents.length ? dayEvents.map(event => <div key={event.id} className={styles.event} onDoubleClick={e => { if (!saving && !(e.target as HTMLElement).closest("button")) open(event); }}>
@@ -112,7 +141,7 @@ export default function CalendarCard({ userId, approved, loading }: { userId: st
         </div>) : <p className={styles.empty}>일정이 없습니다.</p>}
       </div>
     </> : <>
-    <div className={styles.heading}><h2><CalendarDays />{month.getFullYear()}년 {month.getMonth() + 1}월</h2><div className={styles.actions}>
+    <div className={styles.heading}><h2><button className={styles.calendarModeButton} onClick={toggleDisplayMode} aria-label="디지털 시계로 전환" title="디지털 시계로 전환"><CalendarDays /></button>{month.getFullYear()}년 {month.getMonth() + 1}월</h2><div className={styles.actions}>
       <button className={styles.iconButton} aria-label="이전 달" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}><ChevronLeft /></button>
       <button className={styles.iconButton} aria-label="다음 달" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}><ChevronRight /></button>
       <button className={styles.smallButton} onClick={() => { setMonth(new Date(new Date().getFullYear(), new Date().getMonth(), 1)); setSelected(today); }}>오늘</button>
