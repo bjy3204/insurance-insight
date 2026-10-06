@@ -50,7 +50,8 @@ export default function TrafficEventList({ onSelect, nearby, cameras, onCamera }
   for (const event of visible) groups.set(event.road, [...(groups.get(event.road) || []), event]);
   return <aside className={styles.eventPanel} aria-label="고속도로 사고·공사 정보" aria-busy={loading}>
     <div className={styles.eventTitle}><h4>{nearby ? '내 주변 사고·공사' : '고속도로 교통정보'}</h4>{updated && <span>{new Date(updated).toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit' })} 조회</span>}</div>
-    {flowError&&<p className={styles.source}>{flowError}</p>}
+    <div className={styles.eventScroll}>
+    {flowError&&<p className={styles.flowError} role="status">{flowError}</p>}
     {loading && !events.length ? <p className={styles.eventEmpty}>교통정보를 불러오는 중입니다.</p> : error ? <div className={styles.eventEmpty} role="status">{error}<button type="button" onClick={() => setRetry(value => value + 1)}>다시 시도</button></div> : !visible.length ? <p className={styles.eventEmpty}>{nearby ? '주변 50km 안에 제공된 고속도로 사고·공사 정보가 없습니다.' : '현재 제공된 사고·공사 정보가 없습니다.'}</p> : [...groups].map(([road, items]) => <section key={road} className={styles.eventGroup}>
       <h4>{items[0].roadNo && <span className={styles.roadNumber}>{items[0].roadNo}</span>}{road}</h4>
       {!nearby&&flow.filter(item=>normalizeRoad(item.road)===normalizeRoad(road)).map(item=><div key={item.road} className={styles.flowSummary} title="제공된 고속도로 구간 수 · 원활 80km/h 이상, 서행 40~80km/h, 정체 40km/h 미만"><span className={styles.clear}>원활 {item.clear}</span><span className={styles.slow}>서행 {item.slow}</span><span className={styles.congested}>정체 {item.congested}</span><small>제공 구간 기준</small></div>)}
@@ -59,6 +60,7 @@ export default function TrafficEventList({ onSelect, nearby, cameras, onCamera }
         <span className={`${styles.eventKind} ${event.kind === '교통사고' ? styles.accident : event.kind === '공사' ? styles.construction : styles.other}`}>{event.kind === '교통사고' ? '사고' : event.kind === '기타돌발' ? '돌발' : event.kind || '돌발'}</span>
       </button><button className={styles.cameraButton} type="button" onClick={()=>onCamera(event)} disabled={event.latitude===null||event.longitude===null||!nearestCamera(cameras,event.latitude,event.longitude,event.road)} title={`${road} 가까운 CCTV 보기`} aria-label={`${road} ${event.kind} 위치 근처 CCTV 보기`}><Video size={16}/></button></div>)}
     </section>)}
+    </div>
     <p className={styles.source}>국가교통정보센터 · 2분마다 갱신{nearby ? ' · 주변 50km' : ''}</p>
   </aside>;
 }
