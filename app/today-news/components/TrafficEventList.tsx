@@ -51,6 +51,7 @@ export default function TrafficEventList({ onSelect, nearby, cameras, onCamera }
   return <aside className={styles.eventPanel} aria-label="고속도로 사고·공사 정보" aria-busy={loading}>
     <div className={styles.eventTitle}><h4>{nearby ? '내 주변 사고·공사' : '고속도로 교통정보'}</h4>{updated && <span>{new Date(updated).toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit' })} 조회</span>}</div>
     <div className={styles.eventScroll}>
+    <div className={`${styles.eventBody} ${loading && !events.length || error || !visible.length ? styles.emptyBody : ''}`}>
     {flowError&&<p className={styles.flowError} role="status">{flowError}</p>}
     {loading && !events.length ? <p className={styles.eventEmpty}>교통정보를 불러오는 중입니다.</p> : error ? <div className={styles.eventEmpty} role="status">{error}<button type="button" onClick={() => setRetry(value => value + 1)}>다시 시도</button></div> : !visible.length ? <p className={styles.eventEmpty}>{nearby ? '주변 50km 안에 제공된 고속도로 사고·공사 정보가 없습니다.' : '현재 제공된 사고·공사 정보가 없습니다.'}</p> : [...groups].map(([road, items]) => <section key={road} className={styles.eventGroup}>
       <h4>{items[0].roadNo && <span className={styles.roadNumber}>{items[0].roadNo}</span>}{road}</h4>
@@ -62,5 +63,6 @@ export default function TrafficEventList({ onSelect, nearby, cameras, onCamera }
     </section>)}
     </div>
     <p className={styles.source}>국가교통정보센터 · 2분마다 갱신{nearby ? ' · 주변 50km' : ''}</p>
+    </div>
   </aside>;
 }

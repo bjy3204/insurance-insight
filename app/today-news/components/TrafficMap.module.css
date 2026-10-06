@@ -14,7 +14,9 @@
 @media(max-width:767px) { .map { height:400px; } .heading { padding:14px 16px; } }
 .layout { display:grid; grid-template-columns:minmax(0, 1.2fr) minmax(300px, 1fr); }
 .eventPanel { height:480px; display:flex; flex-direction:column; overflow:hidden; padding:18px 20px 0; border-left:1px solid #e8edf3; }
-.eventScroll { flex:1; min-height:0; overflow-y:auto; }
+.eventScroll { flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; }
+.eventBody { flex:1 0 auto; }
+.emptyBody { display:flex; flex-direction:column; justify-content:center; }
 .flowError { padding:12px 0; text-align:center; color:#8a95a4; font-size:15px; line-height:1.7; }
 .eventTitle { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
 .eventTitle h4 { font-size:15px; color:#34445d; font-weight:650; }
@@ -32,7 +34,7 @@
 .eventRow small { display:block; color:#94a0af; font-size:12px; margin-top:3px; }
 .eventKind { flex-shrink:0; padding-top:2px; font-size:14px; font-weight:650; }
 .accident { color:#e06743; } .construction { color:#b8893d; } .other { color:#7f8b9c; }
-.eventEmpty { padding:35px 8px; text-align:center; color:#8a95a4; font-size:16px; line-height:1.7; }
+.eventEmpty { padding:20px 8px; text-align:center; color:#8a95a4; font-size:16px; line-height:1.7; }
 .eventEmpty button { display:block; margin:12px auto 0; cursor:pointer; color:#345f94; }
 .source { flex-shrink:0; color:#8996a7; font-size:14px; text-align:center; padding:14px 0; margin:0; border-top:1px solid #edf0f4; background:#fff; }
 @media(max-width:767px) { .layout { grid-template-columns:1fr; } .eventPanel { height:320px; border-left:0; border-top:1px solid #e8edf3; padding:16px 16px 0; } }
