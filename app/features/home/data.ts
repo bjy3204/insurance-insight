@@ -60,6 +60,8 @@ export const defaultMenus = [
     link: "/claim-docs",
   },
 
+
+
   {
   id: "auto-claim",
   title: "보험금 청구",

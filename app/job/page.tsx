@@ -17,8 +17,6 @@ ChevronRight,
   Megaphone,
   PlusCircle,
   Briefcase,
-  MessageSquareText,
-  MessageCircleMore,
   NotebookPen,
 Pin,
 Eye,
@@ -50,6 +48,7 @@ import CompanyRegistration from "./CompanyRegistration";
 import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
 
 import { loadCompanies, cachedCompanies, warmCompanyImages } from "./companyCache";
+import { availableRegions, regionsFor } from "./regions";
 
 type Company = {
   id: string;
@@ -119,14 +118,12 @@ export default function JobPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
 
   const [search, setSearch] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState("");
   const [page, setPage] = useState(1);
 const companiesPerPage = 12;
 
   const [readyOpen, setReadyOpen] = useState(false);
   const [readyService, setReadyService] = useState("컨설팅 신청");
-  const [careerOpen, setCareerOpen] = useState(false);
-  const [careerPosition, setCareerPosition] = useState({ x: 0, y: 0 });
-  const careerDrag = useRef<{ pointerId: number; startX: number; startY: number; x: number; y: number; left: number; top: number; width: number } | null>(null);
 
 
   const sensors = useSensors(
@@ -401,7 +398,9 @@ useEffect(() => {
       }).catch(() => {});
   }, []);
 
+  const regionOptions = availableRegions(companies.map(item => item.region || ""));
   const filteredCompanies = companies.filter((item) =>
+    (!selectedRegion || regionsFor(item.region || "").includes(selectedRegion)) &&
     `${item.company} ${item.organization} ${item.region} ${item.description} ${item.memo}`
       .toLowerCase()
       .includes(search.toLowerCase())
@@ -418,7 +417,7 @@ const currentCompanies = filteredCompanies.slice(
 );
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-20 flex flex-col">
+    <main className={`${styles.listPage} min-h-screen pb-20 flex flex-col`}>
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
@@ -504,20 +503,26 @@ const currentCompanies = filteredCompanies.slice(
         </div>
       </header>
 
+      <section className={styles.recruitHero} aria-label="채용공고 검색">
+        <div className={styles.recruitHeroInner}>
+          <div className={styles.recruitIntro}>
+            <p className={styles.recruitEyebrow}>RECRUIT</p>
+            <h2><span>새로운 시작</span>을 찾고 있다면</h2>
+            <p>보험업계의 다양한 채용 기회를 확인해보세요.</p>
+          </div>
+          <div className={styles.recruitSearch}>
+            <div data-page-search-wrapper="true" className="flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 transition focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100">
+              <Search className="h-5 w-5 shrink-0 text-gray-400" />
+              <input data-ui-field="true" data-page-search-input="true" aria-label="채용공고 검색" value={search} onChange={event => { setSearch(event.target.value); setPage(1); }} placeholder="지역, 회사명, 조직명을 검색하세요" className="w-full bg-transparent text-sm outline-none" />
+              {search && <button type="button" aria-label="검색어 지우기" onClick={() => { setSearch(""); setPage(1); }} className="cursor-pointer text-gray-400"><X className="h-4 w-4" /></button>}
+            </div>
+            <div className={styles.regionFilters} aria-label="채용 지역">
+              {["", ...regionOptions].map(region => <button key={region} type="button" aria-pressed={selectedRegion === region} onClick={() => { setSelectedRegion(region); setPage(1); }} className={selectedRegion === region ? styles.regionSelected : ""}>{region || "전체"}</button>)}
+            </div>
+          </div>
+        </div>
+      </section>
       <div data-page-content="true" className="w-full px-6 py-6 max-w-7xl mx-auto flex flex-col flex-1">
-        <section className="relative mb-4">
-          <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-
-          <input data-ui-field="true" data-page-search-input="true"
-            value={search}
-            onChange={(e) => {
-  setSearch(e.target.value);
-  setPage(1);
-}}
-            placeholder="지역, 회사명, 조직명을 검색하세요"
-            className="w-full rounded-2xl border border-gray-200 bg-white pl-11 pr-4 py-3 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition"
-          />
-        </section>
 
         <section className="min-h-[400px] flex flex-col flex-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -548,7 +553,7 @@ const currentCompanies = filteredCompanies.slice(
   <button
     onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
     disabled={page === 1}
-    className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm cursor-pointer hover:bg-gray-50"
+    className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-600 text-sm cursor-pointer hover:bg-gray-100 disabled:text-gray-300"
   >
     이전
   </button>
@@ -569,8 +574,8 @@ const currentCompanies = filteredCompanies.slice(
         aria-current={page === pageNumber ? "page" : undefined}
         className={`w-10 h-10 rounded-xl text-sm font-semibold border cursor-pointer ${
           page === pageNumber
-            ? "bg-slate-800 text-white border-slate-800"
-            : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+            ? "bg-blue-50 text-blue-600 border-blue-100"
+            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-100"
         }`}
       >
         {pageNumber}
@@ -581,7 +586,7 @@ const currentCompanies = filteredCompanies.slice(
   <button
     onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
     disabled={page === totalPages}
-    className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm cursor-pointer hover:bg-gray-50"
+    className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-600 text-sm cursor-pointer hover:bg-gray-100 disabled:text-gray-300"
   >
     다음
   </button>
@@ -593,105 +598,6 @@ const currentCompanies = filteredCompanies.slice(
         
 
             </div>
-
-      <button
-  data-page-floating-control="true"
-  onClick={() => setCareerOpen(true)}
-  className="
-    fixed
-    left-6
-    bottom-24
-    z-40
-    w-14
-    h-14
-    rounded-full
-    bg-gray-800
-    shadow-lg
-    flex
-    items-center
-    justify-center
-    hover:shadow-2xl
-    hover:-translate-y-0.5
-    transition-all
-    duration-200
-    cursor-pointer
-  "
->
-  <MessageCircleMore className="w-6 h-6 text-white" />
-</button>
-
-{careerOpen && (
-  <div
-    onClick={() => setCareerOpen(false)}
-    className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-5"
-  >
-    <div data-popup-frame="true"
-      style={{ transform: `translate(${careerPosition.x}px, ${careerPosition.y}px)` }}
-      onClick={(e) => e.stopPropagation()}
-      className="bg-white w-full max-w-4xl h-[86vh] rounded-3xl shadow-xl overflow-hidden flex flex-col"
-    >
-      <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between select-none touch-none shrink-0"
-        onPointerDown={(event) => {
-          if (event.button !== 0 || (event.target as HTMLElement).closest("button")) return;
-          event.preventDefault();
-          const rect = event.currentTarget.parentElement!.getBoundingClientRect();
-          careerDrag.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, ...careerPosition, left: rect.left, top: rect.top, width: rect.width };
-          event.currentTarget.setPointerCapture(event.pointerId);
-        }}
-        onPointerMove={(event) => {
-          const drag = careerDrag.current;
-          if (!drag || drag.pointerId !== event.pointerId) return;
-          const dx = event.clientX - drag.startX;
-          const dy = event.clientY - drag.startY;
-          setCareerPosition({ x: drag.x + Math.max(48 - drag.width - drag.left, Math.min(window.innerWidth - 48 - drag.left, dx)), y: drag.y + Math.max(-drag.top, Math.min(window.innerHeight - 48 - drag.top, dy)) });
-        }}
-        onPointerUp={() => { careerDrag.current = null; }}
-        onPointerCancel={() => { careerDrag.current = null; }}
-        onLostPointerCapture={() => { careerDrag.current = null; }}
-      >
-        <div className="font-bold flex items-center gap-2">
-          <MessageSquareText className="w-5 h-5" />
-          INSURANCE TREE
-        </div>
-
-        <button data-popup-close="true"
-          type="button"
-          onClick={() => setCareerOpen(false)}
-          className="cursor-pointer w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-
-      <div className="p-6 overflow-y-auto flex-1">
-        <div className="mt-0 mx-0 rounded-2xl overflow-hidden">
-  <iframe
-    src="https://www.youtube.com/embed/2264CwLZRb4"
-    title="이직컨설팅 영상"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowFullScreen
-    className="w-full aspect-video"
-  />
-</div>
-        <h2 className="text-xl pl-2 font-black text-gray-900 leading-snug break-keep mt-3 mb-0">
-          지금의 조직은
-          
-          여러분의 가치를 제대로 알아봐주고 있나요?
-        </h2>
-
-        <p className="mt-3 pl-2 text-sm text-gray-600 leading-[1.9] whitespace-pre-line break-keep">
-          {` 여러분은 나의 가치를 제대로 알아봐주는 곳에 계신가요 ?
-일하는 방식이 다르고 나의 가치를 알아봐 주지 못한다면
-          누군가에겐 기회인 그 곳도 누군가에겐 맞지 않는 환경일 수 있습니다.
-          
-          보험인사이트가 여러분에게 맞는 새로운 선택지를 함께 고민합니다
-보험인사이트는 무분별한 공개 연결이 아닌 조건과 방향을 고려한 조직 연결을 지향합니다`}
-        </p>
-
-      </div>
-    </div>
-  </div>
-)}
 
       {readyOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-5">
@@ -706,7 +612,7 @@ const currentCompanies = filteredCompanies.slice(
 
             <button
               onClick={() => setReadyOpen(false)}
-              className="w-full h-[46px] px-4 rounded-2xl bg-gray-900 text-white text-sm font-bold cursor-pointer active:scale-[0.98] transition"
+              className="w-full h-[46px] px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold cursor-pointer active:scale-[0.98] transition"
             >
               확인
             </button>
@@ -758,7 +664,7 @@ const currentCompanies = filteredCompanies.slice(
           <button
             type="button"
             onClick={() => { setReadyService("컨설팅 신청"); setReadyOpen(true); }}
-            className="py-3 flex flex-col items-center gap-1"
+            className="py-3 flex flex-col items-center gap-1 cursor-pointer"
           >
             <Briefcase className="w-5 h-5" />
             <span className="text-sm">컨설팅신청</span>

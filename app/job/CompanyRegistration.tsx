@@ -45,7 +45,7 @@ export default function CompanyRegistration() {
         <h2 id="company-register-title" className="text-lg font-bold flex items-center gap-2"><PlusCircle size={21} className="text-blue-600"/>회사 등록</h2>
         <button type="button" data-popup-close="true" aria-label="닫기" onClick={close} disabled={busy} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 cursor-pointer disabled:opacity-40"><X size={20}/></button>
       </header>
-      {success ? <div className="p-8 text-center"><CheckCircle2 className="mx-auto text-blue-600" size={40}/><h3 className="font-bold text-xl mt-4">등록 신청이 완료되었습니다</h3><p className="text-sm text-slate-500 mt-3">검토 후 승인된 조직만 채용공고에 게시됩니다.</p><button onClick={close} className="mt-6 w-full bg-gray-900 hover:bg-gray-800 text-white rounded-xl h-[46px] px-4 text-sm cursor-pointer">확인</button></div> : <form ref={form} className="flex flex-col min-h-0" onSubmit={async event => {
+      {success ? <div className="p-8 text-center"><CheckCircle2 className="mx-auto text-blue-600" size={40}/><h3 className="font-bold text-xl mt-4">등록 신청이 완료되었습니다</h3><p className="text-sm text-slate-500 mt-3">검토 후 승인된 조직만 채용공고에 게시됩니다.</p><button onClick={close} className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-[46px] px-4 text-sm cursor-pointer">확인</button></div> : <form ref={form} className="flex flex-col min-h-0" onSubmit={async event => {
         event.preventDefault(); if (busyRef.current) return;
         busyRef.current = true; setBusy(true); setError("");
         try {
@@ -84,7 +84,7 @@ export default function CompanyRegistration() {
           <p className="text-sm text-slate-500 leading-relaxed bg-slate-50 p-4 rounded-xl">입력된 정보는 검토 후 승인된 조직만 등록됩니다.</p>
           {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
         </div>
-        <div className="p-5 border-t border-gray-100 flex gap-3 shrink-0"><button type="button" disabled={busy} onClick={close} className="flex-1 rounded-xl bg-gray-100 hover:bg-gray-200 text-slate-700 h-[46px] px-4 text-sm font-semibold cursor-pointer disabled:opacity-50">취소</button><button type="submit" disabled={busy} className="flex-1 rounded-xl bg-gray-900 hover:bg-gray-800 text-white h-[46px] px-4 text-sm font-semibold cursor-pointer disabled:opacity-50">{busy ? progress || "신청 중" : "등록 신청"}</button></div>
+        <div className="p-5 border-t border-gray-100 flex gap-3 shrink-0"><button type="button" disabled={busy} onClick={close} className="flex-1 rounded-xl bg-gray-100 hover:bg-gray-200 text-slate-700 h-[46px] px-4 text-sm font-semibold cursor-pointer disabled:opacity-50">취소</button><button type="submit" disabled={busy} className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white h-[46px] px-4 text-sm font-semibold cursor-pointer disabled:opacity-50">{busy ? progress || "신청 중" : "등록 신청"}</button></div>
       </form>}
     </div>
   </div>;

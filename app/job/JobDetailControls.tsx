@@ -45,7 +45,7 @@ export function JobDetailFooter() {
       <div role="dialog" aria-modal="true" aria-labelledby="job-service-title" className="w-full max-w-sm bg-white rounded-3xl p-6 text-center" onClick={event => event.stopPropagation()}>
         <h2 id="job-service-title" className="text-xl font-bold">서비스 준비중입니다</h2>
         <p className="text-sm text-slate-500 mt-3">{service} 서비스는 현재 준비중입니다.</p>
-        <button autoFocus onClick={() => setService(null)} className="mt-6 w-full rounded-2xl bg-gray-900 hover:bg-gray-800 text-white h-[46px] px-4 text-sm font-bold cursor-pointer">확인</button>
+        <button autoFocus onClick={() => setService(null)} className="mt-6 w-full rounded-2xl bg-blue-600 hover:bg-blue-700 text-white h-[46px] px-4 text-sm font-bold cursor-pointer">확인</button>
       </div>
     </div>}
   </>;
