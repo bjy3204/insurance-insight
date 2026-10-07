@@ -58,18 +58,18 @@ export async function POST(request: Request) {
     if (paragraphs.join("").length < 60 || paragraphs.join("").length > 800) return reply({ error: "AI 문장 길이가 맞지 않아 기본 문구를 준비했어요." }, 503);
     const lines = paragraphs.join("\n").split("\n").map((line: string) => line.trim()).filter(Boolean);
     const textBody = lines.join(" ");
-    if ((textBody.match(/!/g) || []).length !== 1 || !lines[0]?.endsWith("!") || !lines.at(-1)?.endsWith("😊") || /안내|확인|절차|서류/.test(lines.at(-1) || "")) return reply({ error: "기본 문구를 준비했어요." }, 503);
+    if ((textBody.match(/!/g) || []).length > 1 || !lines.at(-1)?.endsWith("😊") || /안내|확인|절차|서류/.test(lines.at(-1) || "")) return reply({ error: "기본 문구를 준비했어요." }, 503);
     if ((textBody.match(/바랍니다/g) || []).length > 1 || /의료기관|검진기관|예방접종|(?:컨디션|안전|회복|몸 상태).{0,10}(?:먼저입니다|가장 중요합니다)|답장|회신|확인해 두겠습니다|준비해 (?:두|놓)겠습니다|주십시오|연락하겠습니다|함께\s*(?:살펴|확인).*드리겠습니다/.test(textBody)) return reply({ error: "기본 문구를 준비했어요." }, 503);
     if (/(?:정리|확인|준비).{0,12}(?:두었|뒀|놓았|놓겠|두겠)|(?:도와|도움).{0,8}드리겠습니다/.test(textBody)) return reply({ error: "기본 문구를 준비했어요." }, 503);
     if (["after_hospital", "after_discharge", "surgery", "after_accident"].includes(body.messageType) && lines.filter((line: string) => /보험|청구|서류|절차/.test(line)).length > 1) return reply({ error: "기본 문구를 준비했어요." }, 503);
     const endings = lines.map((line: string) => line.replace(/[!？?\s\p{Emoji_Presentation}\uFE0F]+$/gu, "").match(/(?:바랍니다|좋겠습니다|응원합니다|안내하겠습니다|안내해 드리겠습니다|연락드리겠습니다|감사드립니다|인사드립니다|전합니다)$/u)?.[0]).filter(Boolean);
     if (new Set(endings).size !== endings.length) return reply({ error: "기본 문구를 준비했어요." }, 503);
-    const contactCategories = ["policy_check", "car_renewal", "after_hospital", "after_discharge", "surgery", "after_accident"];
+    const contactCategories = ["longtime", "daily_check", "policy_check", "car_renewal", "after_hospital", "after_discharge", "surgery", "after_accident"];
     if (!contactCategories.includes(body.messageType) && /연락.{0,10}(?:주시|주셔|주시면|주세요)|안전을 확보/.test(textBody)) return reply({ error: "기본 문구를 준비했어요." }, 503);
     const greetingCategory = ["daily_check", "morning", "longtime", "birthday", "boknal", "newyear_holiday", "chuseok", "christmas", "yearend", "newyear", "spring", "summer", "autumn", "winter"].includes(body.messageType);
     if (greetingCategory && /보험|보장|증권|상담|갱신/.test(textBody)) return reply({ error: "기본 문구를 준비했어요." }, 503);
     const wishes = lines.filter((line: string) => /행복|웃음|기쁨|좋은 일|평안|건강|빛나/.test(line) && /바랍니다|기원|희망|응원/.test(line));
-    if (lines.length < 4 || lines.length > 6 || new Set(lines).size !== lines.length || /어요|네요|주세요|할게요|하세요/.test(textBody) || wishes.length > 2 || /중복.*보장|부족.*보장|보험료.*부담/.test(textBody)) return reply({ error: "AI 문장을 다듬는 대신 기본 문구를 준비했어요." }, 503);
+    if (lines.length < 6 || lines.length > 8 || new Set(lines).size !== lines.length || /할게요/.test(textBody) || wishes.length > 2 || /중복.*보장|부족.*보장|보험료.*부담/.test(textBody)) return reply({ error: "AI 문장을 다듬는 대신 기본 문구를 준비했어요." }, 503);
     if (["after_hospital", "after_discharge", "surgery", "after_accident"].includes(body.messageType) && !lines.some((line: string) => /청구/.test(line) && /연락/.test(line))) return reply({ error: "기본 문구를 준비했어요." }, 503);
     return reply({ paragraphs });
   } catch {

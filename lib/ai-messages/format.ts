@@ -38,7 +38,7 @@ export function splitMessageLines(message: string): string[] {
 }
 
 export function formatDisplayMessage(message: string): string {
-  return message.replace(/\.(?=\s|$)/g, "").trim();
+  return message.trim();
 }
 
 export function composeMessage(paragraphs: string[], customerName: string, agentName: string) {

@@ -1,5 +1,6 @@
 "use client";
 import ColorSelectButton from "@/app/components/memos/ColorSelectButton";
+import { ChevronDown, Download, Save, X, FileText } from "lucide-react";
 
 import { useEffect, useRef, useState } from "react";
 import html2canvas from "html2canvas";
@@ -81,242 +82,98 @@ const textPositions = {
 export default function NoticeTab() {
   const { authUser } = useAuth();
   const previewRef = useRef<HTMLDivElement>(null);
-
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState(1);
+  const [fontOpen, setFontOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    const element = previewContainerRef.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() => setPreviewScale(element.clientWidth / 720));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
   const [noticeType, setNoticeType] = useState<NoticeType>("exemption");
   const [month, setMonth] = useState("9-10");
-
   const [customerName, setCustomerName] = useState("홍길동");
-const [content, setContent] = useState(
-  defaultContents.exemption.content
-);
-
-const [signature, setSignature] = useState(
-  defaultContents.exemption.signature
-);
-
+  const [content, setContent] = useState(defaultContents.exemption.content);
+  const [signature, setSignature] = useState(defaultContents.exemption.signature);
   const [fontFamily, setFontFamily] = useState("serif");
   const [textColor, setTextColor] = useState("#4a4a4a");
   const [signatureColor, setSignatureColor] = useState("#9a7a3a");
   const [saveMsg, setSaveMsg] = useState("");
-const [isCapturing, setIsCapturing] = useState(false);
-  
-
+  const [isCapturing, setIsCapturing] = useState(false);
   const bgUrl = `/card-templates/${noticeType}/${month}.png`;
   const pos = textPositions[noticeType];
-
   useEffect(() => {
     if (!authUser) return;
-
+    let active = true;
     const loadNotice = async () => {
-      const { data } = await supabase
-        .from("notice_settings")
-        .select("*")
-        .eq("user_id", authUser.id)
-        .maybeSingle();
-
-      if (!data) return;
-
-      setNoticeType((data.notice_type as NoticeType) || "exemption");
-      setMonth(data.month || "9-10");
-      setCustomerName(data.customer_name || "홍길동");
-      setContent(data.content || content);
-      setSignature(data.signature || "든든한 보험 파트너 배지연");
-      setFontFamily(data.font_family || "serif");
-      setTextColor(data.text_color || "#4a4a4a");
-      setSignatureColor(data.signature_color || "#9a7a3a");
+      const { data } = await supabase.from("notice_settings").select("*").eq("user_id", authUser.id).order("updated_at", { ascending: false }).limit(1).maybeSingle();
+      if (!active || !data) return;
+      setNoticeType(data.notice_type === "reduction" ? "reduction" : "exemption");
+      setMonth(data.month || "9-10"); setCustomerName(data.customer_name ?? "홍길동");
+      setContent(data.content ?? defaultContents.exemption.content);
+      setSignature(data.signature ?? "든든한 보험 파트너");
+      setFontFamily(data.font_family || "serif"); setTextColor(data.text_color || "#4a4a4a"); setSignatureColor(data.signature_color || "#9a7a3a");
     };
-
-    loadNotice();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authUser]);
-
+    void loadNotice(); return () => { active = false; };
+  }, [authUser?.id]);
   const handleSave = async () => {
-    if (!authUser) return;
-
-    const { error } = await supabase.from("notice_settings").upsert(
-      {
-        user_id: authUser.id,
-        notice_type: noticeType,
-        month,
-        customer_name: customerName,
-        content,
-        signature,
-        font_family: fontFamily,
-        text_color: textColor,
-        signature_color: signatureColor,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id,notice_type,month" }
-    );
-
-    setSaveMsg(error ? "저장 실패" : "저장되었습니다");
-    setTimeout(() => setSaveMsg(""), 2000);
+    if (!authUser || saving) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("notice_settings").upsert({ user_id: authUser.id, notice_type: noticeType, month, customer_name: customerName, content, signature, font_family: fontFamily, text_color: textColor, signature_color: signatureColor, updated_at: new Date().toISOString() }, { onConflict: "user_id,notice_type,month" });
+      setSaveMsg(error ? "저장 실패" : "저장되었습니다");
+    } catch { setSaveMsg("저장 실패"); } finally { setSaving(false); }
   };
-
- const handleDownload = async () => {
-  if (!previewRef.current) return;
-
-setIsCapturing(true);
-await document.fonts.ready;
-await new Promise((resolve) => setTimeout(resolve, 300));
-
-  const canvas = await html2canvas(previewRef.current, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: null,
-  });
-
-  setIsCapturing(false);
-
-  const link = document.createElement("a");
-  link.download = `${customerName || "고객"}_${
-    noticeType === "exemption" ? "면책종료" : "감액종료"
-  }_안내장.png`;
-  link.href = canvas.toDataURL("image/png");
-  link.click();
-};
-
-  return (
-    <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-6">
-      <div className="personal-grid bg-white rounded-3xl shadow-sm border border-gray-200 p-5 space-y-5">
-        <div>
-          <p className="text-sm font-black text-gray-800 mb-2">안내장 종류</p>
-          <div className="grid grid-cols-2 gap-2">
-            {noticeTypes.map((type) => (
-              <button
-                key={type.id}
-                onClick={() => {
-  setNoticeType(type.id);
-  setContent(defaultContents[type.id].content);
-  setSignature(defaultContents[type.id].signature);
-}}
-                className={`h-11 rounded-2xl text-sm font-bold transition cursor-pointer ${
-                  noticeType === type.id
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {type.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p className="text-sm font-black text-gray-800 mb-2">월 선택</p>
-          <div className="grid grid-cols-3 gap-2">
-            {monthTabs.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setMonth(item.id)}
-                className={`h-10 rounded-xl text-xs font-bold transition cursor-pointer ${
-                  month === item.id
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="text-sm font-black text-gray-800 mb-2 block">
-            고객명
-          </label>
-          <input
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            className="w-full h-11 px-4 rounded-2xl border border-gray-200 text-sm outline-none focus:border-blue-400"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-black text-gray-800 mb-2 block">
-            안내 내용
-          </label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows={9}
-            className="w-full p-4 rounded-2xl border border-gray-200 text-sm outline-none resize-none focus:border-blue-400 leading-relaxed"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-black text-gray-800 mb-2 block">
-            설계사
-          </label>
-          <input
-            value={signature}
-            onChange={(e) => setSignature(e.target.value)}
-            className="w-full h-11 px-4 rounded-2xl border border-gray-200 text-sm outline-none focus:border-blue-400"
-          />
-        </div>
-
-        <div>
-  <p className="text-sm font-black text-gray-800 mb-2">글자 폰트</p>
-
-  <div className="grid grid-cols-2 gap-2">
-    {fontOptions.map((font) => (
-      <button
-        key={font.value}
-        type="button"
-        onClick={() => setFontFamily(font.value)}
-        className={`h-11 rounded-2xl text-sm font-bold border transition cursor-pointer ${
-          fontFamily === font.value
-            ? "bg-gray-900 text-white border-gray-900"
-            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-        }`}
-      >
-        {font.label}
-      </button>
-    ))}
-  </div>
-</div>
-
-       <div className="grid grid-cols-2 gap-3">
-  <div>
-    <p className="text-sm font-black text-gray-800 mb-2">본문 색상</p>
-
-    <ColorSelectButton label="본문 색상 선택" value={textColor} onChange={setTextColor} />
-  </div>
-
-  <div>
-    <p className="text-sm font-black text-gray-800 mb-2">서명 색상</p>
-
-    <ColorSelectButton label="서명 색상 선택" value={signatureColor} onChange={setSignatureColor} />
-  </div>
-</div>
-
-        <button
-          onClick={handleSave}
-          className="w-full h-12 rounded-2xl bg-blue-600 text-white text-sm font-black hover:bg-blue-700 transition cursor-pointer"
-        >
-          내용 저장
-        </button>
-
-        <button
-          onClick={handleDownload}
-          className="w-full h-12 rounded-2xl bg-gray-900 text-white text-sm font-black hover:bg-gray-800 transition cursor-pointer"
-        >
-          이미지 저장
-        </button>
-
-        {saveMsg && (
-          <p className="text-xs text-center text-green-600 font-bold">
-            {saveMsg}
-          </p>
-        )}
+  const handleDownload = async () => {
+    if (!previewRef.current || isCapturing) return;
+    setIsCapturing(true);
+    try {
+      await document.fonts.ready;
+      await new Promise(resolve => setTimeout(resolve, 300));
+      const canvas = await html2canvas(previewRef.current, { scale: 2, width: 720, height: 720, useCORS: true, backgroundColor: null, onclone: (_document, element) => { element.style.transform = "none"; } });
+      const link = document.createElement("a");
+      link.download = `${customerName || "고객"}_${noticeType === "exemption" ? "면책종료" : "감액종료"}_안내장.png`;
+      link.href = canvas.toDataURL("image/png"); link.click();
+    } catch { setSaveMsg("이미지를 저장하지 못했습니다. 다시 시도해 주세요."); } finally { setIsCapturing(false); }
+  };
+    return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <h2 className="mr-auto flex items-center gap-3 text-xl font-bold"><FileText className="w-7 h-7 text-violet-500" />안내장</h2>
+        {saveMsg && <p role="status" className="text-sm text-gray-600">{saveMsg}</p>}
+        <button type="button" onClick={handleSave} disabled={!authUser || saving} className="flex items-center justify-center gap-2 h-11 px-5 rounded-xl border border-gray-200 bg-white text-sm font-bold cursor-pointer disabled:opacity-50"><Save className="w-4 h-4" />{saving ? "저장 중..." : "내용 저장"}</button>
+        <button type="button" onClick={handleDownload} disabled={isCapturing} className="flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer disabled:opacity-50"><Download className="w-4 h-4" />{isCapturing ? "저장 중..." : "이미지 저장"}</button>
       </div>
-
-     <div className="personal-grid bg-white rounded-3xl shadow-sm border border-gray-200 p-10 flex justify-center items-start overflow-auto h-fit">
-
-  <div className={`h-[324px] md:h-auto origin-top ${isCapturing ? "scale-100" : "scale-[0.45] md:scale-100"}`}>
+      <div className="personal-grid bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
+        <div className="grid gap-3 sm:grid-cols-[96px_1fr] items-center"><p className="text-sm font-bold">안내장 종류</p><div className="grid grid-cols-2 gap-3 max-w-[360px]">{noticeTypes.map(type => <button type="button" key={type.id} onClick={() => { setNoticeType(type.id); setContent(defaultContents[type.id].content); setSignature(defaultContents[type.id].signature); }} className={`h-11 rounded-xl text-sm font-bold cursor-pointer ${noticeType === type.id ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600"}`}>{type.label}</button>)}</div></div>
+      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 items-stretch">
+        <div className="personal-grid flex flex-col min-w-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 gap-5">
+        <div className="space-y-2"><p className="text-sm font-bold">월 선택</p><div className="grid grid-cols-3 lg:grid-cols-3 gap-2 max-w-[800px]">{monthTabs.map(item => <button type="button" key={item.id} onClick={() => setMonth(item.id)} className={`h-11 rounded-xl text-sm font-semibold cursor-pointer ${month === item.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600"}`}>{item.label}</button>)}</div></div>
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div><label htmlFor="notice-customer" className="block text-sm font-bold mb-2">고객명</label><div className="relative"><input id="notice-customer" value={customerName} onChange={event => setCustomerName(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" aria-label="고객명 지우기" onClick={() => setCustomerName("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
+          <div><label htmlFor="notice-signature" className="block text-sm font-bold mb-2">설계사</label><div className="relative"><input id="notice-signature" value={signature} onChange={event => setSignature(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" aria-label="설계사 지우기" onClick={() => setSignature("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
+        </div>
+          <div className="flex flex-col flex-1"><label htmlFor="notice-content" className="block text-sm font-bold mb-3">안내 내용</label><textarea id="notice-content" value={content} onChange={event => setContent(event.target.value)} rows={6} className="block w-full flex-1 min-h-[180px] p-4 rounded-xl border border-gray-200 text-sm leading-7 outline-none resize-none focus:border-blue-400" /></div>
+          <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
+            <h3 className="text-sm font-bold">디자인 설정</h3>
+            <div className="grid sm:grid-cols-3 gap-3 mt-4">
+              <div className="relative"><p className="text-xs font-semibold text-gray-600 mb-2">글자 폰트</p><button type="button" aria-expanded={fontOpen} onClick={() => setFontOpen(previous => !previous)} className="w-full h-12 flex items-center justify-between gap-2 px-3 rounded-xl bg-white border border-gray-200 text-sm cursor-pointer">{fontOptions.find(font => font.value === fontFamily)?.label}<ChevronDown className="w-4 h-4 text-gray-400" /></button>{fontOpen && <><button type="button" aria-label="폰트 선택 닫기" onClick={() => setFontOpen(false)} className="fixed inset-0 z-10 cursor-default" /><div className="absolute top-full mt-1 w-full z-20 bg-white border border-gray-200 rounded-xl shadow-lg p-1">{fontOptions.map(font => <button type="button" key={font.value} onClick={() => { setFontFamily(font.value); setFontOpen(false); }} className={`block w-full text-left text-sm px-3 py-2 rounded-lg cursor-pointer ${fontFamily === font.value ? "bg-gray-100 font-semibold" : "hover:bg-gray-50"}`}>{font.label}</button>)}</div></>}</div>
+              <div><p className="text-xs font-semibold text-gray-600 mb-2">본문 색상</p><ColorSelectButton label="본문 색상 선택" value={textColor} onChange={setTextColor} /></div>
+              <div><p className="text-xs font-semibold text-gray-600 mb-2">서명 색상</p><ColorSelectButton label="서명 색상 선택" value={signatureColor} onChange={setSignatureColor} /></div>
+            </div>
+          </div>
+        </div>
+        <div className="personal-grid min-w-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+          <h3 className="text-sm font-bold mb-4">미리보기</h3>
+          <div ref={previewContainerRef} className="relative w-full max-w-[720px] mx-auto aspect-square overflow-hidden">
     <div
       ref={previewRef}
-      className="relative w-[720px] h-[720px] shrink-0 bg-white"
+      className="relative w-[720px] h-[720px] shrink-0 bg-white origin-top-left"
+      style={{ transform: `scale(${previewScale})` }}
     >
           <img
             src={bgUrl}
@@ -369,9 +226,9 @@ await new Promise((resolve) => setTimeout(resolve, 300));
             {signature}
           </div>
              </div>
+          </div>
+        </div>
+      </div>
     </div>
-
-  </div>
-</div>
   );
 }

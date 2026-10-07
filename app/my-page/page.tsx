@@ -715,7 +715,7 @@ updateData.pin_changed_at = new Date().toISOString();
 </div>
 
 <div className={activeTab === "ai" ? "block" : "hidden"}>
-  <AiMessageTab />
+  <AiMessageTab active={activeTab === "ai"} />
 </div>
 
 <div className={activeTab === "customer" ? "block" : "hidden"}>

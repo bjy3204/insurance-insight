@@ -3,10 +3,10 @@ import type { MessageType } from "./types";
 // Keep only the lines needed for each situation; never pad a message to a fixed length.
 export const PREPARED_MESSAGES: Record<Exclude<MessageType, "childrens_day" | "parents_day">, string[]> = {
   daily_check: [
-    "잘 지내고 계신지 궁금해 안부 인사를 전합니다!",
-    "요즘 어떻게 지내시는지 문득 궁금해 연락드렸습니다",
-    "늘 보내주시는 믿음에 감사한 마음도 함께 전합니다",
-    "마음 편안한 하루 보내시길 바랍니다 😊",
+    "요즘 어떻게 지내고 계신지 궁금해서 연락드립니다.",
+    "바쁜 하루 중에도 잘 지내고 계시길 바랍니다.",
+    "건강도 잘 챙기시고,",
+    "오늘도 좋은 하루 보내세요! 😊",
   ],
   morning: [
     "하루를 시작하는 아침에 반가운 인사를 전합니다!",
@@ -15,10 +15,13 @@ export const PREPARED_MESSAGES: Record<Exclude<MessageType, "childrens_day" | "p
     "기분 좋은 아침으로 하루를 시작하시길 바랍니다 😊",
   ],
   longtime: [
-    "오랜만에 반가운 마음으로 안부를 전합니다!",
-    "자주 연락드리지 못했지만 그동안 어떻게 지내셨는지 궁금했습니다",
-    "늘 보내주신 믿음과 관심에 감사드립니다",
-    "오늘도 마음 편안한 하루 보내시길 바랍니다 😊",
+    "요즘 어떻게 지내고 계신지 궁금해서 이렇게 연락드립니다.",
+    "오랜만에 인사드리는데, 그동안 별일 없이 잘 지내셨는지요?",
+    "하시는 일도, 일상도 잘 이어가고 계시길 바랍니다.",
+    "자주 연락드리지는 못했지만 궁금한 점이 생기시면 언제든 편하게 연락주세요.",
+    "제가 안내드릴 수 있는 내용은 알기 쉽게 설명드리겠습니다.",
+    "건강도 잘 챙기시고,",
+    "오늘도 좋은 하루 보내세요! 😊",
   ],
   family_health: [
     "고객님과 가족분들 모두 잘 지내고 계신지 안부를 전합니다!",

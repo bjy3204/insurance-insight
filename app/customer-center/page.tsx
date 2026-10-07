@@ -1385,7 +1385,7 @@ const pagedMemos = filteredMemos.slice(
         setSelectedPdf(company.claimPdf);
         setSelectedPdfTitle("청구서");
       }}
-      className="h-12 rounded-xl bg-gray-50 text-gray-700 text-sm font-bold flex items-center justify-center transition-all duration-200 hover:bg-gray-100 hover:shadow-md hover:-translate-y-0.5"
+      className="h-12 rounded-xl bg-gray-50 text-gray-700 text-sm font-bold flex items-center justify-center transition-all duration-200 hover:bg-gray-100 hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
     >
       청구서
     </button>
@@ -1396,7 +1396,7 @@ const pagedMemos = filteredMemos.slice(
         setSelectedPdf(company.dentalPdf);
         setSelectedPdfTitle("치과서류");
       }}
-      className="h-12 rounded-xl bg-gray-50 text-gray-700 text-sm font-bold flex items-center justify-center transition-all duration-200 hover:bg-gray-100 hover:shadow-md hover:-translate-y-0.5"
+      className="h-12 rounded-xl bg-gray-50 text-gray-700 text-sm font-bold flex items-center justify-center transition-all duration-200 hover:bg-gray-100 hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
     >
       치과서류
     </button>
@@ -1408,7 +1408,7 @@ const pagedMemos = filteredMemos.slice(
       setSelectedPdf(company.claimPdf);
       setSelectedPdfTitle("청구서");
     }}
-    className="w-full h-12 rounded-xl bg-gray-50 text-gray-700 text-sm font-bold flex items-center justify-center transition-all duration-200 hover:bg-gray-100 hover:shadow-md hover:-translate-y-0.5"
+    className="w-full h-12 rounded-xl bg-gray-50 text-gray-700 text-sm font-bold flex items-center justify-center transition-all duration-200 hover:bg-gray-100 hover:shadow-md hover:-translate-y-0.5 cursor-pointer"
   >
     청구서
   </button>
