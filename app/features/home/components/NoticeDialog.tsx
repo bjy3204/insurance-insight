@@ -120,7 +120,7 @@ setNoticeImageIndex(0);
 
     {/* PC 테이블형 */}
     <div className="hidden md:block p-4 overflow-y-auto flex-1">
-      <table className="w-full text-sm border-separate border-spacing-0">
+      <table data-rounded-table-heading="true" className="w-full text-sm border-separate border-spacing-0">
         <thead className="bg-gray-50 rounded-xl overflow-hidden">
           <tr>
             <th className="py-3 w-20">번호</th>

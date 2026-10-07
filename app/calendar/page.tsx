@@ -41,7 +41,7 @@ export default function CalendarPage() {
 
             <div ref={toolsRef} className="relative">
               <button type="button" data-header-control="true" aria-label="도구 메뉴" aria-expanded={toolsOpen} onClick={() => setToolsOpen(open => !open)} className="w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 cursor-pointer"><LayoutGrid className="w-5 h-5 text-gray-600" /></button>
-              {toolsOpen && <div className="absolute right-0 top-full mt-2 z-[100] w-40 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">{[{ label: "메모장", event: "open-memo-manager" }, { label: "계산기", event: "open-calculator" }, { label: "환율변환기", event: "open-currency-converter" }].map(item => <button key={item.event} type="button" onClick={() => { setToolsOpen(false); window.dispatchEvent(new CustomEvent(item.event)); }} className="block w-full px-4 py-3 text-sm font-bold text-gray-700 text-center hover:bg-gray-50 cursor-pointer">{item.label}</button>)}</div>}
+              {toolsOpen && <div className="absolute right-0 top-full mt-2 z-[100] w-40 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">{[{ label: "메모장", event: "open-memo-manager" }, { label: "계산기", event: "open-calculator" }, { label: "환율변환기", event: "open-currency-converter" }].map(item => <button key={item.event} type="button" onClick={() => { setToolsOpen(false); window.dispatchEvent(new CustomEvent(item.event)); }} className="block w-full px-4 py-3 text-sm font-bold text-gray-700 text-center hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer">{item.label}</button>)}</div>}
             </div>
           </div>
         </div>

@@ -1,84 +1,9 @@
-import { Client } from "@notionhq/client";
 import { NextResponse } from "next/server";
-
-export const revalidate = 60;
-
-const notion = new Client({
-  auth: process.env.NOTION_TOKEN,
-});
-
+import { getCompanies } from "@/lib/company/data";
 export async function GET() {
-  try {
-    const response = await notion.dataSources.query({
-      data_source_id:
-        process.env.NOTION_COMPANY_DATABASE_ID as string,
-    });
-
-    const companies = response.results
-      .filter(
-        (page: any) =>
-          page.properties["승인"]?.checkbox === true
-      )
-      .map((page: any) => ({
-        id: page.id,
-
-        company:
-          page.properties["회사명"]?.title?.[0]
-            ?.plain_text || "",
-
-        organization:
-          page.properties["조직명"]?.rich_text?.[0]
-            ?.plain_text || "",
-
-        description:
-          page.properties["조직소개"]?.rich_text?.[0]
-            ?.plain_text || "",
-
-        region:
-          page.properties["지역"]?.rich_text?.[0]
-            ?.plain_text || "",
-
-        manager:
-          page.properties["이름"]?.rich_text?.[0]
-            ?.plain_text || "",
-
-        phone:
-  page.properties["연락처"]?.phone_number ||
-  page.properties["연락처"]?.rich_text?.[0]?.plain_text ||
-  page.properties["연락처"]?.url ||
-  "",
-
-        website:
-  page.properties["홈페이지 URL"]?.url ||
-  page.properties["홈페이지URL"]?.url ||
-  page.properties["홈페이지"]?.url ||
-  page.properties["홈페이지 URL"]?.rich_text?.[0]?.plain_text ||
-  page.properties["홈페이지URL"]?.rich_text?.[0]?.plain_text ||
-  page.properties["홈페이지"]?.rich_text?.[0]?.plain_text ||
-  "",
-
-        memo:
-          page.properties["보험나무 메모"]?.rich_text?.[0]
-            ?.plain_text || "",
-
-        
-
-       image:
-  page.properties["소개 이미지"]?.files?.map((file: any) =>
-    file.type === "external"
-      ? file.external.url
-      : file.file.url
-  ) || [],
-      }));
-
-    return NextResponse.json(companies, { headers: { "Cache-Control": "public, max-age=60, s-maxage=60" } });
-  } catch (error: any) {
-    return NextResponse.json(
-      {
-        error: "조직 데이터를 불러오지 못했습니다.",
-        detail: error.message,
-      },
-      { status: 500 }
-    );
-  }
+ try {
+ const data=await getCompanies();
+ const companies=data.map(company=>({...company,image:company.image.map((_:string,index:number)=>`/api/company/image/${company.id}/${index}?v=${encodeURIComponent(company.imageVersion)}`)}));
+ return NextResponse.json(companies,{headers:{"Cache-Control":"public, max-age=60, s-maxage=60"}});
+ }catch{return NextResponse.json({error:"조직 데이터를 불러오지 못했습니다."},{status:500});}
 }

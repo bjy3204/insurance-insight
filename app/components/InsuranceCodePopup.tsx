@@ -116,8 +116,8 @@ code: string;
   {...listeners}
       className="border-b border-gray-100 bg-white hover:bg-slate-50 transition-colors select-none"
     >
-      {/* 별표 자리 — 항상 20px 고정 */}
-      <td className="w-10 px-3 py-3"><div className="flex items-center justify-center">
+      {/* 별표는 여유 있는 전용 칸의 정중앙에 배치 */}
+      <td className="w-24 px-0 py-3 text-center"><div className="flex items-center justify-center">
         {editMode ? (
           <button
             onClick={(e) => { e.stopPropagation(); onToggleFav(); }}
@@ -136,10 +136,10 @@ code: string;
       </div></td>
 
       {/* 보험사명 */}
-      <td className="px-3 py-3 text-sm font-bold text-gray-800 break-keep">{name}</td>
+      <td className="pl-0 pr-6 py-3 text-left text-sm font-bold text-gray-800 break-keep">{name}</td>
 
       {/* 코드 */}
-      <td className="px-3 py-3 overflow-hidden">{editMode || rowEditMode ? (
+      <td className="pl-0 pr-6 py-3 text-left overflow-hidden">{editMode || rowEditMode ? (
         <input data-ui-field="true"
           ref={codeInputRef}
           value={code}
@@ -148,14 +148,14 @@ code: string;
           onPointerDown={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}
           placeholder="코드"
-          className="h-9 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-gray-400 w-full cursor-text"
+          className="h-9 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-gray-400 w-full text-left cursor-text"
         />
       ) : (
         <span className="text-sm text-gray-700 truncate">{code}</span>
       )}</td>
 
       {/* 비번 */}
-      <td className="px-3 py-3 overflow-hidden">{editMode || rowEditMode ? (
+      <td className="pl-0 pr-6 py-3 text-left overflow-hidden">{editMode || rowEditMode ? (
         <input data-ui-field="true"
           value={password}
           onChange={(e) => onChangePassword(e.target.value)}
@@ -163,7 +163,7 @@ code: string;
           onPointerDown={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}
           placeholder="비밀번호"
-          className="h-9 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-gray-400 w-full cursor-text"
+          className="h-9 rounded-xl border border-gray-200 px-3 text-sm outline-none focus:border-gray-400 w-full text-left cursor-text"
         />
       ) : (
         <span className="text-sm text-gray-700 truncate">{password}</span>
@@ -429,7 +429,7 @@ const handleOpen = () => {
   cancelEdit();
   setRowEditMode(false);
 }}
-                      className="h-8 px-3 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer text-sm font-bold transition"
+                      className="h-8 px-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer text-sm font-bold transition"
                     >
                       취소
                     </button>
@@ -439,7 +439,7 @@ const handleOpen = () => {
   save();
   setRowEditMode(false);
 }}
-                      className="h-8 px-3 rounded-xl border border-blue-600 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer text-sm font-bold transition"
+                      className="h-8 px-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-blue-50 hover:text-blue-600 cursor-pointer text-sm font-bold transition"
                     >
                       저장
                     </button>
@@ -509,7 +509,7 @@ const handleOpen = () => {
               >
                 <SortableContext items={displayList} strategy={verticalListSortingStrategy}>
                   <div className="rounded-2xl border border-gray-200 overflow-clip">
-                  <table className="w-full table-fixed border-collapse text-left"><colgroup><col className="w-10"/><col/><col/><col/></colgroup><thead className="sticky top-0 z-10 bg-slate-50 text-sm text-slate-500"><tr><th className="py-3"/><th className="px-3 py-3 font-semibold">보험사</th><th className="px-3 py-3 font-semibold">코드</th><th className="px-3 py-3 font-semibold">비밀번호</th></tr></thead><tbody>
+                  <table className="w-full table-fixed border-collapse text-center"><colgroup><col className="w-24"/><col/><col/><col/></colgroup><thead className="sticky top-0 z-10 bg-slate-50 text-sm text-slate-500"><tr><th className="py-3"/><th className="pl-0 pr-6 py-3 text-left font-semibold">보험사</th><th className="pl-0 pr-6 py-3 text-left font-semibold">코드</th><th className="pl-0 pr-6 py-3 text-left font-semibold">비밀번호</th></tr></thead><tbody>
                     {displayList.map((name) => {
                       const entry = (editMode || rowEditMode ? tempCodes : codes)[name] ?? {
   code: "",

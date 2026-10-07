@@ -1,8 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import AuthButton from "@/components/AuthButton";
 import { Menu, X } from "lucide-react";
 import { lockPageScroll } from "./dashboard/DashboardDialog";
+import { noticeVersion } from "@/app/notice/notices";
 import type { HomeController } from "../hooks/useHomeController";
 
 export default function MobileHeaderMenu({ controller }: { controller: HomeController }) {
@@ -29,7 +31,30 @@ export default function MobileHeaderMenu({ controller }: { controller: HomeContr
     { title: "일정·기록", items: [{ label: "메모장", action: () => window.dispatchEvent(new CustomEvent("open-memo-manager")) }, { label: "캘린더", action: () => { window.location.href = "/calendar"; } }] },
     { title: "업무 자료", items: [...(controller.authStatus === "approved" ? [{ label: "구독자료", action: () => controller.setResourceOpen(true) }] : []), { label: "병원정보검색", action: quick("hospital") }, { label: "상병코드검색", action: quick("disease") }, { label: "국민연금표", action: quick("nps") }, { label: "보도자료", action: quick("press") }] },
     { title: "계산·금융", items: [{ label: "계산기", action: quick("calculator") }, { label: "환율변환기", action: quick("currencyConverter") }, { label: "예금금리비교", action: quick("bankRate") }, { label: "기대수명 계산기", action: quick("life") }] },
-    { title: "뉴스", items: [{ label: "오늘의 뉴스", action: () => { window.location.href = "/today-news"; } }] },
+    { title: "소식·설정", items: [
+      { label: "오늘의 뉴스", action: () => { window.location.href = "/today-news"; } },
+      { label: "메뉴 변경", action: () => {
+        controller.setTempMenus(controller.menus);
+        controller.setTempPersonalMenus(controller.personalMenus);
+        controller.setTempQuickMenuKeys(controller.quickMenuKeys);
+        controller.setTempHiddenMenuIds(controller.hiddenMenuIds);
+        controller.setSelectedPersonalMenuId("");
+        controller.setEditIconOpen(false);
+        controller.setMenuManageMode("sort");
+        controller.resetPopupPosition("menuSort");
+        controller.setMenuSortOpen(true);
+        controller.setMemoOpen(false);
+        controller.setMenuAddOpen(false);
+      } },
+      { label: "공지사항", action: () => {
+        localStorage.setItem("noticeRead", noticeVersion.toString());
+        localStorage.setItem("seen_db_notice_ids", JSON.stringify(controller.dbNotices.map(item => item.id)));
+        controller.setHasUpdate(false);
+        controller.setSelectedNotice(null);
+        controller.resetPopupPosition("notice");
+        controller.setNoticeOpen(true);
+      } },
+    ] },
   ];
-  return <><button type="button" aria-label="메뉴 열기" aria-expanded={open} onClick={() => setOpen(true)} className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-gray-600 cursor-pointer md:hidden"><Menu className="w-6 h-6" /></button>{open && createPortal(<div className="fixed inset-0 z-[5000] md:hidden"><button type="button" aria-label="메뉴 닫기" onClick={() => setOpen(false)} className="absolute inset-0 bg-black/40" /><aside role="dialog" aria-modal="true" aria-label="모바일 메뉴" className="absolute inset-y-0 right-0 w-[74vw] max-w-[340px] bg-white overflow-y-auto shadow-xl flex flex-col pb-[env(safe-area-inset-bottom)]"><div className="flex justify-end px-6 pt-5"><button type="button" aria-label="메뉴 닫기" onClick={() => setOpen(false)} className="p-2 text-gray-700 cursor-pointer"><X className="w-6 h-6" /></button></div><nav className="px-6 pt-5 pb-6 flex-1">{groups.map(group => <section key={group.title} className="mb-7 last:mb-0"><h2 className="text-base font-semibold text-gray-700 mb-3">{group.title}</h2><div className="border-l border-gray-200 pl-6">{group.items.map(item => <button type="button" key={item.label} onClick={() => { setOpen(false); item.action(); }} className="block w-full text-left py-2.5 text-sm text-gray-500 hover:text-blue-600 cursor-pointer">{item.label}</button>)}</div></section>)}</nav><div className="mx-6 border-t border-gray-100 py-5 flex justify-around text-center"><div><p className="text-[10px] font-bold text-gray-400">TODAY</p><p className="text-sm font-black text-blue-600 mt-1">{controller.today.toLocaleString()}</p></div><div><p className="text-[10px] font-bold text-gray-400">TOTAL</p><p className="text-sm font-black text-gray-900 mt-1">{controller.total.toLocaleString()}</p></div></div><div className="px-6 pb-6"><button type="button" onClick={install} className="w-full h-11 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50">앱처럼 사용하기</button></div></aside></div>, document.body)}</>;
+  return <><button type="button" aria-label="메뉴 열기" aria-expanded={open} onClick={() => setOpen(true)} className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-gray-600 cursor-pointer md:hidden"><Menu className="w-6 h-6" /></button>{open && createPortal(<div className="fixed inset-0 z-[5000] md:hidden"><button type="button" aria-label="메뉴 닫기" onClick={() => setOpen(false)} className="absolute inset-0 bg-black/40" /><aside role="dialog" aria-modal="true" aria-label="모바일 메뉴" className="absolute inset-y-0 right-0 w-[74vw] max-w-[340px] bg-white overflow-y-auto shadow-xl flex flex-col pb-[env(safe-area-inset-bottom)]"><div className="flex items-center gap-2 px-6 pt-5"><AuthButton variant="compact" user={controller.authUser} onAuthChange={controller.refreshAuth} onMenuClose={() => setOpen(false)} />{controller.authUser && <button type="button" onClick={() => {controller.setEditNickname(controller.authNickname || "");controller.setEditInstagram(controller.authInstagram || "");controller.setCurrentPassword("");controller.setNewPassword("");controller.setNewPasswordConfirm("");controller.setProfileSettingOpen(true);setOpen(false);}} className="px-3 h-9 border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer">개인설정</button>}<button type="button" aria-label="메뉴 닫기" onClick={() => setOpen(false)} className="ml-auto p-2 text-gray-700 cursor-pointer"><X className="w-6 h-6" /></button></div><nav className="px-6 pt-5 pb-6 flex-1">{groups.map(group => <section key={group.title} className="mb-7 last:mb-0"><h2 className="text-base font-semibold text-gray-700 mb-3">{group.title}</h2><div className="border-l border-gray-200 pl-6">{group.items.map(item => <button type="button" key={item.label} onClick={() => { setOpen(false); item.action(); }} className="block w-full text-left py-2.5 text-sm text-gray-500 hover:text-blue-600 cursor-pointer">{item.label}</button>)}</div></section>)}</nav><div className="mx-6 border-t border-gray-100 py-5 flex justify-around text-center"><div><p className="text-[10px] font-bold text-gray-400">TODAY</p><p className="text-sm font-black text-blue-600 mt-1">{controller.today.toLocaleString()}</p></div><div><p className="text-[10px] font-bold text-gray-400">TOTAL</p><p className="text-sm font-black text-gray-900 mt-1">{controller.total.toLocaleString()}</p></div></div><div className="px-6 pb-6"><button type="button" onClick={install} className="w-full h-11 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50">앱처럼 사용하기</button></div></aside></div>, document.body)}</>;
 }

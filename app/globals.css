@@ -338,13 +338,19 @@ html, body {
   }
 }
 
-/* Shared anchor for insurance codes, press releases and claim information. */
+/* Shared anchor for floating page buttons and their attached menus. */
+:root { --page-floating-left: 56px; }
 [data-page-floating-control="true"] {
   position: fixed;
-  left: 24px;
-  bottom: 96px;
+  left: var(--page-floating-left);
+  bottom: 112px;
   width: 56px;
   height: 56px;
+}
+[data-page-floating-menu="true"] {
+  left: var(--page-floating-left);
+  bottom: 180px;
+  max-width: calc(100vw - var(--page-floating-left) - 16px);
 }
 
 @media (max-width: 767px) {
@@ -523,7 +529,7 @@ input:disabled, textarea:disabled { cursor: default !important; }
   width:max-content;
   max-width:100%;
   border:1px solid #e5e7eb;
-  border-radius:12px;
+  border-radius: 12px;
   overflow-x:auto;
   scrollbar-width:none;
   -ms-overflow-style:none;
@@ -563,3 +569,11 @@ input:disabled, textarea:disabled { cursor: default !important; }
 [data-color-swatch="true"] { transition:filter .15s ease,border-color .15s ease,outline-color .15s ease; }
 [data-color-swatch="true"]:hover:not(:disabled) {border-color:#94a3b8;outline:2px solid #d5deeb;outline-offset:2px;filter:brightness(.97) saturate(1.12);}
 [data-color-swatch="true"]:focus-visible {outline:2px solid #94a3b8;outline-offset:2px;}
+
+/* Rounded upper corners for notice and press table headings. */
+[data-rounded-table-heading="true"] {border-collapse:separate;border-spacing:0}
+[data-rounded-table-heading="true"] thead,
+[data-rounded-table-heading="true"] thead tr {background:transparent}
+[data-rounded-table-heading="true"] thead th:first-child {border-top-left-radius:12px}
+[data-rounded-table-heading="true"] thead th:last-child {border-top-right-radius:12px}
+[data-rounded-table-heading="true"] thead th {background:#f9fafb}

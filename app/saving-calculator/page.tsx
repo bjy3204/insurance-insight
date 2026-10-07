@@ -616,7 +616,7 @@ const principal = monthly * months;
                       }}
                       className="
                         block w-full text-center px-4 py-3 text-sm font-bold
-                        text-gray-700 hover:bg-gray-50 transition cursor-default
+                        text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer
                       "
                     >
                       메모장

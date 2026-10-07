@@ -18,6 +18,7 @@ ChevronRight,
   PlusCircle,
   Briefcase,
   MessageSquareText,
+  MessageCircleMore,
   NotebookPen,
 Pin,
 Eye,
@@ -45,6 +46,7 @@ import {
 
 import { CSS } from "@dnd-kit/utilities";
 import { SiteFooterFrame } from '@/app/components/SiteFooter';
+import CompanyRegistration from "./CompanyRegistration";
 import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
 
 import { loadCompanies, cachedCompanies, warmCompanyImages } from "./companyCache";
@@ -123,6 +125,8 @@ const companiesPerPage = 12;
   const [readyOpen, setReadyOpen] = useState(false);
   const [readyService, setReadyService] = useState("컨설팅 신청");
   const [careerOpen, setCareerOpen] = useState(false);
+  const [careerPosition, setCareerPosition] = useState({ x: 0, y: 0 });
+  const careerDrag = useRef<{ pointerId: number; startX: number; startY: number; x: number; y: number; left: number; top: number; width: number } | null>(null);
 
 
   const sensors = useSensors(
@@ -484,7 +488,7 @@ const currentCompanies = filteredCompanies.slice(
                       }}
                       className="
                         block w-full text-center px-4 py-3 text-sm font-bold
-                        text-gray-700 hover:bg-gray-50 transition cursor-default
+                        text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer
                       "
                     >
                       메모장
@@ -526,7 +530,7 @@ const currentCompanies = filteredCompanies.slice(
             {currentCompanies.map((item, index) => (
               <Link href={`/job/${item.id}`} key={item.id} onPointerEnter={() => warmCompanyImages(item)} onFocus={() => warmCompanyImages(item)} className={styles.card} aria-label={`${item.organization} 채용공고 보기`}>
                 <div className={styles.cover}>
-                  {item.image?.[0] ? <img src={item.image[0]} alt="" loading={index < 5 ? "eager" : "lazy"} decoding="async" /> : <div className={styles.placeholder}><Briefcase size={36} strokeWidth={1.3} /></div>}
+                  {item.image?.[0] ? <img src={`${item.image[0]}&w=384`} alt="" loading={index < 5 ? "eager" : "lazy"} fetchPriority={index < 5 ? "high" : "auto"} decoding="async" /> : <div className={styles.placeholder}><Briefcase size={36} strokeWidth={1.3} /></div>}
                   {item.region && <span className={styles.region}>{item.region}</span>}
                 </div>
                 <div className={styles.cardBody}>
@@ -591,6 +595,7 @@ const currentCompanies = filteredCompanies.slice(
             </div>
 
       <button
+  data-page-floating-control="true"
   onClick={() => setCareerOpen(true)}
   className="
     fixed
@@ -612,7 +617,7 @@ const currentCompanies = filteredCompanies.slice(
     cursor-pointer
   "
 >
-  <MessageSquareText className="w-6 h-6 text-white" />
+  <MessageCircleMore className="w-6 h-6 text-white" />
 </button>
 
 {careerOpen && (
@@ -621,10 +626,29 @@ const currentCompanies = filteredCompanies.slice(
     className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-5"
   >
     <div data-popup-frame="true"
+      style={{ transform: `translate(${careerPosition.x}px, ${careerPosition.y}px)` }}
       onClick={(e) => e.stopPropagation()}
       className="bg-white w-full max-w-4xl h-[86vh] rounded-3xl shadow-xl overflow-hidden flex flex-col"
     >
-      <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between">
+      <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between select-none touch-none shrink-0"
+        onPointerDown={(event) => {
+          if (event.button !== 0 || (event.target as HTMLElement).closest("button")) return;
+          event.preventDefault();
+          const rect = event.currentTarget.parentElement!.getBoundingClientRect();
+          careerDrag.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, ...careerPosition, left: rect.left, top: rect.top, width: rect.width };
+          event.currentTarget.setPointerCapture(event.pointerId);
+        }}
+        onPointerMove={(event) => {
+          const drag = careerDrag.current;
+          if (!drag || drag.pointerId !== event.pointerId) return;
+          const dx = event.clientX - drag.startX;
+          const dy = event.clientY - drag.startY;
+          setCareerPosition({ x: drag.x + Math.max(48 - drag.width - drag.left, Math.min(window.innerWidth - 48 - drag.left, dx)), y: drag.y + Math.max(-drag.top, Math.min(window.innerHeight - 48 - drag.top, dy)) });
+        }}
+        onPointerUp={() => { careerDrag.current = null; }}
+        onPointerCancel={() => { careerDrag.current = null; }}
+        onLostPointerCapture={() => { careerDrag.current = null; }}
+      >
         <div className="font-bold flex items-center gap-2">
           <MessageSquareText className="w-5 h-5" />
           INSURANCE TREE
@@ -660,17 +684,10 @@ const currentCompanies = filteredCompanies.slice(
 일하는 방식이 다르고 나의 가치를 알아봐 주지 못한다면
           누군가에겐 기회인 그 곳도 누군가에겐 맞지 않는 환경일 수 있습니다.
           
-          보험나무가 여러분에게 맞는 새로운 선택지를 함께 고민합니다.
-보험인사이트는 무분별한 공개 연결이 아닌 조건과 방향을 고려한 조직 연결을 지향합니다.`}
+          보험인사이트가 여러분에게 맞는 새로운 선택지를 함께 고민합니다
+보험인사이트는 무분별한 공개 연결이 아닌 조건과 방향을 고려한 조직 연결을 지향합니다`}
         </p>
 
-        <button
-          type="button"
-          onClick={() => setCareerOpen(false)}
-          className="mt-6 w-full rounded-2xl bg-gray-900 text-white py-3 text-sm font-bold hover:bg-gray-800 cursor-pointer transition-colors"
-        >
-          확인
-        </button>
       </div>
     </div>
   </div>
@@ -689,7 +706,7 @@ const currentCompanies = filteredCompanies.slice(
 
             <button
               onClick={() => setReadyOpen(false)}
-              className="w-full py-3 rounded-2xl bg-gray-900 text-white text-sm font-bold cursor-pointer active:scale-[0.98] transition"
+              className="w-full h-[46px] px-4 rounded-2xl bg-gray-900 text-white text-sm font-bold cursor-pointer active:scale-[0.98] transition"
             >
               확인
             </button>
@@ -735,6 +752,7 @@ const currentCompanies = filteredCompanies.slice(
 
 
 
+      <CompanyRegistration />
       <SiteFooterFrame>
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <button
@@ -746,15 +764,7 @@ const currentCompanies = filteredCompanies.slice(
             <span className="text-sm">컨설팅신청</span>
           </button>
 
-          <a
-            href="https://www.notion.so/363a0c26695980b0ab78ff4576542b59?pvs=106"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-3 flex flex-col items-center gap-1"
-          >
-            <PlusCircle className="w-5 h-5" />
-            <span className="text-sm">회사등록</span>
-          </a>
+          <button type="button" onClick={() => window.dispatchEvent(new Event("open-company-registration"))} className="py-3 flex flex-col items-center gap-1 cursor-pointer"><PlusCircle className="w-5 h-5" /><span className="text-sm">회사등록</span></button>
 
           <button
             type="button"

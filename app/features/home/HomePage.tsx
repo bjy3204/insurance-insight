@@ -2,23 +2,16 @@
 
 import styles from "./HomePage.module.css";
 import ResourceExplorer from "@/app/components/ResourceExplorer";
-import { useHomeController } from "./hooks/useHomeController";
+import { useSharedHomeController } from "./HomeControllerProvider";
 import FortuneWidget from "./components/FortuneWidget";
 import MainHeader from "./components/MainHeader";
 import DashboardCards from "./components/dashboard/DashboardCards";
 import MainMenuGrid from "./components/MainMenuGrid";
 import ProfileSettingsDialog from "./components/ProfileSettingsDialog";
-import MenuContextMenu from "./components/MenuContextMenu";
-import MemberButton from "./components/MemberButton";
-import MemberMenu from "./components/MemberMenu";
-import QuickMenuPanel from "./components/QuickMenuPanel";
 import MainFooter from "./components/MainFooter";
 import MenuEditFooter from "./components/MenuEditFooter";
 import MenuLinkAlert from "./components/MenuLinkAlert";
 import DeleteMenuDialog from "./components/DeleteMenuDialog";
-import QuickMenuSelectionDialog from "./components/QuickMenuSelectionDialog";
-import QuickMenuLimitDialog from "./components/QuickMenuLimitDialog";
-import DeleteQuickMenuDialog from "./components/DeleteQuickMenuDialog";
 import SaveMenuDialog from "./components/SaveMenuDialog";
 
 import PasswordResultDialog from "./components/PasswordResultDialog";
@@ -30,15 +23,9 @@ import MenuAddDialog from "./components/MenuAddDialog";
 
 
 
-import HospitalDialog from "./components/HospitalDialog";
-import DiseaseDialog from "./components/DiseaseDialog";
-import BankRatesDialog from "./components/BankRatesDialog";
-import NpsTableModal from "@/app/components/NpsTableModal";
-import LifeExpectancyDialog from "./components/LifeExpectancyDialog";
-import PressDialog from "./components/PressDialog";
 import PersonalSpacePinDialog from "./components/PersonalSpacePinDialog";
 export default function HomePage() {
-const controller = useHomeController();
+const controller = useSharedHomeController();
 const { authStatus, authRole, resourceOpen, setResourceOpen } = controller;
 return ((
     <>
@@ -56,7 +43,7 @@ return ((
 
       <ProfileSettingsDialog controller={controller} />
 
-<MenuContextMenu controller={controller} />
+
 
       {/* 앱처럼 사용하기 */}
       {/* 앱처럼 사용하기 */}
@@ -65,10 +52,10 @@ return ((
       {/* 모바일 메세지 버튼 */}
 
 
-<MemberButton controller={controller} />
 
-<MemberMenu controller={controller} />
-<QuickMenuPanel controller={controller} />
+
+
+
 
     
 
@@ -82,11 +69,11 @@ return ((
 
 <DeleteMenuDialog controller={controller} />
 
-<QuickMenuSelectionDialog controller={controller} />
 
-<QuickMenuLimitDialog controller={controller} />
 
-<DeleteQuickMenuDialog controller={controller} />
+
+
+
 
 <SaveMenuDialog controller={controller} />
 
@@ -119,16 +106,16 @@ return ((
 
       
 
-      <HospitalDialog controller={controller} />
+      
 
-<DiseaseDialog controller={controller} />
 
-<BankRatesDialog controller={controller} />
 
-{controller.npsTableOpen && <NpsTableModal onClose={() => controller.setNpsTableOpen(false)} />}
 
-<LifeExpectancyDialog controller={controller} />
-<PressDialog controller={controller} />
+
+
+
+
+
 
       {/* 개인공간 PIN 팝업 */}
       <PersonalSpacePinDialog controller={controller} />

@@ -1,7 +1,7 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
-import { FileText, Newspaper, X, Search } from "lucide-react";
+import { FileText, Megaphone, X, Search } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
 export default function PressDialog({ controller }: { controller: HomeController }) {
 const { authUser, authStatus, startPopupDrag, getPopupStyle, pressOpen, setPressOpen, selectedPress, setSelectedPress, pressSearch, setPressSearch, pressPage, setPressPage, readPressIds, setReadPressIds, filteredPress, PRESS_PER_PAGE, totalPressPages, paginatedPress } = controller;
@@ -19,7 +19,7 @@ return (<>{pressOpen && (
   className="bg-blue-600 text-white px-5 py-4 flex items-center justify-between"
 >
         <div data-popup-title="true" className="font-bold flex items-center gap-2">
-          <Newspaper className="w-5 h-5" />
+          <Megaphone className="w-5 h-5" />
           보도자료
         </div>
 
@@ -46,7 +46,7 @@ return (<>{pressOpen && (
 
       {!selectedPress ? (
         <>
-          <div data-ui-field-wrapper="true" className="p-4 border-b border-gray-100">
+          <div data-ui-field-wrapper="true" className="px-4 pt-4 pb-2 md:overflow-y-hidden" style={{ scrollbarGutter: "stable" }}>
   <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
     <Search className="w-5 h-5 text-gray-400" />
 
@@ -104,8 +104,8 @@ return (<>{pressOpen && (
             </div>
 
   {/* PC 테이블형 */}
-  <div className="hidden md:block overflow-y-auto flex-1 p-4">
-    <table className="w-full table-fixed text-sm">
+  <div className="hidden md:block overflow-y-auto flex-1 px-4 pb-4" style={{ scrollbarGutter: "stable" }}>
+    <table data-rounded-table-heading="true" className="w-full table-fixed text-sm">
       <thead>
         <tr className="bg-gray-50 border-b border-gray-200 text-gray-500">
           <th className="py-3 w-20">번호</th>

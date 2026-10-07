@@ -175,7 +175,7 @@ function CompanyCard({
   const CardTag: any = disableLink ? "div" : "a";
 
   return (
-    <CardTag data-card-lift="subtle" data-card-highlight="true"
+    <CardTag data-card-lift="subtle"
       href={disableLink ? undefined : company.link}
       target={disableLink ? undefined : "_blank"}
       rel={disableLink ? undefined : "noopener noreferrer"}
@@ -184,7 +184,7 @@ function CompanyCard({
         border border-gray-200 shadow-sm transition-all duration-200
         flex items-center justify-center animate-in fade-in zoom-in-95
         cursor-default
-        hover:-translate-y-1 hover:border-gray-300 hover:shadow-md
+        hover:-translate-y-1 hover:shadow-md
         md:border-0 md:rounded-[20px] md:shadow md:hover:-translate-y-[2px] md:hover:shadow-md
       "
     >
@@ -318,12 +318,7 @@ function SortableCompanyCard({
           </button>
         )}
 
-        <img
-          src={company.browser === "chrome" ? "/icons/chrome.png" : "/icons/edge.png"}
-          alt={company.browser}
-          className="absolute top-3 left-3 w-6.5 h-6.5 md:w-7 md:h-7 opacity-100 transition-all duration-300"
-          draggable="false"
-        />
+
 
         <img
           src={`/logos/${type}/${company.image}`}
@@ -956,7 +951,7 @@ const pagedMemos = filteredMemos.slice(
                       }}
                       className="
                         block w-full text-center px-4 py-3 text-sm font-bold
-                        text-gray-700 hover:bg-gray-50 transition cursor-default
+                        text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer
                       "
                     >
                       메모장
@@ -972,7 +967,7 @@ const pagedMemos = filteredMemos.slice(
                       className="
                         block w-full text-center px-4 py-3 text-sm font-bold
                         text-gray-700 hover:bg-gray-50 transition border-t
-                        border-gray-100 cursor-default
+                        border-gray-100 cursor-pointer
                       "
                     >
                       즐겨찾기

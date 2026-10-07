@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, type SVGProps, type ComponentType } from "react";
 import Link from "next/link";
+import styles from "./ClaimDocs.module.css";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 
@@ -13,7 +14,7 @@ import { LayoutGrid,
   Ribbon, BedSingle, Syringe, Bone, Flame, Ambulance, HeartCrack, Hospital as HospitalIcon, Scale, Gavel, CircleDollarSign, IdCard, Droplets, HeartPulse, ClipboardList,
   Newspaper,
   MessageCircle,
-  Hospital,
+  MapPinPlus,
   X,
   Search,
   StickyNote,
@@ -712,7 +713,7 @@ const pagedMemos = filteredMemos.slice(
 const visibleMemos = memos.filter((memo) => memo.visible);
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-24">
+    <main className={`${styles.page} min-h-screen bg-gray-100 pb-24`}>
 
       {/* 헤더 */}
       <header data-page-header="true" className="bg-white border-b shadow-sm">
@@ -791,7 +792,7 @@ left-0
                       }}
                       className="
                         block w-full text-center px-4 py-3 text-sm font-bold
-                        text-gray-700 hover:bg-gray-50 transition cursor-default
+                        text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer
                       "
                     >
                       메모장
@@ -810,9 +811,9 @@ left-0
       </header>
 
 
-      <section data-page-content="true" className="max-w-7xl mx-auto px-4 md:px-6 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-[265px_minmax(0,1fr)] gap-3 items-start">
-          <nav aria-label="청구서류 종류" className="bg-white border border-blue-100/60 rounded-2xl p-3 md:p-4 md:sticky md:top-6">
+      <section data-page-content="true" className={`${styles.content} max-w-7xl mx-auto px-4 md:px-6 py-6`}>
+        <div className={`${styles.layout} grid grid-cols-1 md:grid-cols-[265px_minmax(0,1fr)] gap-3 items-start`}>
+          <nav aria-label="청구서류 종류" className={`${styles.menu} bg-white border border-blue-100/60 rounded-2xl p-3 md:p-4`}>
             <div className="flex gap-5 overflow-x-auto md:block">
               {claimGroups.map((group) => (
                 <div key={group.title} className="shrink-0 md:mb-5 md:last:mb-0">
@@ -821,7 +822,7 @@ left-0
                     {group.items.map((item) => {
                       const Icon = claimIcons[item];
                       return <button type="button" key={item} onClick={() => setTab(item)} aria-current={tab === item ? "page" : undefined}
-                        className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold whitespace-nowrap cursor-pointer transition-colors ${tab === item ? "bg-blue-50 text-blue-600 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:bg-blue-600 before:rounded-full" : "text-slate-700 hover:bg-blue-50/50"}`}>
+                        className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold whitespace-nowrap cursor-pointer transition-colors ${tab === item ? "bg-blue-50 text-blue-600" : "text-slate-700 hover:bg-blue-50/50"}`}>
                         <Icon size={18} aria-hidden="true" />{item}
                       </button>;
                     })}
@@ -830,10 +831,10 @@ left-0
               ))}
             </div>
           </nav>
-          <div className="min-w-0 bg-white border border-blue-100/60 rounded-2xl p-5 md:p-7">
-            <span className="inline-block rounded-xl bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-600 mb-3">{claimGroups.find(group => group.items.includes(tab))?.title}</span>
-            <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-6">{tab === "공통" ? "공통 청구서류" : `${tab} 청구서류`}</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          <div className={`${styles.documents} min-w-0 bg-white border border-blue-100/60 rounded-2xl p-5 md:p-7`}>
+            <div className={styles.documentHeading}><span className="inline-block rounded-xl bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-600 mb-3">{claimGroups.find(group => group.items.includes(tab))?.title}</span>
+            <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-6">{tab === "공통" ? "공통 청구서류" : `${tab} 청구서류`}</h2></div>
+            <div key={tab} className={styles.documentScroll}><div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {claimDocs[tab]?.map((doc, docIndex) => {
                 const Icon = documentIcons[doc.title] ?? claimIcons[tab];
                 return <div key={doc.title} className="rounded-2xl border border-blue-100/70 bg-white hover:bg-blue-50/40 transition-colors duration-200 cursor-default p-5 md:p-6">
@@ -850,7 +851,8 @@ left-0
                 </div>;
               })}
             </div>
-            <div className="rounded-2xl bg-slate-50 p-5 mt-6 text-sm text-slate-600 leading-relaxed">
+            </div>
+            <div className={`${styles.notice} rounded-2xl bg-slate-50 p-5 mt-6 text-sm text-slate-600 leading-relaxed`}>
               <p className="flex items-center gap-2 font-bold text-slate-800 mb-2"><Info size={18} />안내사항</p>
               <p>보험사 및 상품에 따라 추가 서류가 필요할 수 있습니다</p>
               <p>원본 제출 여부와 제출 방법은 해당 보험사에 확인해 주세요</p>
@@ -926,7 +928,7 @@ left-0
     
   "
 >
-  <Hospital className="w-6 h-6 text-white" />
+  <MapPinPlus className="w-6 h-6 text-white" />
 </button>
 
 {infoMenuOpen && (
@@ -934,7 +936,7 @@ left-0
     onClick={() => setInfoMenuOpen(false)}
     className="fixed inset-0 z-40"
   >
-    <div
+    <div data-page-floating-menu="true"
       onClick={(e) => e.stopPropagation()}
       className="
         fixed

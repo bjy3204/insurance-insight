@@ -30,6 +30,7 @@ import { LayoutGrid,
   ArrowLeft,
   Search,
   Newspaper,
+  Megaphone,
   MessageCircle,
   BookOpen,
   FileText,
@@ -837,7 +838,7 @@ const pagedMemos = filteredMemos.slice(
                       }}
                       className="
                         block w-full text-center px-4 py-3 text-sm font-bold
-                        text-gray-700 hover:bg-gray-50 transition cursor-default
+                        text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer
                       "
                     >
                       메모장
@@ -853,7 +854,7 @@ const pagedMemos = filteredMemos.slice(
         </div>
       </header>
 
-      <section data-page-content="true" className="max-w-7xl mx-auto px-5 py-6">
+      <section data-page-content="true" className="max-w-7xl mx-auto px-6 py-6">
         <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3 mb-5">
           <Search className="w-5 h-5 text-gray-400" />
 
@@ -911,7 +912,7 @@ const pagedMemos = filteredMemos.slice(
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-9">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-8 place-items-stretch">
           {filteredCompanies.map(([name, image, link, phone]) => {
             let logoPath = "";
 
@@ -931,7 +932,7 @@ const pagedMemos = filteredMemos.slice(
   className="
   bg-white
   rounded-3xl
-  h-36 md:h-40
+  h-[152px] md:h-[168px]
   px-3 md:px-5
   border
   border-gray-200
@@ -965,12 +966,12 @@ const pagedMemos = filteredMemos.slice(
   rel="noopener noreferrer"
   className="
   cursor-pointer
-  px-10
-  md:px-5.5
-  py-2.5
+  px-12
+  md:px-10
+  py-3
   rounded-xl
-  bg-gray-800
-  text-white
+  bg-[#f0f5fc]
+  text-[#405b85]
   text-[11px]
   md:text-sm
   font-medium
@@ -978,17 +979,12 @@ const pagedMemos = filteredMemos.slice(
   transition-all
   duration-200
   active:scale-[0.97]
-  hover:bg-[#e5e7eb]
-  hover:text-[#374151]
+  hover:bg-blue-100
+  hover:text-blue-700
 "
 >
-  <span className="hidden md:inline">
-  상품공시실 바로가기
-</span>
-
-<span className="inline md:hidden">
-  상품공시실
-</span>
+  <span className="hidden md:inline">상품공시실 바로가기</span>
+  <span className="inline md:hidden">상품공시실</span>
 </a>
 
 </div>
@@ -1113,7 +1109,7 @@ const pagedMemos = filteredMemos.slice(
     justify-center
   "
 >
-  <BookOpen className="w-6 h-6 text-white" />
+  <Megaphone className="w-6 h-6 text-white" />
 
  
 </button>
@@ -1150,7 +1146,7 @@ const pagedMemos = filteredMemos.slice(
   data-popup-header="true" className="bg-blue-600 text-white px-5 py-4 flex items-center justify-between"
 >
         <div data-popup-title="true" className="font-bold flex items-center gap-2">
-          <Newspaper className="w-5 h-5" />
+          <Megaphone className="w-5 h-5" />
           보도자료
         </div>
 
@@ -1178,7 +1174,7 @@ const pagedMemos = filteredMemos.slice(
 
       {!selectedPress ? (
         <>
-          <div className="p-4 border-b border-gray-100">
+          <div className="px-4 pt-4 pb-2 md:overflow-y-hidden" style={{ scrollbarGutter: "stable" }}>
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
@@ -1231,8 +1227,8 @@ const pagedMemos = filteredMemos.slice(
   </div>
 
   {/* PC 테이블형 */}
-  <div className="hidden md:block overflow-y-auto flex-1 p-4">
-    <table className="w-full table-fixed text-sm">
+  <div className="hidden md:block overflow-y-auto flex-1 px-4 pb-4" style={{ scrollbarGutter: "stable" }}>
+    <table data-rounded-table-heading="true" className="w-full table-fixed text-sm">
       <thead>
         <tr className="bg-gray-50 border-b border-gray-200 text-gray-500">
           <th className="py-3 w-20">번호</th>

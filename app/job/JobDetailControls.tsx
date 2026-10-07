@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Briefcase, LayoutGrid, Megaphone, PlusCircle } from "lucide-react";
+import CompanyRegistration from "./CompanyRegistration";
 import HeaderUtilityItems from "@/app/components/HeaderUtilityItems";
 import { SiteFooterFrame } from "@/app/components/SiteFooter";
 
@@ -32,10 +33,11 @@ export function JobHeaderTools() {
 export function JobDetailFooter() {
   const [service, setService] = useState<string | null>(null);
   return <>
+    <CompanyRegistration />
     <SiteFooterFrame>
       <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
         <button onClick={() => setService("컨설팅 신청")} className="py-3 flex flex-col items-center gap-1 cursor-pointer"><Briefcase className="w-5 h-5" /><span className="text-sm">컨설팅신청</span></button>
-        <a href="https://www.notion.so/363a0c26695980b0ab78ff4576542b59?pvs=106" target="_blank" rel="noopener noreferrer" className="py-3 flex flex-col items-center gap-1"><PlusCircle className="w-5 h-5" /><span className="text-sm">회사등록</span></a>
+        <button type="button" onClick={() => window.dispatchEvent(new Event("open-company-registration"))} className="py-3 flex flex-col items-center gap-1 cursor-pointer"><PlusCircle className="w-5 h-5" /><span className="text-sm">회사등록</span></button>
         <button onClick={() => setService("배너 신청")} className="py-3 flex flex-col items-center gap-1 cursor-pointer"><Megaphone className="w-5 h-5" /><span className="text-sm">배너신청</span></button>
       </div>
     </SiteFooterFrame>
@@ -43,7 +45,7 @@ export function JobDetailFooter() {
       <div role="dialog" aria-modal="true" aria-labelledby="job-service-title" className="w-full max-w-sm bg-white rounded-3xl p-6 text-center" onClick={event => event.stopPropagation()}>
         <h2 id="job-service-title" className="text-xl font-bold">서비스 준비중입니다</h2>
         <p className="text-sm text-slate-500 mt-3">{service} 서비스는 현재 준비중입니다.</p>
-        <button autoFocus onClick={() => setService(null)} className="mt-6 w-full rounded-2xl bg-gray-900 hover:bg-gray-800 text-white py-3 text-sm font-bold cursor-pointer">확인</button>
+        <button autoFocus onClick={() => setService(null)} className="mt-6 w-full rounded-2xl bg-gray-900 hover:bg-gray-800 text-white h-[46px] px-4 text-sm font-bold cursor-pointer">확인</button>
       </div>
     </div>}
   </>;
