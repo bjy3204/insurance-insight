@@ -195,7 +195,7 @@ const currentReviews = selectedReviews.slice(
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-5 pt-6 pb-6">
+      <div data-page-content="true" className="max-w-7xl mx-auto px-5 pt-6 pb-6">
         <div className="relative mb-3">
           <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
           <input

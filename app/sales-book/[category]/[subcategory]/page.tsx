@@ -309,7 +309,7 @@ const saveSlideNote = async () => {
           </div>
         </header>
 
-        <div className="max-w-7xl mx-auto px-4 pt-4 pb-10">
+        <div data-page-content="true" className="max-w-7xl mx-auto px-4 pt-4 pb-10">
           {/* PC */}
 <div
   className="hidden md:flex bg-white rounded-3xl border border-gray-200 overflow-hidden"

@@ -2,30 +2,17 @@
 import { useEffect, useState } from 'react';
 import type { TrafficEvent } from '@/lib/traffic-events';
 import { Video } from 'lucide-react';
-import { nearestCamera, normalizeRoad, type TrafficCamera } from '@/lib/traffic-cctv';
+import { nearestCamera, type TrafficCamera } from '@/lib/traffic-cctv';
 import styles from './TrafficMap.module.css';
 
 const cleanMessage = (value: string) => value.replace(/<[^>]*>/g, '').replace(/\*+/g, '').replace(/::+/g, ' · ').replace(/\s+/g, ' ').trim();
 
-type RoadFlow={road:string;clear:number;slow:number;congested:number};
 export default function TrafficEventList({ onSelect, nearby, cameras, onCamera }: { onSelect: (event: TrafficEvent) => void; nearby: { latitude: number; longitude: number } | null; cameras:TrafficCamera[]; onCamera:(event:TrafficEvent)=>void }) {
   const [events, setEvents] = useState<TrafficEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [updated, setUpdated] = useState('');
   const [retry, setRetry] = useState(0);
-  const [flow,setFlow]=useState<RoadFlow[]>([]);
-  const [flowError,setFlowError]=useState('');
-  useEffect(()=>{
-    const controller=new AbortController();
-    const load=()=>fetch('/api/traffic-flow',{signal:controller.signal}).then(async response=>{
-      const data=await response.json();
-      if(!response.ok||!Array.isArray(data.roads))throw new Error('소통정보를 불러오지 못했습니다.');
-      setFlow(data.roads);setFlowError('');
-    }).catch(()=>{if(!controller.signal.aborted)setFlowError('소통정보를 불러오지 못했습니다.');});
-    void load();const interval=window.setInterval(()=>{if(!document.hidden)void load();},120000);
-    return ()=>{controller.abort();window.clearInterval(interval);};
-  },[retry]);
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
@@ -52,10 +39,8 @@ export default function TrafficEventList({ onSelect, nearby, cameras, onCamera }
     <div className={styles.eventTitle}><h4>{nearby ? '내 주변 사고·공사' : '고속도로 교통정보'}</h4>{updated && <span>{new Date(updated).toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit' })} 조회</span>}</div>
     <div className={styles.eventScroll}>
     <div className={`${styles.eventBody} ${loading && !events.length || error || !visible.length ? styles.emptyBody : ''}`}>
-    {flowError&&<p className={styles.flowError} role="status">{flowError}</p>}
-    {loading && !events.length ? <p className={styles.eventEmpty}>교통정보를 불러오는 중입니다.</p> : error ? <div className={styles.eventEmpty} role="status">{error}<button type="button" onClick={() => setRetry(value => value + 1)}>다시 시도</button></div> : !visible.length ? <p className={styles.eventEmpty}>{nearby ? '주변 50km 안에 제공된 고속도로 사고·공사 정보가 없습니다.' : '현재 제공된 사고·공사 정보가 없습니다.'}</p> : [...groups].map(([road, items]) => <section key={road} className={styles.eventGroup}>
+    {loading && !events.length ? <p className={`${styles.eventEmpty} ${styles.eventLoading}`}>교통정보를 불러오는 중입니다.</p> : error ? <div className={styles.eventEmpty} role="status">{error}<button type="button" onClick={() => setRetry(value => value + 1)}>다시 시도</button></div> : !visible.length ? <p className={styles.eventEmpty}>{nearby ? '주변 50km 안에 제공된 고속도로 사고·공사 정보가 없습니다.' : '현재 제공된 사고·공사 정보가 없습니다.'}</p> : [...groups].map(([road, items]) => <section key={road} className={styles.eventGroup}>
       <h4>{items[0].roadNo && <span className={styles.roadNumber}>{items[0].roadNo}</span>}{road}</h4>
-      {!nearby&&flow.filter(item=>normalizeRoad(item.road)===normalizeRoad(road)).map(item=><div key={item.road} className={styles.flowSummary} title="제공된 고속도로 구간 수 · 원활 80km/h 이상, 서행 40~80km/h, 정체 40km/h 미만"><span className={styles.clear}>원활 {item.clear}</span><span className={styles.slow}>서행 {item.slow}</span><span className={styles.congested}>정체 {item.congested}</span><small>제공 구간 기준</small></div>)}
       {items.map(event => <div key={event.id} className={styles.eventLine}><button type="button" className={styles.eventRow} onClick={() => onSelect(event)} disabled={event.latitude === null || event.longitude === null}>
         <div className={styles.eventContent}><p title={cleanMessage(event.message || event.detail)}>{cleanMessage(event.message || event.detail)}</p>{event.lanes && <small>{event.lanes}</small>}</div>
         <span className={`${styles.eventKind} ${event.kind === '교통사고' ? styles.accident : event.kind === '공사' ? styles.construction : styles.other}`}>{event.kind === '교통사고' ? '사고' : event.kind === '기타돌발' ? '돌발' : event.kind || '돌발'}</span>

@@ -1,5 +1,9 @@
 "use client";
 
+import MemoBody from "./memos/MemoBody";
+import MemoEditor from "./memos/MemoEditor";
+import { decodeMemo } from "@/lib/memos/model";
+import { lockPageScroll } from "@/app/features/home/components/dashboard/DashboardDialog";
 import { useEffect, useRef, useState } from "react";
 import {
   Search,
@@ -77,7 +81,7 @@ function SortableMemoCard({
       }}
       {...attributes}
       {...listeners}
-      className={memo.pinned ? "" : "touch-none"}
+      className="min-w-0"
     >
       {children}
     </div>
@@ -85,7 +89,7 @@ function SortableMemoCard({
 }
 
 export default function MemoManager({ open, onClose }: Props) {
-  const { memos, saveMemos } = useAuth();
+  const { memos, saveMemos, persistMemos, memosLoading, memosError, reloadMemos } = useAuth();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -95,6 +99,9 @@ export default function MemoManager({ open, onClose }: Props) {
     })
   );
 
+  useEffect(() => { if (open) return lockPageScroll(); }, [open]);
+  const [popupPosition, setPopupPosition] = useState({x:0,y:0});
+  const popupDrag = useRef<{pointerId:number;startX:number;startY:number;x:number;y:number;minX:number;maxX:number;minY:number;maxY:number}|null>(null);
   const [memoSearch, setMemoSearch] = useState("");
   const [memoPage, setMemoPage] = useState(1);
   const [memoTitle, setMemoTitle] = useState("");
@@ -174,20 +181,7 @@ export default function MemoManager({ open, onClose }: Props) {
     });
   };
 
-  useEffect(() => {
-    const openMemoDetail = (event: any) => {
-      const memoId = event.detail;
-      const targetMemo = memos.find((memo) => memo.id === memoId);
-      if (!targetMemo) return;
-      openMemoEdit(targetMemo);
-    };
-
-    window.addEventListener("open-memo-detail", openMemoDetail);
-
-    return () => {
-      window.removeEventListener("open-memo-detail", openMemoDetail);
-    };
-  }, [memos]);
+  
 
   useEffect(() => {
     const openMemoContextMenu = (event: any) => {
@@ -332,7 +326,7 @@ export default function MemoManager({ open, onClose }: Props) {
 
   const filteredMemos = memos
     .filter((memo) =>
-      `${memo.title} ${memo.content}`
+      `${memo.title} ${decodeMemo(memo).text}`
         .toLowerCase()
         .includes(memoSearch.toLowerCase())
     )
@@ -361,8 +355,13 @@ export default function MemoManager({ open, onClose }: Props) {
     <>
       {open && (
         <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
-          <div data-popup-frame="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
-            <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
+          <div data-popup-frame="true" style={{transform:`translate(${popupPosition.x}px, ${popupPosition.y}px)`}} className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
+            <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between touch-none select-none cursor-default" onPointerDown={e=>{
+ if(e.button!==0||(e.target as HTMLElement).closest("button"))return;
+ const rect=e.currentTarget.parentElement!.getBoundingClientRect(),left=rect.left-popupPosition.x,top=rect.top-popupPosition.y;
+ popupDrag.current={pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:popupPosition.x,y:popupPosition.y,minX:80-rect.width-left,maxX:window.innerWidth-80-left,minY:8-top,maxY:window.innerHeight-60-top};
+ e.currentTarget.setPointerCapture(e.pointerId);e.preventDefault();
+}} onPointerMove={e=>{const d=popupDrag.current;if(!d||d.pointerId!==e.pointerId)return;setPopupPosition({x:Math.max(d.minX,Math.min(d.maxX,d.x+e.clientX-d.startX)),y:Math.max(d.minY,Math.min(d.maxY,d.y+e.clientY-d.startY))});}} onPointerUp={e=>{if(popupDrag.current?.pointerId===e.pointerId){popupDrag.current=null;e.currentTarget.releasePointerCapture(e.pointerId);}}} onPointerCancel={()=>{popupDrag.current=null;}}>
               <div className="font-bold flex items-center gap-2">
                 <NotebookPen className="w-5 h-5" />
                 메모장
@@ -383,16 +382,17 @@ export default function MemoManager({ open, onClose }: Props) {
                 <input
                   value={memoSearch}
                   onChange={(e) => setMemoSearch(e.target.value)}
-                  placeholder="메모 검색"
-                  className="w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm outline-none focus:border-gray-400"
+                  placeholder="메모 검색" aria-label="메모 검색"
+                  className="w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm text-gray-900 caret-gray-900 cursor-text outline-none focus:border-blue-400"
                 />
               </div>
 
               <button
+                disabled={memosLoading || !!memosError}
                 onClick={() => {
                   setMemoAddPopupPos({ x: 0, y: 0 });
                   stopMemoPopupMove();
-                  setMemoAddOpen(true);
+                  setSelectedMemo(null); setMemoAddOpen(true);
                 }}
                 className="h-12 px-5 rounded-2xl bg-gray-800 text-white text-sm font-bold flex items-center gap-2 cursor-default"
               >
@@ -402,7 +402,8 @@ export default function MemoManager({ open, onClose }: Props) {
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
-              {filteredMemos.length === 0 ? (
+              {memosError && <p role="alert" className="text-sm text-red-500 mb-3">{memosError}<button onClick={reloadMemos} className="ml-3 underline">다시 시도</button></p>}
+              {memosLoading ? <div className="text-center text-sm text-gray-400 py-20">메모를 불러오는 중입니다.</div> : filteredMemos.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-sm text-gray-400 py-20">
                   저장된 메모가 없습니다.
                 </div>
@@ -432,19 +433,17 @@ export default function MemoManager({ open, onClose }: Props) {
                                 id: memo.id,
                               });
                             }}
-                            className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition cursor-default"
+                            className="aspect-[2/1] overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition cursor-default"
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="min-w-0 flex-1 flex flex-col min-h-[130px]">
-                                <h3 className="text-sm font-black text-gray-900 break-keep">
+                            <div className="flex h-full min-h-0 items-start justify-between gap-3">
+                              <div className="min-w-0 h-full min-h-0 flex-1 flex flex-col">
+                                <h3 className="text-sm font-black text-gray-900 truncate shrink-0">
                                   {memo.title || ""}
                                 </h3>
 
-                                <p className="text-sm text-gray-600 mt-2 leading-relaxed whitespace-pre-line break-keep">
-                                  {memo.content}
-                                </p>
+                                <div className="memo-popup-card-content min-h-0 flex-1 overflow-y-auto text-sm text-gray-600 mt-2 leading-relaxed" onPointerDown={e=>e.stopPropagation()}><MemoBody memo={memo} onChange={content => persistMemos(memos.map(item => item.id === memo.id ? {...item, content, updatedAt: new Date().toISOString()} : item))}/></div>
 
-                                <p className="text-[11px] text-gray-400 mt-auto pt-3">
+                                <p className="text-[11px] text-gray-400 shrink-0 pt-3">
                                   수정일{" "}
                                   {new Date(memo.updatedAt).toLocaleDateString(
                                     "ko-KR"
@@ -550,205 +549,11 @@ export default function MemoManager({ open, onClose }: Props) {
         </div>
       )}
 
-      {memoAddOpen && (
-        <div
-          onMouseMove={(e) => moveMemoPopup(e, "memoAdd")}
-          onMouseUp={stopMemoPopupMove}
-          onMouseLeave={stopMemoPopupMove}
-          onClick={() => setMemoAddOpen(false)}
-          className="fixed inset-0 z-[1400] bg-black/40 flex items-center justify-center p-4"
-        >
-          <div
-            style={{
-              transform: `translate(${memoAddPopupPos.x}px, ${memoAddPopupPos.y}px)`,
-            }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6 cursor-default"
-          >
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-black text-gray-900">메모 추가</h2>
+      
 
-              <div className="flex items-center gap-2">
-                {memoColorOptions.map((color) => (
-                  <button
-                    key={color.value}
-                    type="button"
-                    onClick={() => setMemoColor(color.value)}
-                    className={`
-                      w-7 h-7 rounded-full border transition hover:scale-105
-                      ${
-                        memoColor === color.value
-                          ? "ring-2 ring-gray-400 ring-offset-2"
-                          : ""
-                      }
-                      ${color.className}
-                    `}
-                  />
-                ))}
+      
 
-                <button data-popup-close="true"
-                  onClick={() => setMemoAddOpen(false)}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            <input
-              value={memoTitle}
-              onChange={(e) => setMemoTitle(e.target.value)}
-              placeholder="메모 제목"
-              className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none mb-3"
-            />
-
-            <textarea
-              value={memoContent}
-              onChange={(e) => setMemoContent(e.target.value)}
-              placeholder="메모 내용을 입력하세요"
-              className="w-full h-56 rounded-2xl border border-gray-200 p-4 text-sm outline-none resize-none mb-5"
-            />
-
-            <p className="-mt-4 mb-3 text-xs text-gray-400 leading-relaxed break-keep">
-              ※ 메모는 브라우저 캐시 삭제 또는 기기 변경 시 삭제될 수 있습니다.
-            </p>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setMemoAddOpen(false)}
-                className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-default"
-              >
-                취소
-              </button>
-
-              <button
-                onClick={() => {
-                  addMemo();
-                  setMemoAddOpen(false);
-                }}
-                className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-default"
-              >
-                저장
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {selectedMemo && (
-        <div
-          onMouseMove={(e) => moveMemoPopup(e, "memoEdit")}
-          onMouseUp={stopMemoPopupMove}
-          onMouseLeave={stopMemoPopupMove}
-          className="fixed inset-0 z-[1300] bg-black/40 flex items-center justify-center p-4"
-        >
-          <div
-            style={{
-              transform: `translate(${memoEditPopupPos.x}px, ${memoEditPopupPos.y}px)`,
-            }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6 cursor-default"
-          >
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-black text-gray-900">메모 수정</h2>
-
-              <div className="flex items-center gap-2">
-                {memoColorOptions.map((color) => (
-                  <button
-                    key={color.value}
-                    type="button"
-                    onClick={() => {
-                      changeMemoColor(selectedMemo.id, color.value);
-
-                      setSelectedMemo({
-                        ...selectedMemo,
-                        color: color.value,
-                        updatedAt: new Date().toISOString(),
-                      });
-                    }}
-                    className={`
-                      w-7 h-7 rounded-full border transition hover:scale-105
-                      ${
-                        selectedMemo.color === color.value
-                          ? "ring-2 ring-gray-400 ring-offset-2"
-                          : ""
-                      }
-                      ${color.className}
-                    `}
-                  />
-                ))}
-
-                <button data-popup-close="true"
-                  onClick={() => {
-                    setSelectedMemo(null);
-                    setMemoEditPopupPos({ x: 0, y: 0 });
-                  }}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            <input
-              value={selectedMemo.title}
-              onChange={(e) =>
-                setSelectedMemo({
-                  ...selectedMemo,
-                  title: e.target.value,
-                })
-              }
-              placeholder="메모 제목"
-              className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm font-bold outline-none mb-3"
-            />
-
-            <textarea
-              value={selectedMemo.content}
-              onChange={(e) =>
-                setSelectedMemo({
-                  ...selectedMemo,
-                  content: e.target.value,
-                })
-              }
-              placeholder="메모 내용을 입력하세요"
-              className="w-full h-56 rounded-2xl border border-gray-200 p-4 text-sm outline-none resize-none mb-5"
-            />
-
-            <p className="-mt-4 mb-3 text-xs text-gray-400 leading-relaxed break-keep">
-              ※ 메모는 브라우저 캐시 삭제 또는 기기 변경 시 삭제될 수 있습니다.
-            </p>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => deleteMemo(selectedMemo.id)}
-                className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-600 text-sm font-bold hover:bg-red-50 hover:text-red-500 transition cursor-default"
-              >
-                삭제
-              </button>
-
-              <button
-                onClick={() => {
-                  const nextMemos = memos.map((memo) =>
-                    memo.id === selectedMemo.id
-                      ? {
-                          ...selectedMemo,
-                          updatedAt: new Date().toISOString(),
-                        }
-                      : memo
-                  );
-
-                  saveMemos(nextMemos);
-                  setSelectedMemo(null);
-                }}
-                className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-default"
-              >
-                완료
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
+      {(memoAddOpen || selectedMemo) && <MemoEditor key={selectedMemo?.id || "new"} memo={selectedMemo} onClose={() => { setSelectedMemo(null); setMemoAddOpen(false); }} />}
       {contextMenu && (
         <div
           style={{ top: contextMenu.y, left: contextMenu.x }}
@@ -810,4 +615,10 @@ export default function MemoManager({ open, onClose }: Props) {
       )}
     </>
   );
+}
+export function GlobalMemoManager(){
+ const {memos}=useAuth();const [open,setOpen]=useState(false),[id,setId]=useState<string|null>(null);
+ useEffect(()=>{const show=()=>setOpen(true);const detail=(e:Event)=>setId((e as CustomEvent).detail);const context=(e:Event)=>setId((e as CustomEvent).detail.id);window.addEventListener("open-memo-manager",show);window.addEventListener("open-memo-detail",detail);return()=>{window.removeEventListener("open-memo-manager",show);window.removeEventListener("open-memo-detail",detail);};},[]);
+ const selected=memos.find(m=>m.id===id);
+ return <><MemoManager open={open} onClose={()=>setOpen(false)}/>{selected&&<MemoEditor key={selected.id} memo={selected} onClose={()=>setId(null)}/>}</>;
 }

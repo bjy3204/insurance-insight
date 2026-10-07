@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { X, CalendarDays, Clock } from "lucide-react";
 import { lockPageScroll } from "@/app/features/home/components/dashboard/DashboardDialog";
 import styles from "./CalendarEventModal.module.css";
 
@@ -67,19 +67,28 @@ export default function CalendarEventModal({ formData, setFormData, editingEvent
             className="bg-white w-[90%] max-w-lg rounded-3xl shadow-xl flex flex-col"
             style={{ transform: `translate(${modalPos.x}px, ${modalPos.y}px)` }}
           >
-            <div className="flex items-center justify-between px-6 pt-6 pb-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap px-6 pt-6 pb-4">
               <h2 className="text-xl font-black text-gray-900">
                 {editingEvent ? "일정 수정" : "일정 추가"}
               </h2>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">{[
+                  { value: "white", label: "흰색", color: "#ffffff" },
+                  { value: "blue", label: "파란색", color: "#edf5ff" },
+                  { value: "green", label: "초록색", color: "#f0fdf4" },
+                  { value: "yellow", label: "노란색", color: "#fffbe5" },
+                  { value: "red", label: "분홍색", color: "#ffedf4" },
+                ].map(option => <button type="button" key={option.value} disabled={saving} aria-label={option.label} title={option.label} aria-pressed={formData.color === option.value} onClick={() => setFormData({ ...formData, color: option.value })} className={`w-7 h-7 rounded-full border border-gray-200 cursor-pointer ${formData.color === option.value ? "ring-2 ring-gray-400 ring-offset-2" : ""}`} style={{ background: option.color }} />)}</div>
               <button data-popup-close="true" disabled={saving}
                 onClick={() => { onClose(); }}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"
+                aria-label="일정 편집 닫기" className="p-2 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
+              </div>
             </div>
 
-            <div className="px-6 pt-2 pb-4 overflow-y-auto flex-1 min-w-0">
+            <div className={`px-6 pt-2 pb-4 flex-1 min-w-0 min-h-0 ${showDatePicker ? "overflow-visible" : "overflow-y-auto"}`}>
               <div className="space-y-3">
                 {/* 제목 + 이모지 */}
                 <div className="flex gap-2">
@@ -146,7 +155,7 @@ export default function CalendarEventModal({ formData, setFormData, editingEvent
                     }}
                     className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm text-left flex items-center gap-2 hover:bg-gray-50 transition"
                   >
-                    <span className="text-gray-400">📅</span>
+                    <CalendarDays aria-hidden="true" className="w-4 h-4 text-gray-400" />
                     <span className={formData.date ? "text-gray-800" : "text-gray-400"}>
                       {formData.date || "날짜 선택"}
                     </span>
@@ -200,14 +209,19 @@ export default function CalendarEventModal({ formData, setFormData, editingEvent
 
                 {/* 시간 */}
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-base pointer-events-none">⏰</span>
+                  <Clock aria-hidden="true" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   <input disabled={saving}
                     type="text"
-                    placeholder="시간 (예: 오후 2시)"
+                    aria-label="시간"
+                    placeholder="--:--"
+                    inputMode="numeric"
+                    maxLength={5}
                     value={formData.time}
-                    onChange={(e) =>
-                      setFormData({ ...formData, time: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+                      const time = digits.length > 2 ? `${digits.slice(0, 2)}:${digits.slice(2)}` : digits;
+                      setFormData({ ...formData, time });
+                    }}
                     className="w-full h-12 rounded-2xl border border-gray-200 pl-10 pr-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition"
                   />
                 </div>
@@ -231,30 +245,7 @@ export default function CalendarEventModal({ formData, setFormData, editingEvent
                   className="w-full h-20 rounded-2xl border border-gray-200 p-4 text-sm outline-none resize-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition"
                 />
 
-                {/* 색상 선택 */}
-                <div className="flex gap-2 items-center mb-0">
-                  <div className="flex gap-3">
-                    {[
-                      { value: "white", color: "bg-white", border: "border-gray-200" },
-                      { value: "blue", color: "bg-blue-50", border: "border-blue-100" },
-                      { value: "green", color: "bg-green-50", border: "border-green-100" },
-                      { value: "yellow", color: "bg-yellow-50", border: "border-yellow-100" },
-                      { value: "red", color: "bg-red-50", border: "border-red-100" },
-                    ].map((option) => (
-                      <button disabled={saving}
-                        key={option.value}
-                        onClick={() =>
-                          setFormData({ ...formData, color: option.value })
-                        }
-                        className={`w-8 h-8 rounded-full transition cursor-pointer hover:scale-105 border border-gray-200 ${
-                          formData.color === option.value
-                            ? "ring-2 ring-gray-400 ring-offset-2"
-                            : ""
-                        } ${option.color}`}
-                      />
-                    ))}
-                  </div>
-                </div>
+
               </div>
             </div>
 

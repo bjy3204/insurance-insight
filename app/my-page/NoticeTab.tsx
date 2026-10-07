@@ -1,4 +1,5 @@
 "use client";
+import ColorSelectButton from "@/app/components/memos/ColorSelectButton";
 
 import { useEffect, useRef, useState } from "react";
 import html2canvas from "html2canvas";
@@ -177,7 +178,7 @@ await new Promise((resolve) => setTimeout(resolve, 300));
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-6">
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-5 space-y-5">
+      <div className="personal-grid bg-white rounded-3xl shadow-sm border border-gray-200 p-5 space-y-5">
         <div>
           <p className="text-sm font-black text-gray-800 mb-2">안내장 종류</p>
           <div className="grid grid-cols-2 gap-2">
@@ -279,39 +280,13 @@ await new Promise((resolve) => setTimeout(resolve, 300));
   <div>
     <p className="text-sm font-black text-gray-800 mb-2">본문 색상</p>
 
-    <label className="h-12 rounded-2xl border border-gray-200 bg-white px-3 flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition">
-      <span
-        className="w-7 h-7 rounded-full border border-gray-200 shadow-inner"
-        style={{ backgroundColor: textColor }}
-      />
-      <span className="text-xs font-bold text-gray-600">{textColor}</span>
-
-      <input
-        type="color"
-        value={textColor}
-        onChange={(e) => setTextColor(e.target.value)}
-        className="sr-only"
-      />
-    </label>
+    <ColorSelectButton label="본문 색상 선택" value={textColor} onChange={setTextColor} />
   </div>
 
   <div>
     <p className="text-sm font-black text-gray-800 mb-2">서명 색상</p>
 
-    <label className="h-12 rounded-2xl border border-gray-200 bg-white px-3 flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition">
-      <span
-        className="w-7 h-7 rounded-full border border-gray-200 shadow-inner"
-        style={{ backgroundColor: signatureColor }}
-      />
-      <span className="text-xs font-bold text-gray-600">{signatureColor}</span>
-
-      <input
-        type="color"
-        value={signatureColor}
-        onChange={(e) => setSignatureColor(e.target.value)}
-        className="sr-only"
-      />
-    </label>
+    <ColorSelectButton label="서명 색상 선택" value={signatureColor} onChange={setSignatureColor} />
   </div>
 </div>
 
@@ -336,7 +311,7 @@ await new Promise((resolve) => setTimeout(resolve, 300));
         )}
       </div>
 
-     <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-10 flex justify-center items-start overflow-auto h-fit">
+     <div className="personal-grid bg-white rounded-3xl shadow-sm border border-gray-200 p-10 flex justify-center items-start overflow-auto h-fit">
 
   <div className={`h-[324px] md:h-auto origin-top ${isCapturing ? "scale-100" : "scale-[0.45] md:scale-100"}`}>
     <div

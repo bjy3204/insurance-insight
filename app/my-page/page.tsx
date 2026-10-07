@@ -1,11 +1,14 @@
 "use client";
+import DiaryTab from "./DiaryTab";
+import MemoBoard from "@/app/components/memos/MemoBoard";
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 import { Menu,
-  Home,
+  LayoutGrid,
+  ArrowLeft,
   Settings,
   X,
   Lock,
@@ -59,21 +62,28 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 import HomeTab from "./HomeTab";
+import PersonalSidebar from "./PersonalSidebar";
+import ProfileSettingsTab from "./ProfileSettingsTab";
+import type { PlantStage } from "./PlantSVG";
 import CalendarTab from "./CalendarTab";
+
 import AiMessageTab from "./AiMessageTab";
 import NoticeTab from "./NoticeTab";
-import CalculatorComp from "@/app/components/Calculator";
-import HeaderUtilityItems from '@/app/components/HeaderUtilityItems';
+
+
 
 // ─────────────────────────────────────────────
 // 타입 정의
 // ─────────────────────────────────────────────
 type ActiveTab =
+  | "memo"
+  | "diary"
   | "home"
   | "calendar"
   | "ai"
   | "customer"
-  | "notice";
+  | "notice"
+  | "settings";
 
 type MemoItem = {
   id: string;
@@ -150,17 +160,17 @@ const TABS = [
   { id: "home" as ActiveTab, label: "홈", icon: BookOpen },
   { id: "customer" as ActiveTab, label: "고객관리", icon: Users },
   { id: "notice" as ActiveTab, label: "안내장", icon: FileText },
+  { id: "memo" as ActiveTab, label: "메모", icon: NotebookPen },
+  { id: "diary" as ActiveTab, label: "일기", icon: BookOpen },
   { id: "calendar" as ActiveTab, label: "캘린더", icon: CalendarDays },
   { id: "ai" as ActiveTab, label: "AI메시지", icon: MessageSquare },
 ];
 
 const HOME_MENU_ITEMS = [
-  { id: "weather", label: "날씨", desc: "지역별 날씨 확인", icon: CloudSun, color: "text-sky-500", bg: "bg-sky-50" },
   { id: "dday", label: "D-Day", desc: "중요한 날짜 표시", icon: CalendarDays, color: "text-blue-500", bg: "bg-blue-50" },
-  { id: "bgm", label: "BGM", desc: "음악 플레이어", icon: Music, color: "text-pink-500", bg: "bg-pink-50" },
   { id: "schedule", label: "오늘 일정", desc: "오늘 등록된 일정", icon: CalendarDays, color: "text-indigo-500", bg: "bg-indigo-50" },
   { id: "checklist", label: "체크리스트", desc: "오늘 할 일 관리", icon: CheckSquare, color: "text-green-500", bg: "bg-green-50" },
-  { id: "memo", label: "메모 목록", desc: "개인 메모 확인", icon: NotebookPen, color: "text-yellow-500", bg: "bg-yellow-50" },
+  { id: "memo", label: "메모", desc: "개인 메모 확인", icon: NotebookPen, color: "text-yellow-500", bg: "bg-yellow-50" },
   { id: "diary", label: "일기", desc: "월별 일기 기록", icon: BookOpen, color: "text-blue-500", bg: "bg-blue-50" },
 ];
 
@@ -204,17 +214,20 @@ export default function CustomerManagePage() {
 
   const [settings, setSettings] = useState<CustomerSettings | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("home");
+  const [plantPopupOpen, setPlantPopupOpen] = useState(false);
+  const [sidebarPlantStage, setSidebarPlantStage] = useState<PlantStage>("seed");
   const [tabs, setTabs] = useState(TABS);
 
   // 설정 드롭다운
   const [settingOpen, setSettingOpen] = useState(false);
+const [sidebarOpen, setSidebarOpen] = useState(false);
+const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 const [homeMenuSettingOpen, setHomeMenuSettingOpen] = useState(false);
 const [hiddenHomeMenus, setHiddenHomeMenus] = useState<string[]>([]);
 const settingRef = useRef<HTMLDivElement>(null);
 
 
-  // 개인설정 팝업
-  const [settingPanelOpen, setSettingPanelOpen] = useState(false);
+  // 개인설정 탭
   const [settingForm, setSettingForm] = useState({
   kakao_url: "",
   kakao_name: "",
@@ -636,19 +649,19 @@ updateData.pin_changed_at = new Date().toISOString();
 
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-24">
+    <div data-personal-space="true" className="min-h-screen bg-gray-100">
 
       {/* ── 헤더 ── */}
-      <header data-page-header="true" className="bg-white border-b border-black shadow-sm overflow-visible">
+      <header data-page-header="true" className="sticky top-0 z-50 bg-white border-b border-black shadow-sm overflow-visible">
   <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
 
-            {/* 홈 버튼 */}
+            {/* 메인으로 이동 */}
             <button data-header-control="true"
               onClick={() => router.push("/")}
               className="absolute left-0 w-11 h-11 rounded-xl border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 shadow-sm transition cursor-pointer"
             >
-              <Home className="w-5 h-5 text-gray-700" />
+              <ArrowLeft className="w-5 h-5 text-gray-700" />
             </button>
 
             {/* 타이틀 */}
@@ -666,74 +679,34 @@ updateData.pin_changed_at = new Date().toISOString();
   
 </div>
 
-            {/* 설정 드롭다운 */}
-            <div ref={settingRef} className={`absolute right-0 top-1/2 -translate-y-1/2 ${settingOpen ? "z-[1000]" : "z-40"}`}>
-
-              <div className="relative">
-                <button data-header-control="true"
-                  onClick={(e) => { e.stopPropagation(); setSettingOpen(!settingOpen); }}
-                  className={`w-10 h-10 rounded-full border border-gray-200 shadow-sm flex items-center justify-center transition cursor-pointer ${
-                    settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"
-                  }`}
-                >
-                  <Menu className="w-5 h-5 text-gray-500" />
-                </button>
-
-                {settingOpen && (
-                  <div
-                    onClick={(e) => e.stopPropagation()}
-                    className="absolute right-0 top-12 z-[999] w-40 rounded-2xl bg-white border border-gray-200 shadow-xl"
-                  >
-                    <button
-                      onClick={() => { setSettingOpen(false); setTimeout(() => setMemoOpen(true), 50); }}
-                      className="block w-full text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-b border-gray-100 cursor-pointer"
-                    >
-                      메모장
-                    </button>
-                    <HeaderUtilityItems onClose={() => setSettingOpen(false)} />
-
-<button
-  onClick={() => {
-    setSettingOpen(false);
-    setTimeout(() => setHomeMenuSettingOpen(true), 50);
-  }}
-  className="block w-full text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-b border-gray-100 cursor-pointer"
->
-  홈 설정
-</button>
-
-                    <button
-                      onClick={() => { setSettingOpen(false); setTimeout(() => setSettingPanelOpen(true), 50); }}
-                      className="block w-full rounded-b-2xl text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition cursor-pointer"
-                    >
-                      개인설정
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+<button data-header-control="true" aria-label="개인공간 메뉴" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(v => !v)} className="absolute right-0 w-10 h-10 rounded-full md:!hidden border border-gray-200 bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 cursor-pointer"><Menu className="w-5 h-5 text-gray-500" /></button>
+<div ref={settingRef} className="absolute right-0 hidden md:block" onKeyDown={event => { if (event.key === "Escape") setSettingOpen(false); }}>
+  <button type="button" data-header-control="true" aria-label="도구 메뉴" aria-expanded={settingOpen} aria-controls="personal-header-tools" onClick={() => setSettingOpen(open => !open)}><LayoutGrid /></button>
+  {settingOpen && <div id="personal-header-tools" className="absolute right-0 top-12 z-[1000] w-40 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+    <button type="button" onClick={() => { window.dispatchEvent(new Event("open-memo-manager")); setSettingOpen(false); }} className="block w-full px-4 py-3 text-sm font-bold text-gray-700 text-center hover:bg-gray-50 cursor-pointer">메모장</button>
+    {[{ label: "계산기", event: "open-calculator" }, { label: "환율변환기", event: "open-currency-converter" }].map(item => <button key={item.event} type="button" onClick={() => { setSettingOpen(false); window.dispatchEvent(new CustomEvent(item.event)); }} className="block w-full border-t border-gray-100 px-4 py-3 text-sm font-bold text-gray-700 text-center hover:bg-gray-50 cursor-pointer">{item.label}</button>)}
+  </div>}
+</div>
           </div>
         </div>
       </header>
 
-      {/* ── 탭 ── */}
-<div className="w-full px-6 pt-3 pb-0 max-w-7xl mx-auto">
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleTabDragEnd}>
-      <SortableContext items={tabs.map(t => t.id)} strategy={rectSortingStrategy}>
-        <div data-tab-group="true" className="grid grid-cols-3 md:grid-cols-5 bg-gray-200 rounded-2xl p-1 mb-5">
-          {tabs.map((tab) => (
-            <SortableTab key={tab.id} tab={tab} activeTab={activeTab} setActiveTab={setActiveTab} />
-          ))}
-        </div>
-      </SortableContext>
-    </DndContext>
-</div>
+<PersonalSidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} onPlantOpen={() => { setPlantPopupOpen(open => !open); }} nickname={settings?.nickname || "회원"} plantStage={sidebarPlantStage} mobileOpen={sidebarOpen} onMobileClose={() => setSidebarOpen(false)} activeTab={activeTab} tabs={tabs} onSelect={id => setActiveTab(id as ActiveTab)}
+ shortcuts={([{type:"kakao",name:settings?.kakao_name,icon:settings?.kakao_icon},{type:"mysite",name:settings?.my_site_name,icon:settings?.my_site_icon},{type:"spreadsheet",name:settings?.spreadsheet_name,icon:settings?.spreadsheet_icon}] as const).map(link => ({id:link.type,label:link.name || "바로가기 추가",icon:LINK_ICONS.find(item => item.id === (link.icon || "CirclePlus"))?.icon || CirclePlus,onClick:() => handleUrlButtonClick(link.type)}))}
+ onSettings={() => { setActiveTab("settings"); setSidebarOpen(false); }} />
+<div className={`transition-[padding] duration-200 motion-reduce:transition-none ${sidebarCollapsed ? "md:pl-0" : "md:pl-24"}`}><div className="min-w-0">
       {/* ── 탭 콘텐츠 ── */}
-      <main className="max-w-7xl mx-auto px-6 pb-8">
+      <main data-page-content="true" className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-8">
+       {activeTab === "memo" && <MemoBoard />}
+       {activeTab === "diary" && <DiaryTab />}
        <div className={activeTab === "home" ? "block" : "hidden"}>
   <HomeTab
+  view="home"
   settings={settings}
   hiddenHomeMenus={hiddenHomeMenus}
+  onPlantStageChange={setSidebarPlantStage}
+  plantPopupOpen={plantPopupOpen}
+  onPlantPopupClose={() => setPlantPopupOpen(false)}
 />
 </div>
 
@@ -764,37 +737,198 @@ updateData.pin_changed_at = new Date().toISOString();
 </div>
 
         
+
+{activeTab === "settings" && (
+  <div className="space-y-5">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+      <ProfileSettingsTab onSaved={loadSettings} />
+      <section className="personal-grid bg-white p-5 md:p-6 space-y-4">
+<h2 className="text-base font-bold text-gray-900">바로가기 · 개인공간 PIN</h2>
+              <div>
+                <label className="text-xs text-gray-500 font-semibold mb-1 block">바로가기 1</label>
+<div className="flex items-center gap-2 mb-1">
+  <div className="relative shrink-0">
+    <button
+      type="button"
+      onClick={() => setIconPickerOpen(iconPickerOpen === "kakao" ? null : "kakao")}
+      className="flex items-center gap-1.5 px-2.5 h-9 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+    >
+      {(() => {
+        const found = LINK_ICONS.find(i => i.id === settingForm.kakao_icon);
+        const IconComp = found ? found.icon : CirclePlus;
+        return <IconComp className="w-4 h-4 text-gray-700" />;
+      })()}
+      <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${iconPickerOpen === "kakao" ? "rotate-180" : ""}`} />
+    </button>
+    {iconPickerOpen === "kakao" && (
+      <div className="absolute top-full left-0 mt-1 z-[9999] w-[220px] grid grid-cols-5 gap-1 p-2 rounded-xl border border-gray-200 bg-white shadow-lg">
+        {LINK_ICONS.map((item) => {
+          const IconComp = item.icon;
+          return (
+            <button key={item.id} type="button"
+              onClick={() => { setSettingForm((f) => ({ ...f, kakao_icon: item.id })); setIconPickerOpen(null); }}
+              className={`flex items-center justify-center p-1.5 rounded-lg border transition cursor-pointer ${settingForm.kakao_icon === item.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"}`}>
+              <IconComp className="w-4 h-4 text-gray-700" />
+            </button>
+          );
+        })}
+      </div>
+    )}
+  </div>
+  <input
+    value={settingForm.kakao_name}
+    onChange={(e) => setSettingForm((f) => ({ ...f, kakao_name: e.target.value }))}
+    placeholder="버튼 이름"
+    className="flex-1 h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+  />
+</div>
+
+                <input
+                  value={settingForm.kakao_url}
+                  onChange={(e) => setSettingForm((f) => ({ ...f, kakao_url: e.target.value }))}
+                  placeholder="https://"
+                  className="w-full h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+                />
+              </div>
+              <div>
+  <label className="text-xs text-gray-500 font-semibold mb-1 block">바로가기 2</label>
+  <div className="flex items-center gap-2 mb-1">
+    <div className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setIconPickerOpen(iconPickerOpen === "mysite" ? null : "mysite")}
+        className="flex items-center gap-1.5 px-2.5 h-9 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+      >
+        {(() => {
+          const found = LINK_ICONS.find(i => i.id === settingForm.my_site_icon);
+          const IconComp = found ? found.icon : CirclePlus;
+          return <IconComp className="w-4 h-4 text-gray-700" />;
+        })()}
+        <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${iconPickerOpen === "mysite" ? "rotate-180" : ""}`} />
+      </button>
+      {iconPickerOpen === "mysite" && (
+        <div className="absolute top-full left-0 mt-1 z-[9999] w-[220px] grid grid-cols-5 gap-1 p-2 rounded-xl border border-gray-200 bg-white shadow-lg">
+          {LINK_ICONS.map((item) => {
+            const IconComp = item.icon;
+            return (
+              <button key={item.id} type="button"
+                onClick={() => { setSettingForm((f) => ({ ...f, my_site_icon: item.id })); setIconPickerOpen(null); }}
+                className={`flex items-center justify-center p-1.5 rounded-lg border transition cursor-pointer ${settingForm.my_site_icon === item.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"}`}>
+                <IconComp className="w-4 h-4 text-gray-700" />
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+    <input
+      value={settingForm.my_site_name}
+      onChange={(e) => setSettingForm((f) => ({ ...f, my_site_name: e.target.value }))}
+      placeholder="버튼 이름"
+      className="flex-1 h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+    />
+  </div>
+  <input
+    value={settingForm.my_site_url}
+    onChange={(e) => setSettingForm((f) => ({ ...f, my_site_url: e.target.value }))}
+    placeholder="https://"
+    className="w-full h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+  />
+</div>
+
+              <div>
+  <label className="text-xs text-gray-500 font-semibold mb-1 block">바로가기 3</label>
+  <div className="flex items-center gap-2 mb-1">
+    <div className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setIconPickerOpen(iconPickerOpen === "spreadsheet" ? null : "spreadsheet")}
+        className="flex items-center gap-1.5 px-2.5 h-9 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+      >
+        {(() => {
+          const found = LINK_ICONS.find(i => i.id === settingForm.spreadsheet_icon);
+          const IconComp = found ? found.icon : CirclePlus;
+          return <IconComp className="w-4 h-4 text-gray-700" />;
+        })()}
+        <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${iconPickerOpen === "spreadsheet" ? "rotate-180" : ""}`} />
+      </button>
+      {iconPickerOpen === "spreadsheet" && (
+        <div className="absolute top-full left-0 mt-1 z-[9999] w-[220px] grid grid-cols-5 gap-1 p-2 rounded-xl border border-gray-200 bg-white shadow-lg">
+          {LINK_ICONS.map((item) => {
+            const IconComp = item.icon;
+            return (
+              <button key={item.id} type="button"
+                onClick={() => { setSettingForm((f) => ({ ...f, spreadsheet_icon: item.id })); setIconPickerOpen(null); }}
+                className={`flex items-center justify-center p-1.5 rounded-lg border transition cursor-pointer ${settingForm.spreadsheet_icon === item.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"}`}>
+                <IconComp className="w-4 h-4 text-gray-700" />
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+    <input
+      value={settingForm.spreadsheet_name}
+      onChange={(e) => setSettingForm((f) => ({ ...f, spreadsheet_name: e.target.value }))}
+      placeholder="버튼 이름"
+      className="flex-1 h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+    />
+  </div>
+  <input
+    value={settingForm.spreadsheet_url}
+    onChange={(e) => setSettingForm((f) => ({ ...f, spreadsheet_url: e.target.value }))}
+    placeholder="https://"
+    className="w-full h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+  />
+</div>
+
+              <div className="border-t border-gray-100 pt-3">
+                <label className="text-xs text-gray-500 font-semibold mb-1 block">개인공간 PIN 변경 (4자리)</label>
+                <div className="relative">
+                  <input
+                    type={showNewPin ? "text" : "password"}
+                    value={settingForm.new_pin}
+                    onChange={(e) => setSettingForm((f) => ({ ...f, new_pin: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
+                    placeholder="새 PIN 4자리"
+                    className="w-full h-9 px-3 pr-9 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+                  />
+                  <button
+                    onClick={() => setShowNewPin(!showNewPin)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
+                  >
+                    {showNewPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {settingForm.new_pin && (
+                  <input
+                    type="password"
+                    value={settingForm.confirm_pin}
+                    onChange={(e) => setSettingForm((f) => ({ ...f, confirm_pin: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
+                    placeholder="새 PIN 확인"
+                    className="w-full h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition mt-2"
+                  />
+                )}
+              </div>
+              {settingMsg && (
+                <p className={`text-xs text-center font-semibold ${settingMsg.includes("실패") || settingMsg.includes("않") ? "text-red-500" : "text-green-600"}`}>
+                  {settingMsg}
+                </p>
+              )}
+              <button
+                onClick={handleSaveSettings}
+                disabled={settingSaving}
+                className="w-full h-12 bg-gray-800 text-white text-sm font-bold rounded-2xl hover:bg-gray-700 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              >
+                
+                {settingSaving ? "저장 중..." : "바로가기 · PIN 저장"}
+              </button>
+            </section>
+    </div>
+  </div>
+)}
       </main>
 
-      {/* ── 하단 고정바 ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t shadow-lg">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-around text-center">
-          {/* 카카오톡 채널 */}
-          <button onClick={() => handleUrlButtonClick("kakao")}
-  className="flex flex-col items-center justify-center gap-1 text-gray-700 transition cursor-pointer"
-  title={settings?.kakao_url ? "카카오톡 채널 열기" : "카카오톡 채널 URL 설정"}>
-  {(() => { const found = LINK_ICONS.find(i => i.id === (settings?.kakao_icon || "CirclePlus")); const IconComp = found ? found.icon : CirclePlus; return <IconComp className="w-5 h-5" />; })()}
-  {settings?.kakao_name && <span className="text-sm text-gray-700 max-w-[120px] truncate">{settings.kakao_name}</span>}
-</button>
-          {/* 내 사이트 */}
-        <button onClick={() => handleUrlButtonClick("mysite")}
-  className="flex flex-col items-center justify-center gap-1 text-gray-700 transition cursor-pointer"
-  title={settings?.my_site_url ? "내 사이트 열기" : "내 사이트 URL 설정"}>
-  {(() => { const found = LINK_ICONS.find(i => i.id === (settings?.my_site_icon || "CirclePlus")); const IconComp = found ? found.icon : CirclePlus; return <IconComp className="w-5 h-5" />; })()}
-  {settings?.my_site_name && <span className="text-sm text-gray-700 max-w-[120px] truncate">{settings.my_site_name}</span>}
-</button>
-          {/* 구글 스프레드시트 */}
-    <button onClick={() => handleUrlButtonClick("spreadsheet")}
-  className="flex flex-col items-center justify-center gap-1 text-gray-700 transition cursor-pointer"
-  title={settings?.spreadsheet_url ? "스프레드시트 열기" : "스프레드시트 URL 설정"}>
-  {(() => { const found = LINK_ICONS.find(i => i.id === (settings?.spreadsheet_icon || "CirclePlus")); const IconComp = found ? found.icon : CirclePlus; return <IconComp className="w-5 h-5" />; })()}
-  {settings?.spreadsheet_name && <span className="text-sm text-gray-700 max-w-[120px] truncate">{settings.spreadsheet_name}</span>}
-</button>
-        </div>
-      </div>
-
-    
-
+</div></div>
      {/* ── URL 설정 팝업 ── */}
 {urlPopupType && (
   <div className="fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4">
@@ -961,7 +1095,7 @@ updateData.pin_changed_at = new Date().toISOString();
       return (
         <div
           key={item.id}
-className={`relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 ${
+className={`personal-grid relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 ${
   hidden
     ? "opacity-45"
     : "hover:-translate-y-1 hover:shadow-lg"
@@ -1025,7 +1159,7 @@ className={`relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm t
       return (
         <div
           key={item.id}
-className={`relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 ${
+className={`personal-grid relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 ${
   hidden
     ? "opacity-45"
     : "hover:-translate-y-1 hover:shadow-lg"
@@ -1089,7 +1223,7 @@ className={`relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm t
       return (
         <div
           key={item.id}
-className={`relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 ${
+className={`personal-grid relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 ${
   hidden
     ? "opacity-45"
     : "hover:-translate-y-1 hover:shadow-lg"
@@ -1151,539 +1285,22 @@ className={`relative rounded-3xl border border-gray-200 bg-white p-5 shadow-sm t
   </div>
 )}
 
-      {/* ── 개인설정 팝업 ── */}
-      {settingPanelOpen && (
-        <div className="fixed inset-0 z-[200] bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm">
-            <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between rounded-t-3xl">
-              <span className="font-bold text-sm flex items-center gap-2">
-                <Settings className="w-4 h-4" /> 개인 설정
-              </span>
-              <button data-popup-close="true"
-                onClick={() => setSettingPanelOpen(false)}
-                className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="p-5 space-y-3">
-              <div>
-                <label className="text-xs text-gray-500 font-semibold mb-1 block">내 사이트 URL 설정</label>
-<div className="flex items-center gap-2 mb-1">
-  <div className="relative shrink-0">
-    <button
-      type="button"
-      onClick={() => setIconPickerOpen(iconPickerOpen === "kakao" ? null : "kakao")}
-      className="flex items-center gap-1.5 px-2.5 h-9 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
-    >
-      {(() => {
-        const found = LINK_ICONS.find(i => i.id === settingForm.kakao_icon);
-        const IconComp = found ? found.icon : CirclePlus;
-        return <IconComp className="w-4 h-4 text-gray-700" />;
-      })()}
-      <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${iconPickerOpen === "kakao" ? "rotate-180" : ""}`} />
-    </button>
-    {iconPickerOpen === "kakao" && (
-      <div className="absolute top-full left-0 mt-1 z-[9999] w-[220px] grid grid-cols-5 gap-1 p-2 rounded-xl border border-gray-200 bg-white shadow-lg">
-        {LINK_ICONS.map((item) => {
-          const IconComp = item.icon;
-          return (
-            <button key={item.id} type="button"
-              onClick={() => { setSettingForm((f) => ({ ...f, kakao_icon: item.id })); setIconPickerOpen(null); }}
-              className={`flex items-center justify-center p-1.5 rounded-lg border transition cursor-pointer ${settingForm.kakao_icon === item.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"}`}>
-              <IconComp className="w-4 h-4 text-gray-700" />
-            </button>
-          );
-        })}
-      </div>
-    )}
-  </div>
-  <input
-    value={settingForm.kakao_name}
-    onChange={(e) => setSettingForm((f) => ({ ...f, kakao_name: e.target.value }))}
-    placeholder="버튼 이름"
-    className="flex-1 h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-  />
-</div>
-
-                <input
-                  value={settingForm.kakao_url}
-                  onChange={(e) => setSettingForm((f) => ({ ...f, kakao_url: e.target.value }))}
-                  placeholder="https://"
-                  className="w-full h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-                />
-              </div>
-              <div>
-  <label className="text-xs text-gray-500 font-semibold mb-1 block">내 사이트 URL 설정</label>
-  <div className="flex items-center gap-2 mb-1">
-    <div className="relative shrink-0">
-      <button
-        type="button"
-        onClick={() => setIconPickerOpen(iconPickerOpen === "mysite" ? null : "mysite")}
-        className="flex items-center gap-1.5 px-2.5 h-9 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
-      >
-        {(() => {
-          const found = LINK_ICONS.find(i => i.id === settingForm.my_site_icon);
-          const IconComp = found ? found.icon : CirclePlus;
-          return <IconComp className="w-4 h-4 text-gray-700" />;
-        })()}
-        <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${iconPickerOpen === "mysite" ? "rotate-180" : ""}`} />
-      </button>
-      {iconPickerOpen === "mysite" && (
-        <div className="absolute top-full left-0 mt-1 z-[9999] w-[220px] grid grid-cols-5 gap-1 p-2 rounded-xl border border-gray-200 bg-white shadow-lg">
-          {LINK_ICONS.map((item) => {
-            const IconComp = item.icon;
-            return (
-              <button key={item.id} type="button"
-                onClick={() => { setSettingForm((f) => ({ ...f, my_site_icon: item.id })); setIconPickerOpen(null); }}
-                className={`flex items-center justify-center p-1.5 rounded-lg border transition cursor-pointer ${settingForm.my_site_icon === item.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"}`}>
-                <IconComp className="w-4 h-4 text-gray-700" />
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-    <input
-      value={settingForm.my_site_name}
-      onChange={(e) => setSettingForm((f) => ({ ...f, my_site_name: e.target.value }))}
-      placeholder="버튼 이름"
-      className="flex-1 h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-    />
-  </div>
-  <input
-    value={settingForm.my_site_url}
-    onChange={(e) => setSettingForm((f) => ({ ...f, my_site_url: e.target.value }))}
-    placeholder="https://"
-    className="w-full h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-  />
-</div>
-
-              <div>
-  <label className="text-xs text-gray-500 font-semibold mb-1 block">내 사이트 URL 설정</label>
-  <div className="flex items-center gap-2 mb-1">
-    <div className="relative shrink-0">
-      <button
-        type="button"
-        onClick={() => setIconPickerOpen(iconPickerOpen === "spreadsheet" ? null : "spreadsheet")}
-        className="flex items-center gap-1.5 px-2.5 h-9 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
-      >
-        {(() => {
-          const found = LINK_ICONS.find(i => i.id === settingForm.spreadsheet_icon);
-          const IconComp = found ? found.icon : CirclePlus;
-          return <IconComp className="w-4 h-4 text-gray-700" />;
-        })()}
-        <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${iconPickerOpen === "spreadsheet" ? "rotate-180" : ""}`} />
-      </button>
-      {iconPickerOpen === "spreadsheet" && (
-        <div className="absolute top-full left-0 mt-1 z-[9999] w-[220px] grid grid-cols-5 gap-1 p-2 rounded-xl border border-gray-200 bg-white shadow-lg">
-          {LINK_ICONS.map((item) => {
-            const IconComp = item.icon;
-            return (
-              <button key={item.id} type="button"
-                onClick={() => { setSettingForm((f) => ({ ...f, spreadsheet_icon: item.id })); setIconPickerOpen(null); }}
-                className={`flex items-center justify-center p-1.5 rounded-lg border transition cursor-pointer ${settingForm.spreadsheet_icon === item.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"}`}>
-                <IconComp className="w-4 h-4 text-gray-700" />
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-    <input
-      value={settingForm.spreadsheet_name}
-      onChange={(e) => setSettingForm((f) => ({ ...f, spreadsheet_name: e.target.value }))}
-      placeholder="버튼 이름"
-      className="flex-1 h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-    />
-  </div>
-  <input
-    value={settingForm.spreadsheet_url}
-    onChange={(e) => setSettingForm((f) => ({ ...f, spreadsheet_url: e.target.value }))}
-    placeholder="https://"
-    className="w-full h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-  />
-</div>
-
-              <div className="border-t border-gray-100 pt-3">
-                <label className="text-xs text-gray-500 font-semibold mb-1 block">새 PIN (변경 시만 입력)</label>
-                <div className="relative">
-                  <input
-                    type={showNewPin ? "text" : "password"}
-                    value={settingForm.new_pin}
-                    onChange={(e) => setSettingForm((f) => ({ ...f, new_pin: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
-                    placeholder="새 PIN 4자리"
-                    className="w-full h-9 px-3 pr-9 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-                  />
-                  <button
-                    onClick={() => setShowNewPin(!showNewPin)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
-                  >
-                    {showNewPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                {settingForm.new_pin && (
-                  <input
-                    type="password"
-                    value={settingForm.confirm_pin}
-                    onChange={(e) => setSettingForm((f) => ({ ...f, confirm_pin: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
-                    placeholder="새 PIN 확인"
-                    className="w-full h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition mt-2"
-                  />
-                )}
-              </div>
-              {settingMsg && (
-                <p className={`text-xs text-center font-semibold ${settingMsg.includes("실패") || settingMsg.includes("않") ? "text-red-500" : "text-green-600"}`}>
-                  {settingMsg}
-                </p>
-              )}
-              <button
-                onClick={handleSaveSettings}
-                disabled={settingSaving}
-                className="w-full h-12 bg-gray-800 text-white text-sm font-bold rounded-2xl hover:bg-gray-700 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
-              >
-                
-                {settingSaving ? "저장 중..." : "저장"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── 메모장 팝업 ── */}
-      {memoOpen && (
-        <div
-          onClick={() => setMemoOpen(false)}
-          className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4"
-        >
-          <div data-popup-frame="true"
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col"
-          >
-            {/* 헤더 */}
-            <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
-              <div className="font-bold flex items-center gap-2">
-                <NotebookPen className="w-5 h-5" />
-                메모장
-              </div>
-              <button data-popup-close="true"
-                onClick={() => setMemoOpen(false)}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      
 
-            {/* 검색 + 추가 */}
-            <div className="p-4">
-              <div className="grid grid-cols-[1fr_auto] gap-3">
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    value={memoSearch}
-                    onChange={(e) => { setMemoSearch(e.target.value); setMemoPage(1); }}
-                    placeholder="메모 검색"
-                    className="w-full h-12 rounded-2xl border border-gray-200 bg-white pl-11 pr-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition"
-                  />
-                </div>
-                <button
-                  onClick={() => setMemoAddOpen(true)}
-                  className="h-12 rounded-2xl bg-gray-800 text-white px-5 text-sm font-bold flex items-center justify-center gap-1.5 hover:bg-gray-700 transition cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" />
-                  추가
-                </button>
-              </div>
-            </div>
-
-            {/* 메모 카드 목록 */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
-              {pagedMemos.length === 0 ? (
-                <div className="col-span-full h-full flex items-center justify-center text-sm text-gray-400 min-h-[200px]">
-                  저장된 메모가 없습니다.
-                </div>
-              ) : (
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleMemoDragEnd}>
-                  <SortableContext
-                    items={pagedMemos.filter((m) => !m.pinned).map((m) => m.id)}
-                    strategy={rectSortingStrategy}
-                  >
-                    {pagedMemos.map((memo) => (
-                      <SortableMemoCard key={memo.id} memo={memo}>
-                        <div
-  onDoubleClick={() => setSelectedMemo(memo)}
-  onContextMenu={(e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    setMemoContextMenu({
-      x: e.clientX,
-      y: e.clientY,
-      memo,
-    });
-  }}
-  className={`rounded-2xl border shadow-sm ${getMemoColorClass(memo.color)} hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-default p-4`}
->
-                          <div className="flex items-start gap-3">
-                            <div className="flex-1 min-w-0 flex flex-col min-h-[130px]">
-                              <h3 className="text-sm font-black text-gray-900 mb-2 break-keep">{memo.title}</h3>
-                              <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line break-keep">{memo.content}</p>
-                              <p className="text-[11px] text-gray-400 mt-auto pt-3">
-                                수정일 {new Date(memo.updatedAt).toLocaleDateString("ko-KR")}
-                              </p>
-                            </div>
-                            <div className="flex flex-col gap-2 shrink-0">
-                              <button
-                                onClick={(e) => { e.stopPropagation(); toggleMemoVisible(memo.id); }}
-                                className={`w-10 h-10 rounded-full hidden sm:flex items-center justify-center border transition cursor-pointer ${
-                                  memo.visible
-                                    ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700"
-                                    : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
-                                }`}
-                                title="메인 노출"
-                              >
-                                {memo.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                              </button>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); toggleMemoPinned(memo.id); }}
-                                className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-pointer ${
-                                  memo.pinned
-                                    ? "bg-gray-800 border-gray-800 text-white hover:bg-gray-700"
-                                    : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
-                                }`}
-                                title="상단 고정"
-                              >
-                                <Pin className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setSelectedMemo(memo); }}
-                                className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 bg-white text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition cursor-pointer"
-                                title="수정"
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </SortableMemoCard>
-                    ))}
-                  </SortableContext>
-                </DndContext>
-              )}
-            </div>
-
-            {/* 페이지네이션 */}
-            <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100 bg-white">
-              <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
-                <button
-                  onClick={() => setMemoPage((p) => Math.max(1, p - 1))}
-                  disabled={memoPage === 1}
-                  className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 disabled:text-gray-300 disabled:hover:bg-white cursor-pointer disabled:cursor-default"
-                >
-                  이전
-                </button>
-                {Array.from({ length: Math.min(totalMemoPages, 10) }).map((_, index) => {
-                  const page = index + 1;
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setMemoPage(page)}
-                      className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
-                        memoPage === page
-                          ? "bg-slate-800 text-white hover:bg-slate-700"
-                          : "bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
-                <button
-                  onClick={() => setMemoPage((p) => Math.min(totalMemoPages, p + 1))}
-                  disabled={memoPage === totalMemoPages}
-                  className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 disabled:text-gray-300 disabled:hover:bg-white cursor-pointer disabled:cursor-default"
-                >
-                  다음
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {memoContextMenu && (
-  <div
-    className="fixed z-[1600] w-32 rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden"
-    style={{
-      left: memoContextMenu.x,
-      top: memoContextMenu.y,
-    }}
-    onClick={(e) => e.stopPropagation()}
-  >
-    <button
-      onClick={() => {
-        setSelectedMemo(memoContextMenu.memo);
-        setMemoContextMenu(null);
-      }}
-      className="w-full px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition text-left"
-    >
-      수정
-    </button>
-
-    <button
-      onClick={() => {
-        deleteMemo(memoContextMenu.memo.id);
-        setMemoContextMenu(null);
-      }}
-      className="w-full px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 transition text-left border-t border-gray-100"
-    >
-      삭제
-    </button>
-  </div>
-)}
+      
 
       {/* ── 메모 추가 팝업 ── */}
-      {memoAddOpen && (
-        <div
-          onClick={() => setMemoAddOpen(false)}
-          className="fixed inset-0 z-[1400] bg-black/40 flex items-center justify-center p-4"
-        >
-          <div onClick={(e) => e.stopPropagation()} className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-black text-gray-900">메모 추가</h2>
-            </div>
-            <input
-              value={memoTitle}
-              onChange={(e) => setMemoTitle(e.target.value)}
-              placeholder="메모 제목"
-              className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none mb-3"
-            />
-            <textarea
-              value={memoContent}
-              onChange={(e) => setMemoContent(e.target.value)}
-              placeholder="메모 내용을 입력하세요"
-              className="w-full h-56 rounded-2xl border border-gray-200 p-4 text-sm outline-none resize-none mb-5"
-            />
-            <p className="-mt-4 mb-3 text-xs text-gray-400 leading-relaxed break-keep">
-              {authUser && authStatus === "approved"
-                ? "※ 메모는 서버에 저장되어 어디서든 로그인하면 불러올 수 있습니다."
-                : "※ 메모는 브라우저 캐시 삭제 또는 기기 변경 시 삭제될 수 있습니다."}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setMemoAddOpen(false)}
-                className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-pointer"
-              >
-                취소
-              </button>
-              <button
-                onClick={() => { addMemo(); setMemoAddOpen(false); }}
-                className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-pointer"
-              >
-                저장
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
       {/* ── 메모 수정 팝업 ── */}
-      {selectedMemo && (
-        <div className="fixed inset-0 z-[1300] bg-black/40 flex items-center justify-center p-4">
-          <div onClick={(e) => e.stopPropagation()} className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-black text-gray-900">메모 수정</h2>
-              <div className="flex items-center gap-2">
-                {memoColorOptions.map((color) => (
-                  <button
-                    key={color.value}
-                    type="button"
-                    onClick={() => {
-                      changeMemoColor(selectedMemo.id, color.value);
-                      setSelectedMemo({ ...selectedMemo, color: color.value, updatedAt: new Date().toISOString() });
-                    }}
-                    className={`w-7 h-7 rounded-full border transition hover:scale-105 cursor-pointer ${
-                      selectedMemo.color === color.value ? "ring-2 ring-gray-400 ring-offset-2" : ""
-                    } ${color.className}`}
-                  />
-                ))}
-                <button data-popup-close="true"
-                  onClick={() => setSelectedMemo(null)}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-            <input
-              value={selectedMemo.title}
-              onChange={(e) => setSelectedMemo({ ...selectedMemo, title: e.target.value })}
-              placeholder="메모 제목"
-              className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none mb-3"
-            />
-            <textarea
-              value={selectedMemo.content}
-              onChange={(e) => setSelectedMemo({ ...selectedMemo, content: e.target.value })}
-              placeholder="메모 내용을 입력하세요"
-              className="w-full h-56 rounded-2xl border border-gray-200 p-4 text-sm outline-none resize-none mb-5"
-            />
-            <p className="-mt-4 mb-3 text-xs text-gray-400 leading-relaxed break-keep">
-              {authUser && authStatus === "approved"
-                ? "※ 메모는 서버에 저장되어 어디서든 로그인하면 불러올 수 있습니다."
-                : "※ 메모는 브라우저 캐시 삭제 또는 기기 변경 시 삭제될 수 있습니다."}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => deleteMemo(selectedMemo.id)}
-                className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-600 text-sm font-bold hover:bg-red-50 hover:text-red-500 transition cursor-pointer"
-              >
-                삭제
-              </button>
-              <button
-                onClick={() => {
-                  const nextMemos = (memos as MemoItem[]).map((m) =>
-                    m.id === selectedMemo.id
-                      ? { ...selectedMemo, updatedAt: new Date().toISOString() }
-                      : m
-                  );
-                  saveMemos(nextMemos);
-                  setSelectedMemo(null);
-                }}
-                className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-pointer"
-              >
-                완료
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
       {/* ── 메모 삭제 확인 팝업 ── */}
-      {deleteMemoConfirmOpen && (
-        <div className="fixed inset-0 z-[1500] bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-xl p-6 w-full max-w-sm">
-            <h3 className="text-lg font-black text-gray-900 mb-2">메모 삭제</h3>
-            <p className="text-sm text-gray-500 mb-5">이 메모를 삭제하시겠습니까?</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setDeleteMemoConfirmOpen(false); setDeleteMemoId(null); }}
-                className="flex-1 h-11 rounded-2xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-pointer"
-              >
-                취소
-              </button>
-              <button
-                onClick={confirmDeleteMemo}
-                className="flex-1 h-11 rounded-2xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition cursor-pointer"
-              >
-                삭제
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
       {/* ── 계산기 컴포넌트 ── */}
-      <CalculatorComp />
+
     </div>
   );
 }
@@ -1741,7 +1358,7 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
            {embedUrl && (
         <iframe
           src={embedUrl}
-          className="w-full rounded-2xl border border-gray-200 shadow"
+          className="personal-grid w-full rounded-2xl border border-gray-200 shadow"
           style={{ height: "85vh" }}
           frameBorder="0"
           allowFullScreen

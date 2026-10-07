@@ -114,7 +114,7 @@ const currentInstructors = filteredInstructors.slice(
         </div>
       </header>
 
-      <div className="w-full px-6 py-6 max-w-7xl mx-auto">
+      <div data-page-content="true" className="w-full px-6 py-6 max-w-7xl mx-auto">
 <div className="relative mb-6">
   <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
   <input

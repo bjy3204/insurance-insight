@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { GlobalMemoManager } from "./MemoManager";
 import MemoStickers from "./MemoStickers";
 import Calculator from "./Calculator";
 import CurrencyConverter from "./CurrencyConverter";
@@ -13,6 +14,7 @@ export default function GlobalWidgets() {
   return (
     <>
       {!isSalesBook && <MemoStickers />}
+      <GlobalMemoManager />
       <Calculator />
       <CurrencyConverter />
       <ScheduleReminders />

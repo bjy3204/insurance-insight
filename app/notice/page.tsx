@@ -47,7 +47,7 @@ export default function NoticePage() {
       </header>
 
       {/* 목록 */}
-      <div className="max-w-5xl mx-auto px-5 py-6">
+      <div data-page-content="true" className="max-w-5xl mx-auto px-5 py-6">
         <div className="space-y-4">
           {notices.map((notice) => (
             <Link

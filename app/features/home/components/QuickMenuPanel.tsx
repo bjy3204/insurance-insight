@@ -49,7 +49,7 @@ return (<>{mainMenuManageMode === "normal" && (
         onClick={(e) => {
           e.stopPropagation();
           resetPopupPosition("memo");
-          setMemoOpen(true);
+          window.dispatchEvent(new Event("open-memo-manager"));
           setUserMenuOpen(false);
         }}
         className="flex-1 px-4 py-3 text-center text-sm font-bold text-gray-700 hover:bg-gray-50 cursor-default"
@@ -216,7 +216,7 @@ return (<>{mainMenuManageMode === "normal" && (
           onClick={() => {
             resetPopupPosition("memo");
 
-            setMemoOpen(true);
+            window.dispatchEvent(new Event("open-memo-manager"));
             setPcQuickOpen(false);
           }}
           className="

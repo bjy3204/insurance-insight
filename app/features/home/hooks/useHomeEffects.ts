@@ -266,36 +266,7 @@ useEffect(() => {
   fetchWeather();
 }, [weatherRegion]);
 
-useEffect(() => {
-  const openMemoDetail = (event: any) => {
-    const memoId = event.detail;
-    const targetMemo = memos.find((memo) => memo.id === memoId);
-    if (!targetMemo) return;
-    setSelectedMemo(targetMemo);
-    if (memoOpenRef.current) {
-      setMemoOpen(true);
-    }
-    resetPopupPosition("memoDetail");
-  };
 
-  const openMemoContextMenu = (event: any) => {
-  const { x, y, id } = event.detail;
-
-  setContextMenu({
-    x,
-    y,
-    type: "memo",
-    id,
-  });
-};
-  window.addEventListener("open-memo-detail", openMemoDetail);
-  window.addEventListener("open-memo-context-menu", openMemoContextMenu);
-
-  return () => {
-    window.removeEventListener("open-memo-detail", openMemoDetail);
-    window.removeEventListener("open-memo-context-menu", openMemoContextMenu);
-  };
-}, [memos]);
 
 useEffect(() => {
   const savedPersonalMenus = localStorage.getItem("personalMenus");

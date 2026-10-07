@@ -507,7 +507,7 @@ useEffect(() => {
       </header>
 
       <section className="bg-[#1f2937] overflow-hidden">
-  <div className="max-w-7xl mx-auto px-4 md:px-6 h-11 flex items-center overflow-hidden">
+  <div data-page-content="true" className="max-w-7xl mx-auto px-4 md:px-6 h-11 flex items-center overflow-hidden">
     <div
   className="flex w-max whitespace-nowrap animate-[tickerMove_50s_linear_infinite] hover:[animation-play-state:paused]"
   style={{ paddingLeft: "10%" }}
@@ -551,7 +551,7 @@ useEffect(() => {
   </div>
 </section>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
+      <div data-page-content="true" className="max-w-7xl mx-auto px-4 md:px-6 py-6">
 
 
       {/* 지역별 날씨 */}
@@ -897,60 +897,7 @@ useEffect(() => {
       </div>
       </>
       {/* 메모 수정 팝업 */}
-{selectedMemo && (
-  <div
-    onMouseMove={(e) => {
-      if (!memoEditDragRef.current.isDragging) return;
-      const d = memoEditDragRef.current;
-      setMemoEditPos({ x: d.originX + e.clientX - d.startX, y: d.originY + e.clientY - d.startY });
-    }}
-    onMouseUp={() => { memoEditDragRef.current.isDragging = false; }}
-    onMouseLeave={() => { memoEditDragRef.current.isDragging = false; }}
-    className="fixed inset-0 z-[1300] bg-black/40 flex items-center justify-center p-4"
-  >
-    <div
-      style={{ transform: `translate(${memoEditPos.x}px, ${memoEditPos.y}px)` }}
-      onMouseDown={(e) => {
-        if (window.innerWidth < 768) return;
-        const target = e.target as HTMLElement;
-        if (target.closest("button, input, textarea")) return;
-        memoEditDragRef.current = { isDragging: true, startX: e.clientX, startY: e.clientY, originX: memoEditPos.x, originY: memoEditPos.y };
-      }}
-      onClick={(e) => e.stopPropagation()}
-      className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6 cursor-default"
-    >
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-xl font-black text-gray-900">메모 수정</h2>
-        <div className="flex items-center gap-2">
-          {memoColorOptions.map((color) => (
-            <button key={color.value} type="button"
-              onClick={() => { changeMemoColor(selectedMemo.id, color.value); setSelectedMemo({ ...selectedMemo, color: color.value }); }}
-              className={`w-7 h-7 rounded-full border transition hover:scale-105 ${selectedMemo.color === color.value ? "ring-2 ring-gray-400 ring-offset-2" : ""} ${color.className}`}
-            />
-          ))}
-          <button data-popup-close="true" onClick={() => { setSelectedMemo(null); setMemoEditPos({ x: 0, y: 0 }); }}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-      <input value={selectedMemo.title}
-        onChange={(e) => setSelectedMemo({ ...selectedMemo, title: e.target.value })}
-        placeholder="메모 제목" className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm font-bold outline-none mb-3" />
-      <textarea value={selectedMemo.content}
-        onChange={(e) => setSelectedMemo({ ...selectedMemo, content: e.target.value })}
-        placeholder="메모 내용을 입력하세요" className="w-full h-56 rounded-2xl border border-gray-200 p-4 text-sm outline-none resize-none mb-5" />
-      <div className="flex gap-3">
-        <button onClick={() => deleteMemo(selectedMemo.id)}
-          className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-600 text-sm font-bold hover:bg-red-50 hover:text-red-500 transition cursor-default">삭제</button>
-        <button onClick={() => {
-          saveMemos(memos.map(m => m.id === selectedMemo.id ? { ...m, title: selectedMemo.title, content: selectedMemo.content, updatedAt: new Date().toISOString() } : m));
-          setSelectedMemo(null);
-        }} className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-default">완료</button>
-      </div>
-    </div>
-  </div>
-)}
+
 
 {contextMenu && (
   <>
@@ -966,20 +913,7 @@ useEffect(() => {
   </>
 )}
 
-{deleteMemoConfirmOpen && (
-  <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">
-    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-      <h2 className="text-xl font-black text-gray-900">메모 삭제</h2>
-      <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">선택한 메모를 삭제하시겠습니까?</p>
-      <div className="flex gap-3 mt-6">
-        <button onClick={() => { setDeleteMemoId(null); setDeleteMemoConfirmOpen(false); }}
-          className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-default">취소</button>
-        <button onClick={confirmDeleteMemo}
-          className="flex-1 h-12 rounded-2xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition cursor-default">삭제</button>
-      </div>
-    </div>
-  </div>
-)}
+
 
     </main>
   );

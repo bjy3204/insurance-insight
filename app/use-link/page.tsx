@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu,
+import { LayoutGrid,
   ArrowLeft,
   Link2,
   Newspaper,
@@ -13,7 +13,7 @@ import { FaInstagram } from "react-icons/fa";
 
 import InsuranceLinks from "./InsuranceLinks";
 import CardNewsLinks from "./CardNewsLinks";
-import MemoManager from "@/app/components/MemoManager";
+
 import MemoStickers from "@/app/components/MemoStickers";
 import { useAuth } from "@/app/components/AuthProvider";
 import SiteFooter from '@/app/components/SiteFooter';
@@ -129,7 +129,7 @@ const [memoOpen, setMemoOpen] = useState(false);
         ${settingOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}
       `}
     >
-      <Menu className="w-5 h-5 text-gray-400" />
+      <LayoutGrid className="w-5 h-5 text-gray-400" />
     </button>
 
     {settingOpen && (
@@ -142,7 +142,7 @@ const [memoOpen, setMemoOpen] = useState(false);
       >
         <button
           onClick={() => {
-            setMemoOpen(true);
+            window.dispatchEvent(new Event("open-memo-manager"));
             setSettingOpen(false);
           }}
           className="
@@ -162,7 +162,7 @@ const [memoOpen, setMemoOpen] = useState(false);
         </div>
       </header>
 
-      <section className="max-w-7xl mx-auto px-5 py-6">
+      <section data-page-content="true" className="max-w-7xl mx-auto px-5 py-6">
 
         <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
           {["보험", "카드뉴스"].map((item) => (
@@ -195,63 +195,14 @@ const [memoOpen, setMemoOpen] = useState(false);
       </div>
       </>
 
-<MemoManager open={memoOpen} onClose={() => setMemoOpen(false)} />
+
 <MemoStickers />
 
       {/* 메모 수정 팝업 */}
-      {selectedMemo && (
-        <div className="fixed inset-0 z-[1300] bg-black/40 flex items-center justify-center p-4" onClick={( ) => setSelectedMemo(null)}>
-          <div
-            style={{ transform: `translate(${memoEditPopupPosition.x}px, ${memoEditPopupPosition.y}px)` }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-lg rounded-3xl shadow-xl p-6 cursor-default"
-          >
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-black text-gray-900">메모 수정</h2>
-              <div className="flex items-center gap-2">
-                {memoColorOptions.map((color) => (
-                  <button key={color.value} type="button"
-                    onClick={() => { changeMemoColor(selectedMemo.id, color.value); setSelectedMemo({ ...selectedMemo, color: color.value, updatedAt: new Date().toISOString() }); }}
-                    className={`w-7 h-7 rounded-full border transition hover:scale-105 ${selectedMemo.color === color.value ? "ring-2 ring-gray-400 ring-offset-2" : ""} ${color.className}`}
-                  />
-                ))}
-                <button data-popup-close="true" onClick={() => { setSelectedMemo(null); setMemoEditPopupPosition({ x: 0, y: 0 }); }}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-            <input value={selectedMemo.title}
-              onChange={(e) => setSelectedMemo({ ...selectedMemo, title: e.target.value })}
-              className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm font-bold outline-none mb-3" />
-            <textarea value={selectedMemo.content}
-              onChange={(e) => setSelectedMemo({ ...selectedMemo, content: e.target.value })}
-              className="w-full h-56 rounded-2xl border border-gray-200 p-4 text-sm outline-none resize-none mb-5" />
-            <div className="flex gap-3">
-              <button onClick={() => deleteMemo(selectedMemo.id)}
-                className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-600 text-sm font-bold hover:bg-red-50 hover:text-red-500 transition cursor-default">삭제</button>
-              <button onClick={() => { saveMemos(memos.map((memo) => memo.id === selectedMemo.id ? { ...selectedMemo, updatedAt: new Date().toISOString() } : memo)); setSelectedMemo(null); }}
-                className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-default">완료</button>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
       {/* 삭제 확인 팝업 */}
-      {deleteMemoConfirmOpen && (
-        <div className="fixed inset-0 z-[1400] bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-3xl shadow-xl p-6">
-            <h2 className="text-lg font-black text-gray-900 mb-2">메모 삭제</h2>
-            <p className="text-sm text-gray-500 mb-5">이 메모를 삭제하시겠습니까?</p>
-            <div className="flex gap-3">
-              <button onClick={() => { setDeleteMemoConfirmOpen(false); setDeleteMemoId(null); }}
-                className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-600 text-sm font-bold cursor-default">취소</button>
-              <button onClick={confirmDeleteMemo}
-                className="flex-1 h-12 rounded-2xl bg-red-500 text-white text-sm font-bold cursor-default">삭제</button>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </main>
   );
 }

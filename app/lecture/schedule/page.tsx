@@ -196,7 +196,7 @@ const calendarDays = [
         </div>
       </header>
 
-      <div className="w-full px-4 sm:px-6 py-6 max-w-7xl mx-auto">
+      <div data-page-content="true" className="w-full px-4 sm:px-6 py-6 max-w-7xl mx-auto">
         <section className="bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5 mb-6">
             {loading && (
   <div className="text-center text-sm text-gray-400 py-10">

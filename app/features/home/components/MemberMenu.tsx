@@ -43,7 +43,7 @@ return (<>{userMenuOpen && (
       onClick={(e) => {
         e.stopPropagation();
         resetPopupPosition("memo");
-        setMemoOpen(true);
+        window.dispatchEvent(new Event("open-memo-manager"));
         setUserMenuOpen(false);
       }}
             className="sm:hidden block w-full px-4 py-3 text-center text-sm font-bold text-gray-700 hover:bg-gray-50 border-t border-gray-100 cursor-default"

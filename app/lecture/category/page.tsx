@@ -118,7 +118,7 @@ const findInstructor = (name: string) =>
         </div>
       </header>
 
-      <div className="w-full px-6 py-6 max-w-7xl mx-auto">
+      <div data-page-content="true" className="w-full px-6 py-6 max-w-7xl mx-auto">
         <div className="flex flex-wrap gap-3">
           {categories.map((category) => (
             <button

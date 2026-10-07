@@ -1,3 +1,4 @@
 .editor,.editor * { cursor:default; }
 .editor button,.editor button * { cursor:pointer; }
 .editor button:disabled,.editor button:disabled * { cursor:default; }
+.datePickerExpanded { height: min(720px, calc(100dvh - 32px)); }

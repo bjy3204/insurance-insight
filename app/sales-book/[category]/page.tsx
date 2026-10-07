@@ -120,7 +120,7 @@ const pagedSubcategories = filteredSubcategories.slice(
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-4">
+      <div data-page-content="true" className="max-w-7xl mx-auto px-4 py-4">
         <div className="h-12 rounded-2xl border border-gray-300 bg-white px-5 flex items-center gap-3">
           <Search className="w-4 h-4 text-gray-400 shrink-0" />
 
@@ -137,7 +137,7 @@ const pagedSubcategories = filteredSubcategories.slice(
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 pb-6">
+      <div data-page-content="true" className="max-w-7xl mx-auto px-4 pb-6">
         <div data-popup-frame="true" className="bg-white rounded-3xl border border-gray-200 shadow-sm flex h-[82vh]">
           <aside
             style={{ flex: "0 0 190px" }}

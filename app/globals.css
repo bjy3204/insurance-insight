@@ -12,6 +12,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --dashboard-card-radius: 20px;
+  --dashboard-card-border: #e8eff8;
+  --dashboard-card-shadow: 0 3px 12px #21375905;
 }
 
 @theme inline {
@@ -27,6 +30,48 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  cursor: default;
+}
+
+
+/* Personal workspace cards use smaller corners with the dashboard border and shadow. */
+[data-personal-space="true"] .personal-grid,
+[data-personal-space="true"] .personal-grid:hover {
+  border: 1px solid var(--dashboard-card-border);
+  border-radius: 16px;
+  box-shadow: var(--dashboard-card-shadow);
+}
+
+/* Keep personal-space fields consistent, including editors rendered in portals. */
+body:has([data-personal-space="true"]) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+body:has([data-personal-space="true"]) textarea,
+body:has([data-personal-space="true"]) select {
+  border-radius: 12px;
+}
+
+/* Full calendars use the same corners in personal space and the calendar page. */
+[data-calendar-layout="full"] .personal-grid {
+  border-radius: 16px;
+}
+
+/* Page content stays inside the shared back/tool button alignment. */
+header[data-page-header="true"] > div:first-child,
+body [data-page-content="true"] {
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  min-width: 0;
+}
+@media (min-width: 768px) {
+  header[data-page-header="true"] > div:first-child,
+  body [data-page-content="true"] {
+    max-width: 1500px;
+    padding-left: 40px;
+    padding-right: 40px;
+  }
 }
 
 /* Shared page header controls, including mobile utility menus. */
@@ -54,6 +99,7 @@ body {
 }
 [data-header-control="true"]:hover { background-color: #f0f6ff; }
 [data-header-control="true"] svg.lucide-menu,
+[data-header-control="true"] svg.lucide-layout-grid,
 [data-header-control="true"] svg.lucide-arrow-left {
   width: 24px;
   height: 24px;
@@ -222,3 +268,76 @@ html, body {
   [data-news-topic-scroll] { scrollbar-width: none; -ms-overflow-style: none; }
   [data-news-topic-scroll]::-webkit-scrollbar { display: none; }
 }
+
+.memo-rich-editor .ql-toolbar.ql-snow { border: 1px solid #e2e8f0; border-radius: 12px 12px 0 0; background: #fff; }
+.memo-rich-editor .ql-container.ql-snow { border: 1px solid #e2e8f0; border-top: 0; border-radius: 0 0 12px 12px; font-family: inherit; font-size: 14px; }
+.memo-rich-editor .ql-editor { min-height: 190px; max-height: 320px; overflow-y: auto; line-height: 1.7; }
+.memo-rich-body.ql-editor { padding: 0; min-height: 0; height: auto; font-family: inherit; font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
+.memo-rich-body li[data-list="checked"] { color: #94a3b8; text-decoration: line-through; }
+.memo-rich-body li[data-list="checked"] > .ql-ui::before, .memo-rich-body li[data-list="unchecked"] > .ql-ui::before { cursor: pointer; }
+
+/* Keep memo writing inside the original rounded content field. */
+.memo-rich-editor .ql-toolbar.ql-snow { border: 0; border-bottom: 1px solid #e5e7eb; border-radius: 0; padding: 8px 12px; }
+.memo-rich-editor .ql-container.ql-snow { border: 0; border-radius: 0; }
+.memo-rich-editor .ql-editor { padding: 14px 16px; min-height: 200px; }
+.memo-rich-editor .ql-editor ol, .memo-rich-editor .ql-editor ul,
+.memo-rich-body.ql-editor ol, .memo-rich-body.ql-editor ul { padding-left: 0 !important; }
+.memo-rich-editor .ql-editor li, .memo-rich-body.ql-editor li { padding-left: 1.4em !important; }
+.memo-rich-editor .ql-editor li > .ql-ui::before, .memo-rich-body.ql-editor li > .ql-ui::before { margin-left: -1.4em; width: 1.2em; }
+.memo-rich-editor .ql-editor.ql-blank::before { left: 16px; font-style: normal; color: #9ca3af; }
+.memo-board .overflow-y-auto { scrollbar-width: none; -ms-overflow-style: none; }
+.memo-board .overflow-y-auto::-webkit-scrollbar { display: none; }
+
+/* Read-only memo text keeps the normal arrow cursor. */
+.memo-rich-body.ql-editor,
+.memo-rich-body.ql-editor * {
+  cursor: default !important;
+}
+.memo-rich-editor .ql-editor[contenteditable="true"] {
+  cursor: text;
+}
+.memo-popup-card-content { scrollbar-width: none; -ms-overflow-style: none; }
+.memo-popup-card-content::-webkit-scrollbar { display: none; }
+.memo-popup-card-content .memo-rich-body.ql-editor { max-height: none; overflow: visible; }
+.memo-custom-toolbar .memo-font-color span { display: inline-block; font-size: 14px; font-weight: 600; line-height: 17px; }
+.memo-hue-slider { appearance: none; height: 12px; border-radius: 2px; background: linear-gradient(to right,red,yellow,lime,cyan,blue,magenta,red); }
+.memo-hue-slider::-webkit-slider-thumb { appearance: none; width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; background: transparent; box-shadow: 0 0 2px #333; cursor: pointer; }
+.memo-hue-slider::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; background: transparent; cursor: pointer; }
+
+/* Checked memo items use a solid checkbox and crossed-out text. */
+.memo-rich-editor .ql-editor li[data-list="checked"],
+.memo-rich-body.ql-editor li[data-list="checked"] {
+  text-decoration: line-through;
+}
+.memo-rich-editor .ql-editor li[data-list="checked"] > .ql-ui::before,
+.memo-rich-editor .ql-editor li[data-list="unchecked"] > .ql-ui::before,
+.memo-rich-body.ql-editor li[data-list="checked"] > .ql-ui::before,
+.memo-rich-body.ql-editor li[data-list="unchecked"] > .ql-ui::before {
+  content: "";
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 3px;
+  background: #fff;
+  vertical-align: -2px;
+}
+.memo-rich-editor .ql-editor li[data-list="checked"] > .ql-ui::before,
+.memo-rich-body.ql-editor li[data-list="checked"] > .ql-ui::before {
+  border-color: #111827;
+  background: #111827 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 6l2.5 2.5L10 3' fill='none' stroke='white' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 11px 11px no-repeat;
+}
+.memo-custom-toolbar.ql-snow .memo-font-color { display: inline-flex; align-items: center; justify-content: center; padding: 3px 5px; }
+.memo-custom-toolbar.ql-snow .memo-font-color span { font-size: 14px; line-height: 14px; padding-bottom: 1px; }
+.memo-custom-toolbar.ql-snow .memo-font-color { display: inline-flex !important; align-items: center; justify-content: center; height: 24px; padding: 3px 5px !important; }
+.memo-custom-toolbar.ql-snow .memo-font-color svg { display: block; width: 18px; height: 18px; flex: none; }
+
+/* Keep the diary writing area taller without changing memo editors. */
+.diary-rich-editor .ql-editor { min-height: 360px; max-height: 520px; }
+
+/* Editable fields keep the text cursor, including inside dialogs. */
+input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]):not(:disabled),
+textarea:not(:disabled),
+[contenteditable="true"],
+[contenteditable="true"] * { cursor: text !important; }
+input:disabled, textarea:disabled { cursor: default !important; }

@@ -22,16 +22,16 @@ import QuickMenuSelectionDialog from "./components/QuickMenuSelectionDialog";
 import QuickMenuLimitDialog from "./components/QuickMenuLimitDialog";
 import DeleteQuickMenuDialog from "./components/DeleteQuickMenuDialog";
 import SaveMenuDialog from "./components/SaveMenuDialog";
-import DeleteMemoDialog from "./components/DeleteMemoDialog";
+
 import PasswordResultDialog from "./components/PasswordResultDialog";
 import PopupNoticeDialog from "./components/PopupNoticeDialog";
 import ContactDialog from "./components/ContactDialog";
 import NoticeDialog from "./components/NoticeDialog";
 import MenuSortDialog from "./components/MenuSortDialog";
 import MenuAddDialog from "./components/MenuAddDialog";
-import MemoListDialog from "./components/MemoListDialog";
-import MemoAddDialog from "./components/MemoAddDialog";
-import MemoDetailDialog from "./components/MemoDetailDialog";
+
+
+
 import HospitalDialog from "./components/HospitalDialog";
 import DiseaseDialog from "./components/DiseaseDialog";
 import BankRatesDialog from "./components/BankRatesDialog";
@@ -92,7 +92,7 @@ return ((
 
 <SaveMenuDialog controller={controller} />
 
-<DeleteMemoDialog controller={controller} />
+
 
 <PasswordResultDialog controller={controller} />
 
@@ -111,13 +111,13 @@ return ((
 <MenuAddDialog controller={controller} />
 
       {/* 메모장 팝업 */}
-      <MemoListDialog controller={controller} />
+      
 
               {/* 메모 추가 팝업 */}
-      <MemoAddDialog controller={controller} />
+      
 
             {/* 메모 상세 팝업 */}
-      <MemoDetailDialog controller={controller} />
+      
 
       
 

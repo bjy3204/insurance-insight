@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
@@ -22,6 +23,7 @@ import {
   Star,
 } from "lucide-react";
 import type { CustomerSettings } from "./page";
+import PlantSVG, { getPlantStage, type PlantStage } from "./PlantSVG";
 
 // ─────────────────────────────────────────────
 // 타입
@@ -80,7 +82,7 @@ type AttendanceRecord = {
   watered: boolean;
 };
 
-type PlantStage = "seed" | "sprout" | "sapling" | "tree" | "bigtree" | "bloom";
+
 
 const MOOD_OPTIONS = [
   { value: "great", label: "최고", icon: Star, color: "text-yellow-500" },
@@ -101,152 +103,35 @@ const moodEmoji: Record<string, string> = {
 // ─────────────────────────────────────────────
 // 식물 단계 계산
 // ─────────────────────────────────────────────
-function getPlantStage(totalDays: number): PlantStage {
-  if (totalDays >= 600) return "bloom";
-  if (totalDays >= 300) return "bigtree";
-  if (totalDays >= 180) return "tree";
-  if (totalDays >= 90) return "sapling";
-  if (totalDays >= 30) return "sprout";
-  return "seed";
-}
-
-// ─────────────────────────────────────────────
-// SVG 식물 일러스트
-// ─────────────────────────────────────────────
-function PlantSVG({ stage, watering }: { stage: PlantStage; watering: boolean }) {
-  return (
-    <div className="relative flex items-end justify-center" style={{ width: 80, height: 90 }}>
-      <svg viewBox="0 0 80 90" width="80" height="90" xmlns="http://www.w3.org/2000/svg">
-        {/* 화분 */}
-        <ellipse cx="40" cy="82" rx="22" ry="5" fill="#c8a97e" opacity="0.4" />
-        <path d="M20 72 Q18 85 40 87 Q62 85 60 72 Z" fill="#d4956a" />
-        <rect x="17" y="68" width="46" height="7" rx="3" fill="#e8a87c" />
-        {/* 흙 */}
-        <ellipse cx="40" cy="68" rx="22" ry="4" fill="#8B6340" />
-
-        {/* 씨앗 */}
-        {stage === "seed" && (
-          <ellipse cx="40" cy="63" rx="5" ry="4" fill="#a0785a" />
-        )}
-
-        {/* 새싹 */}
-        {stage === "sprout" && (
-          <>
-            <line x1="40" y1="67" x2="40" y2="50" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round" />
-            <ellipse cx="33" cy="54" rx="7" ry="4" fill="#86efac" transform="rotate(-30 33 54)" />
-            <ellipse cx="47" cy="56" rx="7" ry="4" fill="#4ade80" transform="rotate(30 47 56)" />
-          </>
-        )}
-
-        {/* 묘목 */}
-        {stage === "sapling" && (
-          <>
-            <line x1="40" y1="67" x2="40" y2="40" stroke="#22c55e" strokeWidth="3" strokeLinecap="round" />
-            <ellipse cx="29" cy="48" rx="10" ry="6" fill="#86efac" transform="rotate(-25 29 48)" />
-            <ellipse cx="51" cy="50" rx="10" ry="6" fill="#4ade80" transform="rotate(25 51 50)" />
-            <ellipse cx="40" cy="40" rx="9" ry="7" fill="#22c55e" />
-          </>
-        )}
-
-        {/* 나무 */}
-        {stage === "tree" && (
-          <>
-            <line x1="40" y1="67" x2="40" y2="32" stroke="#16a34a" strokeWidth="4" strokeLinecap="round" />
-            <line x1="40" y1="52" x2="28" y2="44" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" />
-            <line x1="40" y1="48" x2="52" y2="40" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" />
-            <circle cx="40" cy="30" r="14" fill="#22c55e" />
-            <circle cx="28" cy="38" r="9" fill="#4ade80" />
-            <circle cx="52" cy="36" r="9" fill="#16a34a" />
-          </>
-        )}
-
-        {/* 큰 나무 */}
-        {stage === "bigtree" && (
-          <>
-            <line x1="40" y1="67" x2="40" y2="26" stroke="#15803d" strokeWidth="5" strokeLinecap="round" />
-            <line x1="40" y1="50" x2="24" y2="40" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
-            <line x1="40" y1="44" x2="56" y2="34" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
-            <circle cx="40" cy="24" r="17" fill="#16a34a" />
-            <circle cx="24" cy="36" r="11" fill="#22c55e" />
-            <circle cx="56" cy="32" r="11" fill="#15803d" />
-            <circle cx="40" cy="14" r="10" fill="#4ade80" />
-          </>
-        )}
-
-        {/* 꽃나무 */}
-        {stage === "bloom" && (
-          <>
-            <line x1="40" y1="67" x2="40" y2="24" stroke="#15803d" strokeWidth="5" strokeLinecap="round" />
-            <line x1="40" y1="50" x2="22" y2="38" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
-            <line x1="40" y1="44" x2="58" y2="32" stroke="#15803d" strokeWidth="3" strokeLinecap="round" />
-            <circle cx="40" cy="22" r="17" fill="#16a34a" />
-            <circle cx="22" cy="34" r="11" fill="#22c55e" />
-            <circle cx="58" cy="30" r="11" fill="#15803d" />
-            <circle cx="40" cy="12" r="10" fill="#4ade80" />
-            {/* 꽃 */}
-            {[
-              [40, 8], [28, 18], [52, 18], [22, 30], [58, 26],
-            ].map(([cx, cy], i) => (
-              <g key={i}>
-                <circle cx={cx} cy={cy} r="4" fill="#fbbf24" />
-                {[0, 60, 120, 180, 240, 300].map((deg, j) => (
-                  <ellipse
-                    key={j}
-                    cx={cx + 6 * Math.cos((deg * Math.PI) / 180)}
-                    cy={cy + 6 * Math.sin((deg * Math.PI) / 180)}
-                    rx="3"
-                    ry="2"
-                    fill="#f9a8d4"
-                    transform={`rotate(${deg} ${cx + 6 * Math.cos((deg * Math.PI) / 180)} ${cy + 6 * Math.sin((deg * Math.PI) / 180)})`}
-                  />
-                ))}
-              </g>
-            ))}
-          </>
-        )}
-      </svg>
-
-      {/* 물방울 애니메이션 */}
-      {watering && (
-        <div className="absolute inset-0 pointer-events-none">
-          {[20, 35, 50, 65].map((x, i) => (
-            <div
-              key={i}
-              className="absolute text-blue-400 text-xs animate-bounce"
-              style={{
-                left: `${x}%`,
-                top: `${10 + i * 8}%`,
-                animationDelay: `${i * 0.15}s`,
-                animationDuration: "0.6s",
-              }}
-            >
-              💧
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─────────────────────────────────────────────
 // 메인 HomeTab
 // ─────────────────────────────────────────────
 export default function HomeTab({
   settings,
+  view = "home",
   hiddenHomeMenus,
+  onPlantStageChange,
+  plantPopupOpen = false,
+  onPlantPopupClose,
 }: {
   settings: CustomerSettings | null;
+  view?: "home" | "memo" | "diary";
   hiddenHomeMenus: string[];
+  onPlantStageChange?: (stage: PlantStage) => void;
+  plantPopupOpen?: boolean;
+  onPlantPopupClose?: () => void;
 }) {
+
+  useEffect(() => {
+    if (!plantPopupOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") onPlantPopupClose?.(); };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [plantPopupOpen, onPlantPopupClose]);
 
   const isHidden = (id: string) =>
   hiddenHomeMenus.includes(id);
 
-  const [showDdayDatePicker, setShowDdayDatePicker] = useState(false);
-const [ddayPickerYear, setDdayPickerYear] = useState(new Date().getFullYear());
-const [ddayPickerMonth, setDdayPickerMonth] = useState(new Date().getMonth());
-  
   const { authUser } = useAuth();
 
   // ── 오늘 일정 ──
@@ -263,140 +148,6 @@ const [ddayPickerMonth, setDdayPickerMonth] = useState(new Date().getMonth());
   const [editingChecklistText, setEditingChecklistText] = useState("");
 
   // ── 날씨 위젯 ──
-
-
-const WEATHER_REGIONS = ["서울","부산","대구","인천","광주","대전","울산","세종","제주"];
-const [weatherRegion, setWeatherRegion] = useState("서울");
-
-useEffect(() => {
-  const saved = localStorage.getItem("hometab-weather-region");
-  if (saved) setWeatherRegion(saved);
-}, []);
-const [weather, setWeather] = useState<{
-  region: string; temp: number; description: string; icon: string;
-  daily?: { date: string; temp: number; description: string; icon: string; }[];
-} | null>(null);
-const [weatherContextMenu, setWeatherContextMenu] = useState<{ x: number; y: number } | null>(null);
-
-// ── D-Day 위젯 ──
-const [ddayWidgetLabel, setDdayWidgetLabel] = useState("");
-const [ddayWidgetDate, setDdayWidgetDate] = useState("");
-const [ddayWidgetEditOpen, setDdayWidgetEditOpen] = useState(false);
-const [ddayWidgetTempLabel, setDdayWidgetTempLabel] = useState("");
-const [ddayWidgetTempDate, setDdayWidgetTempDate] = useState("");
-
-// ── BGM 플레이어 ──
-const BGM_LIST = [
-  // 🔥 노동요 - K-POP
-  { title: "감다살 케이팝 노동요", vid: "uf9TNPYiwk4", category: "노동요" },
-  { title: "최고급 K-POP 노동요 오마카세", vid: "R9wSCx4tA6I", category: "노동요" },
-  { title: "2010년대 댄스곡 노동요", vid: "JPg4E4w_ZyE", category: "노동요" },
-  { title: "따라해 느좋 케이팝 노동요", vid: "9dDJq-Imtb0", category: "노동요" },
-  { title: "전투력 MAX 케이팝 노동요", vid: "12m0Jf-Ma3E", category: "노동요" },
-  { title: "최신 케이팝 노동요 플리", vid: "JkHzGy4w53M", category: "노동요" },
-  { title: "2010년대 레전드 K-POP", vid: "iWKx4DCSHv8", category: "노동요" },
-  { title: "콘서트 떼창 노래 모음", vid: "v9nwiR2QIYk", category: "노동요" },
-  { title: "ㄹㅇ 감다살 케이팝 노동요", vid: "uHnKOOXVXkU", category: "노동요" },
-  { title: "핵심 찌르는 케이팝 노동요", vid: "oU9w0RsvJlU", category: "노동요" },
-  { title: "여돌 걸그룹 노래모음 노동요", vid: "Jb2gPPijqTk", category: "노동요" },
-  { title: "끊김없는 Kpop MIXSET 노동요", vid: "WnrIX9Ak1wA", category: "노동요" },
-  { title: "일할 때 꺼내 듣는 케이팝", vid: "yiI3pKD2Nok", category: "노동요" },
-  { title: "2010년대 케이팝 노동요 뮤비", vid: "dc9qnKClYxA", category: "노동요" },
-  { title: "도파민 충전 둠칫 노동요", vid: "RDypwcB7ONY", category: "노동요" },
-  { title: "최신 K-POP 텐션 UP 노동요", vid: "wBVKaIutSFE", category: "노동요" },
-  { title: "최신 여돌 걸그룹 노동요", vid: "Jb2gPPijqTk", category: "노동요" },
-  { title: "9n년생 2010년대 레전드 K-POP", vid: "To8sXZwfk4Q", category: "노동요" },
-  { title: "K-POP 걸그룹 업비트 플리", vid: "laMC6qKiW9A", category: "노동요" },
-  { title: "전투력 상승 Kpop 믹스셋", vid: "WnrIX9Ak1wA", category: "노동요" },
-  { title: "2026 핫한 걸그룹 노동요", vid: "0hp8rzHpwEs", category: "노동요" },
-  { title: "쌈뽕 신나는 여돌 노동요", vid: "e7pBXF-HJrQ", category: "노동요" },
-  { title: "4월 핫한 케이팝 노동요", vid: "NBxhf0a36_E", category: "노동요" },
-  { title: "텐션 올라가는 케이팝 플리 ②", vid: "E3CawH2SkKM", category: "노동요" },
-  { title: "텐션업 케이팝 노동요 🌈🔥", vid: "Dc_QllCAAtY", category: "노동요" },
-  // 🎵 싸이월드 감성
-  { title: "도토리 쓰던 싸이월드 BGM", vid: "ShxagKy3CHQ", category: "싸이월드" },
-  { title: "추억의 싸이월드 BGM 100곡", vid: "gw3ltsoYBtI", category: "싸이월드" },
-  { title: "싸이월드 BGM 레전드 2000년대", vid: "I-AYt3CNIkQ", category: "싸이월드" },
-  { title: "그때 그 시절 싸이월드 노래", vid: "SNVOsxpSb08", category: "싸이월드" },
-  { title: "미니홈피 BGM 도토리 명곡", vid: "n3RDIxK8lvU", category: "싸이월드" },
-  { title: "싸이월드 BGM 미디움 발라드", vid: "WrdFbfzs2fE", category: "싸이월드" },
-  { title: "싸이월드 MIXSET 플레이리스트", vid: "73xztR-dR-A", category: "싸이월드" },
-  { title: "도토리 5개 싸이월드 BGM 60곡", vid: "QlMaKvWVLos", category: "싸이월드" },
-  { title: "싸이월드 BGM 팝송 100곡 6시간", vid: "ChzpfH1bUqM", category: "싸이월드" },
-  { title: "내가 깔았던 힙한 팝송 BGM", vid: "z_M20taxvx8", category: "싸이월드" },
-  { title: "싸이월드 좀 열심히 한 사람 BGM", vid: "d8DHMAWcK6U", category: "싸이월드" },
-  { title: "미니홈피 BGM 2000년대 플리", vid: "1Mo084qW5mY", category: "싸이월드" },
-  { title: "우리의 BGM 싸이월드 배경음악", vid: "Wb15QyFFK88", category: "싸이월드" },
-  { title: "싸이월드 BGM 피아노 커버", vid: "P__T4vOuFNg", category: "싸이월드" },
-  { title: "싸이월드 미니홈피 배경음악 #4", vid: "g459AmFYdpc", category: "싸이월드" },
-  { title: "Cyworld 미니홈피 BGM 감성", vid: "e_Viwt30r4U", category: "싸이월드" },
-  { title: "추억의 싸이월드 명곡 모음", vid: "xkDoq68-ACs", category: "싸이월드" },
-  { title: "일촌신청을 수락하시겠습니까?", vid: "1fsJrOaZDEM", category: "싸이월드" },
-];
-
-const [bgmIndex, setBgmIndex] = useState(() => Number(localStorage.getItem("bgm-index") || 0));
-const [bgmPlaying, setBgmPlaying] = useState(false);
-const [bgmEditOpen, setBgmEditOpen] = useState(false);
-const [bgmCategory, setBgmCategory] = useState<"전체" | "노동요" | "싸이월드">(() => (localStorage.getItem("bgm-category") as "전체" | "노동요" | "싸이월드") || "전체");
-
-const bgmRef = useRef<HTMLIFrameElement | null>(null);
-const [bgmTimer, setBgmTimer] = useState(0);
-const bgmTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-const [bgmColor, setBgmColor] = useState<"pink" | "yellow" | "blue" | "green" | "gray">(() =>
-  (localStorage.getItem("bgm-color") as "pink" | "yellow" | "blue" | "green" | "gray") || "pink"
-);
-const [bgmColorMenuOpen, setBgmColorMenuOpen] = useState(false);
-
-
-const filteredBgm = bgmCategory === "전체" ? BGM_LIST : BGM_LIST.filter(b => b.category === bgmCategory);
-const currentBgm = filteredBgm[bgmIndex % filteredBgm.length];
-const BGM_COLOR_MAP = {
-  pink:   { bg: "bg-pink-500",   light: "bg-pink-200",   text: "text-pink-400",   label: "분홍" },
-  yellow: { bg: "bg-yellow-400", light: "bg-yellow-100", text: "text-yellow-500", label: "노랑" },
-  blue:   { bg: "bg-blue-400",   light: "bg-blue-100",   text: "text-blue-500",   label: "파랑" },
-  green:  { bg: "bg-green-400",  light: "bg-green-100",  text: "text-green-500",  label: "초록" },
-  gray:   { bg: "bg-gray-400",   light: "bg-gray-100",   text: "text-gray-400",   label: "회색" },
-};
-const currentColor = BGM_COLOR_MAP[bgmColor];
-
-useEffect(() => {
-  if (bgmPlaying) {
-    bgmTimerRef.current = setInterval(() => {
-      setBgmTimer((t) => t + 1);
-    }, 1000);
-  } else {
-    if (bgmTimerRef.current) clearInterval(bgmTimerRef.current);
-  }
-  return () => { if (bgmTimerRef.current) clearInterval(bgmTimerRef.current); };
-}, [bgmPlaying]);
-
-useEffect(() => {
-  localStorage.setItem("bgm-index", String(bgmIndex));
-}, [bgmIndex]);
-
-useEffect(() => {
-  localStorage.setItem("bgm-category", bgmCategory);
-}, [bgmCategory]);
-
-useEffect(() => {
-  localStorage.setItem("bgm-color", bgmColor);
-}, [bgmColor]);
-
-useEffect(() => {
-  if (!authUser) return;
-  supabase.from("customer_settings").upsert(
-    { user_id: authUser.id, bgm_color: bgmColor },
-    { onConflict: "user_id" }
-  );
-}, [bgmColor]);
-
-
-
-
-
-useEffect(() => {
-  setBgmTimer(0);
-}, [bgmIndex]);
 
 
 const [viewingDiary, setViewingDiary] = useState<DiaryEntry | null>(null);
@@ -442,6 +193,12 @@ const PAGE_GROUP = 5;
   const [wateringAnim, setWateringAnim] = useState(false);
 
   const [plantPos, setPlantPos] = useState({ x: 40, y: 180 });
+  const plantPositionDirty = useRef(false);
+  const plantCardRef = useRef<HTMLDivElement>(null);
+  const clampPlantPosition = (x: number, y: number) => ({
+    x: Math.max(0, Math.min(Math.max(0, window.innerWidth - (plantCardRef.current?.offsetWidth || 180)), x)),
+    y: Math.max(0, Math.min(Math.max(0, window.innerHeight - (plantCardRef.current?.offsetHeight || 250)), y)),
+  });
 
 const [plantDragInfo, setPlantDragInfo] = useState<null | {
   startX: number;
@@ -462,47 +219,6 @@ const [plantDragInfo, setPlantDragInfo] = useState<null | {
   const kstOffset = 9 * 60 * 60 * 1000;
   const todayStr = new Date(today.getTime() + kstOffset).toISOString().split("T")[0];
 
-// 날씨 fetch
-useEffect(() => {
-  const fetchWeather = async () => {
-    try {
-      const res = await fetch(`/api/weather?region=${weatherRegion}`);
-      const data = await res.json();
-      setWeather(data);
-    } catch {}
-  };
-  fetchWeather();
-  localStorage.setItem("hometab-weather-region", weatherRegion);
-}, [weatherRegion]);
-
-// D-Day Supabase 불러오기
-useEffect(() => {
-  if (!authUser) return;
-  const loadWidgets = async () => {
-    const { data } = await supabase
-  .from("customer_settings")
-  .select("dday_label, dday_date, bgm_color, weather_region")
-  .eq("user_id", authUser.id)
-  .maybeSingle();
- if (data) {
-  setDdayWidgetLabel(data.dday_label || "");
-  setDdayWidgetDate(data.dday_date || "");
-
-  const localColor = localStorage.getItem("bgm-color");
-  if (!localColor && data.bgm_color) {
-    setBgmColor(data.bgm_color as "pink" | "yellow" | "blue" | "green" | "gray");
-  }
-
-  if (data.weather_region) {
-    setWeatherRegion(data.weather_region);
-    localStorage.setItem("hometab-weather-region", data.weather_region);
-  }
-}
-
-  };
-  loadWidgets();
-}, [authUser]);
-
 useEffect(() => {
   if (!authUser) return;
   supabase.from("calendar_checklists").select("*").eq("user_id", authUser.id).limit(10)
@@ -517,7 +233,7 @@ useEffect(() => {
     loadDiaries();
     loadAttendance();
     loadCustomerEvents();
-    loadPrivateMemos();
+
   }, [authUser]);
 
 useEffect(() => {
@@ -537,32 +253,27 @@ useEffect(() => {
 
 
   useEffect(() => {
-  if (!authUser || !settings) return;
-  if (settings.plant_pos_x !== undefined && settings.plant_pos_y !== undefined) {
-    setPlantPos({
-  x: Math.max(8, Math.min(window.innerWidth - 180, settings.plant_pos_x)),
-  y: Math.max(8, Math.min(window.innerHeight - 220, settings.plant_pos_y)),
-});
-  }
-}, [authUser, settings]);
+    if (typeof settings?.plant_pos_x !== "number" || typeof settings?.plant_pos_y !== "number") return;
+    setPlantPos(clampPlantPosition(settings.plant_pos_x, settings.plant_pos_y));
+    plantPositionDirty.current = false;
+  }, [authUser?.id, settings?.plant_pos_x, settings?.plant_pos_y]);
 
-useEffect(() => {
-  if (!authUser) return;
-  const timer = setTimeout(async () => {
-    await supabase
-      .from("customer_settings")
-      .upsert({ user_id: authUser.id, plant_pos_x: plantPos.x, plant_pos_y: plantPos.y }, { onConflict: "user_id" });
-  }, 800); // 드래그 끝나고 0.8초 후 저장 (과도한 요청 방지)
-  return () => clearTimeout(timer);
-}, [plantPos]);
+  useEffect(() => {
+    if (!authUser || plantDragInfo || !plantPositionDirty.current) return;
+    const timer = setTimeout(async () => {
+      const { error } = await supabase.from("customer_settings").upsert({
+        user_id: authUser.id, plant_pos_x: plantPos.x, plant_pos_y: plantPos.y,
+      }, { onConflict: "user_id" });
+      if (!error) plantPositionDirty.current = false;
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [plantPos, plantDragInfo, authUser?.id]);
 
 useEffect(() => {
   const handleMouseMove = (e: MouseEvent) => {
     if (!plantDragInfo) return;
-   setPlantPos({
-  x: Math.max(0, Math.min(window.innerWidth - 180, plantDragInfo.originX + e.clientX - plantDragInfo.startX)),
-  y: Math.max(0, Math.min(window.innerHeight - 220, plantDragInfo.originY + e.clientY - plantDragInfo.startY)),
-});
+    plantPositionDirty.current = true;
+    setPlantPos(clampPlantPosition(plantDragInfo.originX + e.clientX - plantDragInfo.startX, plantDragInfo.originY + e.clientY - plantDragInfo.startY));
   };
   const handleMouseUp = () => setPlantDragInfo(null);
 
@@ -570,10 +281,8 @@ useEffect(() => {
     if (!plantDragInfo) return;
     e.preventDefault();
     const touch = e.touches[0];
-    setPlantPos({
-      x: plantDragInfo.originX + touch.clientX - plantDragInfo.startX,
-      y: plantDragInfo.originY + touch.clientY - plantDragInfo.startY,
-    });
+    plantPositionDirty.current = true;
+    setPlantPos(clampPlantPosition(plantDragInfo.originX + touch.clientX - plantDragInfo.startX, plantDragInfo.originY + touch.clientY - plantDragInfo.startY));
   };
   const handleTouchEnd = () => setPlantDragInfo(null);
 
@@ -591,14 +300,7 @@ useEffect(() => {
   };
 }, [plantDragInfo]);
 
-const loadPrivateMemos = async () => {
-  const { data } = await supabase
-    .from("cm_private_memos")
-    .select("*")
-    .eq("user_id", authUser!.id)
-    .order("created_at", { ascending: false });
-  setPrivateMemos(data || []);
-};
+
 
   const loadDiaries = async () => {
     const { data } = await supabase
@@ -611,36 +313,10 @@ const loadPrivateMemos = async () => {
     setDiaryLoading(false);
   };
 
-  const addPrivateMemo = async () => {
- if (!authUser) return;
-  const { data } = await supabase
-    .from("cm_private_memos")
-    .insert({ user_id: authUser.id, title: privateMemoTitle.trim(), content: privateMemoContent.trim(), color: privateMemoColor })
-    .select().single();
-  if (data) setPrivateMemos((prev) => [data, ...prev]);
-  setPrivateMemoTitle("");
-  setPrivateMemoContent("");
-  setPrivateMemoColor("white");
-  setPrivateMemoAddOpen(false);
-};
+  
 
-const deletePrivateMemo = async (id: string) => {
-  await supabase.from("cm_private_memos").delete().eq("id", id);
-  setPrivateMemos((prev) => prev.filter((m) => m.id !== id));
-};
-const updatePrivateMemo = async () => {
-  if (!editingMemo) return;
-  await supabase
-    .from("cm_private_memos")
-    .update({ title: editMemoTitle.trim(), content: editMemoContent.trim() })
-    .eq("id", editingMemo.id);
-  setPrivateMemos((prev) =>
-    prev.map((m) => m.id === editingMemo.id ? { ...m, title: editMemoTitle.trim(), content: editMemoContent.trim() } : m)
-  );
-  const updated = { ...editingMemo, title: editMemoTitle.trim(), content: editMemoContent.trim() };
-setEditingMemo(null);
-setViewingMemo(updated);
-};
+
+
 
 
   const loadAttendance = async () => {
@@ -742,6 +418,9 @@ setViewingMemo(updated);
 
   const totalWatered = attendance.filter((r) => r.watered).length;
   const plantStage = getPlantStage(totalWatered);
+  useEffect(() => {
+    if (!attendanceLoading) onPlantStageChange?.(plantStage);
+  }, [plantStage, attendanceLoading, onPlantStageChange]);
 
   const stageName: Record<PlantStage, string> = {
     seed: "씨앗",
@@ -841,33 +520,8 @@ const diaryEndPage = Math.min(
   diaryStartPage + PAGE_GROUP - 1,
   diaryTotalPages
 );
-  return (
-    <div className="space-y-5">
-
-     {/* 식물 카드 - 드래그 가능 */}
-{!isHidden("plant") && (
-  <div
-    style={{ left: plantPos.x, top: plantPos.y }}
-  onMouseDown={(e) => {
-    setPlantDragInfo({
-      startX: e.clientX,
-      startY: e.clientY,
-      originX: plantPos.x,
-      originY: plantPos.y,
-    });
-  }}
-  onTouchStart={(e) => {
-    const touch = e.touches[0];
-    setPlantDragInfo({
-      startX: touch.clientX,
-      startY: touch.clientY,
-      originX: plantPos.x,
-      originY: plantPos.y,
-    });
-  }}
-  className="fixed z-30 w-45 flex-shrink-0 space-y-2 cursor-default"
->
-  <div className="bg-yellow-50/80 rounded-3xl border border-yellow-100 p-3 text-center shadow-sm hover:-translate-y-0.5 hover:shadow-md">
+  const plantCard = (
+  <div className="bg-yellow-50 rounded-2xl border border-yellow-100 p-3 text-center shadow-sm">
     <p
       className="text-[15px] font-bold text-amber-700 mb-1 truncate max-w-[140px] mx-auto"
       title={settings?.nickname ? `${settings.nickname}의 식물` : "나의 식물"}
@@ -893,524 +547,34 @@ const diaryEndPage = Math.min(
       {wateringAnim ? "💧..." : "물주기"}
     </button>
   </div>
-</div>
-)}
+  );
 
-{/* ── 날씨 / D-Day / BGM 위젯 ── */}
-<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+  return (
+    <div className="space-y-5">
+      {plantPopupOpen && createPortal(
+        <div ref={plantCardRef} role="dialog" aria-label="내 식물 물주기"
+          style={{ left: plantPos.x, top: plantPos.y, touchAction: "none" }}
+          className="fixed z-[300] w-45 cursor-default"
+          onMouseDown={event => {
+            if (event.button !== 0 || (event.target as HTMLElement).closest("button")) return;
+            event.preventDefault();
+            setPlantDragInfo({ startX: event.clientX, startY: event.clientY, originX: plantPos.x, originY: plantPos.y });
+          }}
+          onTouchStart={event => {
+            if ((event.target as HTMLElement).closest("button")) return;
+            const touch = event.touches[0];
+            setPlantDragInfo({ startX: touch.clientX, startY: touch.clientY, originX: plantPos.x, originY: plantPos.y });
+          }}>
+          {plantCard}
+        </div>, document.body
+      )}
 
-
-  {/* 날씨 */}
-  {!isHidden("weather") && (
-<div
-    className={`bg-white rounded-3xl border border-gray-200 shadow p-4 relative select-none transition-all duration-200 ${weatherContextMenu ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
-   onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setWeatherContextMenu({ x: e.clientX, y: e.clientY }); }}
-
-  >
-    {weather ? (
-  <>
-    <div className="flex items-center gap-4 mb-3">
-      
-
-      <div className="flex items-center gap-2">
-        <span className="text-[25px] leading-none">
-          {(weather.description || "").includes("비") ? "🌧️"
-            : (weather.description || "").includes("눈") ? "❄️"
-            : (weather.description || "").includes("구름") ? "☁️"
-            : (weather.description || "").includes("맑") ? "☀️"
-            : "☁️"}
-        </span>
-
-        <span className="text-[15px] font-bold text-gray-700">
-          {weather.region}
-        </span>
-
-        <span className="text-[16px] font-black text-gray-700">
-          {weather.temp}°C
-        </span>
-      </div>
-    </div>
-
-    {weather.daily && weather.daily.length > 0 && (
-      <div className="flex items-center justify-between gap-2 px-4">
-        {weather.daily.map((day) => (
-          <div key={day.date} className="flex flex-col items-center gap-1">
-            <span className="text-[13px] font-bold text-gray-400">
-                           {new Date(`${day.date}T00:00:00`).toLocaleDateString("ko-KR", {
-  weekday: "short",
-})}
-
-            </span>
-
-            <span className="text-[18px] leading-none">
-              {(day.description || "").includes("비") ? "🌧️"
-                : (day.description || "").includes("눈") ? "❄️"
-                : (day.description || "").includes("구름") ? "☁️"
-                : (day.description || "").includes("맑") ? "☀️"
-                : "☁️"}
-            </span>
-
-            <span className="text-[12px] font-black text-gray-800">
-              {day.temp}°
-            </span>
-          </div>
-        ))}
-      </div>
-    )}
-  </>
-) : (
-  <p className="text-xs text-gray-300 text-center py-3">불러오는 중...</p>
-)}
-  {weatherContextMenu && (
-  <>
-   <div 
-  className="fixed inset-0 z-[9998]" 
-  onClick={() => setWeatherContextMenu(null)}
-  onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setWeatherContextMenu(null); }}
-/>
-
-
-        <div
-      className="absolute left-0 top-full mt-2 z-[9999] bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden w-28"
-    >
-
-
-
-          {WEATHER_REGIONS.map((r) => (
-            <button
-              key={r}
-              onClick={async () => {
-  setWeatherRegion(r);
-  setWeatherContextMenu(null);
-
-  localStorage.setItem("hometab-weather-region", r);
-
-  if (authUser) {
-    await supabase
-      .from("customer_settings")
-      .upsert(
-        {
-          user_id: authUser.id,
-          weather_region: r,
-        },
-        { onConflict: "user_id" }
-      );
-  }
-}}
-              className={`w-full px-4 py-2.5 text-sm font-bold text-left hover:bg-gray-50 transition ${r === weatherRegion ? "text-blue-600" : "text-gray-700"}`}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-      </>
-    )}
-  </div>
-)}
-  {/* D-Day */}
- {!isHidden("dday") && (
-<div
-   className={`bg-white rounded-3xl border border-gray-200 shadow p-4 relative transition-all duration-200  ${ddayWidgetEditOpen ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
-  onClick={() => { setDdayWidgetTempLabel(ddayWidgetLabel); setDdayWidgetTempDate(ddayWidgetDate); setDdayWidgetEditOpen(true); }}
-
->
-
-    {ddayWidgetDate ? (
-      <>
-       <div className="flex items-center gap-3 mb-4.5">
-  <p className="text-sm font-bold text-gray-700 truncate">
-    {ddayWidgetLabel || ""}
-  </p>
-
-  <span className="text-[13px] text-gray-400">
-    {ddayWidgetDate}
-  </span>
-</div>
-        <p className={`text-[30px] leading-none font-black text-center mt-1 ${calcDday(ddayWidgetDate) <= 0 ? "text-red-500" : "text-blue-600"}`}>
-          {getDdayLabel(calcDday(ddayWidgetDate))}
-        </p>
-        
-      </>
-    ) : (
-      <div className="flex items-center justify-center h-full min-h-[90px]">
-        <p className="text-sm text-gray-300 cursor-default">D-Day 설정</p>
-      </div>
-    )}
-    {ddayWidgetEditOpen && (
-      <>
-        <div className="fixed inset-0 z-[9998] bg-black/40 flex items-center justify-center" onClick={() => setDdayWidgetEditOpen(false)}>
-          <div className="bg-white rounded-3xl shadow-2xl p-6 w-80" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-  <h3 className="text-lg font-black text-gray-900">
-    D-Day 설정
-  </h3>
-
-  <div className="flex items-center gap-1">
-    <button
-      onClick={async () => {
-        setDdayWidgetLabel("");
-        setDdayWidgetDate("");
-        setDdayWidgetTempLabel("");
-        setDdayWidgetTempDate("");
-
-        if (authUser) {
-          await supabase.from("customer_settings").upsert(
-            {
-              user_id: authUser.id,
-              dday_label: "",
-              dday_date: "",
-            },
-            { onConflict: "user_id" }
-          );
-        }
-      }}
-      className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 transition cursor-pointer"
-    >
-      <Trash2 className="w-4 h-4 text-red-400" />
-    </button>
-
-    <button data-popup-close="true"
-      onClick={() => setDdayWidgetEditOpen(false)}
-      className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer"
-    >
-      <X className="w-4 h-4 text-gray-500" />
-    </button>
-  </div>
-</div>
-            <input
-              type="text"
-              value={ddayWidgetTempLabel}
-              onChange={(e) => setDdayWidgetTempLabel(e.target.value)}
-              placeholder="제목"
-              className="w-full h-11 px-4 rounded-2xl border border-gray-200 text-sm mb-3 outline-none focus:border-blue-400"
-            />
-            <div className="relative mb-4">
-  <button
-    type="button"
-    onClick={() => {
-      if (ddayWidgetTempDate) {
-        const [y, m] = ddayWidgetTempDate.split("-").map(Number);
-        setDdayPickerYear(y);
-        setDdayPickerMonth(m - 1);
-      }
-      setShowDdayDatePicker(!showDdayDatePicker);
-    }}
-    className="w-full h-11 px-4 rounded-2xl border border-gray-200 text-sm text-left flex items-center justify-between hover:bg-gray-50 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
-  >
-    <span>{ddayWidgetTempDate || "날짜 선택"}</span>
-    <Calendar className="w-4 h-4 text-gray-500" />
-  </button>
-
-  {showDdayDatePicker && (
-    <>
-      <div
-        className="fixed inset-0 z-[70]"
-        onClick={() => setShowDdayDatePicker(false)}
-      />
-
-      <div className="absolute top-13 left-0 bg-white border border-gray-200 rounded-3xl p-5 z-[80] shadow-xl w-[320px]">
-        <div className="flex items-center justify-between mb-4">
-          <button
-            type="button"
-            onClick={() => {
-              if (ddayPickerMonth === 0) {
-                setDdayPickerMonth(11);
-                setDdayPickerYear(ddayPickerYear - 1);
-              } else {
-                setDdayPickerMonth(ddayPickerMonth - 1);
-              }
-            }}
-            className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
-          >
-            ‹
-          </button>
-
-          <span className="text-base font-black text-gray-900">
-            {ddayPickerYear}년 {ddayPickerMonth + 1}월
-          </span>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (ddayPickerMonth === 11) {
-                setDdayPickerMonth(0);
-                setDdayPickerYear(ddayPickerYear + 1);
-              } else {
-                setDdayPickerMonth(ddayPickerMonth + 1);
-              }
-            }}
-            className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
-          >
-            ›
-          </button>
-        </div>
-
-        <div className="grid grid-cols-7 mb-2">
-          {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
-            <div
-              key={d}
-              className={`text-center text-xs font-bold py-1 ${
-                i === 0 ? "text-red-400" : i === 6 ? "text-blue-400" : "text-gray-400"
-              }`}
-            >
-              {d}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-7 gap-1">
-          {(() => {
-            const firstDow = new Date(ddayPickerYear, ddayPickerMonth, 1).getDay();
-            const daysInMonth = new Date(ddayPickerYear, ddayPickerMonth + 1, 0).getDate();
-            const cells = [];
-
-            for (let i = 0; i < firstDow; i++) {
-              cells.push(<div key={`empty-${i}`} />);
-            }
-
-            for (let d = 1; d <= daysInMonth; d++) {
-              const dateStr = `${ddayPickerYear}-${String(ddayPickerMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-              const isSelected = ddayWidgetTempDate === dateStr;
-              const dow = new Date(ddayPickerYear, ddayPickerMonth, d).getDay();
-
-              cells.push(
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => {
-                    setDdayWidgetTempDate(dateStr);
-                    setShowDdayDatePicker(false);
-                  }}
-                  className={`h-9 rounded-xl text-sm font-bold transition ${
-                    isSelected
-                      ? "bg-gray-900 text-white"
-                      : dow === 0
-                      ? "text-red-400 hover:bg-gray-100"
-                      : dow === 6
-                      ? "text-blue-400 hover:bg-gray-100"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
-                >
-                  {d}
-                </button>
-              );
-            }
-
-            return cells;
-          })()}
-        </div>
-      </div>
-    </>
-  )}
-</div>
-            <button
-              onClick={async () => {
-                setDdayWidgetLabel(ddayWidgetTempLabel);
-                setDdayWidgetDate(ddayWidgetTempDate);
-                setDdayWidgetEditOpen(false);
-                if (authUser) {
-                  await supabase.from("customer_settings").upsert(
-                    { user_id: authUser.id, dday_label: ddayWidgetTempLabel, dday_date: ddayWidgetTempDate },
-                    { onConflict: "user_id" }
-                  );
-                }
-              }}
-              className="w-full h-11 bg-blue-500 text-white font-black rounded-2xl hover:bg-blue-400 transition"
-            >
-              저장
-            </button>
-          </div>
-        </div>
-      </>
-    )}
-  </div>
-)}
-
-{/* BGM 플레이어 */}
-{!isHidden("bgm") && (
-<div
-  className={`hidden md:block bg-white rounded-3xl border border-gray-200 shadow p-4 relative transition-all duration-200 ${bgmEditOpen || bgmColorMenuOpen ? "" : "hover:-translate-y-1 hover:shadow-md"}`}
-  onContextMenu={(e) => { e.preventDefault(); setBgmColorMenuOpen(true); }}
->
-
-
-  {bgmColorMenuOpen && (
-    <>
-      <div className="fixed inset-0 z-[9998]" onClick={() => setBgmColorMenuOpen(false)} />
-<div className="absolute right-2 top-2 z-[9999] bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden w-24">
-
-        {(Object.entries(BGM_COLOR_MAP) as [keyof typeof BGM_COLOR_MAP, typeof BGM_COLOR_MAP[keyof typeof BGM_COLOR_MAP]][]).map(([key, val]) => (
-          <button
-            key={key}
-            onClick={() => { setBgmColor(key); setBgmColorMenuOpen(false); }}
-            className={`w-full px-3 py-2 text-xs font-bold text-left flex items-center gap-2 hover:bg-gray-50 transition ${bgmColor === key ? "font-black" : "opacity-60"}`}
-          >
-            <span className={`w-3 h-3 rounded-full ${val.bg}`} />
-            {val.label}
-          </button>
-        ))}
-      </div>
-    </>
-  )}
-
-  <div className="flex items-center justify-between mb-2">
-    
-    
-  </div>
-
-  <div className="flex items-center gap-3 mb-2 relative -top-[6px]">
-  {bgmPlaying && (
-    <div className="flex items-end gap-[2px] h-3 shrink-0">
-    <span className={`w-[3px] rounded-full animate-bounce ${currentColor.bg}`} style={{ height: "60%", animationDelay: "0s", animationDuration: "0.6s" }} />
-<span className={`w-[3px] rounded-full animate-bounce ${currentColor.bg}`} style={{ height: "100%", animationDelay: "0.15s", animationDuration: "0.6s" }} />
-<span className={`w-[3px] rounded-full animate-bounce ${currentColor.bg}`} style={{ height: "40%", animationDelay: "0.3s", animationDuration: "0.6s" }} />
-<span className={`w-[3px] rounded-full animate-bounce ${currentColor.bg}`} style={{ height: "80%", animationDelay: "0.1s", animationDuration: "0.6s" }} />
-
-    </div>
-  )}
-  <p className="flex-1 min-w-0 text-[14px] font-bold text-gray-700 truncate relative ">
-    {currentBgm.title}
-  </p>
-
-
-  <button
-    onClick={() => setBgmEditOpen(true)}
-    className="text-[13px] text-gray-400 hover:text-gray-600 transition flex-shrink-0 "
-  >
-    목록
-  </button>
-</div>
-
-  <div className="flex items-center justify-center gap-1.5 mb-2">
-  {/* 경과 시간 */}
-  <span className={`text-[9px] font-bold tabular-nums w-7 text-center ${currentColor.text}`}>
-    {String(Math.floor(bgmTimer / 60)).padStart(2, "0")}:{String(bgmTimer % 60).padStart(2, "0")}
-  </span>
-  {/* 이전 버튼 */}
-  <button
-    onClick={() => { setBgmIndex((i) => (i - 1 + filteredBgm.length) % filteredBgm.length); setBgmPlaying(true); }}
-    className="w-7 h-7 rounded-xl bg-gray-100 text-gray-600 text-xs font-black hover:bg-gray-200 active:scale-90 transition cursor-pointer"
-  >
-    ⏮
-  </button>
-
-
-
-  {/* 재생/정지 버튼 - 프로그레스 효과 */}
-  <button
-    onClick={() => {
-      const iframe = bgmRef.current;
-      if (iframe) {
-        if (bgmPlaying) {
-          iframe.contentWindow?.postMessage(JSON.stringify({ event: "command", func: "pauseVideo" }), "*");
-        } else {
-          iframe.contentWindow?.postMessage(JSON.stringify({ event: "command", func: "playVideo" }), "*");
-        }
-      }
-      setBgmPlaying((p) => !p);
-    }}
-    className={`relative w-[250px] h-7 rounded-2xl text-white text-xs font-black overflow-hidden cursor-pointer ${currentColor.light}`}
-  >
-    {bgmPlaying ? (
-  <span
-    key={`${bgmIndex}-playing`}
-    className={`absolute inset-y-0 left-0 rounded-2xl ${currentColor.bg}`}
-    style={{ width: "0%", transition: "width 180s linear" }}
-    ref={(el) => {
-      if (el) requestAnimationFrame(() => { el.style.width = "100%"; });
-    }}
-  />
-) : (
-  <span className={`absolute inset-y-0 left-0 right-0 rounded-2xl ${currentColor.bg}`} />
-)}
-
-    <span className="relative z-10">{bgmPlaying ? "⏸" : "▶"}</span>
-  </button>
-  {/* 다음 버튼 */}
-  <button
-    onClick={() => { setBgmIndex((i) => (i + 1) % filteredBgm.length); setBgmPlaying(true); }}
-    className="w-7 h-7 rounded-xl bg-gray-100 text-gray-600 text-xs font-black hover:bg-gray-200 active:scale-90 transition cursor-pointer"
-  >
-    ⏭
-  </button>
-  {/* 남은 시간 */}
-  <span className="text-[9px] font-bold text-gray-300 tabular-nums w-7 text-center">
-    -{String(Math.floor(Math.max(0, 180 - bgmTimer) / 60)).padStart(2, "0")}:{String(Math.max(0, 180 - bgmTimer) % 60).padStart(2, "0")}
-  </span>
-</div>
-
-
-
-  <div className="flex gap-1 px-13">
-    {(["전체", "노동요", "싸이월드"] as const).map((cat) => (
-      <button
-        key={cat}
-        onClick={() => { setBgmCategory(cat); setBgmIndex(0); }}
-        className={`flex-1 h-6 rounded-xl text-[11px] font-bold transition cursor-pointer ${bgmCategory === cat ? `${currentColor.bg} text-white` : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
-      >
-        {cat}
-      </button>
-    ))}
-  </div>
-
-  <iframe
-  ref={bgmRef}
-  id="bgm-iframe"
-  src={`https://www.youtube.com/embed/${currentBgm.vid}?enablejsapi=1&autoplay=${bgmPlaying ? 1 : 0}`}
-  className="hidden"
-  allow="autoplay"
-  onLoad={( ) => {
-    if (bgmRef.current && bgmPlaying) {
-      bgmRef.current.contentWindow?.postMessage(
-        JSON.stringify({ event: "command", func: "playVideo" }),
-        "*"
-      );
-    }
-  }}
-/>
-
-
-
-  {bgmEditOpen && (
-  <div className="fixed inset-0 z-[9998] bg-black/40 flex items-center justify-center" onClick={() => setBgmEditOpen(false)}>
-
-      <div data-popup-frame="true" className="bg-white rounded-3xl shadow-2xl p-5 w-80 max-h-[70vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-base font-black text-gray-900 mb-3">BGM 목록</h3>
-        <div className="flex gap-1 mb-3">
-          {(["전체", "노동요", "싸이월드"] as const).map((cat) => (
-            <button
-              key={cat}
-              onClick={() => { setBgmCategory(cat); setBgmIndex(0); }}
-              className={`flex-1 h-8 rounded-xl text-xs font-bold transition ${bgmCategory === cat ? `${currentColor.bg} text-white` : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-        <div className="overflow-y-auto flex-1 space-y-1">
-          {filteredBgm.map((bgm, i) => (
-            <button
-              key={`${bgm.vid}-${i}`}
-
-              onClick={() => { setBgmIndex(i); setBgmPlaying(true); setBgmEditOpen(false); }}
-              className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition ${i === bgmIndex % filteredBgm.length ? `${currentColor.light} ${currentColor.text} border ${currentColor.bg.replace("bg-", "border-")}` : "hover:bg-gray-50 text-gray-700"}`}
-            >
-              {i === bgmIndex % filteredBgm.length && bgmPlaying ? "▶ " : ""}{bgm.title}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )}
-</div>
-)}
-</div>
-
+{view === "home" && <>
 {/* ── 오늘 일정 + 체크리스트 ── */}
 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
   {!isHidden("schedule") && (
-  <div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
+  <div className="personal-grid bg-white rounded-3xl border border-gray-200 shadow p-5">
       <h2 className="text-base font-black text-gray-900 mb-3">오늘 일정</h2>
 {todayEvents.length === 0 ? (
   <div className="flex items-center justify-center py-10">
@@ -1486,7 +650,7 @@ const diaryEndPage = Math.min(
 
 {/* 체크리스트 카드 */}
 {!isHidden("checklist") && (
-<div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
+<div className="personal-grid bg-white rounded-3xl border border-gray-200 shadow p-5">
     <h2 className="text-base font-black text-gray-900 mb-3">체크리스트</h2>
     <div className="space-y-2 mb-3">
       {checklists.map((item) => (
@@ -1648,161 +812,22 @@ const diaryEndPage = Math.min(
 
 
 
-      {/* ── 메모 | 일기 반반 ── */}
+      </>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
+      {/* ── 메모와 일기 탭 ── */}
 
-{/* 메모 목록 */}
-{!isHidden("memo") && (
-<div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-black text-gray-900 flex items-center gap-2">
-              <NotebookPen className="w-5 h-5 text-yellow-500" />
-              메모 목록
-            </h2>
-            <button
-              onClick={() => setPrivateMemoAddOpen(true)}
-              className="w-8 h-8 rounded-xl bg-yellow-400 flex items-center justify-center hover:bg-yellow-300 shadow-sm hover:shadow-md transition cursor-pointer"
-            >
-              <Plus className="w-4 h-4 text-white" />
-            </button>
-          </div>
+      <div className="grid grid-cols-1 gap-3 items-start">
 
-        
-{privateMemos.length === 0 ? (
-  <div className="text-center py-6">
-    <StickyNote className="w-7 h-7 mx-auto mb-1.5 text-gray-200" />
-    <p className="text-sm text-gray-400 cursor-default">메모가 없습니다.</p>
-  </div>
-) : (
-  <div className="space-y-2.5">
-    {privateMemos.slice(
-  (memoPage - 1) * ITEMS_PER_PAGE,
-  memoPage * ITEMS_PER_PAGE
-).map((memo) => (
-     <div
-  key={memo.id}
-  onClick={() => setViewingMemo(memo)}
-  className={`w-full text-left rounded-xl border px-3 py-5 group hover:-translate-y-0.5 hover:shadow-sm transition ${
-    memo.color === "blue" ? "bg-blue-50 border-blue-100" :
-    memo.color === "yellow" ? "bg-yellow-50 border-yellow-100" :
-    memo.color === "red" ? "bg-red-50 border-red-100" :
-    "bg-white border-gray-100"
-  }`}
->
-  <span className="text-sm font-bold text-gray-800 truncate block">
-    {memo.title || ""}
-  </span>
-  <span className="text-sm text-gray-600 truncate block mt-0.5 min-h-[40px]">
-  {memo.content || " "}
-</span>
-</div>
-    ))}
-    <div className="flex items-center justify-center gap-1 mt-5">
-  <button
-    onClick={() => setMemoPage((prev) => Math.max(1, prev - PAGE_GROUP))}
-    className="px-2 h-8 rounded-xl bg-yellow-50 border border-yellow-100 text-yellow-700 text-sm font-bold hover:bg-yellow-100 transition"
-  >
-    이전
-  </button>
+{/* 메모 */}
 
-  {Array.from(
-    { length: Math.max(1, memoEndPage - memoStartPage + 1) },
-    (_, i) => {
-      const page = memoStartPage + i;
-
-      return (
-        <button
-          key={page}
-          onClick={() => setMemoPage(page)}
-          className={`w-8 h-8 rounded-xl text-sm font-bold transition ${
-            memoPage === page
-              ? "bg-yellow-400 text-white shadow-sm"
-              : "bg-yellow-50 border border-yellow-100 text-yellow-700 hover:bg-yellow-100"
-          }`}
-        >
-          {page}
-        </button>
-      );
-    }
-  )}
-
-  <button
-    onClick={() =>
-      setMemoPage((prev) =>
-        Math.min(Math.max(1, memoTotalPages), prev + PAGE_GROUP)
-      )
-    }
-    className="px-2 h-8 rounded-xl bg-yellow-50 border border-yellow-100 text-yellow-700 text-sm font-bold hover:bg-yellow-100 transition"
-  >
-    다음
-  </button>
-</div>
-        </div>
-)}
-        </div>
-)}
 
         {/* 메모 추가 팝업 */}
-{privateMemoAddOpen && (
-  <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-1">
-    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg min-h-[520px] flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
-        <h3 className="text-xl font-black text-gray-900">메모 추가</h3>
-        <button data-popup-close="true"
-          onClick={() => setPrivateMemoAddOpen(false)}
-          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-yellow-50 transition cursor-pointer"
-        >
-          <X className="w-4 h-4 text-gray-500" />
-        </button>
-      </div>
 
-      <div className="px-7 pt-6 pb-7 space-y-6 flex-1">
-        <div>
-          <label className="text-sm font-bold text-gray-500 mb-1 block">
-            메모 제목
-          </label>
-          <input
-            type="text"
-            value={privateMemoTitle}
-            onChange={(e) => setPrivateMemoTitle(e.target.value)}
-            placeholder="메모 제목"
-            className="w-full h-12 px-4 rounded-2xl border border-gray-200 text-base outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-50 transition"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-bold text-gray-500 mb-1 block">
-            메모 내용
-          </label>
-          <textarea
-            value={privateMemoContent}
-            onChange={(e) => setPrivateMemoContent(e.target.value)}
-            placeholder="메모 내용을 입력하세요"
-            rows={8}
-            className="w-full px-4 py-4 rounded-2xl border border-gray-200 text-base leading-relaxed outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-50 transition resize-none"
-          />
-        </div>
-
-        <p className="text-[11px] text-gray-400 text-center">
-          ※ 메모는 서버에 저장되어 어디서든 로그인하면 불러올 수 있습니다.
-        </p>
-
-        <button
-          onClick={addPrivateMemo}
-          className="w-full h-12 bg-yellow-500 text-white text-base font-black rounded-2xl hover:bg-yellow-400 transition shadow-sm hover:shadow-md cursor-pointer"
-        >
-          저장
-        </button>
-      </div>
-    </div>
-  </div>
-)}
 
 
 {/* 일기 */}
-{!isHidden("diary") && (
-<div className="bg-white rounded-3xl border border-gray-200 shadow p-5">
+{view === "diary" && (
+<div className="personal-grid bg-white rounded-3xl border border-gray-200 shadow p-5">
           <div className="relative flex items-center justify-between mb-3">
   <h2 className="text-base font-black text-gray-900 flex items-center gap-2">
   <BookOpen className="w-5 h-5 text-blue-500" />
@@ -2143,109 +1168,10 @@ const diaryEndPage = Math.min(
       )}
 
       {/* ── 메모 읽기 팝업 ── */}
-{viewingMemo && (
-  <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg h-[520px] flex flex-col overflow-hidden">
-      <div className="flex items-center justify-between px-7 pt-5 pb-4 border-b border-gray-100">
-        <h3 className="text-xl font-black text-gray-900 truncate">
-          {viewingMemo.title || "(제목 없음)"}
-        </h3>
 
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => {
-              setEditingMemo(viewingMemo);
-              setEditMemoTitle(viewingMemo.title || "");
-              setEditMemoContent(viewingMemo.content || "");
-              setViewingMemo(null);
-            }}
-            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-yellow-50 transition cursor-pointer"
-          >
-            <Pencil className="w-4 h-4 text-gray-500" />
-          </button>
-
-          <button
-           onClick={() => setConfirmDelete({ type: "memo", id: viewingMemo.id })}
-            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-red-50 transition cursor-pointer"
-          >
-            <Trash2 className="w-4 h-4 text-red-400" />
-          </button>
-
-          <button data-popup-close="true"
-            onClick={() => setViewingMemo(null)}
-            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer"
-          >
-            <X className="w-4 h-4 text-gray-500" />
-          </button>
-        </div>
-      </div>
-
-      <div className="px-7 py-6 flex-1 overflow-y-auto">
-        <p className="text-base text-gray-700 leading-relaxed whitespace-pre-wrap break-keep">
-          {viewingMemo.content}
-        </p>
-      </div>
-    </div>
-  </div>
-)}
 
       {/* ── 메모 수정 팝업 ── */}
-{editingMemo && (
-  <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-1">
-    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg min-h-[520px] flex flex-col overflow-hidden">
 
-      <div className="flex items-center justify-between px-5 py-4 border-b border-yellow-100">
-        <h3 className="text-xl font-black text-gray-900">
-          메모 수정
-        </h3>
-
-        <button data-popup-close="true"
-          onClick={() => setEditingMemo(null)}
-          className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-yellow-50 transition cursor-pointer"
-        >
-          <X className="w-4 h-4 text-gray-500" />
-        </button>
-      </div>
-
-      <div className="px-7 pt-6 pb-7 space-y-6 flex-1">
-        <div>
-          <label className="text-sm font-bold text-gray-500 mb-1 block">
-            메모 제목
-          </label>
-
-          <input
-            type="text"
-            value={editMemoTitle}
-            onChange={(e) => setEditMemoTitle(e.target.value)}
-            placeholder="메모 제목"
-            className="w-full h-12 px-4 rounded-2xl border border-gray-200 text-base outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-50 transition"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-bold text-gray-500 mb-1 block">
-            메모 내용
-          </label>
-
-          <textarea
-            value={editMemoContent}
-            onChange={(e) => setEditMemoContent(e.target.value)}
-            placeholder="메모 내용을 입력하세요"
-            rows={8}
-            className="w-full px-4 py-4 rounded-2xl border border-gray-200 text-base leading-relaxed outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-50 transition resize-none"
-          />
-        </div>
-
-        <button
-          onClick={updatePrivateMemo}
-          className="w-full h-12 bg-yellow-500 text-white text-base font-black rounded-2xl hover:bg-yellow-400 transition shadow-sm hover:shadow-md cursor-pointer"
-        >
-          수정 완료
-        </button>
-        </div>
-    </div>
-  </div>
-)}
       {/* ── 삭제 확인 팝업 ── */}
 {confirmDelete && (
   <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
@@ -2261,13 +1187,9 @@ const diaryEndPage = Math.min(
         </button>
         <button
           onClick={() => {
-            if (confirmDelete.type === "memo") {
-              deletePrivateMemo(confirmDelete.id);
-              setViewingMemo(null);
-            } else {
+            
               handleDeleteDiary(confirmDelete.id);
               setViewingDiary(null);
-            }
             setConfirmDelete(null);
           }}
           className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition"
