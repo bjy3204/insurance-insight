@@ -5,10 +5,11 @@ import ColorSelectButton from "@/app/components/memos/ColorSelectButton";
 import { ChevronDown, Download, Save, X, FileText, MessageCircle } from "lucide-react";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import html2canvas from "html2canvas";
+import { createPortal } from "react-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
-import { captureClaimNotice } from "@/lib/capture-claim-notice";
+import { captureNoticeImage } from "@/lib/capture-claim-notice";
+import { lockPageScroll } from "@/app/features/home/components/dashboard/DashboardDialog";
 
 type NoticeType = "exemption" | "reduction" | "claim";
 const noticeTypes: { id: NoticeType; label: string }[] = [
@@ -113,6 +114,14 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
   const [isCapturing, setIsCapturing] = useState(false);
   const [preparingShare, setPreparingShare] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [mobileSaveImage, setMobileSaveImage] = useState<string | null>(null);
+  useEffect(() => {
+    if (!mobileSaveImage) return;
+    const unlock = lockPageScroll();
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setMobileSaveImage(null); };
+    window.addEventListener("keydown", onKey);
+    return () => { unlock(); window.removeEventListener("keydown", onKey); URL.revokeObjectURL(mobileSaveImage); };
+  }, [mobileSaveImage]);
   const shareFileRef = useRef<{ key: string; file: File } | null>(null);
   const captureBusy = useRef(false);
   const bgUrl = `/card-templates/${noticeType}/${month}.png`;
@@ -157,16 +166,13 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
   };
   const captureNotice = useCallback(async () => {
     if (!previewRef.current) throw new Error("안내장 미리보기를 확인해 주세요.");
-    if (noticeType === "claim") return captureClaimNotice(previewRef.current);
-    await document.fonts.ready;
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return html2canvas(previewRef.current, { scale: 2, width: 720, height: 720, useCORS: true, backgroundColor: null, onclone: (_document, element) => { element.style.transform = "none"; } });
-  }, [noticeType]);
+    return captureNoticeImage(previewRef.current);
+  }, []);
   const imageName = `${customerName || "고객"}_${noticeType === "claim" ? `${getClaimNotice(claimKind).label}_청구서류` : noticeType === "exemption" ? "면책종료" : "감액종료"}_안내장.png`;
   const shareKey = JSON.stringify([noticeType, claimKind, month, customerName, signature, fontFamily, textColor, signatureColor, noticeType === "claim" ? claimContents[claimKind] : content]);
   useEffect(() => {
     shareFileRef.current = null;
-    if (!active || !navigator.share || !navigator.canShare) { setPreparingShare(false); return; }
+    if (!active) { setPreparingShare(false); return; }
     let cancelled = false;
     setPreparingShare(true);
     // 공유창은 버튼을 누르는 즉시 열 수 있도록 사진을 미리 준비합니다.
@@ -193,15 +199,20 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
     catch (error) { if (!(error instanceof Error && error.name === "AbortError")) setSaveMsg("사진 공유 창을 열지 못했습니다. 이미지 저장 후 카카오톡에서 사진으로 보내 주세요."); }
     finally { setSharing(false); }
   };
-  const handleDownload = async () => {
-    if (!previewRef.current || captureBusy.current) return;
+  const handleDownload = () => {
+    if (captureBusy.current) return;
+    const prepared = shareFileRef.current;
+    if (!prepared || prepared.key !== shareKey) { setSaveMsg("이미지 준비가 끝난 뒤 다시 저장해 주세요."); return; }
     captureBusy.current = true;
     setIsCapturing(true);
     try {
-      const canvas = await captureNotice();
+      const url = URL.createObjectURL(prepared.file);
       const link = document.createElement("a");
       link.download = imageName;
-      link.href = canvas.toDataURL("image/png"); link.click();
+      link.href = url; document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      if (window.matchMedia("(max-width: 767px)").matches) setMobileSaveImage(URL.createObjectURL(prepared.file));
+      setSaveMsg("");
     } catch { setSaveMsg("이미지를 저장하지 못했습니다. 다시 시도해 주세요."); } finally { setIsCapturing(false); captureBusy.current = false; }
   };
     return (
@@ -209,8 +220,8 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
       <div className="flex flex-wrap items-center justify-end gap-3">
         <h2 className="mr-auto flex items-center gap-3 text-xl font-bold"><FileText className="w-7 h-7 text-violet-500" />안내장</h2>
         {saveMsg && <p role="status" className="text-sm text-gray-600">{saveMsg}</p>}
-        <button type="button" aria-label="내용 저장" title="내용 저장" onClick={handleSave} disabled={!authUser || saving} className="flex items-center justify-center gap-2 h-11 px-3 sm:px-5 shrink-0 rounded-xl border border-gray-200 bg-white text-sm font-bold cursor-pointer disabled:opacity-50"><Save className="w-4 h-4" /><span className="whitespace-nowrap">{saving ? "저장 중..." : "내용 저장"}</span></button>
-        <button type="button" aria-label="이미지 저장" title="이미지 저장" onClick={handleDownload} disabled={isCapturing} className="flex items-center justify-center gap-2 h-11 px-3 sm:px-5 shrink-0 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer disabled:opacity-50"><Download className="w-4 h-4" /><span className="whitespace-nowrap">{isCapturing ? "저장 중..." : "이미지 저장"}</span></button>
+        <button type="button" aria-label="내용 저장" title="내용 저장" onClick={handleSave} disabled={!authUser || saving} className="flex items-center justify-center gap-2 h-11 w-11 sm:w-auto sm:px-5 shrink-0 rounded-xl border border-gray-200 bg-white text-sm font-bold cursor-pointer disabled:opacity-50"><Save className="w-4 h-4" /><span className="hidden sm:inline whitespace-nowrap">{saving ? "저장 중..." : "내용 저장"}</span></button>
+        <button type="button" aria-label="이미지 저장" title="이미지 저장" onClick={handleDownload} disabled={isCapturing || preparingShare} className="flex items-center justify-center gap-2 h-11 w-11 sm:w-auto sm:px-5 shrink-0 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer disabled:opacity-50"><Download className="w-4 h-4" /><span className="hidden sm:inline whitespace-nowrap">{isCapturing ? "저장 중..." : "이미지 저장"}</span></button>
         <button type="button" aria-label="카톡 공유하기" title="카톡 공유하기" onClick={handleKakaoShare} disabled={preparingShare || sharing} className="flex items-center justify-center gap-2 h-11 w-11 sm:w-auto sm:px-5 shrink-0 rounded-xl bg-[#fee500] text-gray-900 text-sm font-bold cursor-pointer disabled:opacity-50"><MessageCircle className="w-4 h-4" /><span className="hidden sm:inline whitespace-nowrap">{preparingShare ? "이미지 준비 중..." : "카톡 공유하기"}</span></button>
       </div>
       <div className="personal-grid bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
@@ -252,7 +263,7 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
           <div
   className="absolute left-0 w-full text-center text-[40px]"
   style={{
-    top: `${pos.nameTop - (isCapturing ? 18 : 0)}px`,
+    top: `${pos.nameTop}px`,
     transform: `translateX(${pos.nameX}px)`,
     fontFamily,
     color: textColor,
@@ -298,6 +309,7 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
           </div>
         </div>
       </div>
+      {mobileSaveImage && createPortal(<div role="dialog" aria-modal="true" aria-label="안내장 이미지 저장" className="fixed inset-0 z-[6000] bg-black/60 flex items-center justify-center p-4" onClick={() => setMobileSaveImage(null)}><div className="bg-white rounded-2xl w-full max-w-md max-h-[90dvh] overflow-y-auto p-4" onClick={event => event.stopPropagation()}><div className="flex items-center justify-between mb-3"><h3 className="font-bold">이미지 저장</h3><button type="button" aria-label="닫기" onClick={() => setMobileSaveImage(null)} className="p-2 cursor-pointer"><X className="w-5 h-5" /></button></div><p className="text-sm text-gray-600 mb-3">아래 이미지를 길게 눌러 사진에 저장할 수 있어요.</p><img src={mobileSaveImage} alt="저장할 안내장" className="w-full h-auto rounded-lg" style={{ WebkitTouchCallout: "default", userSelect: "auto" }} /><a href={mobileSaveImage} download={imageName} className="mt-3 flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer"><Download className="w-4 h-4" />파일 다운로드</a></div></div>, document.body)}
     </div>
   );
 }
