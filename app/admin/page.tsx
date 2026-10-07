@@ -136,7 +136,8 @@ function AdminPagination({
 
   return (
     <div className="sticky bottom-0 z-30 -mx-5 mt-4 bg-gray-50/95 backdrop-blur px-5 py-3 flex justify-center">
-      <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm bg-white shadow-sm">
+      <div className="flex    text-sm bg-white">
+<nav data-pagination="true" aria-label="페이지 이동">
         <button
           onClick={() => onPageChange(Math.max(1, page - 1))}
           disabled={page === 1}
@@ -166,7 +167,8 @@ function AdminPagination({
         >
           다음
         </button>
-      </div>
+      </nav>
+</div>
     </div>
   );
 }
@@ -1193,9 +1195,9 @@ const matchSearch =
     구독자 전체 보기
   </button>
 
-  <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
+  <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
     <Search className="w-5 h-5 text-gray-400 shrink-0" />
-    <input
+    <input data-ui-field="true" data-page-search-input="true"
       placeholder="닉네임 또는 인스타그램 아이디로 검색"
       value={search}
       onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
@@ -1318,7 +1320,7 @@ cat.color === "gray" ? "bg-gray-300" :
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="flex gap-2 items-center">
-                  <input
+                  <input data-ui-field="true"
                     value={catForm.name}
                     onChange={(e) => setCatForm({ ...catForm, name: e.target.value })}
                     placeholder="카테고리 이름"
@@ -1361,13 +1363,13 @@ c === "gray" ? "bg-gray-300" :
               <div className="bg-white rounded-2xl border border-gray-200 p-5">
                 <h3 className="font-black text-gray-900 mb-4">{editingNotice ? "공지 수정" : "공지 작성"}</h3>
                 <div className="space-y-3">
-                  <input
+                  <input data-ui-field="true"
                     value={noticeForm.title}
                     onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })}
                     placeholder="제목"
                     className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
                   />
-                  <select
+                  <select data-ui-field="true"
                     value={noticeForm.category_id}
                     onChange={(e) => setNoticeForm({ ...noticeForm, category_id: e.target.value })}
                     className="w-full h-11 pl-4 pr-8 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 bg-white "
@@ -1743,14 +1745,14 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
             {/* 왼쪽: 메인 구독자 리스트 */}
             <div className="flex-1">
               {/* 꽉 차는 월 이동 및 검색 헤더 */}
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
-                <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50/50">
+              <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
+                <div data-ui-field-wrapper="true" className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50/50">
                   <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="p-2 hover:bg-gray-200 rounded-full transition">
                     <ChevronLeft className="w-6 h-6 text-gray-600" />
                   </button>
                   <div className="flex items-center gap-2">
   <Calendar className="w-5 h-5 text-blue-600" />
-  <select
+  <select data-ui-field="true"
     value={currentMonth.getFullYear()}
     onChange={(e) => setCurrentMonth(new Date(Number(e.target.value), currentMonth.getMonth(), 1))}
     className="text-xl font-black text-gray-900 bg-transparent outline-none cursor-pointer hover:text-blue-600 transition"
@@ -1759,7 +1761,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
       <option key={year} value={year}>{year}년</option>
     ))}
   </select>
-  <select
+  <select data-ui-field="true"
     value={currentMonth.getMonth() + 1}
     onChange={(e) => setCurrentMonth(new Date(currentMonth.getFullYear(), Number(e.target.value) - 1, 1))}
     className="text-xl font-black text-gray-900 bg-transparent outline-none cursor-pointer hover:text-blue-600 transition"
@@ -1794,9 +1796,9 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                     구독자 전체 보기
                   </button>
 
-                  <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
+                  <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
                     <Search className="w-5 h-5 text-gray-400 shrink-0" />
-                    <input
+                    <input data-ui-field="true" data-page-search-input="true"
                       placeholder="이번 달 구독자 이름 또는 아이디 검색"
                       value={subSearch}
                       onChange={(e) => setSubSearch(e.target.value)}
@@ -2005,9 +2007,9 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
       </div>
 
       <div className="p-5 flex-1 min-h-0 flex flex-col">
-        <div className="bg-white rounded-2xl border border-gray-200 px-4 py-3 flex items-center gap-3 mb-4">
+        <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 px-4 py-3 flex items-center gap-3 mb-4">
           <Search className="w-4 h-4 text-gray-400 shrink-0" />
-          <input
+          <input data-ui-field="true" data-page-search-input="true"
             value={profileSubSearch}
             onChange={(e) => setProfileSubSearch(e.target.value)}
             placeholder="아이디 또는 이름으로 구독자 검색"
@@ -2124,7 +2126,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 {(adminTab === "subscribers" || adminTab === "members") && (
   <button
     onClick={() => { fetchAllSubscribers(); setIsAllSubPopupOpen(true); }}
-   className="hidden md:flex fixed bottom-8 left-8 z-40 bg-slate-800 text-white px-5 py-3 rounded-full shadow-xl items-center gap-2 hover:bg-slate-700 transition hover:-translate-y-1"
+   className="hidden md:flex fixed bottom-8 left-8 z-40 bg-blue-600 text-white px-5 py-3 rounded-full shadow-xl items-center gap-2 hover:bg-blue-700 transition hover:-translate-y-1"
   >
     <List className="w-5 h-5" />
     <span className="font-bold text-sm">구독자 전체 보기</span>
@@ -2143,9 +2145,9 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
               </button>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-2.5 flex items-center gap-2 mb-4">
+            <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-2.5 flex items-center gap-2 mb-4">
               <Search className="w-4 h-4 text-gray-400" />
-              <input placeholder="이름 또는 아이디 검색" value={selectSearch} onChange={(e) => setSelectSearch(e.target.value)} className="w-full outline-none text-sm bg-transparent" />
+              <input data-ui-field="true" data-page-search-input="true" placeholder="이름 또는 아이디 검색" value={selectSearch} onChange={(e) => setSelectSearch(e.target.value)} className="w-full outline-none text-sm bg-transparent" />
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-2 pr-1">
@@ -2190,22 +2192,22 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">아이디</label>
-                  <input value={subForm.subscriber_id} onChange={(e) => setSubForm({...subForm, subscriber_id: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="아이디 입력" />
+                  <input data-ui-field="true" value={subForm.subscriber_id} onChange={(e) => setSubForm({...subForm, subscriber_id: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="아이디 입력" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">이름</label>
-                  <input value={subForm.name} onChange={(e) => setSubForm({...subForm, name: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="이름 입력" />
+                  <input data-ui-field="true" value={subForm.name} onChange={(e) => setSubForm({...subForm, name: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="이름 입력" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">자료방</label>
-                  <input value={subForm.data_room} onChange={(e) => setSubForm({...subForm, data_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="자료방 이름" />
+                  <input data-ui-field="true" value={subForm.data_room} onChange={(e) => setSubForm({...subForm, data_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="자료방 이름" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">영상방</label>
-                  <input value={subForm.video_room} onChange={(e) => setSubForm({...subForm, video_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="영상방 이름" />
+                  <input data-ui-field="true" value={subForm.video_room} onChange={(e) => setSubForm({...subForm, video_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="영상방 이름" />
                 </div>
               </div>
 
@@ -2220,7 +2222,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
               {subForm.pay_app && (
   <div>
     <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">페이앱 코드</label>
-    <input
+    <input data-ui-field="true"
       value={subForm.pay_app_code}
       onChange={(e) => setSubForm({...subForm, pay_app_code: e.target.value})}
       className="w-full bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400"
@@ -2231,7 +2233,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">메모</label>
-                <textarea value={subForm.memo} onChange={(e) => setSubForm({...subForm, memo: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 resize-none h-24" placeholder="메모를 입력하세요" />
+                <textarea data-ui-field="true" value={subForm.memo} onChange={(e) => setSubForm({...subForm, memo: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 resize-none h-24" placeholder="메모를 입력하세요" />
               </div>
 
               <button onClick={saveSubscriber} className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-sm">
@@ -2268,7 +2270,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
              
              {/* CSV 업로드 버튼 */}
 <div className="hidden md:flex items-center gap-2">
-  <select
+  <select data-ui-field="true"
     value={saveTargetYear}
     onChange={(e) => setSaveTargetYear(Number(e.target.value))}
     className="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none bg-white"
@@ -2280,7 +2282,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
     ))}
   </select>
 
-  <select
+  <select data-ui-field="true"
     value={saveTargetMonth}
     onChange={(e) => setSaveTargetMonth(Number(e.target.value))}
     className="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none bg-white"
@@ -2329,9 +2331,9 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
   </button>
 </div>
 
-                <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-2.5 flex items-center gap-2">
+                <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-2.5 flex items-center gap-2">
                   <Search className="w-4 h-4 text-gray-400" />
-                  <input placeholder="이름 또는 아이디 검색" value={allSubSearch} onChange={(e) => setAllSubSearch(e.target.value)} className="w-full outline-none text-sm" />
+                  <input data-ui-field="true" data-page-search-input="true" placeholder="이름 또는 아이디 검색" value={allSubSearch} onChange={(e) => setAllSubSearch(e.target.value)} className="w-full outline-none text-sm" />
                                 </div>
                 {/* 필터/정렬 버튼 */}
                 <div className="flex items-center gap-2 mt-2">
@@ -2449,7 +2451,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                           ) : (
                             <button onClick={() => restoreSubscriber(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition cursor-pointer">복구</button>
                           )}
-                          <button onClick={() => confirmDelete(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-gray-800 text-white hover:bg-gray-900 rounded-lg transition cursor-pointer">삭제</button>
+                          <button onClick={() => confirmDelete(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition cursor-pointer">삭제</button>
                         </div>
                       </div>
                     ))
@@ -2500,16 +2502,16 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 {isMemoOpen && (
   <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
     <div data-popup-frame="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
-      <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between">
+      <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-3 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2"><NotebookPen className="w-5 h-5" />메모장</div>
         <button data-popup-close="true" onClick={() => setIsMemoOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"><X className="w-5 h-5" /></button>
       </div>
       <div className="p-4 flex gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input value={memoSearch} onChange={(e) => setMemoSearch(e.target.value)} placeholder="메모 검색" className="w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm outline-none focus:border-gray-400" />
+          <input data-ui-field="true" data-page-search-input="true" value={memoSearch} onChange={(e) => setMemoSearch(e.target.value)} placeholder="메모 검색" className="w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm outline-none focus:border-gray-400" />
         </div>
-        <button onClick={() => { setMemoTitle(""); setMemoContent(""); setMemoAddPopupPos({ x: 0, y: 0 }); setMemoAddOpen(true); }} className="h-12 px-5 rounded-2xl bg-gray-800 text-white text-sm font-bold flex items-center gap-2 cursor-default">
+        <button onClick={() => { setMemoTitle(""); setMemoContent(""); setMemoAddPopupPos({ x: 0, y: 0 }); setMemoAddOpen(true); }} className="h-12 px-5 rounded-2xl bg-blue-600 text-white text-sm font-bold flex items-center gap-2 cursor-default">
           <Plus className="w-4 h-4" />추가
         </button>
       </div>
@@ -2533,7 +2535,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                     <button onClick={(e) => { e.stopPropagation(); toggleMemoVisible(memo.id); }} className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.visible ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}>
                       {memo.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); toggleMemoPinned(memo.id); }} className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.pinned ? "bg-gray-800 border-gray-800 text-white hover:bg-gray-700 hover:border-gray-700" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}>
+                    <button onClick={(e) => { e.stopPropagation(); toggleMemoPinned(memo.id); }} className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.pinned ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-600" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}>
                       <Pin className="w-4 h-4" />
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); openMemoEdit(memo); }} className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 bg-white text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition cursor-default">
@@ -2551,7 +2553,8 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
         )}
       </div>
       <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
-        <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+        <div className="flex    text-sm">
+<nav data-pagination="true" aria-label="페이지 이동">
           <button onClick={() => setMemoPage((p) => Math.max(1, p - 1))} disabled={memoPage === 1} className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer">이전</button>
           {Array.from({ length: Math.min(totalMemoPages, 10) }).map((_, index) => {
             const page = index + 1;
@@ -2560,7 +2563,8 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
             );
           })}
           <button onClick={() => setMemoPage((p) => Math.min(totalMemoPages, p + 1))} disabled={memoPage === totalMemoPages} className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer">다음</button>
-        </div>
+        </nav>
+</div>
       </div>
     </div>
   </div>

@@ -52,7 +52,7 @@ return (<>{open && (
     수정할 내용
   </p>
 
-              <textarea
+              <textarea data-ui-field="true"
                 value={fixMessage}
                 onChange={(e) => setFixMessage(e.target.value)}
                 placeholder="예) 고객센터 팩스번호 수정 부탁드립니다"
@@ -73,7 +73,7 @@ return (<>{open && (
   <p className="text-sm font-bold text-gray-700 mb-1.5">
     추가하고 싶은 내용
   </p>
-              <textarea
+              <textarea data-ui-field="true"
                 value={addMessage}
                 onChange={(e) => setAddMessage(e.target.value)}
                 placeholder="예) 새로운 기능이 추가되면 좋겠습니다"
@@ -94,7 +94,7 @@ return (<>{open && (
   요청사항 변경 확인 메세지를 보내드립니다 !
 </p>
 
-            <input
+            <input data-ui-field="true"
               value={contact}
               onChange={(e) => setContact(e.target.value)}
               

@@ -15,11 +15,11 @@ return (<>{noticeOpen && (
   style={getPopupStyle("notice")}
   className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[80vh] flex flex-col"
 >
-            <div
+            <div data-popup-header="true"
   onPointerDown={(e) => startPopupDrag("notice", e)}
-  className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between"
+  className="bg-blue-600 text-white px-4 md:px-5 py-3 flex items-center justify-between"
 >
-              <div className="font-bold flex items-center gap-2">
+              <div data-popup-title="true" className="font-bold flex items-center gap-2">
                 <User className="w-5 h-5" />
                 공지사항
               </div>
@@ -203,11 +203,12 @@ setNoticeImageIndex(0);
     {/* 페이지네이션 */}
     {/* 페이지네이션 */}
 <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
-  <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+  <div className="flex    text-sm">
+<nav data-pagination="true" aria-label="페이지 이동">
     <button
       onClick={() => setNoticePage((p) => Math.max(1, p - 1))}
       disabled={noticePage === 1}
-      className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+      className="px-4 py-2 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 disabled:text-gray-300 cursor-pointer"
     >
       이전
     </button>
@@ -223,11 +224,12 @@ setNoticeImageIndex(0);
       return (
         <button
           key={page}
+          aria-current={noticePage === page ? "page" : undefined}
           onClick={() => setNoticePage(page)}
           className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
             noticePage === page
-              ? "bg-slate-800 text-white"
-              : "bg-white text-gray-600 hover:bg-gray-100"
+              ? "bg-blue-50 text-blue-600"
+              : "bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600"
           }`}
         >
           {page}
@@ -240,11 +242,12 @@ setNoticeImageIndex(0);
         setNoticePage((p) => Math.min(totalNoticePages, p + 1))
       }
       disabled={noticePage === totalNoticePages}
-      className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+      className="px-4 py-2 border-l border-gray-200 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 disabled:text-gray-300 cursor-pointer"
     >
       다음
     </button>
-  </div>
+  </nav>
+</div>
 </div>
 
   </div>
@@ -306,7 +309,7 @@ setNoticeImageIndex(0);
                   prev === 0 ? images.length - 1 : prev - 1
                 )
               }
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition cursor-pointer"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-blue-600/85 text-white flex items-center justify-center hover:bg-blue-700/90 transition cursor-pointer"
             >
               ‹
             </button>
@@ -317,12 +320,12 @@ setNoticeImageIndex(0);
                   prev === images.length - 1 ? 0 : prev + 1
                 )
               }
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-blue-600/85 text-white flex items-center justify-center hover:bg-blue-700/90 transition cursor-pointer"
             >
               ›
             </button>
 
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/45 text-white text-xs font-bold">
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-blue-600/85 text-white text-xs font-bold">
               {noticeImageIndex + 1} / {images.length}
             </div>
           </>
@@ -340,12 +343,12 @@ setNoticeImageIndex(0);
   px-5
   py-3
   rounded-xl
-  bg-gray-700
+  bg-blue-600
   text-white
   text-sm
   font-bold
   cursor-pointer
-  hover:bg-gray-600
+  hover:bg-blue-700
   hover:shadow-md
  
   transition-all

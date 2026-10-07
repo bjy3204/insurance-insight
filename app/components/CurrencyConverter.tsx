@@ -144,10 +144,10 @@ export default function CurrencyConverter() {
     displayBg:   isDark ? "#252527"  : "#ffffff",
     displayBg2:  isDark ? "#2c2c2e"  : "#f0f0f5",
     divider:     isDark ? "#3a3a3c"  : "#e5e5ea",
-    btnNum:      isDark ? "#3a3a3c"  : "#d1d1d6",
-    btnNumHov:   isDark ? "#4a4a4c"  : "#c7c7cc",
-    btnFunc:     isDark ? "#636366"  : "#aeaeb2",
-    btnFuncHov:  isDark ? "#737376"  : "#9e9ea3",
+    btnNum:      isDark ? "#2563eb"  : "#d1d1d6",
+    btnNumHov:   isDark ? "#1d4ed8"  : "#c7c7cc",
+    btnFunc:     isDark ? "#2563eb"  : "#aeaeb2",
+    btnFuncHov:  isDark ? "#1d4ed8"  : "#9e9ea3",
     btnOrange:   "#ff9f0a",
     btnOrangeHov:"#e8900a",
     btnOrangeActive: "#cc7a00",
@@ -586,7 +586,7 @@ naverData.items?.forEach((item: any) => {
                 </button>
               </div>
               <div className="px-4 mb-3">
-                <input
+                <input data-ui-field="true" data-page-search-input="true"
                   type="text"
                   placeholder="검색"
                   value={searchQuery}
@@ -661,7 +661,7 @@ naverData.items?.forEach((item: any) => {
             </div>
 
             {/* 디스플레이 영역 */}
-            <div className="mx-3 mb-2 rounded-2xl overflow-hidden" style={{ border: `1px solid ${T.divider}` }}>
+            <div data-ui-field-wrapper="true" className="mx-3 mb-2 rounded-2xl overflow-hidden" style={{ border: `1px solid ${T.divider}` }}>
 
               {/* From */}
               <div
@@ -692,7 +692,7 @@ naverData.items?.forEach((item: any) => {
 
                 {/* 숫자 + 서브텍스트 */}
                 <div className="flex-1 flex flex-col items-end justify-center min-w-0 pl-2">
-                  <input
+                  <input data-ui-field="true"
                     type="text"
                     readOnly
                     value={formatAmount(fromAmountForDisplay, fromCurrency)}
@@ -756,7 +756,7 @@ naverData.items?.forEach((item: any) => {
                     <span className="text-sm" style={{ color: T.textSub }}>로딩중...</span>
                   ) : (
                     <>
-                      <input
+                      <input data-ui-field="true"
                         type="text"
                         readOnly
                         value={formatAmount(toAmountForDisplay, toCurrency)}

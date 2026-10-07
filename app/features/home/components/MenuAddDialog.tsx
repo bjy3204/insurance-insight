@@ -62,7 +62,7 @@ return (<>{menuAddOpen && (
                 cursor-default
                 ${
                   newMenuIcon === key
-                    ? "bg-gray-800 border-gray-800 text-white"
+                    ? "bg-blue-600 border-blue-600 text-white"
                     : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
                 }
               `}
@@ -73,7 +73,7 @@ return (<>{menuAddOpen && (
         </div>
       </div>
 
-      <input
+      <input data-ui-field="true"
         value={newMenuTitle}
         onChange={(e) => setNewMenuTitle(e.target.value)}
         placeholder="메뉴명"
@@ -90,7 +90,7 @@ return (<>{menuAddOpen && (
         "
       />
 
-      <input
+      <input data-ui-field="true"
         value={newMenuDesc}
         onChange={(e) => setNewMenuDesc(e.target.value)}
         placeholder="설명글"
@@ -107,7 +107,7 @@ return (<>{menuAddOpen && (
         "
       />
 
-      <input
+      <input data-ui-field="true"
         value={newMenuLink}
         onChange={(e) => setNewMenuLink(e.target.value)}
         placeholder="링크"
@@ -155,11 +155,11 @@ return (<>{menuAddOpen && (
             flex-1
             h-12
             rounded-2xl
-            bg-gray-800
+            bg-blue-600
             text-white
             text-sm
             font-bold
-            hover:bg-gray-700
+            hover:bg-blue-700
             transition
             cursor-default
           "

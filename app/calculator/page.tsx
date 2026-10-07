@@ -20,6 +20,7 @@ import {
 
 import { CSS } from "@dnd-kit/utilities";
 import Link from "next/link";
+import presentation from "../components/CalculatorPresentation.module.css";
 
 import { LayoutGrid,
   ArrowLeft,
@@ -1016,7 +1017,7 @@ const pagedMemos = filteredMemos.slice(
     : calculateGen1();
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-24">
+    <main className={`${presentation.page} min-h-screen pb-24`}>
       <header data-page-header="true" className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
@@ -1108,6 +1109,30 @@ const pagedMemos = filteredMemos.slice(
       </header>
 
       <CalculatorPageLayout>
+        <div data-tab-style="rounded" data-calculator-primary-tabs="true" className="grid grid-cols-2 gap-1 bg-white border border-blue-100/70 rounded-2xl p-1.5 mb-6">
+          <button
+            onClick={() => setType("outpatient")}
+            className={`rounded-2xl py-3 font-bold ${
+              type === "outpatient"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-gray-600"
+            }`}
+          >
+            통원
+          </button>
+
+          <button
+            onClick={() => setType("inpatient")}
+            className={`rounded-2xl py-3 font-bold ${
+              type === "inpatient"
+                ? "bg-blue-600 text-white shadow-sm"
+                : "text-gray-600"
+            }`}
+          >
+            입원
+          </button>
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {generations.map((item) => (
             <button
@@ -1117,7 +1142,7 @@ const pagedMemos = filteredMemos.slice(
   bg-white rounded-2xl border p-4 text-left transition 
                 ${
                   generation === item.id
-                    ? "border-blue-600 shadow-md"
+                    ? "border-blue-500 bg-blue-50 shadow-sm"
                     : "border-gray-200"
                 }
               `}
@@ -1135,37 +1160,13 @@ const pagedMemos = filteredMemos.slice(
           ))}
         </div>
 
-        <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-6">
-          <button
-            onClick={() => setType("outpatient")}
-            className={`rounded-2xl py-3 font-bold ${
-              type === "outpatient"
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-600"
-            }`}
-          >
-            통원
-          </button>
-
-          <button
-            onClick={() => setType("inpatient")}
-            className={`rounded-2xl py-3 font-bold ${
-              type === "inpatient"
-                ? "bg-white text-blue-600 shadow-sm"
-                : "text-gray-600"
-            }`}
-          >
-            입원
-          </button>
-        </div>
-
         {type === "outpatient" && (
-  <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 mb-6">
+  <div className={`${presentation.panel} rounded-3xl p-6 mb-6`}>
     <h2 className="text-xl font-black text-gray-900 mb-6">통원</h2>
 
     {generation === "gen5" ? (
       <>
-        <div className="bg-gray-50 border border-gray-200 rounded-3xl p-5 mb-5">
+        <div className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5 mb-5">
           <h3 className="text-base font-black text-gray-900 mb-4">
             통원 급여
           </h3>
@@ -1242,7 +1243,7 @@ const pagedMemos = filteredMemos.slice(
           </div>
         </div>
 
-        <div className="bg-gray-50 border border-gray-200 rounded-3xl p-5 mb-5">
+        <div className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5 mb-5">
           <h3 className="text-base font-black text-gray-900 mb-4">
             통원 비급여
           </h3>
@@ -1280,7 +1281,7 @@ const pagedMemos = filteredMemos.slice(
       </>
     ) : (
       <>
-        <div className="bg-gray-50 border border-gray-200 rounded-3xl p-5 mb-5">
+        <div className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5 mb-5">
           <h3 className="text-base font-black text-gray-900 mb-4">
             {generation === "gen4" ? "통원 외래+약제" : "통원 외래"}
           </h3>
@@ -1361,7 +1362,7 @@ const pagedMemos = filteredMemos.slice(
         {generation !== "gen1" &&
   generation !== "gen4" &&
   generation !== "simple" && (
-          <div className="bg-gray-50 border border-gray-200 rounded-3xl p-5">
+          <div className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5">
             <h3 className="text-base font-black text-gray-900 mb-4">
               통원 약제
             </h3>
@@ -1401,13 +1402,13 @@ const pagedMemos = filteredMemos.slice(
   </div>
 )}
         {type === "inpatient" && (
-  <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 mb-6">
+  <div className={`${presentation.panel} rounded-3xl p-6 mb-6`}>
     <h2 className="text-xl font-black text-gray-900 mb-5">입원</h2>
 
     {generation === "gen5" ? (
       <>
         {/* 입원 급여 */}
-        <div className="bg-gray-50 border border-gray-200 rounded-3xl p-5 mb-5">
+        <div className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5 mb-5">
           <h3 className="text-base font-black text-gray-900 mb-4">
             입원 급여
           </h3>
@@ -1478,7 +1479,7 @@ const pagedMemos = filteredMemos.slice(
         </div>
 
         {/* 입원 비급여 */}
-        <div className="bg-gray-50 border border-gray-200 rounded-3xl p-5">
+        <div className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5">
           <h3 className="text-base font-black text-gray-900 mb-4">
             입원 비급여
           </h3>
@@ -1588,13 +1589,13 @@ const pagedMemos = filteredMemos.slice(
               병실
             </label>
 
-            <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mt-2">
+            <div data-tab-style="subtle" className="grid grid-cols-2 gap-1 bg-white border border-blue-100/60 rounded-2xl p-1.5 mt-2">
               <button
                 onClick={() => setRoomType("standard")}
                 className={`rounded-2xl py-3 font-bold ${
                   roomType === "standard"
-                    ? "bg-white text-blue-600 shadow-sm"
-                    : "text-gray-600"
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-slate-500"
                 }`}
               >
                 기준병실
@@ -1604,8 +1605,8 @@ const pagedMemos = filteredMemos.slice(
                 onClick={() => setRoomType("premium")}
                 className={`rounded-2xl py-3 font-bold ${
                   roomType === "premium"
-                    ? "bg-white text-blue-600 shadow-sm"
-                    : "text-gray-600"
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-slate-500"
                 }`}
               >
                 상급병실
@@ -1640,18 +1641,18 @@ const pagedMemos = filteredMemos.slice(
 )}
 
         {(generation === "gen3" || generation === "gen4" || generation === "gen5") && (
-          <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6 mb-6">
+          <div className={`${presentation.panel} rounded-3xl p-6 mb-6`}>
             <h2 className="text-xl font-black text-gray-900 mb-5">
               비급여 3종
             </h2>
 
             {generation === "gen5" && (
-  <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
+  <div data-tab-style="rounded" className="grid grid-cols-2 gap-1 bg-white border border-blue-100/70 rounded-2xl p-1.5 mb-5">
     <button
       onClick={() => setSpecialType("severe")}
       className={`rounded-2xl py-3 font-bold ${
         specialType === "severe"
-          ? "bg-white text-blue-600 shadow-sm"
+          ? "bg-blue-600 text-white shadow-sm"
           : "text-gray-600"
       }`}
     >
@@ -1662,7 +1663,7 @@ const pagedMemos = filteredMemos.slice(
       onClick={() => setSpecialType("mild")}
       className={`rounded-2xl py-3 font-bold ${
         specialType === "mild"
-          ? "bg-white text-blue-600 shadow-sm"
+          ? "bg-blue-600 text-white shadow-sm"
           : "text-gray-600"
       }`}
     >
@@ -1759,36 +1760,36 @@ const pagedMemos = filteredMemos.slice(
           </div>
         )}
 
-        <div className="bg-blue-600 rounded-3xl p-6 text-white shadow-md">
+        <div className="rounded-3xl bg-blue-600 p-6 text-white">
           <p className="text-sm opacity-80 mb-2">예상 지급 보험금</p>
 
-          <p className="text-4xl font-black mb-5">
+          <p className="text-4xl font-black text-white mb-5">
             {result.pay.toLocaleString()}원
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div className="bg-white/15 rounded-2xl p-4">
+            <div className="bg-white/10 border border-white/15 rounded-2xl p-4">
               <p className="opacity-80">총 진료비</p>
               <p className="text-lg font-black mt-1">
                 {result.total.toLocaleString()}원
               </p>
             </div>
 
-            <div className="bg-white/15 rounded-2xl p-4">
+            <div className="bg-white/10 border border-white/15 rounded-2xl p-4">
               <p className="opacity-80">공제금액</p>
               <p className="text-lg font-black mt-1">
                 {result.deductible.toLocaleString()}원
               </p>
             </div>
 
-            <div className="bg-white/15 rounded-2xl p-4">
+            <div className="bg-white/10 border border-white/15 rounded-2xl p-4">
               <p className="opacity-80">상급병실료 지급</p>
               <p className="text-lg font-black mt-1">
                 {result.roomPay.toLocaleString()}원
               </p>
             </div>
 
-            <div className="bg-white/15 rounded-2xl p-4">
+            <div className="bg-white/10 border border-white/15 rounded-2xl p-4">
               <p className="opacity-80">예상 자기부담금</p>
               <p className="text-lg font-black mt-1">
                 {result.selfPay.toLocaleString()}원

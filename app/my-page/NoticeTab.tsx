@@ -11,11 +11,11 @@ import { useAuth } from "@/app/components/AuthProvider";
 import { captureNoticeImage } from "@/lib/capture-claim-notice";
 import { lockPageScroll } from "@/app/features/home/components/dashboard/DashboardDialog";
 
-type NoticeType = "exemption" | "reduction" | "claim";
-const noticeTypes: { id: NoticeType; label: string }[] = [
-  { id: "exemption", label: "면책종료" },
-  { id: "reduction", label: "감액종료" },
-  { id: "claim", label: "청구서류" },
+type NoticeType = "claim" | "exemption" | "reduction";
+const noticeTypes: { id: NoticeType; label: string; ready: boolean }[] = [
+  { id: "claim", label: "청구서류", ready: true },
+  { id: "exemption", label: "면책종료", ready: true },
+  { id: "reduction", label: "감액종료", ready: true },
 ];
 
 const monthTabs = [
@@ -99,17 +99,17 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
-  const [noticeType, setNoticeType] = useState<NoticeType>("exemption");
+  const [noticeType, setNoticeType] = useState<NoticeType>("claim");
   const [claimContents, setClaimContents] = useState<Record<ClaimKind, string>>(() => Object.fromEntries(claimNotices.map(item => [item.id, readClaimContent(item.id, null)])) as Record<ClaimKind, string>);
   useEffect(() => { setClaimContents(previous => Object.fromEntries(Object.entries(previous).map(([kind, value]) => [kind, readClaimContent(kind, JSON.stringify({version:2,content:value}))])) as Record<ClaimKind, string>); }, []);
   const [claimKind, setClaimKind] = useState<ClaimKind>("hospital");
   const [month, setMonth] = useState("9-10");
   const [customerName, setCustomerName] = useState("홍길동");
-  const [content, setContent] = useState(defaultContents.exemption.content);
-  const [signature, setSignature] = useState(defaultContents.exemption.signature);
-  const [fontFamily, setFontFamily] = useState("serif");
+  const [content, setContent] = useState<string>(defaultContents.exemption.content);
+  const [signature, setSignature] = useState("든든한 설계사");
+  const [fontFamily, setFontFamily] = useState("sans-serif");
   const [textColor, setTextColor] = useState("#4a4a4a");
-  const [signatureColor, setSignatureColor] = useState("#9a7a3a");
+  const [signatureColor, setSignatureColor] = useState("#4a4a4a");
   const [saveMsg, setSaveMsg] = useState("");
   const [isCapturing, setIsCapturing] = useState(false);
   const [preparingShare, setPreparingShare] = useState(false);
@@ -120,16 +120,16 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
     const unlock = lockPageScroll();
     const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setMobileSaveImage(null); };
     window.addEventListener("keydown", onKey);
-    return () => { unlock(); window.removeEventListener("keydown", onKey); URL.revokeObjectURL(mobileSaveImage); };
+    return () => { unlock(); window.removeEventListener("keydown", onKey); };
   }, [mobileSaveImage]);
-  const shareFileRef = useRef<{ key: string; file: File } | null>(null);
+  const shareFileRef = useRef<{ key: string; file: File; previewUrl: string } | null>(null);
   const captureBusy = useRef(false);
   const bgUrl = `/card-templates/${noticeType}/${month}.png`;
-  const pos = textPositions[noticeType === "claim" ? "exemption" : noticeType];
+  const pos = textPositions[noticeType === "reduction" ? "reduction" : "exemption"];
   const selectNoticeType = (type: NoticeType) => {
     setNoticeType(type); setSaveMsg("");
     if (type === "claim") { setSignature("든든한 설계사"); setFontFamily("sans-serif"); setSignatureColor("#4a4a4a"); }
-    else { setContent(defaultContents[type].content); setSignature(defaultContents[type].signature); }
+    else if (type === "exemption" || type === "reduction") { setContent(defaultContents[type].content); setSignature(defaultContents[type].signature); }
   };
   useEffect(() => {
     if (!authUser) return;
@@ -144,12 +144,12 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
       for (const saved of savedClaims ?? []) { const kind = claimNotices.find(item => item.id === saved.month)?.id; if (kind) drafts[kind] = readClaimContent(kind, saved.content); }
       if (data?.notice_type === "claim") drafts[getClaimNotice(data.month).id] = readClaimContent(data.month, data.content);
       setClaimContents(drafts);
-      if (!active || !data) return;
+      if (!active || !data || !noticeTypes.some(item => item.id === data.notice_type)) return;
       const loadedType: NoticeType = data.notice_type === "claim" ? "claim" : data.notice_type === "reduction" ? "reduction" : "exemption";
       setNoticeType(loadedType);
       const loadedClaim = getClaimNotice(data.month);
       if (loadedType === "claim") setClaimKind(loadedClaim.id);
-      if (loadedType !== "claim") setMonth(data.month || "9-10"); setCustomerName(data.customer_name ?? "홍길동");
+      if (loadedType === "exemption" || loadedType === "reduction") setMonth(data.month || "9-10"); setCustomerName(data.customer_name ?? "홍길동");
       setContent(data.content ?? (loadedType === "claim" ? loadedClaim.content : defaultContents[loadedType].content));
       setSignature(data.signature ?? "든든한 보험 파트너");
       setFontFamily(data.font_family || "serif"); setTextColor(data.text_color || "#4a4a4a"); setSignatureColor(data.signature_color || "#9a7a3a");
@@ -180,7 +180,7 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
       try {
         const canvas = await captureNotice();
         const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error("이미지 준비 실패")), "image/png"));
-        if (!cancelled) shareFileRef.current = { key: shareKey, file: new File([blob], imageName, { type: "image/png" }) };
+        if (!cancelled) shareFileRef.current = { key: shareKey, file: new File([blob], imageName, { type: "image/png" }), previewUrl: canvas.toDataURL("image/png") };
       } catch { /* 지원하지 않는 브라우저에서는 이미지 저장으로 안내합니다. */ }
       finally { if (!cancelled) setPreparingShare(false); }
     }, 250);
@@ -211,7 +211,7 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
       link.download = imageName;
       link.href = url; document.body.appendChild(link); link.click(); link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
-      if (window.matchMedia("(max-width: 767px)").matches) setMobileSaveImage(URL.createObjectURL(prepared.file));
+      if (window.matchMedia("(max-width: 767px)").matches) setMobileSaveImage(prepared.previewUrl);
       setSaveMsg("");
     } catch { setSaveMsg("이미지를 저장하지 못했습니다. 다시 시도해 주세요."); } finally { setIsCapturing(false); captureBusy.current = false; }
   };
@@ -224,17 +224,21 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
         <button type="button" aria-label="이미지 저장" title="이미지 저장" onClick={handleDownload} disabled={isCapturing || preparingShare} className="flex items-center justify-center gap-2 h-11 w-11 sm:w-auto sm:px-5 shrink-0 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer disabled:opacity-50"><Download className="w-4 h-4" /><span className="hidden sm:inline whitespace-nowrap">{isCapturing ? "저장 중..." : "이미지 저장"}</span></button>
         <button type="button" aria-label="카톡 공유하기" title="카톡 공유하기" onClick={handleKakaoShare} disabled={preparingShare || sharing} className="flex items-center justify-center gap-2 h-11 w-11 sm:w-auto sm:px-5 shrink-0 rounded-xl bg-[#fee500] text-gray-900 text-sm font-bold cursor-pointer disabled:opacity-50"><MessageCircle className="w-4 h-4" /><span className="hidden sm:inline whitespace-nowrap">{preparingShare ? "이미지 준비 중..." : "카톡 공유하기"}</span></button>
       </div>
-      <div className="personal-grid bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
-        <div className="grid gap-3 sm:grid-cols-[96px_1fr] items-center"><p className="text-sm font-bold">안내장 종류</p><div className="grid grid-cols-3 gap-3 max-w-[540px]">{noticeTypes.map(type => <button type="button" key={type.id} onClick={() => selectNoticeType(type.id)} className={`h-11 rounded-xl text-sm font-bold cursor-pointer ${noticeType === type.id ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600"}`}>{type.label}</button>)}</div></div>
+      <div data-tab-style="rounded" aria-label="안내장 종류" className="grid grid-cols-3 rounded-2xl border border-gray-200 bg-white p-1.5 gap-1">
+        {noticeTypes.map(type => (
+          <button type="button" key={type.id} aria-pressed={noticeType === type.id} disabled={!type.ready} title={type.ready ? undefined : "디자인 준비 중"} onClick={() => selectNoticeType(type.id)} className={`h-11 sm:h-12 rounded-xl text-sm sm:text-base font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-default ${noticeType === type.id ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-blue-50 hover:text-blue-600"}`}>
+            {type.label}
+          </button>
+        ))}
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 items-stretch">
         <div className="personal-grid flex flex-col min-w-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 gap-5">
         {noticeType === "claim" ? <div className="space-y-2"><p className="text-sm font-bold">청구 종류</p><div className="grid grid-cols-3 gap-2">{claimNotices.map(item => <button type="button" key={item.id} onClick={() => { setClaimKind(item.id); setSaveMsg(""); }} className={`h-11 rounded-xl text-sm font-semibold cursor-pointer ${claimKind === item.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600"}`}>{item.label}</button>)}</div></div> : (<div className="space-y-2"><p className="text-sm font-bold">월 선택</p><div className="grid grid-cols-3 lg:grid-cols-3 gap-2 max-w-[800px]">{monthTabs.map(item => <button type="button" key={item.id} onClick={() => setMonth(item.id)} className={`h-11 rounded-xl text-sm font-semibold cursor-pointer ${month === item.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600"}`}>{item.label}</button>)}</div></div>)}
         <div className="grid sm:grid-cols-2 gap-4">
-          <div><label htmlFor="notice-customer" className="block text-sm font-bold mb-2">고객명</label><div className="relative"><input id="notice-customer" value={customerName} onChange={event => setCustomerName(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" aria-label="고객명 지우기" onClick={() => setCustomerName("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
-          <div><label htmlFor="notice-signature" className="block text-sm font-bold mb-2">설계사</label><div className="relative"><input id="notice-signature" value={signature} onChange={event => setSignature(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" aria-label="설계사 지우기" onClick={() => setSignature("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
+          <div><label htmlFor="notice-customer" className="block text-sm font-bold mb-2">고객명</label><div className="relative"><input data-ui-field="true" id="notice-customer" value={customerName} onChange={event => setCustomerName(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" aria-label="고객명 지우기" onClick={() => setCustomerName("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
+          <div><label htmlFor="notice-signature" className="block text-sm font-bold mb-2">설계사</label><div className="relative"><input data-ui-field="true" id="notice-signature" value={signature} onChange={event => setSignature(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" aria-label="설계사 지우기" onClick={() => setSignature("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
         </div>
-          <div className="flex flex-col flex-1"><label htmlFor="notice-content" className="block text-sm font-bold mb-3">안내 내용</label><textarea id="notice-content" value={noticeType === "claim" ? claimContents[claimKind] : content} onChange={event => { const value = event.target.value; if (noticeType === "claim") setClaimContents(previous => ({ ...previous, [claimKind]: value })); else setContent(value); setSaveMsg(""); }} rows={noticeType === "claim" ? 12 : 6} className="block w-full flex-1 min-h-[180px] p-4 rounded-xl border border-gray-200 text-sm leading-7 outline-none resize-none focus:border-blue-400" /></div>
+          <div className="flex flex-col flex-1"><label htmlFor="notice-content" className="block text-sm font-bold mb-3">안내 내용</label><textarea data-ui-field="true" id="notice-content" value={noticeType === "claim" ? claimContents[claimKind] : content} onChange={event => { const value = event.target.value; if (noticeType === "claim") setClaimContents(previous => ({ ...previous, [claimKind]: value })); else setContent(value); setSaveMsg(""); }} rows={6} className="block w-full flex-1 min-h-[180px] p-4 rounded-xl border border-gray-200 text-sm leading-7 outline-none resize-none focus:border-blue-400" /></div>
           <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
             <h3 className="hidden md:block text-sm font-bold">디자인 설정</h3>
             <button type="button" aria-expanded={mobileDesignOpen} aria-controls="notice-design-settings" onClick={() => { setMobileDesignOpen(previous => !previous); setFontOpen(false); }} className="flex md:hidden w-full items-center justify-between text-sm font-bold cursor-pointer">디자인 설정<ChevronDown className={`w-4 h-4 transition-transform ${mobileDesignOpen ? "rotate-180" : ""}`} /></button>

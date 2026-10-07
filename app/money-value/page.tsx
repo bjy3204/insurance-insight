@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import presentation from "../components/CalculatorPresentation.module.css";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 
@@ -63,10 +64,10 @@ function ExchangeRateChart() {
 
   useEffect(() => {
     if (!containerRef.current) return;
-    
+
     // 기존 스크립트 제거 (재렌더링 방지)
     containerRef.current.innerHTML = '';
-    
+
     const script = document.createElement('script');
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
     script.type = 'text/javascript';
@@ -91,14 +92,14 @@ function ExchangeRateChart() {
       "hide_volume": true,
       "support_host": "https://www.tradingview.com"
     });
-    
+
     containerRef.current.appendChild(script);
   }, []);
 
   return (
-    <div className="w-full h-[400px] mt-8 rounded-2xl overflow-hidden border border-gray-200 shadow-sm bg-white">
+    <div className="w-full h-[400px] bg-white">
       <div className="tradingview-widget-container" style={{ height: '100%', width: '100%' }}>
-        <div id="tradingview_usdkrw" style={{ height: 'calc(100% - 32px)', width: '100%' }} ref={containerRef}></div>
+        <div id="tradingview_usdkrw" style={{ height: 'calc(100% - 32px)', width: '100%', clipPath: 'inset(4px 4px 0)' }} ref={containerRef}></div>
         <div className="tradingview-widget-copyright" style={{ height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: '#9DB2BD' }}>
           <a href="https://kr.tradingview.com/" rel="noopener nofollow" target="_blank">
             <span className="blue-text">TradingView</span>
@@ -137,7 +138,7 @@ function InflationChart() {
 
   if (loading) {
     return (
-      <div className="w-full h-[400px] mt-8 rounded-2xl border border-gray-200 shadow-sm bg-white flex items-center justify-center">
+      <div className="w-full h-[400px] bg-white flex items-center justify-center">
         <p className="text-gray-400 text-sm">물가상승률 데이터 불러오는 중...</p>
       </div>
     );
@@ -145,7 +146,7 @@ function InflationChart() {
 
   if (error || data.length === 0) {
     return (
-      <div className="w-full h-[400px] mt-8 rounded-2xl border border-gray-200 shadow-sm bg-white flex items-center justify-center">
+      <div className="w-full h-[400px] bg-white flex items-center justify-center">
         <p className="text-gray-400 text-sm">데이터를 불러올 수 없습니다.</p>
       </div>
     );
@@ -164,7 +165,7 @@ function InflationChart() {
   };
 
   return (
-    <div className="w-full mt-8 rounded-2xl border border-gray-200 shadow-sm bg-white p-4">
+    <div className="w-full bg-white">
       <p className="text-center text-sm font-semibold text-gray-700 mb-4">연도별 소비자물가 상승률 (전년 대비, %)</p>
       {/* 모바일: 가로 스크롤 / 데스크탑: 꽉 채움 */}
       <div className="overflow-x-auto md:overflow-x-visible -mx-1 px-1">
@@ -271,6 +272,13 @@ export default function MoneyValuePage() {
   const [currentRate, setCurrentRate] = useState("");
   const [compareRate, setCompareRate] = useState("");
   const [naverRate, setNaverRate] = useState("");
+  const activeValues = type === "dollar" ? [money, currentRate, compareRate] : [money, rate, years];
+  const inputSignature = JSON.stringify([type, ...activeValues]);
+  const [submittedSignature, setSubmittedSignature] = useState<string | null>(null);
+  const showResult = submittedSignature === inputSignature;
+  const missingInput = activeValues.some(value => String(value).trim() === "");
+
+
 
 const sensors = useSensors(
   useSensor(PointerSensor, {
@@ -625,7 +633,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
 
   return (
     <>
-    <main className="min-h-screen bg-gray-100 pb-24">
+    <main className={`${presentation.page} min-h-screen pb-24`}>
       {/* 헤더 */}
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
@@ -658,7 +666,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                 </h1>
               </div>
 
-              
+
             </div>
 
                        <div
@@ -718,12 +726,12 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
       {/* 본문 */}
       <CalculatorPageLayout>
         {/* 탭 */}
-        <div data-tab-group="true" className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-7">
+        <div data-tab-style="rounded" data-calculator-primary-tabs="true" className="grid grid-cols-3 gap-1 bg-white border border-blue-100/70 rounded-2xl p-1.5 mb-7">
           <button
             onClick={() => setType("future")}
             className={`rounded-xl py-3 font-bold transition ${
               type === "future"
-                ? "bg-white text-blue-600 shadow-sm"
+                ? "bg-blue-600 text-white shadow-sm"
                 : "text-gray-600"
             }`}
           >
@@ -734,7 +742,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
             onClick={() => setType("present")}
             className={`rounded-xl py-3 font-bold transition ${
               type === "present"
-                ? "bg-white text-blue-600 shadow-sm"
+                ? "bg-blue-600 text-white shadow-sm"
                 : "text-gray-600"
             }`}
           >
@@ -745,7 +753,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
             onClick={() => setType("dollar")}
             className={`rounded-xl py-3 font-bold transition ${
               type === "dollar"
-                ? "bg-white text-blue-600 shadow-sm"
+                ? "bg-blue-600 text-white shadow-sm"
                 : "text-gray-600"
             }`}
           >
@@ -754,7 +762,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
         </div>
 
         {/* 카드 */}
-        <div className="bg-white rounded-3xl shadow-sm p-5">
+        <div className={`${presentation.panel} rounded-3xl p-5 md:p-7`}>
           {/* 금액 */}
           <div className="mb-5">
             <label className="text-lg font-black text-gray-800 mb-3 block">
@@ -874,7 +882,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                       setCurrentRate(value.replace(/[^0-9]/g, ""));
                     }}
                     className="
-                      w-full h-16 rounded-2xl border border-gray-200
+                      placeholder:text-slate-300 placeholder:font-normal w-full h-16 rounded-2xl border border-gray-200
                       px-5 pr-20 text-lg font-bold outline-none
                       focus:ring-2 focus:ring-blue-500
                     "
@@ -922,7 +930,9 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
             </>
           )}
           {/* 결과 */}
-          <div className="bg-blue-50 rounded-3xl p-6 mb-5">
+          <button type="button" className={presentation.calculateButton} onClick={() => setSubmittedSignature(inputSignature)}>결과 보기</button>
+          {showResult && missingInput && <p role="alert" className="mt-4 text-sm text-red-600">입력칸을 모두 채워 주세요</p>}
+          {showResult && !missingInput && <div key={submittedSignature} className={`${presentation.summary} ${presentation.result} rounded-3xl p-6 mt-6 mb-5`}>
             <p className="text-gray-700 text-lg font-black text-center mb-5">
               계산 결과
             </p>
@@ -961,7 +971,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                     <p className="text-gray-600 text-sm mb-4 text-center leading-relaxed">
                       환율이 <span className="font-bold">{Number(compareRate).toLocaleString()}원</span>일 때 달러 자산을 준비했다면{" "}
                       <span className="font-bold text-blue-600">{compDollar.toLocaleString()}달러</span> 가치 였지만,
-                      
+
                       현재 환율 기준으로는 <span className="font-bold text-red-500">{diff.toLocaleString()}달러 </span>가치 차이가 발생합니다
                     </p>
                   );
@@ -1029,15 +1039,12 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
               </>
             )}
           </div>
-          
-          {/* 환율 차트 (달러가치 탭일 때만 표시) */}
-          {type === "dollar" && <ExchangeRateChart />}
 
-          {/* 물가상승률 차트 (미래가치/현재가치 탭일 때 표시) */}
-{(type === "future" || type === "present") && <InflationChart />}
-
-          
+          }
         </div>
+        <section className="mt-6 rounded-3xl border border-[#e1e9fb] bg-white p-5 md:p-7" aria-label={type === "dollar" ? "달러 환율 그래프" : "소비자 물가상승률 그래프"}>
+          {type === "dollar" ? <ExchangeRateChart /> : <InflationChart />}
+        </section>
       </CalculatorPageLayout>
 
 

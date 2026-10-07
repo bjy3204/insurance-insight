@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import useSalesBookPageSize from "./useSalesBookPageSize";
+import styles from "./SalesBook.module.css";
+import SalesBookTools from "./SalesBookTools";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   BookOpen,
@@ -20,7 +23,8 @@ const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 const [search, setSearch] = useState("");
 const [page, setPage] = useState(1);
 
-const itemsPerPage = 12;
+const itemsPerPage = useSalesBookPageSize();
+useEffect(() => { setPage(1); }, [itemsPerPage]);
 
   const filteredCategories = categories.filter((category) =>
     category.toLowerCase().includes(search.toLowerCase())
@@ -38,6 +42,7 @@ const pagedCategories = filteredCategories.slice(
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
+            <SalesBookTools />
             <Link data-header-control="true"
               href="/"
               className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
@@ -60,7 +65,7 @@ const pagedCategories = filteredCategories.slice(
       </header>
 
      <div data-page-content="true" className="max-w-7xl mx-auto px-3 md:px-4 py-4">
-  <div
+  <div data-page-search-wrapper="true"
   className="
     h-12
     rounded-2xl
@@ -71,14 +76,14 @@ const pagedCategories = filteredCategories.slice(
     flex
     items-center
     gap-3
-    focus-within:bg-gray-400
-    focus-within:border-gray-400
+    focus-within:ring-2 focus-within:ring-blue-500/20
+    focus-within:border-blue-500
     transition
   "
 >
   <Search className="w-4 h-4 text-gray-400 shrink-0" />
 
-  <input
+  <input data-ui-field="true" data-page-search-input="true"
     type="text"
     value={search}
     onChange={(e) => {
@@ -95,8 +100,7 @@ const pagedCategories = filteredCategories.slice(
       text-gray-700
       placeholder:text-gray-400
       outline-none
-      focus:text-white
-      focus:placeholder:text-white/80
+
     "
   />
 </div>
@@ -104,14 +108,15 @@ const pagedCategories = filteredCategories.slice(
       
 
       <div data-page-content="true" className="max-w-7xl mx-auto px-3 md:px-4 pb-6">
-  <div data-popup-frame="true" className="bg-white rounded-3xl border border-gray-200 shadow-sm flex h-[82vh]">
+  <div className="grid grid-cols-1 md:grid-cols-[265px_minmax(0,1fr)] gap-3 items-start">
        <aside
-  style={{ flex: "0 0 190px" }}
-  className="hidden md:block border-r border-gray-200 bg-gray-100 py-4 px-4 overflow-y-auto"
+  
+  className={`${styles.menu} hidden md:block bg-white rounded-2xl border border-blue-100/60 py-4 px-3 sticky top-6`}
 >
           <Link
             href="/sales-book"
-            className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black text-blue-600 bg-blue-100 hover:bg-blue-50 cursor-default"
+            aria-current="page"
+            className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black text-blue-600 bg-blue-100 hover:bg-blue-50 cursor-pointer"
           >
             <Home className="w-4 h-4" />
             전체 자료
@@ -122,7 +127,7 @@ const pagedCategories = filteredCategories.slice(
               <Link
                 key={category}
                 href={`/sales-book/${encodeURIComponent(category)}`}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-700 hover:bg-white transition  cursor-default"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition  cursor-pointer"
               >
                 <Folder className="w-4 h-4 text-yellow-500 shrink-0" />
                 <span className="truncate">{category}</span>
@@ -131,7 +136,7 @@ const pagedCategories = filteredCategories.slice(
           </div>
         </aside>
 
-        <section className="flex-1 px-3 md:px-6 py-5 md:py-6 flex flex-col min-w-0">
+        <section className={`${styles.materials} bg-white rounded-2xl border border-blue-100/60 px-4 md:px-6 py-5 md:py-6 flex flex-col min-w-0`}>
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-sm font-black text-gray-700">
@@ -144,7 +149,7 @@ const pagedCategories = filteredCategories.slice(
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setViewMode("grid")}
+                aria-label="그리드 보기" onClick={() => setViewMode("grid")}
                 className={`w-10 h-10 rounded-xl flex items-center justify-center transition ${
                   viewMode === "grid"
                     ? "bg-blue-600 text-white"
@@ -155,7 +160,7 @@ const pagedCategories = filteredCategories.slice(
               </button>
 
               <button
-                onClick={() => setViewMode("list")}
+                aria-label="목록 보기" onClick={() => setViewMode("list")}
                 className={`w-10 h-10 rounded-xl flex items-center justify-center transition ${
                   viewMode === "list"
                     ? "bg-blue-600 text-white"
@@ -168,16 +173,16 @@ const pagedCategories = filteredCategories.slice(
           </div>
 
 {viewMode === "grid" ? (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 pt-3 pb-5">
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-1 pb-5">
               {pagedCategories.map((category) => (
-                <Link data-menu-card="true"
+                <Link data-card-lift="subtle" data-card-highlight="true" data-menu-card="true"
                   key={category}
                   href={`/sales-book/${encodeURIComponent(category)}`}
-                  className="bg-white rounded-3xl border border-gray-200 p-5 md:p-8 min-h-[150px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition cursor-default"
+                  className={`${styles.card} bg-white rounded-3xl border border-gray-200 min-w-0 shadow-sm`}
                 >
-                  <Folder className="w-12 h-12 text-yellow-500 mb-4" />
+                  <Folder className="w-9 h-9 text-yellow-500 mb-3" />
 
-                  <h2 className="text-lg font-black text-gray-900 break-keep">
+                  <h2 className="text-base font-black text-gray-900 break-words break-keep">
                     {category}
                   </h2>
 
@@ -190,12 +195,12 @@ const pagedCategories = filteredCategories.slice(
               ))}
             </div>
           ) : (
-            <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden">
+            <div className="space-y-1">
               {pagedCategories.map((category) => (
                 <Link
                   key={category}
                   href={`/sales-book/${encodeURIComponent(category)}`}
-                  className="flex items-center gap-4 px-5 py-4 border-b last:border-b-0 border-gray-100 hover:bg-gray-50 transition cursor-default"
+                  className="flex items-center gap-4 px-5 py-4 rounded-xl hover:bg-gray-50 transition cursor-pointer"
                 >
                   <Folder className="w-8 h-8 text-yellow-500 shrink-0" />
 
@@ -216,6 +221,7 @@ const pagedCategories = filteredCategories.slice(
 
           {totalPages > 1 && (
   <div className="mt-auto pt-5 flex items-center justify-center gap-2">
+<nav data-pagination="true" aria-label="페이지 이동">
     <button
       onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
       disabled={page === 1}
@@ -245,7 +251,8 @@ const pagedCategories = filteredCategories.slice(
     >
       다음
     </button>
-  </div>
+  </nav>
+</div>
 )}
 
           {filteredCategories.length === 0 && (

@@ -10,11 +10,11 @@ return (<>{lifeOpen && (
   style={getPopupStyle("life")}
   className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
 >
-      <div
+      <div data-popup-header="true"
   onPointerDown={(e) => startPopupDrag("life", e)}
-  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+  className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between"
 >
-        <div className="font-bold flex items-center gap-2">
+        <div data-popup-title="true" className="font-bold flex items-center gap-2">
           <FileText className="w-5 h-5" />
           기대수명 계산기
         </div>
@@ -56,7 +56,7 @@ return (<>{lifeOpen && (
 
         <div className="mb-5">
           <div className="relative">
-            <input
+            <input data-ui-field="true"
               value={lifeAge}
               onChange={(e) =>
                 setLifeAge(
@@ -64,7 +64,7 @@ return (<>{lifeOpen && (
                 )
               }
               placeholder="나이를 입력하세요"
-              className="
+              className="placeholder:text-sm placeholder:font-normal placeholder:text-gray-400 
                 w-full
                 h-14
                 rounded-2xl

@@ -84,7 +84,7 @@ export default function CardNewsLinks({ search }: Props) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
       {filtered.map((item) => (
-       <a data-menu-card="true"
+       <a data-card-lift="subtle" data-menu-card="true"
   key={item.title}
   href={item.url}
   target="_blank"

@@ -15,6 +15,7 @@ import {
    Lock,
 } from "lucide-react";
 import { salesData } from "../../data";
+import styles from "../../SalesBook.module.css";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 import { useRouter } from "next/navigation";
@@ -311,26 +312,15 @@ const saveSlideNote = async () => {
 
         <div data-page-content="true" className="max-w-7xl mx-auto px-4 pt-4 pb-10">
           {/* PC */}
-<div
-  className="hidden md:flex bg-white rounded-3xl border border-gray-200 overflow-hidden"
-  style={{ height: "calc(100vh - 100px)" }}
->
-<aside
-  className="border-r border-gray-200 bg-gray-100 py-4 px-4"
-  style={{
-    width: 190,
-    flex: "0 0 190px",
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-  }}
->
-    <div className="text-xs font-black text-gray-400 px-4 mb-3 shrink-0">
+<div className="hidden md:grid md:grid-cols-[190px_minmax(0,1fr)] gap-3 items-stretch">
+  <div className="relative min-h-0">
+  <aside className={`${styles.slideList} bg-white rounded-2xl border border-gray-200 px-4 py-6 flex flex-col min-w-0`}>
+    <div className="text-sm font-black text-gray-700 px-1 mb-5 shrink-0">
       슬라이드 목록
     </div>
 
     <div
-      className="space-y-3 pr-1"
+      className={`${styles.hiddenScroll} space-y-3 p-1`}
       style={{
         flex: 1,
         minHeight: 0,
@@ -362,26 +352,14 @@ const saveSlideNote = async () => {
       ))}
     </div>
   </aside>
+  </div>
 
- <section
-  className="px-6 py-6"
-  style={{
-    flex: 1,
-    minWidth: 0,
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-    overflowY: "auto",
-  }}
->
+  <section className="min-w-0 bg-white rounded-2xl border border-gray-200 p-6 flex flex-col">
     <div className="flex items-center justify-between mb-5 shrink-0">
       <div>
         <h2 className="text-sm font-black text-gray-700">
           {subcategory}
         </h2>
-        <p className="text-xs text-gray-400 mt-1">
-          총 {slides.length}장
-        </p>
       </div>
 
       <div className="text-xs font-black text-gray-400">
@@ -421,7 +399,7 @@ const saveSlideNote = async () => {
 
       </div>
 
-      <textarea
+      <textarea data-ui-field="true"
         value={slideNote}
         readOnly={!noteEditing}
         onChange={(e) => setSlideNote(e.target.value)}
@@ -468,7 +446,7 @@ const saveSlideNote = async () => {
                 </div>
               </div>
 
-              <div className="flex gap-2 overflow-x-auto pb-1">
+              <div className={`${styles.hiddenScroll} flex gap-2 overflow-x-auto pb-1`}>
                 {slides.map((slide: string, index: number) => (
                   <button
                     key={index}
@@ -504,7 +482,7 @@ const saveSlideNote = async () => {
 
               <div
   onClick={openFullscreen}
-  className="bg-gray-50 rounded-3xl border border-gray-200 p-2 h-[190px] flex items-center justify-center overflow-hidden cursor-pointer"
+  className="bg-gray-50 rounded-3xl border border-gray-200 p-2 flex items-center justify-center overflow-hidden cursor-pointer"
 >
 <img
   src={slides[current]}
@@ -514,7 +492,7 @@ const saveSlideNote = async () => {
     WebkitUserSelect: "none",
     userSelect: "none",
   }}
-  className="w-full h-full object-contain rounded-2xl bg-white shadow-lg"
+  className="w-full h-auto object-contain rounded-2xl bg-white"
   draggable={false}
 />
 </div>

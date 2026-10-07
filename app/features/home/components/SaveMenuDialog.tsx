@@ -28,7 +28,7 @@ return (<>{saveConfirmOpen && (
             cursor-default
             ${
   saveConfirmType === "popup"
-    ? "bg-gray-800 hover:bg-gray-700"
+    ? "bg-blue-600 hover:bg-blue-700"
     : "bg-blue-600 hover:bg-blue-700"
 }
           `}

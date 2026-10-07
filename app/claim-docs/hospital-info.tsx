@@ -5,6 +5,7 @@ import {
   Hospital,
   X,
   Phone,
+  UsersRound, ExternalLink,
   MapPin,
   ChevronDown,
   ChevronUp,
@@ -25,7 +26,8 @@ export default function HospitalInfoPopup({ open, onClose }: Props) {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [openedIndex, setOpenedIndex] = useState<number | null>(null);
-  const [filterOpen, setFilterOpen] = useState(true);
+  const [filterOpen, setFilterOpen] = useState(false);
+  useEffect(() => { if (open) setFilterOpen(false); }, [open]);
   const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
 
 const dragRef = useRef({
@@ -152,7 +154,7 @@ const toggleType = (type: string) => {
   }}
   className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
 >
-        <div
+        <div data-popup-header="true"
   onMouseDown={(e) => {
   if (window.innerWidth < 768) return;
 
@@ -164,9 +166,9 @@ const toggleType = (type: string) => {
     originY: popupPos.y,
   };
 }}
-  className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between"
+  className="bg-white text-slate-800 px-4 md:px-5 py-3 flex items-center justify-between"
 >
-          <div className="font-bold flex items-center gap-2">
+          <div data-popup-title="true" className="font-bold flex items-center gap-2">
             <Hospital className="w-5 h-5" />
             병원정보 검색
           </div>
@@ -213,18 +215,16 @@ const toggleType = (type: string) => {
               })}
             </div>
                     </div>
-<button
+<div className="rounded-2xl border border-gray-200 bg-[#f8fafc] overflow-hidden">
+<button type="button" aria-expanded={filterOpen} aria-controls="hospital-search-filters"
   onClick={() => setFilterOpen(!filterOpen)}
   className="
     w-full
-    mb-4
     flex
     items-center
     justify-between
     rounded-2xl
-    border
-    border-gray-200
-    bg-white
+    bg-transparent
     px-4
     py-3
     text-sm
@@ -241,9 +241,9 @@ const toggleType = (type: string) => {
   )}
 </button>
           {filterOpen && (
-            <>
+            <div id="hospital-search-filters" className="border-t border-gray-100 p-4">
               <div className="grid grid-cols-3 gap-2">
-            <input
+            <input data-ui-field="true" data-page-search-input="true"
               value={sido}
               onChange={(e) => setSido(e.target.value)}
               
@@ -251,7 +251,7 @@ const toggleType = (type: string) => {
               className="w-full border border-gray-200 rounded-2xl bg-white px-4 py-3 outline-none text-sm focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition"
             />
 
-            <input
+            <input data-ui-field="true" data-page-search-input="true"
               value={dong}
               onChange={(e) => setDong(e.target.value)}
               onKeyDown={(e) => {
@@ -263,7 +263,7 @@ const toggleType = (type: string) => {
              className="w-full border border-gray-200 rounded-2xl bg-white px-4 py-3 outline-none text-sm focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition"
             />
 
-            <input
+            <input data-ui-field="true" data-page-search-input="true"
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
               onKeyDown={(e) => {
@@ -276,31 +276,17 @@ const toggleType = (type: string) => {
             />
           </div>
 
-<input
+<input data-ui-field="true" data-page-search-input="true"
   value={hospitalName}
   onChange={(e) => setHospitalName(e.target.value)}
   placeholder="병원명 검색"
-  className="
-    w-full
-    mt-2
-    border
-    border-gray-200
-    rounded-2xl
-    bg-white
-    px-4
-    py-3
-    outline-none
-    text-sm
-    focus:border-slate-400
-    focus:ring-2
-    focus:ring-slate-100
-    transition
-  "
+  className="mt-2 w-full border border-gray-200 rounded-2xl bg-white px-4 py-3 outline-none text-sm focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition"
 />
 
-            </>
+            </div>
           )}
 
+</div>
           <div className="mt-6 mb-4">
             <p className="text-sm font-bold text-gray-700">
               검색 결과 {results.length.toLocaleString()}개 · {page} /{" "}
@@ -339,201 +325,25 @@ const toggleType = (type: string) => {
     shadow-sm
   "
 >
-  {/* 상단 */}
-  <div className="flex items-start justify-between gap-3">
-    <div>
+
+  <div className="grid grid-cols-3 md:grid-cols-[minmax(0,1fr)_165px_110px_100px_100px] items-center gap-3">
+    <div className="col-span-3 md:col-span-1 min-w-0">
       <div className="flex items-center gap-2 flex-wrap">
-        <h2 className="text-[17px] leading-snug font-black text-gray-900 break-keep">
-          {hospital.name}
-        </h2>
-
-        <span
-          className={`px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap ${
-            hospital.type === "상급종합병원"
-              ? "bg-blue-100 text-blue-600"
-              : hospital.type === "종합병원"
-              ? "bg-yellow-100 text-yellow-700"
-              : "bg-gray-100 text-gray-600"
-          }`}
-        >
-          {hospital.originalType || hospital.type}
-        </span>
+        <h2 className="text-[17px] font-black text-gray-900 break-words">{hospital.name}</h2>
+        <span className="px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600">{hospital.originalType || hospital.type}</span>
       </div>
-
-      <div className="flex items-start gap-2 mt-2">
-  <MapPin className="w-4 h-4 text-gray-400 shrink-0 mt-[2px]" />
-
-  <p className="text-[13px] text-gray-500 leading-relaxed break-keep">
-    {hospital.address}
-  </p>
-</div>
+      <div className="flex items-start gap-1.5 mt-1"><MapPin size={14} className="shrink-0 mt-0.5 text-slate-400" /><p className="text-xs text-slate-500 break-words">{hospital.address}</p></div>
     </div>
-
-    
+    <a href={hospital.tel !== "-" ? `tel:${hospital.tel}` : undefined} className="flex items-center gap-2 min-w-0">
+      <Phone size={17} className="hidden sm:block shrink-0 text-slate-400" />
+      <div className="min-w-0"><p className="text-xs sm:text-sm text-slate-500">전화번호</p><p className="text-sm sm:text-base font-bold text-slate-900 break-words">{hospital.tel}</p></div>
+    </a>
+    <div className="flex items-center gap-2"><UsersRound size={18} className="hidden sm:block text-slate-400" /><div><p className="text-xs sm:text-sm text-slate-500">총 의사수</p><p className="text-base font-bold text-blue-600">{String(hospital.doctorCount).replace("명", "")}명</p></div></div>
+    <button type="button" onClick={() => setOpenedIndex(openedIndex === index ? null : index)} aria-expanded={openedIndex === index} className="flex items-center justify-center gap-1 rounded-xl bg-blue-50 px-2 py-2.5 text-xs font-bold text-slate-600 hover:bg-blue-100 transition cursor-pointer">
+      상세정보 {openedIndex === index ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+    </button>
+    <a href={hospital.homepage} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1 rounded-xl bg-blue-600 px-2 py-2.5 text-xs font-bold text-white hover:bg-blue-700 transition"><span>바로가기</span><ExternalLink size={14} /></a>
   </div>
-
- {/* 모바일 정보 박스 */}
-<div className="md:hidden space-y-2 mt-4">
-  <a
-    href={hospital.tel !== "-" ? `tel:${hospital.tel}` : undefined}
-    className="
-      flex
-      items-center
-      gap-2
-      bg-gray-50
-      rounded-2xl
-      px-4
-      py-3
-    "
-  >
-    <span className="text-[12px] font-bold text-gray-400 shrink-0">
-      전화번호
-    </span>
-
-    <span className="text-[15px] font-black text-gray-900">
-      {hospital.tel}
-    </span>
-  </a>
-
-  <div
-    className="
-      flex
-      items-center
-      gap-2
-      bg-gray-50
-      rounded-2xl
-      px-4
-      py-3
-    "
-  >
-    <span className="text-[12px] font-bold text-gray-400 shrink-0">
-      총 의사수
-    </span>
-
-    <span className="text-[15px] font-black text-blue-600">
-      {String(hospital.doctorCount).replace("명", "")}명
-    </span>
-  </div>
-
-  <a
-    href={hospital.homepage}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="
-      flex
-      items-center
-      justify-center
-      bg-gray-800
-      rounded-2xl
-      px-4
-      py-3
-      text-white
-      text-sm
-      font-black
-    "
-  >
-    병원정보 바로가기
-  </a>
-</div>
-
-{/* PC 정보 박스 */}
-<div className="hidden md:grid grid-cols-3 gap-3 mt-4">
-  <a
-    href={hospital.tel !== "-" ? `tel:${hospital.tel}` : undefined}
-    className="
-      bg-gray-50
-      rounded-2xl
-      py-4
-      px-3
-      text-center
-      hover:bg-gray-100
-      transition
-    "
-  >
-    <p className="text-[11px] text-gray-400 font-semibold">
-      전화번호
-    </p>
-
-    <p className="text-[18px] font-black text-gray-900 mt-1 tracking-tight">
-      {hospital.tel}
-    </p>
-  </a>
-
-  <div className="bg-gray-50 rounded-2xl py-4 px-3 text-center">
-    <p className="text-[11px] text-gray-400 font-semibold">
-      총 의사수
-    </p>
-
-    <p className="text-[18px] font-black text-gray-900 mt-1 tracking-tight">
-      <span className="text-blue-600">
-        {String(hospital.doctorCount).replace("명", "")}
-      </span>{" "}
-      명
-    </p>
-  </div>
-
-  <a
-    href={hospital.homepage}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="
-      bg-gray-800
-      rounded-2xl
-      py-4
-      px-3
-      flex
-      items-center
-      justify-center
-      gap-2
-      text-white
-      hover:bg-gray-700
-      transition
-    "
-  >
-    <div className="text-center">
-      <p className="text-[11px] font-bold opacity-70">
-        병원정보
-      </p>
-
-      <p className="text-sm font-black mt-1">
-        바로가기
-      </p>
-    </div>
-  </a>
-</div>
-
-  {/* 상세정보 버튼 */}
-  <button
-  onClick={() =>
-    setOpenedIndex(openedIndex === index ? null : index)
-  }
-  className="
-    w-full
-    mt-4
-    border-t
-    border-gray-100
-    pt-4
-    flex
-    items-center
-    justify-center
-    text-sm
-    font-medium
-    text-gray-400
-    hover:text-gray-600
-    cursor-pointer
-    transition
-  "
->
-  <div className="flex items-center gap-1">
-    <span>상세정보 보기</span>
-
-    {openedIndex === index ? (
-      <ChevronUp className="w-4 h-4" />
-    ) : (
-      <ChevronDown className="w-4 h-4" />
-    )}
-  </div>
-</button>
 
   {openedIndex === index && (
     <div className="mt-4 space-y-4">
@@ -568,7 +378,8 @@ const toggleType = (type: string) => {
         
           <div className="pt-4 pb-3">
   <div className="flex justify-center">
-    <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+    <div className="flex    text-sm">
+<nav data-pagination="true" aria-label="페이지 이동">
       <button
         onClick={() => setPage((p) => Math.max(1, p - 1))}
         disabled={page === 1}
@@ -615,7 +426,8 @@ const toggleType = (type: string) => {
       >
         다음
       </button>
-    </div>
+    </nav>
+</div>
   </div>
 
   <p className="text-[11px] text-center text-gray-400 mt-3 leading-relaxed">

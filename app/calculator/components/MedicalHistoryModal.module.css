@@ -2,10 +2,10 @@
 .modal { width:min(1100px,100%); height:calc(100dvh - 80px); max-height:900px; display:flex; flex-direction:column; overflow:hidden; background:white; border-radius:16px; box-shadow:0 20px 60px #0003; color:#374151; }
 .modal,.modal * { cursor:default; }
 .modal button,.modal button * { cursor:pointer; }
-.header { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:#1f2937; color:white; flex-shrink:0; }
+.header { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:#fff; color:#24324a; border-bottom:1px solid #e1e9fb; flex-shrink:0; }
 .header h2 { display:flex; align-items:center; gap:8px; font-size:18px; font-weight:700; }
 .close { width:32px; height:32px; border-radius:8px; display:grid; place-items:center; background:transparent; }
-.close:hover { background:#ffffff1a; }
+.close:hover { background:#eff6ff; }
 .body { flex:1; display:flex; min-height:0; }
 .sidebar { width:175px; flex-shrink:0; padding:12px; border-right:1px solid #e5eaf2; background:#fcfdff; display:flex; flex-direction:column; gap:6px; overflow-y:auto; scrollbar-width:thin; }
 .sidebar.collapsed { width:58px; padding:12px 6px; }

@@ -117,7 +117,7 @@ const currentInstructors = filteredInstructors.slice(
       <div data-page-content="true" className="w-full px-6 py-6 max-w-7xl mx-auto">
 <div className="relative mb-6">
   <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-  <input
+  <input data-ui-field="true" data-page-search-input="true"
     value={search}
     onChange={(e) => setSearch(e.target.value)}
     placeholder="강사명, 지역, 분야를 검색하세요"
@@ -257,6 +257,7 @@ const currentInstructors = filteredInstructors.slice(
 
 <div className="fixed bottom-[73px] left-0 right-0 z-40 bg-gray-100 py-4 after:absolute after:left-0 after:right-0 after:top-full after:h-[73px] after:bg-gray-100 after:content-['']">
   <div className="flex items-center justify-center gap-2 flex-wrap px-4">
+<nav data-pagination="true" aria-label="페이지 이동">
 
     <button
       onClick={() =>
@@ -302,7 +303,8 @@ const currentInstructors = filteredInstructors.slice(
       다음
     </button>
 
-  </div>
+  </nav>
+</div>
 </div>
 {selectedInstructor && (
   <div
@@ -313,7 +315,7 @@ const currentInstructors = filteredInstructors.slice(
   onClick={(e) => e.stopPropagation()}
   className="bg-white w-[calc(100%-24px)] sm:max-w-5xl h-[88vh] rounded-t-3xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col"
 >
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between shrink-0">
+      <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between shrink-0">
         <div className="font-bold flex items-center gap-2">
           <User className="w-5 h-5" />
           강사정보보기
@@ -396,7 +398,7 @@ const currentInstructors = filteredInstructors.slice(
                   ? "noopener noreferrer"
                   : undefined
               }
-              className="flex-1 text-center rounded-2xl bg-gray-900 text-white py-4 text-sm font-bold"
+              className="flex-1 text-center rounded-2xl bg-blue-600 text-white py-4 text-sm font-bold"
             >
               문의하기
             </a>

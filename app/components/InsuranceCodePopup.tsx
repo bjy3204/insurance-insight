@@ -103,24 +103,21 @@ code: string;
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.4 : 1,
-    gridTemplateColumns: "20px 1fr 1fr 1fr",
     cursor: "default",
   };
 
   return (
-<div
+<tr
   ref={setNodeRef}
   data-company-name={name}
   style={style}
   onDoubleClick={(e) => onStartRowEdit(e.currentTarget.getBoundingClientRect().top)}
   {...attributes}
   {...listeners}
-      className="grid gap-3 items-center px-4 py-3 rounded-2xl border border-gray-100 bg-white
-        hover:-translate-y-[1px] hover:shadow hover:border-gray-200
-        transition-all duration-150 select-none"
+      className="border-b border-gray-100 bg-white hover:bg-slate-50 transition-colors select-none"
     >
       {/* 별표 자리 — 항상 20px 고정 */}
-      <div className="flex items-center justify-center w-5">
+      <td className="w-10 px-3 py-3"><div className="flex items-center justify-center">
         {editMode ? (
           <button
             onClick={(e) => { e.stopPropagation(); onToggleFav(); }}
@@ -136,14 +133,14 @@ code: string;
         ) : (
           <span className="w-4 h-4 block" />
         )}
-      </div>
+      </div></td>
 
       {/* 보험사명 */}
-      <span className="text-sm font-bold text-gray-800 truncate">{name}</span>
+      <td className="px-3 py-3 text-sm font-bold text-gray-800 break-keep">{name}</td>
 
       {/* 코드 */}
-      {editMode || rowEditMode ? (
-        <input
+      <td className="px-3 py-3 overflow-hidden">{editMode || rowEditMode ? (
+        <input data-ui-field="true"
           ref={codeInputRef}
           value={code}
           onChange={(e) => onChangeCode(e.target.value)}
@@ -155,11 +152,11 @@ code: string;
         />
       ) : (
         <span className="text-sm text-gray-700 truncate">{code}</span>
-      )}
+      )}</td>
 
       {/* 비번 */}
-      {editMode || rowEditMode ? (
-        <input
+      <td className="px-3 py-3 overflow-hidden">{editMode || rowEditMode ? (
+        <input data-ui-field="true"
           value={password}
           onChange={(e) => onChangePassword(e.target.value)}
           onClick={(e) => e.stopPropagation()}
@@ -170,8 +167,8 @@ code: string;
         />
       ) : (
         <span className="text-sm text-gray-700 truncate">{password}</span>
-      )}
-    </div>
+      )}</td>
+    </tr>
   );
 }
 
@@ -412,14 +409,14 @@ const handleOpen = () => {
             onClick={(e) => e.stopPropagation()}
           >
             {/* 헤더 */}
-            <div
+            <div data-popup-header="true"
               onMouseDown={(e) => {
                 if (window.innerWidth < 768) return;
                 dragRef.current = { startX: e.clientX, startY: e.clientY, originX: popupPos.x, originY: popupPos.y };
               }}
-              className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between cursor-default select-none"
+              className="bg-white text-slate-800 px-5 py-3 flex items-center justify-between cursor-default select-none"
             >
-              <div className="font-bold flex items-center gap-2">
+              <div data-popup-title="true" className="font-bold flex items-center gap-2">
                 <Lock className="w-5 h-5" />
                 보험사 코드
               </div>
@@ -432,7 +429,7 @@ const handleOpen = () => {
   cancelEdit();
   setRowEditMode(false);
 }}
-                      className="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-bold transition"
+                      className="h-8 px-3 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer text-sm font-bold transition"
                     >
                       취소
                     </button>
@@ -442,7 +439,7 @@ const handleOpen = () => {
   save();
   setRowEditMode(false);
 }}
-                      className="h-8 px-3 rounded-xl bg-white text-gray-800 hover:bg-gray-100 text-sm font-bold transition"
+                      className="h-8 px-3 rounded-xl border border-blue-600 bg-blue-600 text-white hover:bg-blue-700 cursor-pointer text-sm font-bold transition"
                     >
                       저장
                     </button>
@@ -451,7 +448,7 @@ const handleOpen = () => {
                   <button
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={() => setEditMode(true)}
-                    className="h-8 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-bold transition"
+                    className="h-8 px-3 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer text-sm font-bold transition"
                   >
                     수정
                   </button>
@@ -493,7 +490,7 @@ const handleOpen = () => {
 
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
+                <input data-ui-field="true" data-page-search-input="true"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onPointerDown={(e) => e.stopPropagation()}
@@ -501,17 +498,6 @@ const handleOpen = () => {
                   className="w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm outline-none focus:border-gray-400"
                 />
               </div>
-            </div>
-
-            {/* 컬럼 헤더 */}
-            <div
-              className="grid gap-3 px-5 pb-1"
-              style={{ gridTemplateColumns: "20px 1fr 1fr 1fr" }}
-            >
-              <span />
-              <span className="text-[13px] font-bold text-gray-400 pl-8">보험사</span>
-              <span className="text-[13px] font-bold text-gray-400">코드</span>
-              <span className="text-[13px] font-bold text-gray-400">비밀번호</span>
             </div>
 
             {/* 목록 */}
@@ -522,7 +508,8 @@ const handleOpen = () => {
                 onDragEnd={handleDragEnd}
               >
                 <SortableContext items={displayList} strategy={verticalListSortingStrategy}>
-                  <div className="flex flex-col gap-1.5">
+                  <div className="rounded-2xl border border-gray-200 overflow-clip">
+                  <table className="w-full table-fixed border-collapse text-left"><colgroup><col className="w-10"/><col/><col/><col/></colgroup><thead className="sticky top-0 z-10 bg-slate-50 text-sm text-slate-500"><tr><th className="py-3"/><th className="px-3 py-3 font-semibold">보험사</th><th className="px-3 py-3 font-semibold">코드</th><th className="px-3 py-3 font-semibold">비밀번호</th></tr></thead><tbody>
                     {displayList.map((name) => {
                       const entry = (editMode || rowEditMode ? tempCodes : codes)[name] ?? {
   code: "",
@@ -563,10 +550,11 @@ const handleOpen = () => {
                     })}
 
                     {displayList.length === 0 && (
-                      <div className="py-16 text-center text-sm text-gray-400">
+                      <tr><td colSpan={4} className="py-16 text-center text-sm text-gray-400">
                         검색 결과가 없습니다.
-                      </div>
+                      </td></tr>
                     )}
+                  </tbody></table>
                   </div>
                 </SortableContext>
               </DndContext>

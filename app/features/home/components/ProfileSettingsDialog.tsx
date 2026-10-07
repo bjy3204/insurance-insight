@@ -60,7 +60,7 @@ return (<>{profileSettingOpen && (
 
 <div className="space-y-3">
   
-        <input
+        <input data-ui-field="true"
           type="text"
           placeholder="닉네임"
           value={editNickname}
@@ -68,7 +68,7 @@ return (<>{profileSettingOpen && (
           className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
         />
 
-        <input
+        <input data-ui-field="true"
           type="text"
           placeholder="인스타그램 아이디"
           value={editInstagram}
@@ -79,7 +79,7 @@ return (<>{profileSettingOpen && (
         <div className="pt-3 border-t border-gray-100">
           <p className="mb-2 text-xs font-bold text-gray-500">개인공간 비밀번호</p>
           <div className="flex gap-2">
-            <input
+            <input data-ui-field="true"
   type="password"
   placeholder="회원가입 비밀번호 입력"
   value={pinCheckPassword}
@@ -106,7 +106,7 @@ return (<>{profileSettingOpen && (
 
           </p>
 
-          <input
+          <input data-ui-field="true"
             type="password"
             placeholder="현재 비밀번호"
             value={currentPassword}
@@ -114,7 +114,7 @@ return (<>{profileSettingOpen && (
             className="mb-3 h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
           />
 
-          <input
+          <input data-ui-field="true"
             type="password"
             placeholder="새 비밀번호"
             value={newPassword}
@@ -122,7 +122,7 @@ return (<>{profileSettingOpen && (
             className="mb-3 h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
           />
 
-          <input
+          <input data-ui-field="true"
             type="password"
             placeholder="새 비밀번호 확인"
             value={newPasswordConfirm}

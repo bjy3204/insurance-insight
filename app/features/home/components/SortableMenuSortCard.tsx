@@ -39,18 +39,20 @@ export default function SortableMenuSortCard({
   };
 
   return (
-  <div
+  <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="touch-none select-none h-full">
+  <div data-card-lift="subtle" data-card-highlight="true"
     data-menu-id={menu.id}
-    ref={setNodeRef}
-    style={style}
-    {...attributes}
-    {...listeners}
     onDoubleClick={onEdit}
     onContextMenu={onContextMenu}
     className="
       bg-white
-      p-7
-      sm:p-8
+      h-full
+      relative
+      flex
+      flex-col
+      justify-center
+      p-5
+      sm:p-6
       rounded-3xl
       shadow
       border
@@ -62,7 +64,7 @@ export default function SortableMenuSortCard({
       hover:-translate-y-1
        "
   >
-    <div className="flex justify-between items-start mb-4">
+    <div className="flex items-start mb-4">
             <Icon className="w-10 h-10 text-blue-600 shrink-0" />
      <button
   onClick={(e) => {
@@ -73,7 +75,10 @@ export default function SortableMenuSortCard({
         : [...prev, menu.id]
     );
   }}
-  className="p-2 rounded-full hover:bg-gray-100 transition"
+  type="button"
+  aria-label={tempHiddenMenuIds.includes(menu.id) ? `${menu.title} 표시` : `${menu.title} 숨기기`}
+  onPointerDown={(e) => e.stopPropagation()}
+  className="absolute right-3 top-3 p-2 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
 >
   {tempHiddenMenuIds.includes(menu.id) ? (
     <EyeOff className="w-5 h-5 text-gray-400" />
@@ -89,9 +94,10 @@ export default function SortableMenuSortCard({
       {menu.title}
     </h2>
 
-    <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep">
+    <p className="text-sm text-gray-500 mt-2 leading-relaxed break-keep line-clamp-2">
       {menu.desc}
     </p>
+  </div>
   </div>
 );
 }

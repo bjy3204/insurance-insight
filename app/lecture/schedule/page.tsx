@@ -332,7 +332,7 @@ const numberColor =
     : "#374151";
 
     return (
-      <div
+      <div data-card-lift="subtle"
         key={`${dateItem.type}-${displayDay}-${index}`}
         onClick={() => setSelectedDate(fullDate)}
         className={`
@@ -425,7 +425,7 @@ const numberColor =
   className="bg-white w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:max-w-5xl h-[88vh] rounded-t-3xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col"
 >
 
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between shrink-0">
+      <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between shrink-0">
         <div className="font-bold flex items-center gap-2">
           <CalendarDays className="w-5 h-5" />
           강의 상세
@@ -588,7 +588,7 @@ rel={
       w-full
       text-center
       rounded-2xl
-      bg-gray-800
+      bg-blue-600
       text-white
       py-4
       text-sm

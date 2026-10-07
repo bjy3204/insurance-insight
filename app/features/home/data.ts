@@ -122,8 +122,8 @@ export const defaultMenus = [
   */
   {
     id: "job",
-    title: "이직 컨설팅",
-    desc: "보험 조직 연결 컨설팅",
+    title: "채용공고",
+    desc: "보험 조직 채용공고",
     icon: Briefcase,
     link: "/job",
   },

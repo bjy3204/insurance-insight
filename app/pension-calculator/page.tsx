@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { calculatePension } from "@/lib/pension-calculation";
 import Link from "next/link";
+import styles from "../components/CalculatorPresentation.module.css";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 
@@ -9,6 +11,11 @@ import { useAuth } from "@/app/components/AuthProvider";
 import { LayoutGrid,
   ArrowLeft,
   PiggyBank,
+  UserRound,
+  Accessibility,
+  UsersRound,
+  Calculator,
+  RotateCcw,
   Newspaper,
   MessageCircle,
   FileText,
@@ -101,7 +108,8 @@ function SortableMemoCard({
   );
 }
 
-export default function PensionCalculatorPage() {  const { authUser, authStatus, memos, saveMemos } = useAuth();
+export default function PensionCalculatorPage() {
+  const { authUser, authStatus, memos, saveMemos } = useAuth();
 
   const [tab, setTab] = useState<TabType>("retire");
 
@@ -530,157 +538,16 @@ const getMemoColorClass = (
   return (Math.round(won / 1000) * 1000).toLocaleString();
 };
 
-  const result = useMemo(() => {
-    const current = Number(currentAge || 0);
-    const startAge = Number(pensionStartAge || 0);
-    const receiveYears = Number(pensionYears || 0);
-    const saveYears = Number(savingYears || 0);
+  const result = useMemo(() => calculatePension({ tab, currentAge, pensionStartAge, pensionYears, targetPension, monthly, savingYears, rate, npsPremium }), [tab, currentAge, pensionStartAge, pensionYears, targetPension, monthly, savingYears, rate, npsPremium]);
 
-    const monthlySave = Number(monthly || 0) * 10000;
-    const targetMonthlyPension = Number(targetPension || 0) * 10000;
-
-    const annualRate = Number(rate || 0) / 100;
-    const monthlyRate = annualRate / 12;
-
-    const savingMonths =
-  tab === "retire"
-    ? Math.max(startAge - current, 0) * 12
-    : Math.max(saveYears, 0) * 12;
-const inputSavingMonths = savingMonths;
-const retireMonths = Math.max(startAge - current, 0) * 12;
-const pensionMonths = receiveYears * 12;
-
-    const pensionFactor =
-      monthlyRate === 0
-        ? pensionMonths
-        : (1 - Math.pow(1 + monthlyRate, -pensionMonths)) / monthlyRate;
-
-    const needRetireMoney = targetMonthlyPension * pensionFactor;
-
-
-    const savingFactorForRetire =
-      monthlyRate === 0
-        ? savingMonths
-        : (Math.pow(1 + monthlyRate, savingMonths) - 1) / monthlyRate;
-
-    const requiredMonthlySaving =
-  savingFactorForRetire === 0
-    ? 0
-    : needRetireMoney / savingFactorForRetire;
-
-    const lumpTotal =
-      monthlyRate === 0
-        ? monthlySave * inputSavingMonths
-        : monthlySave *
-          ((Math.pow(1 + monthlyRate, inputSavingMonths) - 1) / monthlyRate);
-
-    const monthsBetweenSavingEndAndPensionStart = Math.max(
-  retireMonths - inputSavingMonths,
-  0
-);
-
-const pensionTotal =
-  lumpTotal * Math.pow(1 + monthlyRate, monthsBetweenSavingEndAndPensionStart);
-
-    const estimatedMonthlyPension =
-      pensionFactor === 0 ? 0 : pensionTotal / pensionFactor;
-
-    const nps = Number(npsPremium || 0);
-
-const NPS_A_VALUE = 3193511;
-
-// 2026년 5월 현재 기준
-const NPS_MIN_INCOME = 400000;
-const NPS_MAX_INCOME = 6370000;
-const NPS_RATE = 0.09;
-
-
-const incomeBase = Math.min(
-  Math.max(nps / NPS_RATE, NPS_MIN_INCOME),
-  NPS_MAX_INCOME
-);
-
-const calcNpsBase = (years: number) => {
-  const months = years * 12;
-  const over20Months = Math.max(months - 240, 0);
-
-  return (
-    1.29 *
-    (NPS_A_VALUE + incomeBase) *
-    (1 + (0.05 * over20Months) / 12)
-  );
-};
-
-const calcOldAge = (years: number) => {
-  if (years < 10) return 0;
-
-  const months = years * 12;
-
-  const paymentRate = Math.min(
-    0.5 + ((months - 120) * 5) / 12 / 100,
-    1
-  );
-
-  return (calcNpsBase(years) * paymentRate) / 12;
-};
-
-    return {
-      current,
-      startAge,
-      receiveYears,
-      pensionEndAge: startAge + receiveYears,
-      savingEndAge: current + saveYears,
-
-      needRetireMoney,
-      requiredMonthlySaving,
-
-      pensionTotal,
-      estimatedMonthlyPension,
-
-      lumpTotal,
-
-      nps: {
-        incomeBase,
-        oldAge: [
-          { years: 10, amount: calcOldAge(10) },
-          { years: 20, amount: calcOldAge(20) },
-          { years: 30, amount: calcOldAge(30) },
-        ],
-        disability: [
-  { label: "장애 1급", amount: (calcNpsBase(20) * 1) / 12 },
-  { label: "장애 2급", amount: (calcNpsBase(20) * 0.8) / 12 },
-  { label: "장애 3급", amount: (calcNpsBase(20) * 0.6) / 12 },
-  { label: "장애 4급(일시금)", amount: calcNpsBase(20) * 2.25 },
-],
-survivor: [
-  { label: "10년 미만 가입", amount: (calcNpsBase(1) * 0.4) / 12 },
-  { label: "10년~20년 미만", amount: (calcNpsBase(15) * 0.5) / 12 },
-  { label: "20년 가입", amount: (calcNpsBase(20) * 0.6) / 12 },
-],
-      },
-    };
-  }, [
-    tab,
-    currentAge,
-    pensionStartAge,
-    pensionYears,
-    targetPension,
-    monthly,
-    savingYears,
-    rate,
-    npsPremium,
-  ]);
-
-  const description = {
-    retire:
-      "희망하는 월 연금액을 입력하시면 필요한 은퇴자금과 매월 저축해야 하는 금액을 계산할 수 있습니다.",
-    pension:
-      "저축금액과 저축기간을 기준으로 연금개시 시점의 예상 월 연금액을 계산할 수 있습니다.",
-    lump:
-      "매월 저축 가능한 금액과 저축기간을 입력하시면 은퇴시점에 얼마나 모이는지 알 수 있습니다.",
-    nps:
-      "월 납입보험료를 기준으로 국민연금 예상 수령액을 간편하게 확인할 수 있습니다.",
-  };
+  const activeValues = tab === "nps" ? [npsPremium] : tab === "retire"
+    ? [currentAge, targetPension, pensionStartAge, pensionYears, rate]
+    : tab === "pension" ? [currentAge, monthly, savingYears, pensionStartAge, pensionYears, rate]
+    : [currentAge, monthly, savingYears, rate];
+  const inputSignature = JSON.stringify([tab, ...activeValues]);
+  const [submittedSignature, setSubmittedSignature] = useState<string | null>(null);
+  const showResult = submittedSignature === inputSignature;
+  const missingInput = activeValues.some(value => value.trim() === "");
 
 const lifeAgeNumber = lifeAge === "" ? null : Number(lifeAge);
 
@@ -710,7 +577,7 @@ const healthyYears = Math.max(
 const expectAge = Number(lifeAge || 0) + expectYears;
 const sickStartAge = Number(lifeAge || 0) + healthyYears;
   return (
-    <main className="min-h-screen bg-gray-100 pb-24">
+    <main className={`${styles.page} min-h-screen pb-24`}>
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
@@ -805,57 +672,16 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
       </header>
 
       <CalculatorPageLayout>
-        <div data-tab-group="true" className="grid grid-cols-2 md:grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
-  <button
-    onClick={() => setTab("retire")}
-    className={`rounded-xl py-3 font-bold transition ${
-      tab === "retire"
-        ? "bg-white text-blue-600 shadow-sm"
-        : "text-gray-600"
-    }`}
-  >
-    은퇴설계
-  </button>
-
-  <button
-    onClick={() => setTab("pension")}
-    className={`rounded-xl py-3 font-bold transition ${
-      tab === "pension"
-        ? "bg-white text-blue-600 shadow-sm"
-        : "text-gray-600"
-    }`}
-  >
-    연금액
-  </button>
-
-  <button
-    onClick={() => setTab("lump")}
-    className={`rounded-xl py-3 font-bold transition ${
-      tab === "lump"
-        ? "bg-white text-blue-600 shadow-sm"
-        : "text-gray-600"
-    }`}
-  >
-    목돈
-  </button>
-
-  <button
-    onClick={() => setTab("nps")}
-    className={`rounded-xl py-3 font-bold transition ${
-      tab === "nps"
-        ? "bg-white text-blue-600 shadow-sm"
-        : "text-gray-600"
-    }`}
-  >
-    국민연금
-  </button>
-</div>
-
-        <div className="text-center text-sm text-gray-500 leading-relaxed mb-5">
-          {description[tab]}
+        <div data-tab-style="rounded" data-calculator-primary-tabs="true" className="grid grid-cols-4 gap-1 rounded-2xl bg-white border border-blue-100/70 p-1.5 mb-7">
+          {([{ id: "retire", label: "은퇴설계" }, { id: "pension", label: "연금액" }, { id: "lump", label: "목돈" }, { id: "nps", label: "국민연금" }] as const).map(item => (
+            <button type="button" key={item.id} aria-pressed={tab === item.id} onClick={() => setTab(item.id)} className={`rounded-xl py-3 px-2 text-sm md:text-base transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-[-3px] ${tab === item.id ? "bg-blue-600 text-white font-semibold shadow-sm" : "text-slate-600 font-medium hover:bg-blue-50 hover:text-blue-600"}`}>
+              {item.label}
+            </button>
+          ))}
         </div>
 
-        <div className="bg-white rounded-3xl shadow-sm p-5">
+<div className={`${styles.panel} rounded-3xl p-5 md:p-7`}>
+          <div className="min-w-0">
           {tab === "retire" && (
             <>
               <InputBox label="현재나이" value={currentAge} setValue={setCurrentAge} unit="세" />
@@ -888,104 +714,57 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
 
           {tab === "nps" && (
             <InputBox
-              label="월 납입보험료"
+              label="월 납입보험료 (본인+사업주 총액)"
               value={npsPremium}
               setValue={setNpsPremium}
               unit="원"
             />
           )}
 
-          {tab !== "nps" && (
-            <>
-              <div className="bg-blue-50 rounded-3xl p-7 text-center mt-6">
+          </div>
+          <button type="button" onClick={() => setSubmittedSignature(inputSignature)} className={styles.calculateButton}>
+            <Calculator className="w-5 h-5" aria-hidden="true" />결과 보기
+          </button>
+          {showResult && missingInput && <p role="alert" className="mt-4 text-sm text-red-600">입력칸을 모두 채워 주세요</p>}
+          <div key={submittedSignature ?? "initial"} className={showResult && !missingInput ? styles.result : "min-w-0"}>
+          {showResult && !missingInput && result.error && <p role="alert" className="p-4 rounded-xl bg-red-50 text-red-600 text-sm">{result.error}</p>}
+          {showResult && !missingInput && !result.error && tab !== "nps" && (
+            <div className="">
+              <div className={`${styles.summary} rounded-3xl p-7 text-center mt-6`}>
                 {tab === "retire" && (
                   <>
                     <p className="text-gray-700 text-lg font-medium leading-relaxed">
-                      현재가치 기준으로
-                      <br />
-                      매월{" "}
-                      <span className="font-semibold">
-                        {Number(targetPension || 0).toLocaleString()}만원
-                      </span>
-                      의 연금을
-                      <br />
-                      <span className="font-semibold">{pensionStartAge}세</span>
-                      부터{" "}
-                      <span className="font-semibold">{pensionYears}년</span>간
-                      받으려면
+                      <span className="font-semibold">{pensionStartAge}세</span><span className="font-normal">부터</span> <span className="font-semibold">{pensionYears}년</span><span className="font-normal">간</span>
+                      {" "}매월 <span className="font-semibold">{Number(targetPension || 0).toLocaleString()}만원</span>을 받으려면
                     </p>
-
+                    <p className="mt-4 text-sm text-gray-500">{pensionStartAge}세까지 필요한 은퇴자금</p>
                     <ResultAmount value={formatKoreanMoney(result.needRetireMoney)} />
-
                     <p className="text-gray-700 text-lg font-medium leading-relaxed mt-5">
-                      <span className="font-semibold">{pensionStartAge}세</span>
-                      시점까지 준비되어 있어야 하며,
-                      <br />
-                      매월{" "}
-                      <span className="text-blue-600 font-semibold">
-                        {formatKoreanMoney(result.requiredMonthlySaving)}
-                      </span>
-                      씩 저축해야 합니다.
+                      지금부터 매월 <span className="text-blue-600 font-semibold">{formatKoreanMoney(result.requiredMonthlySaving)}</span>
+                      {" "}저축하면 됩니다
                     </p>
                   </>
                 )}
 
                 {tab === "pension" && (
                   <>
-                    <p className="text-gray-700 text-lg font-medium leading-relaxed">
-                      연 <span className="font-semibold">{rate}%</span>의
-                      수익률로
-                      <br />
-                      매월{" "}
-                      <span className="font-semibold">
-                        {Number(monthly || 0).toLocaleString()}만원
-                      </span>
-                      씩{" "}
-                      <span className="font-semibold">{savingYears}년</span>{" "}
-                      동안 저축하면
-                    </p>
-
+                    <p className="text-gray-700 text-lg font-medium leading-relaxed">매월 <strong>{Number(monthly || 0).toLocaleString()}만원</strong>씩 <strong>{savingYears}년</strong> 동안 저축하면</p>
+                    <p className="mt-4 text-sm text-gray-500">{pensionStartAge}세 연금 개시 때 예상 자금</p>
                     <ResultAmount value={formatKoreanMoney(result.pensionTotal)} />
-
-                    <p className="text-gray-700 text-lg font-medium leading-relaxed mt-5">
-                      <span className="font-semibold">{pensionStartAge}세</span>
- 연금개시 시점에 모이며,
-<br />
-<span className="font-semibold">{pensionYears}년</span>
- 동안 받을 예상 월 연금은{" "}
-                      <span className="text-blue-600 font-semibold">
-                        {formatKoreanMoney(result.estimatedMonthlyPension)}
-                      </span>
-                      입니다.
-                    </p>
+                    <p className="text-gray-700 text-lg font-medium leading-relaxed mt-5">매월 <span className="text-blue-600 font-semibold">{Math.round(result.estimatedMonthlyPension).toLocaleString()}원</span>의 연금을 받을 수 있습니다</p>
                   </>
                 )}
-
                 {tab === "lump" && (
                   <>
-                    <p className="text-gray-700 text-lg font-medium leading-relaxed">
-                      연 <span className="font-semibold">{rate}%</span>의
-                      수익률로
-                      <br />
-                      매월{" "}
-                      <span className="font-semibold">
-                        {Number(monthly || 0).toLocaleString()}만원
-                      </span>
-                      씩{" "}
-                      <span className="font-semibold">{savingYears}년</span>{" "}
-                      동안 저축하면
-                    </p>
-
+                    <p className="text-gray-700 text-lg font-medium leading-relaxed">매월 <strong>{Number(monthly || 0).toLocaleString()}만원</strong>씩 <strong>{savingYears}년</strong> 동안 저축하면</p>
+                    <p className="mt-4 text-sm text-gray-500">저축 종료 때 예상 자금</p>
                     <ResultAmount value={formatKoreanMoney(result.lumpTotal)} />
-
-                    <p className="text-gray-700 text-lg font-medium leading-relaxed mt-5">
-                      은퇴시점에 모입니다.
-                    </p>
+                    <p className="text-gray-700 text-lg font-medium leading-relaxed mt-5">{result.savingEndAge}세까지 모을 수 있는 금액입니다</p>
                   </>
                 )}
               </div>
 
-              <div className="bg-gray-50 rounded-3xl p-8 mt-6">
+              <div className="bg-gray-50 border border-[#e1e9fb] rounded-3xl p-8 mt-6">
                 <div className="flex justify-center">
                   <div className="relative">
                     <div className="absolute left-[40px] top-[40px] bottom-[40px] w-[2px] bg-gray-300" />
@@ -1121,10 +900,10 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
                   </div>
                 </div>
               </div>
-            </>
+            </div>
           )}
 
-          {tab === "nps" && (
+          {showResult && !missingInput && !result.error && tab === "nps" && (
             <div className="space-y-5 mt-6">
               <div className="bg-blue-50 rounded-3xl p-7 text-center">
                 <p className="text-gray-700 text-lg font-medium leading-relaxed">
@@ -1142,9 +921,11 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
                 </p>
               </div>
 
-              <SectionTitle title="노령연금" desc="월 지급예상액" />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 xl:gap-8 items-stretch">
+              <section className="md:rounded-2xl md:border md:border-blue-100 md:bg-blue-50/40 md:p-5 flex flex-col gap-6">
+              <div className="flex items-center gap-3"><span className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600"><UserRound className="w-5 h-5" /></span><SectionTitle title="노령연금" desc="가입기간별 월 지급예상액" /></div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="divide-y divide-gray-200/60 lg:min-h-[280px] flex flex-col justify-between [&>div]:flex-1">
                 {result.nps.oldAge.map((item) => (
                   <NpsCard
                     key={item.years}
@@ -1155,9 +936,11 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
                 ))}
               </div>
 
-              <SectionTitle title="장애연금" desc="월 지급예상액" />
+              </section>
+              <section className="md:rounded-2xl md:border md:border-amber-100 md:bg-amber-50/40 md:p-5 flex flex-col gap-6">
+              <div className="flex items-center gap-3"><span className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 text-amber-600"><Accessibility className="w-5 h-5" /></span><SectionTitle title="장애연금" desc="등급별 예상액 · 4급은 일시금" /></div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div className="divide-y divide-gray-200/60 lg:min-h-[280px] flex flex-col justify-between [&>div]:flex-1">
                 {result.nps.disability.map((item) => (
                   <NpsCard
                     key={item.label}
@@ -1168,9 +951,11 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
                 ))}
               </div>
 
-              <SectionTitle title="유족연금" desc="월 지급예상액" />
+              </section>
+              <section className="md:rounded-2xl md:border md:border-pink-100 md:bg-pink-50/40 md:p-5 flex flex-col gap-6">
+              <div className="flex items-center gap-3"><span className="flex items-center justify-center w-10 h-10 rounded-full bg-pink-100 text-pink-600"><UsersRound className="w-5 h-5" /></span><SectionTitle title="유족연금" desc="가입기간별 월 지급예상액" /></div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="divide-y divide-gray-200/60 lg:min-h-[280px] flex flex-col justify-between [&>div]:flex-1">
                 {result.nps.survivor.map((item) => (
                   <NpsCard
                     key={item.label}
@@ -1180,20 +965,23 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
                   />
                 ))}
               </div>
+              </section>
+              </div>
             </div>
           )}
 
-          <div className="mt-6 text-xs text-gray-500 leading-relaxed">
+          </div>
+          <div className="mt-6 text-xs text-gray-500 leading-relaxed lg:col-span-2">
   {tab === "nps" ? (
     <>
-      국민연금은 2026년 A값과 기준소득월액을 기준으로 단순 계산한 값입니다.
-      실제 수령액은 가입 이력, 재평가율, 부양가족연금액, 제도 변경에 따라
-      달라질 수 있습니다.
+      국민연금은 2026년 7월 예상연금월액표 기준이며 표 사이의 소득은 보간한 추정값입니다
+      실제 수령액은 가입 이력 · 재평가율 · 부양가족연금액 · 제도 변경에 따라
+      달라질 수 있습니다
     </>
   ) : (
     <>
-      계산값은 입력값과 일반적인 산식에 따른 간편 추정 결과입니다.
-      실제 금융상품 수익률, 세금, 수수료 등에 따라 실제 금액과 다를 수 있습니다.
+      계산값은 입력값과 일반적인 산식에 따른 간편 추정 결과입니다
+      연 수익률을 12로 나눈 월 이율과 매월 말 납입·수령을 가정합니다<br />물가상승률 · 세금 · 수수료는 반영하지 않습니다
     </>
   )}
 </div>
@@ -1214,7 +1002,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
   }}
   className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
 >
-      <div
+      <div data-popup-header="true"
   onMouseDown={(e) => {
   if (window.innerWidth < 768) return;
 
@@ -1226,9 +1014,9 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
     originY: lifePopupPos.y,
   };
 }}
-  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+  className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between"
 >
-        <div className="font-bold flex items-center gap-2">
+        <div data-popup-title="true" className="font-bold flex items-center gap-2">
           <FileText className="w-5 h-5" />
           기대수명 계산기
         </div>
@@ -1281,7 +1069,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
       }
       placeholder="나이를 입력하세요"
       inputMode="numeric"
-      className="
+      className="placeholder:text-sm placeholder:font-normal placeholder:text-gray-400 
         w-full
         h-14
         rounded-2xl
@@ -1487,9 +1275,9 @@ function NpsCard({
   unit: string;
 }) {
   return (
-    <div className="bg-gray-50 rounded-2xl p-4 text-center border border-gray-100">
-      <p className="text-sm font-bold text-gray-500 mb-2">{label}</p>
-      <p className="text-xl font-semibold text-black">
+    <div className="flex items-center justify-between gap-4 py-4 px-1">
+      <p className="text-sm md:text-base font-semibold text-gray-700">{label}</p>
+      <p className="text-xl font-bold text-gray-900 whitespace-nowrap">
         {value}
         <span className="text-sm font-medium text-gray-700 ml-1">
           {unit}
@@ -1588,11 +1376,11 @@ function TimelineItem({
   return (
     <div className={`relative flex items-center gap-5 ${last ? "" : "pb-10"}`}>
       <div
-        className="
+        className={`
           w-20 h-20 rounded-full border-4 border-white
           bg-blue-600 text-white flex items-center
           justify-center text-xl font-black shadow-lg
-        "
+        `}
       >
         {age}
       </div>

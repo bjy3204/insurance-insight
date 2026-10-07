@@ -611,10 +611,10 @@ useEffect(() => {
 
         {/* 뉴스 검색 영역 */}
         <section className="mb-3">
-         <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
+         <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
   <Search className="w-5 h-5 text-gray-400" />
 
-  <input
+  <input data-ui-field="true" data-page-search-input="true"
     value={searchInput}
     onChange={(e) => setSearchInput(e.target.value)}
     onKeyDown={(e) => {
@@ -664,7 +664,7 @@ useEffect(() => {
     </div>
 
     {instagramItem && (
-      <a
+      <a data-card-lift="subtle"
         href={instagramItem.permalink}
         target="_blank"
         rel="noopener noreferrer"
@@ -716,7 +716,7 @@ useEffect(() => {
       <>
         <div className="grid grid-cols-1 gap-4 mb-4">
           {mainNews.map((item, index) => (
-            <div
+            <div data-card-lift="subtle"
   key={`${item.link}-${index}`}
               
               className="
@@ -751,9 +751,7 @@ useEffect(() => {
               </h3>
 
               <p
-  className={`text-sm text-gray-500 leading-relaxed mt-3 break-keep ${getDescriptionClamp(
-    item.title
-  )}`}
+  className={`text-sm text-gray-500 leading-relaxed mt-3 break-keep ${index === 0 ? "line-clamp-3" : getDescriptionClamp(item.title)}`}
 >
                 {cleanText(item.description)}
               </p>
@@ -787,7 +785,7 @@ useEffect(() => {
 
         <div className="grid grid-cols-2 gap-3">
           {listNews.map((item, index) => (
-           <div
+           <div data-card-lift="subtle"
   key={`${item.link}-${index}`}
   className="
     flex

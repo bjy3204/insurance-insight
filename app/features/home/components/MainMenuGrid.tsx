@@ -355,21 +355,21 @@ target={
                 </div>
               )}
 
-              <input
+              <input data-ui-field="true"
                 value={newMenuTitle}
                 onChange={(e) => setNewMenuTitle(e.target.value)}
                 placeholder="메뉴명"
                 className="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none mb-2"
               />
 
-              <input
+              <input data-ui-field="true"
                 value={newMenuDesc}
                 onChange={(e) => setNewMenuDesc(e.target.value)}
                 placeholder="설명글"
                 className="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none mb-2"
               />
 
-              <input
+              <input data-ui-field="true"
                 value={newMenuLink}
                 onChange={(e) => setNewMenuLink(e.target.value)}
                 placeholder="링크"

@@ -6,6 +6,7 @@ export type MemoItem = {
 export type MemoDocument = {
   version: 1; text: string; html?: string; background: string; opacity: number;
   category: "work" | "personal"; sourceId?: string;
+  stickerDock?: "left" | "right";
   stickerSize?: { width: number; height: number };
 };
 const PREFIX = "[insurance-insight:memo:v1]";
@@ -19,6 +20,7 @@ export function decodeMemo(memo: Pick<MemoItem, "content" | "color">): MemoDocum
         background: /^#[\da-f]{6}$/i.test(data.background) ? data.background : "#ffffff",
         opacity: typeof data.opacity === "number" ? Math.max(0, Math.min(1, data.opacity)) : 1,
         category: data.category === "personal" ? "personal" : "work", sourceId: data.sourceId,
+        ...(data.stickerDock === "left" || data.stickerDock === "right" ? { stickerDock: data.stickerDock } : {}),
         ...(Number.isFinite(data.stickerSize?.width) && Number.isFinite(data.stickerSize?.height) ? { stickerSize: { width: Math.max(200, Math.min(1600, data.stickerSize.width)), height: Math.max(140, Math.min(1200, data.stickerSize.height)) } } : {}),
       };
     } catch { /* Preserve malformed legacy content as plain text. */ }

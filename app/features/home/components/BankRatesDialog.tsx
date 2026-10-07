@@ -8,18 +8,19 @@ return (<>{bankRateOpen && (
   <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
     <div data-popup-frame="true"
       style={getPopupStyle("bankRate")}
-      className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
+      className="bg-white w-full max-w-4xl rounded-[24px] shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
     >
-      <div
+      <div data-popup-header="true"
         onMouseDown={(e) => startPopupDrag("bankRate", e)}
-        className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+        className="bg-white text-slate-800 px-4 py-3 md:px-7 md:py-4 border-b border-[#e1e9fb] flex items-center justify-between gap-3 shrink-0"
       >
-        <div className="font-bold flex items-center gap-2">
-          <Percent className="w-5 h-5" />
+        <h2 data-popup-title="true" className="font-bold text-lg flex items-center gap-2.5">
+          <Percent className="w-[25px] h-[25px] text-blue-600 shrink-0" />
           주요 은행 {bankRateMonth}개월 예금 금리
-        </div>
+        </h2>
 
-        <button data-popup-close="true"
+        <button type="button" data-popup-close="true" aria-label="예금 금리 닫기"
+          onMouseDown={event => event.stopPropagation()}
           onClick={() => setBankRateOpen(false)}
           className="
             w-9
@@ -28,7 +29,7 @@ return (<>{bankRateOpen && (
             flex
             items-center
             justify-center
-            hover:bg-white/10
+            hover:bg-blue-50
             transition
           "
         >
@@ -61,15 +62,7 @@ return (<>{bankRateOpen && (
           </button>
         </div>
 
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-sm font-bold text-gray-700">
-            은행별 기본금리
-          </p>
 
-          <p className="text-xs font-bold text-gray-400">
-            금리 공시월 · {bankBaseDate}
-          </p>
-        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {bankRates.map((bank) => (
@@ -119,6 +112,7 @@ return (<>{bankRateOpen && (
         </div>
 
        <div className="border-t border-gray-100 mt-5 pt-4">
+  <p className="text-xs font-medium text-gray-500 mb-2">금리 공시월 · {bankBaseDate}</p>
   <p className="text-xs text-gray-400 leading-relaxed break-keep">
     ※ 금리는 변동될 수 있으니 정확한 내용은 각 은행 홈페이지에서 확인해주세요.
   </p>

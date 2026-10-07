@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { useHomeEffects } from "./useHomeEffects";
 import { useHomeState } from "./useHomeState";
 
@@ -265,16 +266,23 @@ setNpsTableOpen(true);
     setPcQuickOpen(false);
   },
 },
-...(authStatus === "approved" ? [{
-  key: "insuranceCode",
-  title: "보험사 코드",
-  action: () => {
-    window.dispatchEvent(new CustomEvent("open-insurance-code"));
-    setQuickOpen(false);
-    setPcQuickOpen(false);
-  },
-}] : []),
+
 ];
+
+// Discard removed or duplicate tools from previously saved selections.
+const quickMenuOptionKeys = quickMenuOptions.map((item) => item.key).join(",");
+useEffect(() => {
+  const allowedKeys = new Set(quickMenuOptionKeys.split(","));
+  const clean = (keys: string[]) => [...new Set(keys)].filter((key) => allowedKeys.has(key)).slice(0, 4);
+  setQuickMenuKeys((previous) => {
+    const next = clean(previous);
+    return next.length === previous.length && next.every((key, index) => key === previous[index]) ? previous : next;
+  });
+  setTempQuickMenuKeys((previous) => {
+    const next = clean(previous);
+    return next.length === previous.length && next.every((key, index) => key === previous[index]) ? previous : next;
+  });
+}, [quickMenuOptionKeys, quickMenuKeys, tempQuickMenuKeys, setQuickMenuKeys, setTempQuickMenuKeys]);
 
 const sortedPress = [...PRESS.items].sort(
   (a, b) =>
@@ -909,6 +917,20 @@ const handleCmKeypad = async (val: string) => {
   }
 };
 
+const [pcQuickDocked, setPcQuickDocked] = useState<"left" | "right" | null>("right");
+
+useEffect(() => {
+  try {
+    const raw=localStorage.getItem("pcQuickPosition");
+    if(!raw) return;
+    const saved=JSON.parse(raw);
+    if(!Number.isFinite(saved.x)||!Number.isFinite(saved.y)) return;
+    const dock=saved.docked === "left" || saved.docked === "right" ? saved.docked : null;
+    setPcQuickDocked(dock);
+    setPcQuickPos({x:dock === "left" ? -window.innerWidth+248 : dock === "right" ? 0 : Math.min(0,Math.max(-window.innerWidth+248,saved.x)),y:Math.min(pcQuickWrapRef.current ? parseFloat(getComputedStyle(pcQuickWrapRef.current).bottom)||0 : 100,Math.max(-window.innerHeight+(dock?36:52)+(pcQuickWrapRef.current ? parseFloat(getComputedStyle(pcQuickWrapRef.current).bottom)||0 : 100),saved.y))});
+  } catch { /* Use the default edge position when local storage is unavailable. */ }
+}, [setPcQuickPos]);
+
 const openPcQuickMenu = () => {
   const wrap = pcQuickWrapRef.current;
   if (!wrap) {
@@ -917,81 +939,51 @@ const openPcQuickMenu = () => {
   }
 
   const rect = wrap.getBoundingClientRect();
-  const menuHeight = 420;
+  const menuHeight = pcQuickDocked ? 7 * 36 + 2 : 6 * 48 + 44 + 2;
 
-  const spaceTop = rect.top;
   const spaceBottom = window.innerHeight - rect.bottom;
 
-  if (spaceBottom < menuHeight && spaceTop > spaceBottom) {
-    setPcQuickDirection("up");
-  } else {
-    setPcQuickDirection("down");
-  }
+  setPcQuickDirection(spaceBottom >= menuHeight + (pcQuickDocked ? 0 : 8) ? "down" : "up");
 
   setPcQuickOpen((prev) => !prev);
 };
 
 const startPcQuickDrag = (e: React.PointerEvent) => {
-  const target = e.target as HTMLElement;
-
-  if (target.closest("[data-pc-quick-menu]")) return;
-
-  pcQuickDragRef.current = {
-    startX: e.clientX,
-    startY: e.clientY,
-    originX: pcQuickPos.x,
-    originY: pcQuickPos.y,
-    moved: false,
-  };
-
+  if (e.button !== 0 || (e.target as HTMLElement).closest("[data-pc-quick-menu]")) return;
+  e.preventDefault();
+  const trigger=(e.target as HTMLElement).closest<HTMLButtonElement>("button") ?? e.currentTarget;
+  trigger.setPointerCapture(e.pointerId);
+  pcQuickDragRef.current = {startX:e.clientX,startY:e.clientY,originX:pcQuickPos.x,originY:pcQuickPos.y,moved:false};
+  const bottom = pcQuickWrapRef.current ? parseFloat(getComputedStyle(pcQuickWrapRef.current).bottom)||0 : 100;
+  let position = {...pcQuickPos};
+  const startedDocked = pcQuickDocked;
+  let remainsDocked = pcQuickDocked;
   const handleMove = (event: PointerEvent) => {
-    if (!pcQuickDragRef.current) return;
-
-    const dx = event.clientX - pcQuickDragRef.current.startX;
-    const dy = event.clientY - pcQuickDragRef.current.startY;
-
-    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-      pcQuickDragRef.current.moved = true;
-    }
-
-    const nextX =
-  pcQuickDragRef.current.originX + dx;
-
-const nextY =
-  pcQuickDragRef.current.originY + dy;
-
-const limitedX = Math.min(
-  Math.max(nextX, -window.innerWidth + 260),
-  0
-);
-
-const limitedY = Math.min(
-  Math.max(nextY, -window.innerHeight + 150),
-  100
-);
-
-setPcQuickPos({
-  x: limitedX,
-  y: limitedY,
-});
+    const drag = pcQuickDragRef.current;
+    if (!drag) return;
+    const dx=event.clientX-drag.startX,dy=event.clientY-drag.startY;
+    if (!drag.moved && Math.abs(dx)<=5 && Math.abs(dy)<=5) return;
+    drag.moved=true;
+    setPcQuickOpen(false);
+    remainsDocked=startedDocked === "right" && dx>=-18 ? "right" : startedDocked === "left" && dx<=18 ? "left" : null;
+    setPcQuickDocked(remainsDocked);
+    position={x:remainsDocked === "right" ? 0 : remainsDocked === "left" ? -window.innerWidth+248 :Math.min(0,Math.max(-window.innerWidth+248,drag.originX+dx)),y:Math.min(bottom,Math.max(-window.innerHeight+bottom+(remainsDocked?36:52),drag.originY+dy))};
+    setPcQuickPos(position);
   };
-
   const handleUp = () => {
-  localStorage.setItem(
-    "pcQuickPosition",
-    JSON.stringify({
-      x: pcQuickPos.x,
-      y: pcQuickPos.y,
-    })
-  );
-
-  window.removeEventListener("pointermove", handleMove);
-  window.removeEventListener("pointerup", handleUp);
-};
-
-  window.addEventListener("pointermove", handleMove);
-  window.addEventListener("pointerup", handleUp);
-
+    window.removeEventListener("pointermove",handleMove);
+    window.removeEventListener("pointerup",handleUp);
+    window.removeEventListener("pointercancel",handleUp);
+    if (!pcQuickDragRef.current?.moved) return;
+    const dock=remainsDocked || (position.x>=-16 ? "right" : position.x<=-window.innerWidth+264 ? "left" : null);
+    setPcQuickDocked(dock);
+    if(dock) position={...position,x:dock === "right" ? 0 : -window.innerWidth+248};
+    setPcQuickPos(position);
+    try { localStorage.setItem("pcQuickPosition",JSON.stringify({...position,docked:dock})); } catch { /* Dragging still works without local storage. */ }
+  };
+  window.addEventListener("pointermove",handleMove);
+  window.addEventListener("pointerup",handleUp,{once:true});
+  window.addEventListener("pointercancel",handleUp,{once:true});
 };
 
 const startUserBtnDrag = (e: React.PointerEvent) => {
@@ -1300,6 +1292,7 @@ setQuickOpen,
 pcQuickOpen,
 setPcQuickOpen,
 pcQuickDirection,
+pcQuickDocked,
 pcQuickPos,
 userBtnPos,
 userBtnDragRef,

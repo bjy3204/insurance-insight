@@ -1,0 +1,12 @@
+.content {user-select:text;overflow-y:auto;overflow-x:hidden;scrollbar-width:none !important;-ms-overflow-style:none;}
+.content::-webkit-scrollbar, .content *::-webkit-scrollbar {display:none !important;width:0 !important;height:0 !important;}
+.content * {scrollbar-width:none !important;}
+.content :global(.memo-rich-body.ql-editor) {height:auto !important;max-height:none !important;overflow:visible !important;}
+
+.edgeTab {touch-action:none;user-select:none;position:fixed;z-index:1400;width:140px;height:36px;padding:0 12px;border:1px solid #dbe3ef;box-shadow:0 2px 8px #0f172a0d;color:#334155;font-size:13px;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+.edgeTab:hover {border-color:#93b4e5;box-shadow:0 3px 10px #2563eb15;}
+.edgeTab:focus-visible {outline:2px solid #2563eb;outline-offset:2px;}
+.leftEdge {left:0;border-left:0;border-radius:0 10px 10px 0;}
+.rightEdge {right:0;border-right:0;border-radius:10px 0 0 10px;}
+
+.action:hover { background-color:var(--memo-action-hover); }

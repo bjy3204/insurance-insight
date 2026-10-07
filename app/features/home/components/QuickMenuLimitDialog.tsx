@@ -21,11 +21,11 @@ return (<>{quickLimitOpen && (
             w-32
             h-12
             rounded-2xl
-            bg-gray-800
+            bg-blue-600
             text-white
             text-sm
             font-bold
-            hover:bg-gray-700
+            hover:bg-blue-700
             transition
             cursor-default
           "

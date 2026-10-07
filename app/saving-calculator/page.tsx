@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import presentation from "../components/CalculatorPresentation.module.css";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 
@@ -445,6 +446,12 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
     return 1;
   };
 
+  const activeValues = type === "deposit" ? [depositMoney, depositMonths, depositRate] : [savingMoney, savingMonths, savingRate];
+  const inputSignature = JSON.stringify([type, interestType, taxRate, ...activeValues]);
+  const [submittedSignature, setSubmittedSignature] = useState<string | null>(null);
+  const showResult = submittedSignature === inputSignature;
+  const missingInput = activeValues.some(value => String(value).trim() === "");
+
   const result = useMemo(() => {
     if (type === "deposit") {
       const principal = Number(depositMoney || 0) * 10000;
@@ -539,7 +546,7 @@ const principal = monthly * months;
   };
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-24">
+    <main className={`${presentation.page} min-h-screen pb-24`}>
       {/* 헤더 */}
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
@@ -636,7 +643,7 @@ const principal = monthly * months;
 
       <CalculatorPageLayout>
         {/* 탭 */}
-<div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7">
+<div data-tab-style="rounded" data-calculator-primary-tabs="true" className="grid grid-cols-2 gap-1 bg-white border border-blue-100/70 rounded-2xl p-1.5 mb-7">
   <button
     onClick={() => {
       setType("saving");
@@ -644,7 +651,7 @@ const principal = monthly * months;
     }}
     className={`rounded-2xl py-3 font-bold transition ${
       type === "saving"
-        ? "bg-white text-blue-600 shadow-sm"
+        ? "bg-blue-600 text-white shadow-sm"
         : "text-gray-600"
     }`}
   >
@@ -658,7 +665,7 @@ const principal = monthly * months;
     }}
     className={`rounded-2xl py-3 font-bold transition ${
       type === "deposit"
-        ? "bg-white text-blue-600 shadow-sm"
+        ? "bg-blue-600 text-white shadow-sm"
         : "text-gray-600"
     }`}
   >
@@ -666,10 +673,11 @@ const principal = monthly * months;
   </button>
 </div>
 
-        <div className="bg-white rounded-3xl shadow-sm p-5">
+
+        <div className={`${presentation.panel} rounded-3xl p-5 md:p-7`}>
           {/* 이자방식 */}
 <div className="mb-6">
-  <div className={`grid gap-2 mb-6 ${type === "saving" ? "grid-cols-2" : "grid-cols-2 md:grid-cols-4"}`}>
+  <div className={`grid gap-3 ${type === "saving" ? "grid-cols-2" : "grid-cols-2 md:grid-cols-4"}`}>
     <SelectButton
       active={interestType === "simple"}
       onClick={() => setInterestType("simple")}
@@ -710,6 +718,8 @@ const principal = monthly * months;
     )}
   </div>
 </div>
+
+
           {type === "deposit" ? (
             <>
               <InputBox label="예치금액" value={depositMoney} setValue={setDepositMoney} unit="만원" numeric />
@@ -732,7 +742,7 @@ const principal = monthly * months;
               과세유형
             </label>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className={`${presentation.taxOptions} grid grid-cols-3 gap-2`}>
   <CalculatorOptionButton
     onClick={() => setTaxRate(15.4)}
     className={`border ${
@@ -769,7 +779,9 @@ const principal = monthly * months;
           </div>
 
           {/* 결과 */}
-          <div className="bg-blue-50 rounded-3xl p-7 text-center">
+          <button type="button" className={presentation.calculateButton} onClick={() => setSubmittedSignature(inputSignature)}>결과 보기</button>
+          {showResult && missingInput && <p role="alert" className="mt-4 text-sm text-red-600">입력칸을 모두 채워 주세요</p>}
+          {showResult && !missingInput && <div key={submittedSignature} className={`${presentation.summary} ${presentation.result} rounded-3xl p-7 text-center mt-6`}>
             <p className="text-gray-600 text-lg font-bold mb-2">
               세후 만기 수령액
             </p>
@@ -791,6 +803,7 @@ const principal = monthly * months;
             </div>
           </div>
 
+          }
           <div className="mt-5 text-gray-500 text-sm space-y-1 leading-relaxed">
   <p>
     실제 금융상품의 금리, 세율, 우대조건에 따라 결과는 달라질 수 있습니다. 이자소득세: 일반과세(15.4%), 세금우대(9.5%)
@@ -813,9 +826,9 @@ const principal = monthly * months;
   style={{
     transform: `translate(${bankPopupPos.x}px, ${bankPopupPos.y}px)`,
   }}
-  className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
+  className="bg-white w-full max-w-4xl rounded-[24px] shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
 >
-      <div
+      <div data-popup-header="true"
   onMouseDown={(e) => {
     if (window.innerWidth < 768) return;
 
@@ -827,14 +840,15 @@ const principal = monthly * months;
       originY: bankPopupPos.y,
     };
   }}
-  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+  className="bg-white text-slate-800 px-4 py-3 md:px-7 md:py-4 border-b border-[#e1e9fb] flex items-center justify-between gap-3 shrink-0"
 >
-        <div className="font-bold flex items-center gap-2">
-          <Percent className="w-5 h-5" />
+        <h2 data-popup-title="true" className="font-bold text-lg flex items-center gap-2.5">
+          <Percent className="w-[25px] h-[25px] text-blue-600 shrink-0" />
           주요 은행 {bankRateMonth}개월 예금 금리
-        </div>
+        </h2>
 
-        <button data-popup-close="true"
+        <button type="button" data-popup-close="true" aria-label="예금 금리 닫기"
+          onMouseDown={event => event.stopPropagation()}
           onClick={() => setBankRateOpen(false)}
           className="
             cursor-pointer
@@ -844,7 +858,7 @@ const principal = monthly * months;
             flex
             items-center
             justify-center
-            hover:bg-white/10
+            hover:bg-blue-50
             transition
           "
         >
@@ -876,15 +890,7 @@ const principal = monthly * months;
     24개월
   </button>
 </div>
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-sm font-bold text-gray-700">
-            은행별 기본금리
-          </p>
 
-          <p className="text-xs font-bold text-gray-400">
-            금리 공시월 · {bankBaseDate}
-          </p>
-        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {bankRates.map((bank) => (
@@ -934,6 +940,7 @@ const principal = monthly * months;
         </div>
 
         <div className="border-t border-gray-100 mt-5 pt-4">
+  <p className="text-xs font-medium text-gray-500 mb-2">금리 공시월 · {bankBaseDate}</p>
           <p className="text-xs text-gray-400 leading-relaxed break-keep">
             ※ 금리는 변동될 수 있으니 정확한 내용은 각 은행 홈페이지에서 확인해주세요.
           </p>
@@ -1025,7 +1032,7 @@ function TopButton({
       onClick={onClick}
       className={`
         px-5 h-11 rounded-2xl font-bold text-sm transition shadow-sm
-        ${active ? "bg-white text-blue-600" : "bg-gray-200 text-gray-600"}
+        ${active ? "bg-white text-blue-600" : "bg-white border border-blue-100 text-slate-600"}
       `}
     >
       {children}
@@ -1091,15 +1098,17 @@ function SelectButton({
   children: React.ReactNode;
 }) {
   return (
-    <CalculatorOptionButton
+    <button
+      type="button"
+      aria-pressed={active}
       onClick={onClick}
       className={`
-        transition
-        ${active ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"}
+        rounded-2xl border p-4 text-center font-bold cursor-default
+        ${active ? "border-blue-500 bg-white text-gray-900 shadow-sm" : "border-gray-200 bg-white text-gray-700"}
       `}
     >
       {children}
-    </CalculatorOptionButton>
+    </button>
   );
 }
 
@@ -1112,8 +1121,8 @@ function ResultItem({
 }) {
   return (
     <div className="bg-white rounded-2xl p-3">
-      <p className="text-gray-500 font-bold mb-1">{label}</p>
-      <p className="text-gray-900 font-black">
+      <p className="text-gray-500 text-base md:text-lg font-bold mb-2">{label}</p>
+      <p className="text-gray-900 text-lg md:text-xl font-bold break-words">
         {Math.round(value / 10000).toLocaleString()}만원
       </p>
     </div>

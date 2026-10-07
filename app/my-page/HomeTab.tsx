@@ -661,7 +661,7 @@ const diaryEndPage = Math.min(
             setChecklists(data || []);
           }} className="w-4 h-4 cursor-pointer" />
           {editingChecklistId === item.id ? (
-            <input type="text" value={editingChecklistText}
+            <input data-ui-field="true" type="text" value={editingChecklistText}
               onChange={(e) => setEditingChecklistText(e.target.value)}
               onBlur={async () => {
                 if (!editingChecklistText.trim()) return;
@@ -691,7 +691,7 @@ const diaryEndPage = Math.min(
     </div>
     {checklists.length < 10 && (
       <div className="flex gap-2">
-        <input type="text" value={checklistText} onChange={(e) => setChecklistText(e.target.value)}
+        <input data-ui-field="true" type="text" value={checklistText} onChange={(e) => setChecklistText(e.target.value)}
           placeholder="항목 추가"
           onKeyDown={async (e) => {
             if (e.key === "Enter" && checklistText.trim() && authUser) {
@@ -735,7 +735,7 @@ const diaryEndPage = Math.min(
             <button className="w-12 h-12 border border-gray-200 rounded-2xl text-2xl hover:bg-gray-50 transition flex items-center justify-center outline-none">
               {todayEventForm.icon}
             </button>
-            <input type="text" placeholder="제목" value={todayEventForm.title}
+            <input data-ui-field="true" type="text" placeholder="제목" value={todayEventForm.title}
               onChange={(e) => setTodayEventForm(f => ({ ...f, title: e.target.value }))}
               className="flex-1 h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition" />
           </div>
@@ -747,16 +747,16 @@ const diaryEndPage = Math.min(
           {/* 시간 */}
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-base pointer-events-none">⏰</span>
-            <input type="text" placeholder="시간 (예: 오후 2시)" value={todayEventForm.time}
+            <input data-ui-field="true" type="text" placeholder="시간 (예: 오후 2시)" value={todayEventForm.time}
               onChange={(e) => setTodayEventForm(f => ({ ...f, time: e.target.value }))}
               className="w-full h-12 rounded-2xl border border-gray-200 pl-10 pr-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition" />
           </div>
           {/* 장소 */}
-          <input type="text" placeholder="장소" value={todayEventForm.place}
+          <input data-ui-field="true" type="text" placeholder="장소" value={todayEventForm.place}
             onChange={(e) => setTodayEventForm(f => ({ ...f, place: e.target.value }))}
             className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition" />
           {/* 메모 */}
-          <textarea placeholder="메모" value={todayEventForm.memo ?? ""}
+          <textarea data-ui-field="true" placeholder="메모" value={todayEventForm.memo ?? ""}
             onChange={(e) => setTodayEventForm(f => ({ ...f, memo: e.target.value }))}
             className="w-full h-20 rounded-2xl border border-gray-200 p-4 text-sm outline-none resize-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition" />
           {/* 색상 */}
@@ -803,7 +803,7 @@ const diaryEndPage = Math.min(
             setTodayEvents(data || []);
             setTodayEventEditOpen(false);
           }}
-          className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-pointer"
+          className="flex-1 h-12 rounded-2xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition cursor-pointer"
         >완료</button>
       </div>
     </div>
@@ -906,6 +906,7 @@ const diaryEndPage = Math.min(
 </div>
         ))}
        <div className="flex items-center justify-center gap-1 mt-3">
+<nav data-pagination="true" aria-label="페이지 이동">
   <button
     onClick={() => setDiaryPage((prev) => Math.max(1, prev - PAGE_GROUP))}
     className="px-2 h-8 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 text-sm font-bold hover:bg-blue-100 transition"
@@ -944,6 +945,7 @@ const diaryEndPage = Math.min(
   >
     다음
   </button>
+</nav>
 </div>
       </div>
     );
@@ -1068,7 +1070,7 @@ const diaryEndPage = Math.min(
                   }}
                   className={`h-9 rounded-xl text-sm font-bold transition ${
                     isSelected
-                      ? "bg-gray-900 text-white"
+                      ? "bg-blue-600 text-white"
                       : dow === 0
                       ? "text-red-400 hover:bg-gray-100"
                       : dow === 6
@@ -1110,7 +1112,7 @@ const diaryEndPage = Math.min(
               </div>
               <div>
                 <label className="text-sm font-bold text-gray-500 mb-1 block">내용</label>
-                <textarea
+                <textarea data-ui-field="true"
                   value={diaryForm.content}
                   onChange={(e) => setDiaryForm((f) => ({ ...f, content: e.target.value }))}
                   placeholder="오늘 하루는 어땠나요?"

@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { use, useState } from "react";
+import useSalesBookPageSize from "../useSalesBookPageSize";
+import styles from "../SalesBook.module.css";
+import SalesBookTools from "../SalesBookTools";
+import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/components/AuthProvider";
 import {
@@ -34,7 +37,8 @@ export default function CategoryPage({
   const [search, setSearch] = useState("");
 
 const [page, setPage] = useState(1);
-const itemsPerPage = 12;
+const itemsPerPage = useSalesBookPageSize();
+useEffect(() => { setPage(1); }, [itemsPerPage]);
 
   if (!authUser || authStatus !== "approved") {
     return (
@@ -98,6 +102,7 @@ const pagedSubcategories = filteredSubcategories.slice(
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
+            <SalesBookTools />
             <Link data-header-control="true"
               href="/sales-book"
               className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
@@ -121,10 +126,10 @@ const pagedSubcategories = filteredSubcategories.slice(
       </header>
 
       <div data-page-content="true" className="max-w-7xl mx-auto px-4 py-4">
-        <div className="h-12 rounded-2xl border border-gray-300 bg-white px-5 flex items-center gap-3">
+        <div data-page-search-wrapper="true" className="h-12 rounded-2xl border border-gray-300 bg-white px-5 flex items-center gap-3 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition">
           <Search className="w-4 h-4 text-gray-400 shrink-0" />
 
-          <input
+          <input data-ui-field="true" data-page-search-input="true"
             type="text"
             value={search}
             onChange={(e) => {
@@ -138,14 +143,14 @@ const pagedSubcategories = filteredSubcategories.slice(
       </div>
 
       <div data-page-content="true" className="max-w-7xl mx-auto px-4 pb-6">
-        <div data-popup-frame="true" className="bg-white rounded-3xl border border-gray-200 shadow-sm flex h-[82vh]">
+        <div className="grid grid-cols-1 md:grid-cols-[265px_minmax(0,1fr)] gap-3 items-start">
           <aside
-            style={{ flex: "0 0 190px" }}
-            className="hidden md:block border-r border-gray-200 bg-gray-100 py-4 px-4 overflow-y-auto"
+            
+            className={`${styles.menu} hidden md:block bg-white rounded-2xl border border-blue-100/60 py-4 px-3 sticky top-6`}
           >
             <Link
               href="/sales-book"
-              className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-black text-blue-600 bg-blue-100 hover:bg-blue-50 cursor-default"
+              className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors cursor-pointer"
             >
               <Home className="w-4 h-4" />
               전체 자료
@@ -155,11 +160,12 @@ const pagedSubcategories = filteredSubcategories.slice(
               {categories.map((item) => (
                 <Link
                   key={item}
+                  aria-current={item === category ? "page" : undefined}
                   href={`/sales-book/${encodeURIComponent(item)}`}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition cursor-default ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition cursor-pointer ${
                     item === category
                       ? "bg-blue-100 text-blue-600"
-                      : "text-gray-700 hover:bg-white"
+                      : "text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                   }`}
                 >
                   <Folder className="w-4 h-4 text-yellow-500 shrink-0" />
@@ -169,7 +175,7 @@ const pagedSubcategories = filteredSubcategories.slice(
             </div>
           </aside>
 
-          <section className="flex-1 px-4 md:px-6 py-5 md:py-6 flex flex-col min-w-0">
+          <section className={`${styles.materials} bg-white rounded-2xl border border-blue-100/60 px-4 md:px-6 py-5 md:py-6 flex flex-col min-w-0`}>
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h2 className="text-sm font-black text-gray-700">
@@ -183,7 +189,7 @@ const pagedSubcategories = filteredSubcategories.slice(
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setViewMode("grid")}
+                  aria-label="그리드 보기" onClick={() => setViewMode("grid")}
                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition ${
                     viewMode === "grid"
                       ? "bg-blue-600 text-white"
@@ -194,7 +200,7 @@ const pagedSubcategories = filteredSubcategories.slice(
                 </button>
 
                 <button
-                  onClick={() => setViewMode("list")}
+                  aria-label="목록 보기" onClick={() => setViewMode("list")}
                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition ${
                     viewMode === "list"
                       ? "bg-blue-600 text-white"
@@ -207,34 +213,34 @@ const pagedSubcategories = filteredSubcategories.slice(
             </div>
 
             {viewMode === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 pr-3 pt-3 pb-5">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-1 pb-5">
                 {pagedSubcategories.map((subcategory) => (
-                  <Link data-menu-card="true"
+                  <Link data-card-lift="subtle" data-card-highlight="true" data-menu-card="true"
                     key={subcategory}
                     href={`/sales-book/${encodeURIComponent(
                       category
                     )}/${encodeURIComponent(subcategory)}`}
-                    className="bg-white rounded-3xl border border-gray-200 p-5 md:p-8 h-[120px] md:h-[150px] shadow-sm hover:shadow-xl hover:-translate-y-1 transition cursor-default"
+                    className={`${styles.card} bg-white rounded-3xl border border-gray-200 min-w-0 shadow-sm`}
                   >
-                    <FileText className="w-12 h-12 text-red-500 mb-4" />
+                    <FileText className="w-9 h-9 text-red-500 mb-3" />
 
-                    <h2 className="text-lg font-black text-gray-900">
+                    <h2 className="text-base font-black text-gray-900 break-words">
                       {subcategory}
                     </h2>
                   </Link>
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden">
+              <div className="space-y-1">
                 {pagedSubcategories.map((subcategory) => (
                   <Link
                     key={subcategory}
                     href={`/sales-book/${encodeURIComponent(
                       category
                     )}/${encodeURIComponent(subcategory)}`}
-                    className="flex items-center gap-4 px-5 py-4 border-b last:border-b-0 border-gray-100 hover:bg-gray-50 transition cursor-default"
+                    className="flex items-center gap-4 px-5 py-4 rounded-xl hover:bg-gray-50 transition cursor-pointer"
                   >
-                    <FileText className="w-8 h-8 text-red-500 shrink-0" />
+                    <Folder className="w-8 h-8 text-yellow-500 shrink-0" />
 
                     <div className="min-w-0">
                       <h2 className="text-sm font-black text-gray-900 truncate">
@@ -248,6 +254,7 @@ const pagedSubcategories = filteredSubcategories.slice(
 
             {totalPages > 1 && (
   <div className="mt-auto pt-5 flex items-center justify-center gap-2">
+<nav data-pagination="true" aria-label="페이지 이동">
     <button
       onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
       disabled={page === 1}
@@ -277,7 +284,8 @@ const pagedSubcategories = filteredSubcategories.slice(
     >
       다음
     </button>
-  </div>
+  </nav>
+</div>
 )}
 
             {filteredSubcategories.length === 0 && (

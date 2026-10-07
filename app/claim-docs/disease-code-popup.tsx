@@ -113,7 +113,7 @@ setItems(rows);
   }}
   className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
 >
-        <div
+        <div data-popup-header="true"
   onMouseDown={(e) => {
   if (window.innerWidth < 768) return;
 
@@ -125,9 +125,9 @@ setItems(rows);
     originY: popupPos.y,
   };
 }}
-  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+  className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between"
 >
-          <div className="font-bold flex items-center gap-2">
+          <div data-popup-title="true" className="font-bold flex items-center gap-2">
             <FileText className="w-5 h-5" />
             상병코드 검색
           </div>
@@ -144,7 +144,7 @@ setItems(rows);
           <div className="relative mb-4">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
-            <input
+            <input data-ui-field="true" data-page-search-input="true"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="상병코드 또는 질병명을 검색하세요"
@@ -152,11 +152,6 @@ setItems(rows);
             />
           </div>
 
-         <p className="text-sm font-bold text-gray-700 mb-3">
-  {!loaded
-    ? "상병코드 데이터 불러오는 중..."
-    : `전체 ${items.length.toLocaleString()}개 · 검색 결과 ${filteredItems.length.toLocaleString()}개`}
-</p>
           <div className="overflow-auto flex-1 border border-gray-200 rounded-2xl">
             {loading ? (
               <div className="text-center text-sm text-gray-400 py-10">
@@ -215,6 +210,13 @@ setItems(rows);
                 검색 결과가 없습니다
               </div>
             )}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-end gap-3 mt-3 shrink-0 text-xs">
+            {!loaded ? <span className="text-gray-400">상병코드 데이터 불러오는 중...</span> : <>
+              <span className="text-slate-500">전체 <strong className="font-semibold text-slate-700">{items.length.toLocaleString()}</strong>개</span>
+              <span className="rounded-lg bg-blue-50 px-3 py-1.5 text-blue-600">검색 결과 <strong>{filteredItems.length.toLocaleString()}</strong>개</span>
+            </>}
           </div>
 
           <p className="text-xs text-gray-500 leading-relaxed mt-4 px-1">

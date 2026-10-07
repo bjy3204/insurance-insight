@@ -3,7 +3,7 @@
 import styles from "../HomePage.module.css";
 import { X, Settings, Plus } from "lucide-react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
-import { SortableContext } from "@dnd-kit/sortable";
+import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { personalMenuIcons, PersonalMenuIconKey } from "../data";
 import SortableMenuSortCard from "../components/SortableMenuSortCard";
 import type { HomeController } from "../hooks/useHomeController";
@@ -19,15 +19,67 @@ return (<>{menuSortOpen && (
   style={getPopupStyle("menuSort")}
   className={`${styles.menuSortDialog} bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col`}
 >
-     <div
+     <div data-popup-header="true"
   onPointerDown={(e) => startPopupDrag("menuSort", e)}
-  className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between"
+  className="bg-blue-600 text-white px-4 md:px-5 py-3 flex items-center justify-between"
 >
-  <div className="font-bold flex items-center gap-2">
+  <div data-popup-title="true" className="font-bold flex items-center gap-2">
     <Settings className="w-5 h-5" />
 메뉴 변경
   </div>
 
+<div className="flex items-center gap-2">
+  <div className="flex gap-2 shrink-0">
+   <button data-menu-action
+      onClick={() => {
+        setTempPersonalMenus(personalMenus);
+        setSelectedPersonalMenuId("");
+        setEditIconOpen(false);
+        setTempQuickMenuKeys(quickMenuKeys);
+        setMenuManageMode("edit");
+      }}
+      className={`
+        h-9
+        px-4
+        rounded-xl
+        text-xs
+        font-bold
+        transition
+        cursor-default
+        ${
+          menuManageMode === "edit"
+            ? "bg-blue-600 text-white hover:bg-blue-700"
+            : "bg-gray-100 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+        }
+      `}
+    >
+      수정
+    </button>
+
+    <button data-menu-action
+      onClick={() => {
+        setSelectedPersonalMenuId("");
+        setSelectedDeleteMenuIds([]);
+        setMenuManageMode("delete");
+      }}
+      className={`
+        h-9
+        px-4
+        rounded-xl
+        text-xs
+        font-bold
+        transition
+        cursor-default
+        ${
+          menuManageMode === "delete"
+            ? "bg-red-500 text-white"
+            : "bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-500"
+        }
+      `}
+    >
+      삭제
+    </button>
+  </div>
  <button data-popup-close={menuManageMode === "sort"}
   onClick={() => {
   if (menuManageMode === "sort") {
@@ -76,97 +128,8 @@ return (<>{menuSortOpen && (
   )}
 </button>
 </div>
-
-<div className="px-5 py-2.5 border-b border-gray-100 flex items-center justify-between gap-3">
-  <div className="min-w-0">
-  <p className="text-base font-black text-gray-900">
-    {menuManageMode === "sort" && (
-  <>
-    <span className="hidden md:inline">
-      메뉴 위치 변경 및 숨기기
-    </span>
-
-    <span className="md:hidden">
-      메뉴 숨기기
-    </span>
-  </>
-)}
-    {menuManageMode === "edit" && "메뉴 수정"}
-    {menuManageMode === "delete" && "메뉴 삭제"}
-  </p>
-
-<p className="text-sm text-gray-500 mt-0 leading-relaxed break-keep">
-  {menuManageMode === "sort" && (
-    <>
-      <span className="hidden md:inline">
-        메뉴를 드래그해서 원하는 순서로 변경할 수 있습니다.
-      </span>
-
-      <span className="md:hidden">
-        눈 아이콘으로 메뉴를 숨기거나 다시 표시할 수 있습니다.
-      </span>
-    </>
-  )}
-
-  {menuManageMode === "edit" &&
-    "직접 추가한 메뉴를 수정하고 빠른메뉴 실행 항목을 설정할 수 있습니다."}
-
-  {menuManageMode === "delete" &&
-    "직접 추가한 메뉴 중 삭제할 메뉴를 선택할 수 있습니다."}
-</p>
 </div>
-  <div className="flex gap-2 shrink-0">
-   <button data-menu-action
-      onClick={() => {
-        setTempPersonalMenus(personalMenus);
-        setSelectedPersonalMenuId("");
-        setEditIconOpen(false);
-        setTempQuickMenuKeys(quickMenuKeys);
-        setMenuManageMode("edit");
-      }}
-      className={`
-        h-9
-        px-4
-        rounded-xl
-        text-xs
-        font-bold
-        transition
-        cursor-default
-        ${
-          menuManageMode === "edit"
-            ? "bg-gray-800 text-white"
-            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-        }
-      `}
-    >
-      수정
-    </button>
 
-    <button data-menu-action
-      onClick={() => {
-        setSelectedPersonalMenuId("");
-        setSelectedDeleteMenuIds([]);
-        setMenuManageMode("delete");
-      }}
-      className={`
-        h-9
-        px-4
-        rounded-xl
-        text-xs
-        font-bold
-        transition
-        cursor-default
-        ${
-          menuManageMode === "delete"
-            ? "bg-red-500 text-white"
-            : "bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-500"
-        }
-      `}
-    >
-      삭제
-    </button>
-  </div>
-</div>
 <div className="flex-1 overflow-y-auto p-5">
 
   {menuManageMode === "sort" && (
@@ -176,12 +139,13 @@ return (<>{menuSortOpen && (
       onDragEnd={handleMenuSortDragEnd}
     >
 <SortableContext
+  strategy={rectSortingStrategy}
   items={tempMenus
     .filter((menu) => menu.id !== "lecture")
     .filter((menu) => !menu.approvedOnly || authStatus === "approved")
     .map((menu) => menu.id)}
 >
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
 {tempMenus
   .filter((menu) => menu.id !== "lecture")
   .filter((menu) => !menu.approvedOnly || authStatus === "approved")
@@ -219,15 +183,15 @@ return (<>{menuSortOpen && (
 }}
   />
 ))}
-          <button
+          <button data-card-lift="subtle" data-card-highlight="true"
   onClick={() => {
   resetPopupPosition("menuAdd");
   setMenuAddOpen(true);
 }}
   className="
     bg-white
-    p-7
-    sm:p-8
+    p-5
+    sm:p-6
     rounded-3xl
     shadow
     border
@@ -271,7 +235,7 @@ sm:pb-4
         shadow
         border
         border-gray-200
-        min-h-[180px]
+        min-h-[190px]
         cursor-default
       "
     >
@@ -378,13 +342,13 @@ sm:pb-4
     </div>
 
         
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-start">
                 {tempPersonalMenus.map((menu) => {
           const Icon = personalMenuIcons[menu.iconKey];
           const isSelected = selectedPersonalMenuId === menu.id;
 
           return (
-            <div
+            <div data-card-lift="subtle" data-card-highlight="true"
   key={menu.id}
   onContextMenu={(e) => {
     e.preventDefault();
@@ -403,8 +367,8 @@ sm:pb-4
   }}
               className="
                 bg-white
-                p-7
-                sm:p-8
+                p-5
+                sm:p-6
                 rounded-3xl
                 shadow
                 border
@@ -489,21 +453,21 @@ sm:pb-4
                     </div>
                   )}
 
-                  <input
+                  <input data-ui-field="true"
                     value={newMenuTitle}
                     onChange={(e) => setNewMenuTitle(e.target.value)}
                     placeholder="메뉴명"
                     className="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none mb-2"
                   />
 
-                  <input
+                  <input data-ui-field="true"
                     value={newMenuDesc}
                     onChange={(e) => setNewMenuDesc(e.target.value)}
                     placeholder="설명글"
                     className="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none mb-2"
                   />
 
-                  <input
+                  <input data-ui-field="true"
                     value={newMenuLink}
                     onChange={(e) => setNewMenuLink(e.target.value)}
                     placeholder="링크"
@@ -515,15 +479,15 @@ sm:pb-4
           );
                 })}
 
-        <button
+        <button data-card-lift="subtle" data-card-highlight="true"
           onClick={() => {
   resetPopupPosition("menuAdd");
   setMenuAddOpen(true);
 }}
           className="
             bg-white
-            p-7
-            sm:p-8
+            p-5
+            sm:p-6
             rounded-3xl
             shadow
             border
@@ -548,7 +512,7 @@ hover:-translate-y-1
 )}
 
   {menuManageMode === "delete" && (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {personalMenus.length === 0 ? (
         <div className="col-span-full min-h-[380px] flex items-center justify-center pt-16 text-center text-sm text-gray-400">
   삭제할 개인 메뉴가 없습니다.
@@ -559,7 +523,7 @@ hover:-translate-y-1
           const isSelected = selectedDeleteMenuIds.includes(menu.id);
 
           return (
-           <button
+           <button data-card-lift="subtle" data-card-highlight="true"
   key={menu.id}
   onClick={() =>
   setSelectedDeleteMenuIds((prev) =>
@@ -569,8 +533,8 @@ hover:-translate-y-1
   )
 }
   className={`
-    p-7
-    sm:p-8
+    p-5
+    sm:p-6
     rounded-3xl
     shadow
     border
@@ -649,11 +613,11 @@ hover:-translate-y-1
         w-32
         h-12
         rounded-2xl
-        bg-gray-800
+        bg-blue-600
         text-white
         text-sm
         font-bold
-        hover:bg-gray-700
+        hover:bg-blue-700
         transition
         cursor-default
       "
@@ -672,11 +636,11 @@ hover:-translate-y-1
         w-32
         h-12
         rounded-2xl
-        bg-gray-800
+        bg-blue-600
         text-white
         text-sm
         font-bold
-        hover:bg-gray-700
+        hover:bg-blue-700
         disabled:bg-gray-200
         disabled:text-gray-400
         transition

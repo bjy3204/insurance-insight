@@ -775,7 +775,7 @@ updateData.pin_changed_at = new Date().toISOString();
       </div>
     )}
   </div>
-  <input
+  <input data-ui-field="true"
     value={settingForm.kakao_name}
     onChange={(e) => setSettingForm((f) => ({ ...f, kakao_name: e.target.value }))}
     placeholder="버튼 이름"
@@ -783,7 +783,7 @@ updateData.pin_changed_at = new Date().toISOString();
   />
 </div>
 
-                <input
+                <input data-ui-field="true"
                   value={settingForm.kakao_url}
                   onChange={(e) => setSettingForm((f) => ({ ...f, kakao_url: e.target.value }))}
                   placeholder="https://"
@@ -821,14 +821,14 @@ updateData.pin_changed_at = new Date().toISOString();
         </div>
       )}
     </div>
-    <input
+    <input data-ui-field="true"
       value={settingForm.my_site_name}
       onChange={(e) => setSettingForm((f) => ({ ...f, my_site_name: e.target.value }))}
       placeholder="버튼 이름"
       className="flex-1 h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
     />
   </div>
-  <input
+  <input data-ui-field="true"
     value={settingForm.my_site_url}
     onChange={(e) => setSettingForm((f) => ({ ...f, my_site_url: e.target.value }))}
     placeholder="https://"
@@ -867,14 +867,14 @@ updateData.pin_changed_at = new Date().toISOString();
         </div>
       )}
     </div>
-    <input
+    <input data-ui-field="true"
       value={settingForm.spreadsheet_name}
       onChange={(e) => setSettingForm((f) => ({ ...f, spreadsheet_name: e.target.value }))}
       placeholder="버튼 이름"
       className="flex-1 h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
     />
   </div>
-  <input
+  <input data-ui-field="true"
     value={settingForm.spreadsheet_url}
     onChange={(e) => setSettingForm((f) => ({ ...f, spreadsheet_url: e.target.value }))}
     placeholder="https://"
@@ -885,7 +885,7 @@ updateData.pin_changed_at = new Date().toISOString();
               <div className="border-t border-gray-100 pt-3">
                 <label className="text-xs text-gray-500 font-semibold mb-1 block">개인공간 PIN 변경 (4자리)</label>
                 <div className="relative">
-                  <input
+                  <input data-ui-field="true"
                     type={showNewPin ? "text" : "password"}
                     value={settingForm.new_pin}
                     onChange={(e) => setSettingForm((f) => ({ ...f, new_pin: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
@@ -900,7 +900,7 @@ updateData.pin_changed_at = new Date().toISOString();
                   </button>
                 </div>
                 {settingForm.new_pin && (
-                  <input
+                  <input data-ui-field="true"
                     type="password"
                     value={settingForm.confirm_pin}
                     onChange={(e) => setSettingForm((f) => ({ ...f, confirm_pin: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
@@ -933,7 +933,7 @@ updateData.pin_changed_at = new Date().toISOString();
 {urlPopupType && (
   <div className="fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4">
     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-visible">
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between rounded-t-3xl">
+      <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between rounded-t-3xl">
         <span className="font-bold text-sm">{urlPopupMeta[urlPopupType].label}</span>
         <button data-popup-close="true"
           onClick={() => setUrlPopupType(null)}
@@ -993,7 +993,7 @@ updateData.pin_changed_at = new Date().toISOString();
             )}
           </div>
 
-          <input
+          <input data-ui-field="true"
             value={urlPopupName}
             onChange={(e) => setUrlPopupName(e.target.value)}
             placeholder="버튼 이름"
@@ -1001,7 +1001,7 @@ updateData.pin_changed_at = new Date().toISOString();
           />
         </div>
 
-        <input
+        <input data-ui-field="true"
           value={urlPopupValue}
           onChange={(e) => setUrlPopupValue(e.target.value)}
           placeholder={urlPopupMeta[urlPopupType].placeholder}
@@ -1019,7 +1019,7 @@ updateData.pin_changed_at = new Date().toISOString();
           <button
             onClick={handleSaveUrlPopup}
             disabled={urlPopupSaving}
-            className="flex-1 h-10 bg-gray-800 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition disabled:opacity-50 cursor-pointer"
+            className="flex-1 h-10 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition disabled:opacity-50 cursor-pointer"
           >
             {urlPopupSaving ? "저장 중..." : "저장"}
           </button>
@@ -1032,8 +1032,8 @@ updateData.pin_changed_at = new Date().toISOString();
       {homeMenuSettingOpen && (
  <div className="fixed inset-0 z-[250] bg-black/40 flex items-center justify-center px-3 py-4 md:p-4">
   <div data-popup-frame="true" className="bg-white rounded-3xl shadow-2xl w-full max-w-[360px] md:max-w-2xl h-[82vh] md:h-auto overflow-hidden flex flex-col">
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between">
-        <span className="font-bold text-sm">홈 메뉴 변경</span>
+      <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between">
+        <span data-popup-title="true" className="font-bold text-sm">홈 메뉴 변경</span>
 
         <button data-popup-close="true"
           onClick={() => setHomeMenuSettingOpen(false)}
@@ -1413,7 +1413,7 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
                 <X className="w-4 h-4 text-gray-500" />
               </button>
             </div>
-            <input
+            <input data-ui-field="true"
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
               placeholder="https://docs.google.com/spreadsheets/..."
@@ -1430,7 +1430,7 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
                   삭제
                 </button>
               )}
-              <button onClick={handleSave} disabled={saving} className="flex-1 h-11 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-pointer disabled:opacity-50">
+              <button onClick={handleSave} disabled={saving} className="flex-1 h-11 rounded-2xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition cursor-pointer disabled:opacity-50">
                 {saving ? "저장 중..." : "저장"}
               </button>
             </div>

@@ -198,7 +198,7 @@ const currentReviews = selectedReviews.slice(
       <div data-page-content="true" className="max-w-7xl mx-auto px-5 pt-6 pb-6">
         <div className="relative mb-3">
           <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-          <input
+          <input data-ui-field="true" data-page-search-input="true"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="강의명 · 강사이름 검색"
@@ -255,7 +255,7 @@ const currentReviews = selectedReviews.slice(
           )}
 
           {currentLectures.map((lecture) => (
-            <div data-menu-card="true"
+            <div data-card-lift="subtle" data-menu-card="true"
               key={lecture.lectureTitle}
               className="bg-white rounded-3xl border border-gray-200 p-5 shadow-sm flex flex-col h-[215px] transition hover:-translate-y-1 hover:shadow-md"
             >
@@ -323,6 +323,7 @@ const currentReviews = selectedReviews.slice(
 
 <div className="fixed bottom-[73px] left-0 right-0 z-40 bg-gray-100 py-4 after:absolute after:left-0 after:right-0 after:top-full after:h-[73px] after:bg-gray-100 after:content-['']">
   <div className="flex items-center justify-center gap-2 flex-wrap px-4">
+<nav data-pagination="true" aria-label="페이지 이동">
     <button
       onClick={() =>
         setCurrentPage((prev) => Math.max(prev - 1, 1))
@@ -366,7 +367,8 @@ const currentReviews = selectedReviews.slice(
     >
       다음
     </button>
-  </div>
+  </nav>
+</div>
 </div>
 
 
@@ -414,7 +416,7 @@ const currentReviews = selectedReviews.slice(
     >
 
       {/* 상단 */}
-      <div className="shrink-0 bg-slate-800 text-white px-5 py-4 border-b border-slate-700">
+      <div data-popup-header="true" className="shrink-0 bg-white text-slate-800 px-5 py-4 border-b border-gray-200">
         {popupMode === "review" && (
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
@@ -424,7 +426,7 @@ const currentReviews = selectedReviews.slice(
                 </h3>
 
                 {selectedLectureInfo?.instructorName && (
-                  <span className="text-sm text-slate-200 font-medium">
+                  <span className="text-sm text-slate-500 font-medium">
                     · {selectedLectureInfo.instructorName}
                   </span>
                 )}
@@ -432,19 +434,19 @@ const currentReviews = selectedReviews.slice(
 
               <div className="flex flex-wrap gap-2 mt-3">
                 {selectedLectureInfo?.category && (
-                  <span className="px-2.5 py-1 rounded-full bg-white/10 text-white text-xs font-medium">
+                  <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-medium">
                     {selectedLectureInfo.category}
                   </span>
                 )}
 
                 {selectedLectureInfo?.area && (
-                  <span className="px-2.5 py-1 rounded-full bg-white/10 text-white text-xs font-medium">
+                  <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-medium">
                     {selectedLectureInfo.area}
                   </span>
                 )}
 
                 {selectedLectureInfo?.date && (
-                  <span className="px-2.5 py-1 rounded-full bg-white/10 text-white text-xs font-medium">
+                  <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-medium">
                     {selectedLectureInfo.date}
                   </span>
                 )}
@@ -538,7 +540,7 @@ const currentReviews = selectedReviews.slice(
 
             <div className="relative">
               <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-              <input
+              <input data-ui-field="true" data-page-search-input="true"
                 value={reviewSearch}
                 onChange={(e) => {
                   setReviewSearch(e.target.value);
@@ -652,6 +654,7 @@ const currentReviews = selectedReviews.slice(
 
           <div className="shrink-0 border-t border-gray-200 bg-white px-5 pt-3 pb-4">
             <div className="flex items-center justify-center gap-2 flex-wrap">
+<nav data-pagination="true" aria-label="페이지 이동">
               <button
                 onClick={() => setReviewPage((prev) => Math.max(prev - 1, 1))}
                 className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm cursor-pointer hover:bg-gray-50"
@@ -696,7 +699,8 @@ const currentReviews = selectedReviews.slice(
               >
                 다음
               </button>
-            </div>
+            </nav>
+</div>
           </div>
         </>
       )}
@@ -765,7 +769,7 @@ const currentReviews = selectedReviews.slice(
               href={selectedLectureInfo.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="block w-full text-center rounded-2xl bg-gray-800 text-white py-4 text-sm font-bold"
+              className="block w-full text-center rounded-2xl bg-blue-600 text-white py-4 text-sm font-bold"
             >
               신청하기
             </a>
@@ -928,7 +932,7 @@ const currentReviews = selectedReviews.slice(
                     href={selectedInstructorInfo.openchat}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 text-center rounded-2xl bg-gray-900 text-white py-4 text-sm font-bold"
+                    className="flex-1 text-center rounded-2xl bg-blue-600 text-white py-4 text-sm font-bold"
                   >
                     문의하기
                   </a>

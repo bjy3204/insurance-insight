@@ -122,3 +122,9 @@
 @media(min-width:768px) and (max-width:1199px) { .row { padding:0 20px 8px; } }
 @media(max-width:767px) { .reminderOverlay { background:#132a4844; touch-action:none; } }
 @media(prefers-reduced-motion:reduce) { .weatherSceneEnter { animation:none; } .weatherLayer,.weatherTop,.weatherTop::before,.weatherTop::after,.weatherTop .location button,.weatherTop .location svg,.weatherTop .iconButton { transition:none; } .marketItem { transition:none; } .marketItem:hover { transform:none; } }
+
+.heading.calendarHeading { display:grid; grid-template-columns:minmax(25px,1fr) auto minmax(25px,1fr); }
+.calendarHeading > .calendarPageLink { color:#0864ff; }
+.calendarHeading > .calendarPageLink svg { width:25px; height:25px; }
+.calendarMonthNavigation { display:flex; align-items:center; justify-content:center; gap:8px; }
+.calendarMonthNavigation button { cursor:pointer; }

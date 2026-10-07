@@ -573,7 +573,7 @@ const calendarDays = [
 
         {/* 상단 메뉴 버튼 */}
 <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-  <a
+  <a data-card-lift="subtle"
     href="/lecture/schedule"
     className="
     bg-white
@@ -600,7 +600,7 @@ const calendarDays = [
 
   </a>
 
-  <a
+  <a data-card-lift="subtle"
     href="/lecture/instructor"
     className="
     bg-white
@@ -627,7 +627,7 @@ const calendarDays = [
 
   </a>
 
-  <a
+  <a data-card-lift="subtle"
     href="/lecture/review"
     className="
     bg-white
@@ -654,7 +654,7 @@ const calendarDays = [
 
   </a>
 
-  <a
+  <a data-card-lift="subtle"
     href="/lecture/category"
     className="
     bg-white
@@ -689,7 +689,7 @@ const calendarDays = [
         <section className="relative mb-6">
           <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
 
-          <input
+          <input data-ui-field="true" data-page-search-input="true"
   value={search}
   onChange={(e) => setSearch(e.target.value)}
   placeholder="지역, 강의명, 분류를 검색하세요"
@@ -725,7 +725,7 @@ transition
   </div>
 )}
             {activeLectures.map((lecture) => (
-              <div data-menu-card="true"
+              <div data-card-lift="subtle" data-menu-card="true"
                 key={lecture.id}
                 className="
   bg-white
@@ -871,7 +871,7 @@ transition
       onClick={(e) => e.stopPropagation()}
       className="bg-white w-[calc(100%-24px)] sm:max-w-5xl h-[88vh] rounded-t-3xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col"
     >
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between shrink-0">
+      <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between shrink-0">
         {lecturePopupMode === "lecture" ? (
           <div className="font-bold flex items-center gap-2">
             <CalendarDays className="w-5 h-5" />
@@ -979,7 +979,7 @@ transition
               href={selectedLecture.applyLink || "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="block w-full text-center rounded-2xl bg-gray-800 text-white py-4 text-sm font-bold"
+              className="block w-full text-center rounded-2xl bg-blue-600 text-white py-4 text-sm font-bold"
             >
               신청하기
             </a>
@@ -996,7 +996,7 @@ transition
 
       <div className="relative">
         <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-        <input
+        <input data-ui-field="true" data-page-search-input="true"
           value={reviewSearch}
           onChange={(e) => {
             setReviewSearch(e.target.value);
@@ -1085,6 +1085,7 @@ transition
 
     <div className="shrink-0 border-t border-gray-200 bg-white px-5 pt-3 pb-4">
       <div className="flex items-center justify-center gap-2 flex-wrap">
+<nav data-pagination="true" aria-label="페이지 이동">
         <button
           onClick={() => setReviewPage((prev) => Math.max(prev - 1, 1))}
           className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm cursor-pointer hover:bg-gray-50"
@@ -1118,7 +1119,8 @@ transition
         >
           다음
         </button>
-      </div>
+      </nav>
+</div>
     </div>
   </>
 )}
@@ -1289,7 +1291,7 @@ transition
                   ? "noopener noreferrer"
                   : undefined
               }
-              className="flex-1 text-center rounded-2xl bg-gray-900 text-white py-4 text-sm font-bold"
+              className="flex-1 text-center rounded-2xl bg-blue-600 text-white py-4 text-sm font-bold"
             >
               문의하기
             </a>

@@ -1,8 +1,9 @@
 "use client";
 
+import { useMemoPreviews } from "@/lib/memos/preview";
 import MemoBody from "./memos/MemoBody";
 import MemoEditor from "./memos/MemoEditor";
-import { decodeMemo } from "@/lib/memos/model";
+import { decodeMemo, memoBackground } from "@/lib/memos/model";
 import { lockPageScroll } from "@/app/features/home/components/dashboard/DashboardDialog";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -89,6 +90,7 @@ function SortableMemoCard({
 }
 
 export default function MemoManager({ open, onClose }: Props) {
+  const previews=useMemoPreviews();
   const { memos, saveMemos, persistMemos, memosLoading, memosError, reloadMemos } = useAuth();
 
   const sensors = useSensors(
@@ -356,13 +358,13 @@ export default function MemoManager({ open, onClose }: Props) {
       {open && (
         <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
           <div data-popup-frame="true" style={{transform:`translate(${popupPosition.x}px, ${popupPosition.y}px)`}} className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
-            <div className="bg-gray-800 text-white px-5 py-3 flex items-center justify-between touch-none select-none cursor-default" onPointerDown={e=>{
+            <div data-popup-header="true" className="bg-blue-600 text-white px-5 py-3 flex items-center justify-between touch-none select-none cursor-default" onPointerDown={e=>{
  if(e.button!==0||(e.target as HTMLElement).closest("button"))return;
  const rect=e.currentTarget.parentElement!.getBoundingClientRect(),left=rect.left-popupPosition.x,top=rect.top-popupPosition.y;
  popupDrag.current={pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:popupPosition.x,y:popupPosition.y,minX:80-rect.width-left,maxX:window.innerWidth-80-left,minY:8-top,maxY:window.innerHeight-60-top};
  e.currentTarget.setPointerCapture(e.pointerId);e.preventDefault();
 }} onPointerMove={e=>{const d=popupDrag.current;if(!d||d.pointerId!==e.pointerId)return;setPopupPosition({x:Math.max(d.minX,Math.min(d.maxX,d.x+e.clientX-d.startX)),y:Math.max(d.minY,Math.min(d.maxY,d.y+e.clientY-d.startY))});}} onPointerUp={e=>{if(popupDrag.current?.pointerId===e.pointerId){popupDrag.current=null;e.currentTarget.releasePointerCapture(e.pointerId);}}} onPointerCancel={()=>{popupDrag.current=null;}}>
-              <div className="font-bold flex items-center gap-2">
+              <div data-popup-title="true" className="font-bold flex items-center gap-2">
                 <NotebookPen className="w-5 h-5" />
                 메모장
               </div>
@@ -379,7 +381,7 @@ export default function MemoManager({ open, onClose }: Props) {
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
-                <input
+                <input data-ui-field="true" data-page-search-input="true"
                   value={memoSearch}
                   onChange={(e) => setMemoSearch(e.target.value)}
                   placeholder="메모 검색" aria-label="메모 검색"
@@ -394,7 +396,7 @@ export default function MemoManager({ open, onClose }: Props) {
                   stopMemoPopupMove();
                   setSelectedMemo(null); setMemoAddOpen(true);
                 }}
-                className="h-12 px-5 rounded-2xl bg-gray-800 text-white text-sm font-bold flex items-center gap-2 cursor-default"
+                className="h-12 px-5 rounded-2xl bg-blue-600 text-white text-sm font-bold flex items-center gap-2 cursor-pointer hover:bg-blue-700 transition-colors disabled:cursor-default disabled:opacity-50"
               >
                 <Plus className="w-4 h-4" />
                 추가
@@ -433,6 +435,7 @@ export default function MemoManager({ open, onClose }: Props) {
                                 id: memo.id,
                               });
                             }}
+                            style={{background:memoBackground({...decodeMemo(memo),...previews[memo.id]})}}
                             className="aspect-[2/1] overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition cursor-default"
                           >
                             <div className="flex h-full min-h-0 items-start justify-between gap-3">
@@ -452,14 +455,14 @@ export default function MemoManager({ open, onClose }: Props) {
                               </div>
 
                               <div className="flex flex-col gap-2">
-                                <button
+                                <button data-memo-visibility-control="true"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     toggleMemoVisible(memo.id);
                                   }}
                                   className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${
                                     memo.visible
-                                      ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700"
+                                      ? "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200 hover:border-slate-400"
                                       : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
                                   }`}
                                 >
@@ -477,7 +480,7 @@ export default function MemoManager({ open, onClose }: Props) {
                                   }}
                                   className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${
                                     memo.pinned
-                                      ? "bg-gray-800 border-gray-800 text-white hover:bg-gray-700 hover:border-gray-700"
+                                      ? "bg-blue-100 border-blue-200 text-blue-700 hover:bg-blue-200 hover:border-blue-300"
                                       : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
                                   }`}
                                 >
@@ -505,11 +508,12 @@ export default function MemoManager({ open, onClose }: Props) {
             </div>
 
             <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
-              <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+              <div className="flex    text-sm">
+<nav data-pagination="true" aria-label="페이지 이동">
                 <button
                   onClick={() => setMemoPage((p) => Math.max(1, p - 1))}
                   disabled={memoPage === 1}
-                  className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+                  className="px-4 py-2 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 disabled:text-gray-300 cursor-pointer"
                 >
                   이전
                 </button>
@@ -521,11 +525,12 @@ export default function MemoManager({ open, onClose }: Props) {
                     return (
                       <button
                         key={page}
+          aria-current={memoPage === page ? "page" : undefined}
                         onClick={() => setMemoPage(page)}
                         className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
                           memoPage === page
-                            ? "bg-slate-800 text-white"
-                            : "bg-white text-gray-600 hover:bg-gray-100"
+                            ? "bg-blue-50 text-blue-600"
+                            : "bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600"
                         }`}
                       >
                         {page}
@@ -539,11 +544,12 @@ export default function MemoManager({ open, onClose }: Props) {
                     setMemoPage((p) => Math.min(totalMemoPages, p + 1))
                   }
                   disabled={memoPage === totalMemoPages}
-                  className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
+                  className="px-4 py-2 border-l border-gray-200 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 disabled:text-gray-300 cursor-pointer"
                 >
                   다음
                 </button>
-              </div>
+              </nav>
+</div>
             </div>
           </div>
         </div>

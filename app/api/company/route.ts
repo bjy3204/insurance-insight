@@ -71,7 +71,7 @@ export async function GET() {
   ) || [],
       }));
 
-    return NextResponse.json(companies);
+    return NextResponse.json(companies, { headers: { "Cache-Control": "public, max-age=60, s-maxage=60" } });
   } catch (error: any) {
     return NextResponse.json(
       {

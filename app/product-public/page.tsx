@@ -854,10 +854,10 @@ const pagedMemos = filteredMemos.slice(
       </header>
 
       <section data-page-content="true" className="max-w-7xl mx-auto px-5 py-6">
-        <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3 mb-5">
+        <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3 mb-5">
           <Search className="w-5 h-5 text-gray-400" />
 
-          <input
+          <input data-ui-field="true" data-page-search-input="true"
             placeholder="보험사명을 검색하세요"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -1147,9 +1147,9 @@ const pagedMemos = filteredMemos.slice(
     originY: pressPopupPos.y,
   };
 }}
-  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+  data-popup-header="true" className="bg-blue-600 text-white px-5 py-4 flex items-center justify-between"
 >
-        <div className="font-bold flex items-center gap-2">
+        <div data-popup-title="true" className="font-bold flex items-center gap-2">
           <Newspaper className="w-5 h-5" />
           보도자료
         </div>
@@ -1182,7 +1182,7 @@ const pagedMemos = filteredMemos.slice(
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
-              <input
+              <input data-ui-field="true" data-page-search-input="true"
                 value={pressSearch}
                 onChange={(e) => {
   setPressSearch(e.target.value);
@@ -1274,7 +1274,8 @@ const pagedMemos = filteredMemos.slice(
 
 
     <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
-    <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+    <div className="flex    text-sm">
+<nav data-pagination="true" aria-label="페이지 이동">
       <button
         onClick={() => setPressPage((p) => Math.max(1, p - 1))}
         disabled={pressPage === 1}
@@ -1315,7 +1316,8 @@ const pagedMemos = filteredMemos.slice(
       >
         다음
       </button>
-    </div>
+    </nav>
+</div>
   </div>
 
 
@@ -1390,12 +1392,12 @@ const pagedMemos = filteredMemos.slice(
   px-5
   py-3
   rounded-xl
-  bg-gray-700
+  bg-blue-600
   text-white
   text-sm
   font-bold
   cursor-pointer
-  hover:bg-gray-600
+  hover:bg-blue-700
   transition
 "
             >
@@ -1435,7 +1437,7 @@ const pagedMemos = filteredMemos.slice(
 originY: termPopupPos.y,
   };
 }}
-  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+  className="bg-blue-600 text-white px-5 py-4 flex items-center justify-between"
 >
         <div className="font-bold flex items-center gap-2">
           <BookOpen className="w-5 h-5" />
@@ -1563,7 +1565,7 @@ originY: termPopupPos.y,
               cursor-pointer
               ${
                 selectedItem === index
-                  ? "bg-slate-800 text-white"
+                  ? "bg-blue-50 text-blue-600"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }
             `}

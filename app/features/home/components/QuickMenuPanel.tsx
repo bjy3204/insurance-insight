@@ -4,22 +4,28 @@ import { ChevronUp, ChevronDown, Plus, LayoutGrid } from "lucide-react";
 import styles from "../HomePage.module.css";
 import type { HomeController } from "../hooks/useHomeController";
 export default function QuickMenuPanel({ controller, inRow = false }: { controller: HomeController; inRow?: boolean }) {
-const { authStatus, setUserMenuOpen, pcQuickOpen, setPcQuickOpen, pcQuickDirection, pcQuickPos, pcQuickWrapRef, pcQuickDragRef, setMemoOpen, mainMenuManageMode, resetPopupPosition, quickMenuKeys, setTempQuickMenuKeys, setContextMenu, setQuickMenuSelectOpen, quickMenuOptions, openPcQuickMenu, startPcQuickDrag } = controller;
+const { authStatus, setUserMenuOpen, pcQuickOpen, setPcQuickOpen, pcQuickDirection, pcQuickDocked, pcQuickPos, pcQuickWrapRef, pcQuickDragRef, setMemoOpen, mainMenuManageMode, resetPopupPosition, quickMenuKeys, setTempQuickMenuKeys, setContextMenu, setQuickMenuSelectOpen, quickMenuOptions, openPcQuickMenu, startPcQuickDrag } = controller;
 return (<>{mainMenuManageMode === "normal" && (
   <div
     ref={pcQuickWrapRef}
+    data-quick-edge={!inRow ? pcQuickDocked ?? undefined : undefined}
+    data-quick-direction={pcQuickOpen ? pcQuickDirection : undefined}
     onPointerDown={inRow ? undefined : startPcQuickDrag}
     style={inRow ? undefined : {
-      transform: `translate(${pcQuickPos.x}px, ${pcQuickPos.y}px)`,
+      transform: `translate(${pcQuickDocked ? 0 : pcQuickPos.x}px, ${pcQuickPos.y}px)`,
+      width: pcQuickDocked ? 140 : 248,
+      left: pcQuickDocked === "left" ? 0 : undefined,
+      right: pcQuickDocked === "left" ? "auto" : 0,
     }}
     className={inRow ? styles.quickMenuCard : `
+      ${styles.quickMenuFloating}
       hidden
       md:block
       fixed
       right-0
       bottom-20
       lg:bottom-25
-      z-[60]
+      z-[8000]
       w-[248px]
       cursor-default
       select-none
@@ -29,6 +35,7 @@ return (<>{mainMenuManageMode === "normal" && (
     {pcQuickOpen && pcQuickDirection === "up" && (
       <div
         data-pc-quick-menu
+        style={pcQuickDocked && !inRow ? {left:pcQuickDocked === "left" ? 0 : "auto",right:pcQuickDocked === "right" ? 0 : "auto",width:140,maxWidth:"calc(100vw - 16px)"} : undefined}
         className="
           absolute
           left-0
@@ -161,7 +168,7 @@ return (<>{mainMenuManageMode === "normal" && (
         openPcQuickMenu();
       }}
       aria-expanded={pcQuickOpen}
-      className={`${inRow ? styles.quickMenuTrigger : ""}
+      className={`${inRow ? styles.quickMenuTrigger : pcQuickDocked ? styles.quickMenuEdge : ""}
   w-full
   h-[52px]
   px-5
@@ -185,7 +192,7 @@ return (<>{mainMenuManageMode === "normal" && (
 `}
     >
       {inRow && <LayoutGrid size={34} aria-hidden="true" />}
-      빠른메뉴 실행하기
+      {pcQuickDocked && !inRow ? "빠른메뉴" : "빠른메뉴 실행하기"}
 
       {!inRow && (pcQuickOpen ? (
   <ChevronUp className="w-4 h-4 text-gray-400" />
@@ -197,6 +204,7 @@ return (<>{mainMenuManageMode === "normal" && (
     {pcQuickOpen && pcQuickDirection === "down" && (
       <div
         data-pc-quick-menu
+        style={pcQuickDocked && !inRow ? {left:pcQuickDocked === "left" ? 0 : "auto",right:pcQuickDocked === "right" ? 0 : "auto",width:140,maxWidth:"calc(100vw - 16px)"} : undefined}
         className="
           absolute
           left-0

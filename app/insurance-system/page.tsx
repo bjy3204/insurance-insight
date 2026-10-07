@@ -1,5 +1,7 @@
 "use client";
 
+import presentation from "../components/CalculatorPresentation.module.css";
+
 import {
   DndContext,
   closestCenter,
@@ -173,12 +175,12 @@ function CompanyCard({
   const CardTag: any = disableLink ? "div" : "a";
 
   return (
-    <CardTag
+    <CardTag data-card-lift="subtle" data-card-highlight="true"
       href={disableLink ? undefined : company.link}
       target={disableLink ? undefined : "_blank"}
       rel={disableLink ? undefined : "noopener noreferrer"}
       className="
-        group relative bg-white rounded-3xl h-36 md:h-40 px-3 md:px-5
+        group relative bg-white rounded-3xl h-[152px] md:h-[168px] px-3 md:px-5
         border border-gray-200 shadow-sm transition-all duration-200
         flex items-center justify-center animate-in fade-in zoom-in-95
         cursor-default
@@ -276,9 +278,9 @@ function SortableCompanyCard({
       {...listeners}
       className="touch-none cursor-default"
     >
-      <div
+      <div data-card-lift="subtle" data-card-highlight="true"
         className={`
-          group relative bg-white rounded-3xl h-36 md:h-40 px-3 md:px-5
+          group relative bg-white rounded-3xl h-[152px] md:h-[168px] px-3 md:px-5
           border border-gray-200 shadow-sm flex items-center justify-center
           md:border-0 md:rounded-[20px]
           transition-all duration-200 cursor-default
@@ -326,7 +328,7 @@ function SortableCompanyCard({
         <img
           src={`/logos/${type}/${company.image}`}
           alt={company.name}
-          className="max-w-[160px] max-h-[62px] md:max-w-[180px] md:max-h-[72px] object-contain select-none"
+          className="max-w-[140px] max-h-[54px] md:max-w-[150px] md:max-h-[60px] object-contain select-none"
           draggable="false"
         />
       </div>
@@ -892,7 +894,7 @@ const pagedMemos = filteredMemos.slice(
      
 
   return (
-    <main className="min-h-screen bg-gray-100 pb-24">
+    <main className={`${presentation.page} min-h-screen bg-gray-100 pb-24`}>
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
@@ -984,12 +986,12 @@ const pagedMemos = filteredMemos.slice(
       </header>
 
       <div data-page-content="true" className="w-full px-6 py-6 max-w-7xl mx-auto">
-        <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7">
+        <div data-tab-style="rounded" className="grid grid-cols-2 gap-1 bg-white border border-gray-200 rounded-2xl p-1.5 mb-7">
           <button
             onClick={() => setTab("nonlife")}
             className={`rounded-xl py-3 font-bold transition ${
               tab === "nonlife"
-                ? "bg-white text-blue-600 shadow-sm"
+                ? "bg-blue-600 text-white"
                 : "text-gray-600"
             }`}
           >
@@ -1000,7 +1002,7 @@ const pagedMemos = filteredMemos.slice(
             onClick={() => setTab("life")}
             className={`rounded-xl py-3 font-bold transition ${
               tab === "life"
-                ? "bg-white text-blue-600 shadow-sm"
+                ? "bg-blue-600 text-white"
                 : "text-gray-600"
             }`}
           >
@@ -1053,7 +1055,7 @@ const pagedMemos = filteredMemos.slice(
               h-[86vh] lg:h-[78vh] flex flex-col
             "
           >
-            <div
+            <div data-popup-header="true"
              onMouseDown={(e) => {
   if (window.innerWidth < 768) return;
 
@@ -1065,7 +1067,7 @@ const pagedMemos = filteredMemos.slice(
   });
 }}
               className="
-                bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center
+                bg-white text-slate-800 px-4 md:px-5 py-3 flex items-center
                 justify-between cursor-default select-none
               "
             >
@@ -1095,12 +1097,12 @@ const pagedMemos = filteredMemos.slice(
             </div>
 
             <div className="px-5 pt-5">
-              <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1">
+              <div data-tab-style="rounded" className="grid grid-cols-2 gap-1 bg-white border border-gray-200 rounded-2xl p-1.5">
                 <button
                   onClick={() => setManageTab("nonlife")}
                   className={`rounded-xl py-3 font-bold transition ${
                     manageTab === "nonlife"
-                      ? "bg-white text-blue-600 shadow-sm"
+                      ? "bg-blue-600 text-white"
                       : "text-gray-600"
                   }`}
                 >
@@ -1111,7 +1113,7 @@ const pagedMemos = filteredMemos.slice(
                   onClick={() => setManageTab("life")}
                   className={`rounded-xl py-3 font-bold transition ${
                     manageTab === "life"
-                      ? "bg-white text-blue-600 shadow-sm"
+                      ? "bg-blue-600 text-white"
                       : "text-gray-600"
                   }`}
                 >
@@ -1157,8 +1159,8 @@ const pagedMemos = filteredMemos.slice(
               <button
                 onClick={saveManageChanges}
                 className="
-                  w-32 h-12 rounded-2xl bg-gray-800 text-white text-sm
-                  font-bold hover:bg-gray-700 transition cursor-default
+                  w-32 h-12 rounded-2xl bg-blue-600 text-white text-sm
+                  font-bold hover:bg-blue-700 transition cursor-default
                 "
               >
                 저장
@@ -1183,7 +1185,7 @@ const pagedMemos = filteredMemos.slice(
             setManageSaveConfirmOpen(false);
             setManageOpen(false);
           }}
-          className="w-32 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-default"
+          className="w-32 h-12 rounded-2xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition cursor-default"
         >
           확인
         </button>

@@ -1121,10 +1121,10 @@ const pagedMemos = filteredMemos.slice(
       <section data-page-content="true" className="max-w-7xl mx-auto px-5 py-6">
 
         {/* 검색 */}
-        <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3 mb-5">
+        <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3 mb-5">
           <Search className="w-5 h-5 text-gray-400" />
 
-          <input
+          <input data-ui-field="true" data-page-search-input="true"
             placeholder="보험사명을 검색하세요"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -1472,7 +1472,7 @@ const pagedMemos = filteredMemos.slice(
 {canViewArs && arsOpen && (
   <div className="fixed inset-0 z-[1500] bg-black/50 flex items-center justify-center p-4">
     <div data-popup-frame="true" className="bg-white w-full max-w-5xl h-[88vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-      <div className="h-14 bg-gray-800 text-white flex items-center justify-between px-5 shrink-0">
+      <div data-popup-header="true" className="h-14 bg-white text-slate-800 flex items-center justify-between px-5 shrink-0">
         <p className="text-sm font-bold">보험사 ARS 안내</p>
 
         <button data-popup-close="true"
@@ -1487,7 +1487,7 @@ const pagedMemos = filteredMemos.slice(
         </button>
       </div>
 
-      <div className="p-5 border-b border-gray-100 shrink-0">
+      <div data-ui-field-wrapper="true" className="p-5 border-b border-gray-100 shrink-0">
         <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-4">
           <button
             onClick={() => setArsTab("nonlife")}
@@ -1512,10 +1512,10 @@ const pagedMemos = filteredMemos.slice(
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 px-4 py-3 flex items-center gap-3">
+        <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 px-4 py-3 flex items-center gap-3">
           <Search className="w-5 h-5 text-gray-400" />
 
-          <input
+          <input data-ui-field="true" data-page-search-input="true"
             value={arsSearch}
             onChange={(e) => setArsSearch(e.target.value)}
             placeholder="보험사명을 검색하세요"
@@ -1580,7 +1580,7 @@ const pagedMemos = filteredMemos.slice(
       onClick={(e) => e.stopPropagation()}
       className="bg-white w-[720px] max-w-[92vw] h-[65vh] md:h-[88vh] rounded-3xl overflow-hidden shadow-2xl flex flex-col"
     >
-      <div className="h-14 bg-gray-800 text-white flex items-center justify-between px-5">
+      <div data-popup-header="true" className="h-14 bg-white text-slate-800 flex items-center justify-between px-5">
         <p className="text-sm font-bold">{selectedArs.name} ARS 안내</p>
 
         <button data-popup-close="true"
@@ -1673,7 +1673,7 @@ const pagedMemos = filteredMemos.slice(
 >
 
       {/* 상단 */}
-      <div className="h-14 bg-gray-800 text-white flex items-center justify-between px-5">
+      <div data-popup-header="true" className="h-14 bg-white text-slate-800 flex items-center justify-between px-5">
   <p className="text-sm font-bold text-white">
     {selectedCompany.name} {selectedPdfTitle}
   </p>
@@ -1722,7 +1722,7 @@ const pagedMemos = filteredMemos.slice(
       px-5
       py-3
       rounded-xl
-      bg-gray-800
+      bg-blue-600
       text-white
       text-sm
       font-bold

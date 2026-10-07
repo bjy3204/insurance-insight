@@ -14,11 +14,11 @@ return (<>{pressOpen && (
   style={getPopupStyle("press")}
   className="bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden h-[92vh] flex flex-col"
 >
-      <div
+      <div data-popup-header="true"
   onPointerDown={(e) => startPopupDrag("press", e)}
-  className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between"
+  className="bg-blue-600 text-white px-5 py-4 flex items-center justify-between"
 >
-        <div className="font-bold flex items-center gap-2">
+        <div data-popup-title="true" className="font-bold flex items-center gap-2">
           <Newspaper className="w-5 h-5" />
           보도자료
         </div>
@@ -46,11 +46,11 @@ return (<>{pressOpen && (
 
       {!selectedPress ? (
         <>
-          <div className="p-4 border-b border-gray-100">
-  <div className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
+          <div data-ui-field-wrapper="true" className="p-4 border-b border-gray-100">
+  <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
     <Search className="w-5 h-5 text-gray-400" />
 
-    <input
+    <input data-ui-field="true" data-page-search-input="true"
       value={pressSearch}
       onChange={(e) => {
         setPressSearch(e.target.value);
@@ -151,7 +151,8 @@ return (<>{pressOpen && (
   </div>
 
                                                <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
-              <div className="flex border border-gray-200 rounded-xl overflow-hidden text-sm">
+              <div className="flex    text-sm">
+<nav data-pagination="true" aria-label="페이지 이동">
                 <button
                   onClick={() => setPressPage((p) => Math.max(1, p - 1))}
                   disabled={pressPage === 1}
@@ -192,7 +193,8 @@ return (<>{pressOpen && (
                 >
                   다음
                 </button>
-              </div>
+              </nav>
+</div>
             </div>
 
           </div>
@@ -264,7 +266,7 @@ return (<>{pressOpen && (
           <div className="border-t border-gray-200 p-4 text-center">
             <button
               onClick={() => setSelectedPress(null)}
-              className="px-5 py-3 rounded-xl bg-gray-700 text-white text-sm font-bold cursor-pointer hover:bg-gray-600 transition"
+              className="px-5 py-3 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer hover:bg-blue-700 transition"
             >
               목록으로
             </button>

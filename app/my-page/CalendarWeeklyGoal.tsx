@@ -580,7 +580,7 @@ export default function CalendarPage() {
                       </div>
                       <button
                         onClick={(e) => { e.stopPropagation(); openEventModal(fullDate); }}
-                        className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 hover:bg-blue-200 transition cursor-pointer opacity-0 group-hover:opacity-100"
+                        className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition cursor-pointer opacity-0 group-hover:opacity-100"
                       >
                         <Plus className="w-3 h-3" strokeWidth={1.5} />
                       </button>
@@ -651,7 +651,7 @@ export default function CalendarPage() {
                     className="w-4 h-4 cursor-pointer mt-0.5"
                   />
                   {editingChecklistId === item.id ? (
-                    <input
+                    <input data-ui-field="true"
                       type="text"
                       value={editingChecklistText}
                       onChange={(e) => setEditingChecklistText(e.target.value)}
@@ -676,7 +676,7 @@ export default function CalendarPage() {
             </div>
             {checklists.length < 10 && (
               <div className="flex gap-2">
-                <input
+                <input data-ui-field="true"
                   type="text"
                   value={checklistText}
                   onChange={(e) => setChecklistText(e.target.value)}
@@ -699,7 +699,7 @@ export default function CalendarPage() {
             <h2 className="text-lg font-black text-gray-900 mb-4">일정</h2>
             <div className="mb-4 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
+              <input data-ui-field="true" data-page-search-input="true"
                 type="text"
                 placeholder="일정 검색"
                 value={searchText}
@@ -790,7 +790,7 @@ export default function CalendarPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => { setShowMobileDayPopup(false); openEventModal(mobileDayDate); }}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-200 transition"
                 >
                   <Plus className="w-3.5 h-3.5" strokeWidth={2} />
                   일정 추가
@@ -872,40 +872,40 @@ export default function CalendarPage() {
             </div>
 
             <div className="space-y-3">
-              <input
+              <input data-ui-field="true"
                 type="text"
                 placeholder="제목 *"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-400 transition"
               />
-              <input
+              <input data-ui-field="true"
                 type="date"
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-400 transition"
               />
-              <input
+              <input data-ui-field="true"
                 type="time"
                 value={formData.time}
                 onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                 className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-400 transition"
               />
-              <input
+              <input data-ui-field="true"
                 type="text"
                 placeholder="내용"
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-400 transition"
               />
-              <input
+              <input data-ui-field="true"
                 type="text"
                 placeholder="장소"
                 value={formData.place}
                 onChange={(e) => setFormData({ ...formData, place: e.target.value })}
                 className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-400 transition"
               />
-              <textarea
+              <textarea data-ui-field="true"
                 placeholder="메모"
                 value={formData.memo}
                 onChange={(e) => setFormData({ ...formData, memo: e.target.value })}
@@ -920,7 +920,7 @@ export default function CalendarPage() {
                     key={color}
                     onClick={() => setFormData({ ...formData, color })}
                     className={`w-8 h-8 rounded-full border-2 transition ${
-                      formData.color === color ? "border-gray-900 scale-110" : "border-gray-200"
+                      formData.color === color ? "border-blue-600 scale-110" : "border-gray-200"
                     } ${
                       color === "blue" ? "bg-blue-200"
                       : color === "green" ? "bg-green-200"

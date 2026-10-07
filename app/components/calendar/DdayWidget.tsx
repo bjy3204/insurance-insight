@@ -102,7 +102,7 @@ const persist = async (label: string, date: string, remove = false) => {
 >
 
     <div className="p-2.5">
-      <div className="flex items-center justify-between gap-2 mb-2"><h2 className="text-base font-bold text-gray-900">D-Day</h2><button type="button" disabled={!storageReady || saving} onClick={() => openEditor()} className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs text-slate-500 cursor-pointer disabled:opacity-40"><Plus className="w-3 h-3"/>추가</button></div>
+      <div className="flex items-center justify-between gap-2 mb-2"><h2 className="text-base font-bold text-gray-900">D-Day</h2><button type="button" disabled={!storageReady || saving} onClick={() => openEditor()} className="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2 py-1 text-xs text-slate-500 hover:bg-gray-100 hover:text-gray-700 transition-colors cursor-pointer disabled:opacity-40 disabled:hover:bg-gray-50"><Plus className="w-3 h-3"/>추가</button></div>
       {items.length ? <div className="divide-y divide-gray-100">{[...items].sort((a,b)=>a.date.localeCompare(b.date)).map(item => <button key={item.id} type="button" disabled={!storageReady || saving} onClick={()=>openEditor(item)} className="w-full flex items-center gap-2 py-2.5 text-left cursor-pointer hover:bg-gray-50 rounded-lg"><span className="text-sm shrink-0">{item.icon}</span><span className="text-xs font-semibold min-w-0 flex-1 truncate" title={item.label}>{item.label}</span><span className="text-[11px] text-slate-400 shrink-0">{item.date.replaceAll("-", ". ")}</span><span className="text-xs font-bold text-rose-500 shrink-0 min-w-9 text-right">{getDdayLabel(ddayDifference(item.date))}</span></button>)}</div> : <p className="text-sm text-gray-400 py-3">{storageReady ? "소중한 날짜를 기록해보세요" : "디데이를 불러오는 중입니다"}</p>}
       {storageError && !ddayWidgetEditOpen && <p role="status" className="text-xs text-red-500 mt-2">{storageError}</p>}
     </div>
@@ -135,7 +135,7 @@ const persist = async (label: string, date: string, remove = false) => {
   </div>
 </div>
             <div className="flex flex-wrap gap-2 mb-3">{["📅","🔔","💻","✏️","✈️","❤️"].map(icon=><button key={icon} type="button" disabled={saving} aria-label={icon} aria-pressed={tempIcon===icon} onClick={()=>setTempIcon(icon)} className={`w-9 h-9 rounded-lg text-lg cursor-pointer ${tempIcon===icon?"bg-blue-50 ring-1 ring-blue-200":"hover:bg-gray-50"}`}>{icon}</button>)}</div>
-            <input
+            <input data-ui-field="true"
               disabled={saving}
               type="text"
               value={ddayWidgetTempLabel}
@@ -242,7 +242,7 @@ const persist = async (label: string, date: string, remove = false) => {
                   }}
                   className={`h-9 rounded-xl text-sm font-bold transition ${
                     isSelected
-                      ? "bg-gray-900 text-white"
+                      ? "bg-blue-600 text-white"
                       : dow === 0
                       ? "text-red-400 hover:bg-gray-100"
                       : dow === 6

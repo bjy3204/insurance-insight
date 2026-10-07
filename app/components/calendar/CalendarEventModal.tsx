@@ -78,7 +78,7 @@ export default function CalendarEventModal({ formData, setFormData, editingEvent
                   { value: "green", label: "초록색", color: "#f0fdf4" },
                   { value: "yellow", label: "노란색", color: "#fffbe5" },
                   { value: "red", label: "분홍색", color: "#ffedf4" },
-                ].map(option => <button type="button" key={option.value} disabled={saving} aria-label={option.label} title={option.label} aria-pressed={formData.color === option.value} onClick={() => setFormData({ ...formData, color: option.value })} className={`w-7 h-7 rounded-full border border-gray-200 cursor-pointer ${formData.color === option.value ? "ring-2 ring-gray-400 ring-offset-2" : ""}`} style={{ background: option.color }} />)}</div>
+                ].map(option => <button data-color-swatch="true" type="button" key={option.value} disabled={saving} aria-label={option.label} title={option.label} aria-pressed={formData.color === option.value} onClick={() => setFormData({ ...formData, color: option.value })} className={`w-7 h-7 rounded-full border border-gray-200 cursor-pointer ${formData.color === option.value ? "ring-2 ring-gray-400 ring-offset-2" : ""}`} style={{ background: option.color }} />)}</div>
               <button data-popup-close="true" disabled={saving}
                 onClick={() => { onClose(); }}
                 aria-label="일정 편집 닫기" className="p-2 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 cursor-pointer"
@@ -129,7 +129,7 @@ export default function CalendarEventModal({ formData, setFormData, editingEvent
                     )}
                   </div>
 
-                  <input disabled={saving}
+                  <input data-ui-field="true" disabled={saving}
                     type="text"
                     placeholder="제목"
                     value={formData.title}
@@ -191,7 +191,7 @@ export default function CalendarEventModal({ formData, setFormData, editingEvent
                                 <button key={d} type="button"
                                   onClick={() => { setFormData({ ...formData, date: dateStr }); setShowDatePicker(false); }}
                                   className={`h-9 w-full rounded-xl text-sm font-medium transition
-                                    ${isSelected ? "bg-gray-800 text-white" : "hover:bg-gray-100"}
+                                    ${isSelected ? "bg-blue-600 text-white" : "hover:bg-gray-100"}
                                     ${!isSelected && dow===0 ? "text-red-400" : ""}
                                     ${!isSelected && dow===6 ? "text-blue-400" : ""}
                                     ${!isSelected && dow!==0 && dow!==6 ? "text-gray-700" : ""}
@@ -210,7 +210,7 @@ export default function CalendarEventModal({ formData, setFormData, editingEvent
                 {/* 시간 */}
                 <div className="relative">
                   <Clock aria-hidden="true" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  <input disabled={saving}
+                  <input data-ui-field="true" disabled={saving}
                     type="text"
                     aria-label="시간"
                     placeholder="--:--"
@@ -226,7 +226,7 @@ export default function CalendarEventModal({ formData, setFormData, editingEvent
                   />
                 </div>
 
-                <input disabled={saving}
+                <input data-ui-field="true" disabled={saving}
                   type="text"
                   placeholder="장소"
                   value={formData.place}
@@ -236,7 +236,7 @@ export default function CalendarEventModal({ formData, setFormData, editingEvent
                   className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition"
                 />
 
-                <textarea disabled={saving}
+                <textarea data-ui-field="true" disabled={saving}
                   placeholder="메모"
                   value={formData.memo}
                   onChange={(e) =>
@@ -265,7 +265,7 @@ export default function CalendarEventModal({ formData, setFormData, editingEvent
                 onClick={() => {
                   onSave();
                 }}
-                className="flex-1 h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-pointer"
+                className="flex-1 h-12 rounded-2xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition cursor-pointer"
               >
                 {editingEvent ? "완료" : "추가"}
               </button>

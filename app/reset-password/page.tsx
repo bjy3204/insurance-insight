@@ -59,7 +59,7 @@ export default function ResetPasswordPage() {
         </p>
 
         <div className="mt-6 space-y-3">
-          <input
+          <input data-ui-field="true"
             type="password"
             placeholder="새 비밀번호"
             value={password}
@@ -69,7 +69,7 @@ export default function ResetPasswordPage() {
             className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
           />
 
-          <input
+          <input data-ui-field="true"
             type="password"
             placeholder="새 비밀번호 확인"
             value={confirmPassword}

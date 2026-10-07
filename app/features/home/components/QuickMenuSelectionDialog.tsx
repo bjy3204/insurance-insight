@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
 export default function QuickMenuSelectionDialog({ controller }: { controller: HomeController }) {
 const { authUser, authStatus, menuSortOpen, mainMenuManageMode, quickMenuKeys, setQuickMenuKeys, tempQuickMenuKeys, setTempQuickMenuKeys, setQuickLimitOpen, quickMenuSelectOpen, setQuickMenuSelectOpen, quickMenuOptions } = controller;
+const validSelection = [...new Set(tempQuickMenuKeys)].filter((key) => quickMenuOptions.some((item) => item.key === key));
 return (<>{quickMenuSelectOpen && (
   <div className="fixed inset-0 z-[999] bg-black/40 flex items-center justify-center p-5">
     <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl">
@@ -37,7 +38,7 @@ return (<>{quickMenuSelectOpen && (
 
       <div className="grid grid-cols-1 gap-2">
   {quickMenuOptions.map((item) => {
-    const isSelected = tempQuickMenuKeys.includes(item.key);
+    const isSelected = validSelection.includes(item.key);
 
     return (
       <button
@@ -50,12 +51,12 @@ return (<>{quickMenuSelectOpen && (
             return;
           }
 
-          if (tempQuickMenuKeys.length >= 4) {
+          if (validSelection.length >= 4) {
             setQuickLimitOpen(true);
             return;
           }
 
-          setTempQuickMenuKeys((prev) => [...prev, item.key]);
+          setTempQuickMenuKeys([...validSelection, item.key]);
         }}
         className={`
           h-12
@@ -102,11 +103,12 @@ return (<>{quickMenuSelectOpen && (
     <button
   onClick={() => {
     if (mainMenuManageMode === "normal" && !menuSortOpen) {
-      setQuickMenuKeys(tempQuickMenuKeys);
+      setTempQuickMenuKeys(validSelection);
+      setQuickMenuKeys(validSelection);
       if (authUser && authStatus === "approved") {
-        supabase.from("profiles").update({ quick_menu_keys: tempQuickMenuKeys }).eq("id", authUser.id).then();
+        supabase.from("profiles").update({ quick_menu_keys: validSelection }).eq("id", authUser.id).then();
       } else {
-        localStorage.setItem("quickMenuKeys", JSON.stringify(tempQuickMenuKeys));
+        localStorage.setItem("quickMenuKeys", JSON.stringify(validSelection));
       }
     }
 

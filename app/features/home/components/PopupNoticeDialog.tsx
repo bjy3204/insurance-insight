@@ -8,8 +8,8 @@ const { setNoticeOpen, resetPopupPosition, setSelectedNotice, popupNoticeImageIn
 return (<>{popupNotice && !popupNoticeClosed && (
         <div className="fixed inset-0 z-[9000] bg-black/40 flex items-center justify-center p-3 md:p-4">
           <div data-popup-frame="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[80vh] flex flex-col">
-            <div className="bg-gray-800 text-white px-4 md:px-5 py-3 flex items-center justify-between">
-              <div className="font-bold flex items-center gap-2">
+            <div data-popup-header="true" className="bg-blue-600 text-white px-4 md:px-5 py-3 flex items-center justify-between">
+              <div data-popup-title="true" className="font-bold flex items-center gap-2">
                 <Megaphone className="w-5 h-5" />
                 공지사항
               </div>
@@ -91,7 +91,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                 prev === 0 ? images.length - 1 : prev - 1
               )
             }
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition cursor-pointer"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-blue-600/85 text-white flex items-center justify-center hover:bg-blue-700/90 transition cursor-pointer"
           >
             ‹
           </button>
@@ -102,12 +102,12 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                 prev === images.length - 1 ? 0 : prev + 1
               )
             }
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/45 text-white flex items-center justify-center hover:bg-black/60 transition cursor-pointer"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-blue-600/85 text-white flex items-center justify-center hover:bg-blue-700/90 transition cursor-pointer"
           >
             ›
           </button>
 
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/45 text-white text-xs font-bold">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-blue-600/85 text-white text-xs font-bold">
             {popupNoticeImageIndex + 1} / {images.length}
           </div>
         </>
@@ -147,7 +147,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                   localStorage.setItem("seen_popup_notice_ids", JSON.stringify(seenIds));
                   setPopupNoticeClosed(true);
                 }}
-                className="px-5 py-3 rounded-xl bg-gray-800 text-white text-sm font-bold cursor-pointer hover:bg-gray-700 transition"
+                className="px-5 py-3 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer hover:bg-blue-600 transition"
               >
                 닫기
               </button>

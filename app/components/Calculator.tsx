@@ -261,7 +261,7 @@ export default function Calculator() {
   const btnBase = "flex items-center justify-center rounded-2xl font-medium select-none cursor-default transition-all active:scale-95";
   const btnGray = `${btnBase} bg-[#f0f0f0] hover:bg-[#e0e0e0] text-black`;
   const btnDark = `${btnBase} bg-[#e8e8e8] hover:bg-[#d8d8d8] text-black`;
-  const btnEqual = `${btnBase} bg-[#2d3250] hover:bg-[#1e2340] text-white`;
+  const btnEqual = `${btnBase} bg-blue-600 hover:bg-blue-700 text-white`;
 
   const fontSize = size.width < 310 ? "text-4xl" : size.width < 380 ? "text-5xl" : "text-6xl";
   const btnSize = `h-[${Math.floor((size.height - 200) / 5)}px]`;
@@ -385,12 +385,12 @@ export default function Calculator() {
           </div>
 
                     {/* 디스플레이 */}
-          <div
+          <div data-ui-field-wrapper="true"
   className="mx-4 mb-3 bg-[#f7f7f7] rounded-2xl px-5 py-4 flex flex-col justify-between border border-transparent focus-within:border-gray-300 transition"
   style={{ minHeight: 100 }}
 >
             <div className="text-gray-400 text-sm truncate">{expression || "\u00A0"}</div>
-                                   <input
+                                   <input data-ui-field="true"
               readOnly
               value={display}
               className={`font-light text-right text-gray-900 truncate ${fontSize} bg-transparent outline-none w-full cursor-text select-all`}

@@ -167,7 +167,7 @@ const findInstructor = (name: string) =>
     );
   })
     .map((lecture) => (
-      <div data-menu-card="true"
+      <div data-card-lift="subtle" data-menu-card="true"
         key={lecture.id}
         className="
           bg-white
@@ -262,7 +262,7 @@ const findInstructor = (name: string) =>
   onClick={(e) => e.stopPropagation()}
   className="bg-white w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:max-w-5xl h-[88vh] rounded-t-3xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col"
 >
-            <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between shrink-0">
+            <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between shrink-0">
               <div className="font-bold flex items-center gap-2">
                 <CalendarDays className="w-5 h-5" />
                 강의 상세
@@ -374,7 +374,7 @@ const findInstructor = (name: string) =>
                   }
                   target={selectedLecture.link.startsWith("http") ? "_blank" : undefined}
                   rel={selectedLecture.link.startsWith("http") ? "noopener noreferrer" : undefined}
-                  className="block w-full text-center rounded-2xl bg-gray-800 text-white py-4 text-sm font-bold"
+                  className="block w-full text-center rounded-2xl bg-blue-600 text-white py-4 text-sm font-bold"
                 >
                   신청하기
                 </a>
@@ -396,7 +396,7 @@ const findInstructor = (name: string) =>
   onClick={(e) => e.stopPropagation()}
   className="bg-white w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:max-w-5xl h-[88vh] rounded-t-3xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col"
 >
-      <div className="bg-gray-800 text-white px-5 py-4 flex items-center justify-between shrink-0">
+      <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between shrink-0">
         <div className="font-bold flex items-center gap-2">
           <User className="w-5 h-5" />
           강사정보보기
@@ -479,7 +479,7 @@ const findInstructor = (name: string) =>
                   ? "noopener noreferrer"
                   : undefined
               }
-              className="flex-1 text-center rounded-2xl bg-gray-900 text-white py-4 text-sm font-bold"
+              className="flex-1 text-center rounded-2xl bg-blue-600 text-white py-4 text-sm font-bold"
             >
               문의하기
             </a>

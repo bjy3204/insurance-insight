@@ -440,6 +440,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
     icon: "📅",
     color: "blue",
   });
+  const previewEventColor=(event:Event)=>showEventModal && editingEvent?.id===event.id ? formData.color : event.color;
   const [checklistText, setChecklistText] = useState("");
   const [checklistInputOpen, setChecklistInputOpen] = useState(false);
 
@@ -795,7 +796,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                             e.stopPropagation();
                             openEventModal(fullDate);
                           }}
-                          className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 hover:bg-blue-200 transition cursor-pointer opacity-0 group-hover:opacity-100"
+                          className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition cursor-pointer opacity-0 group-hover:opacity-100"
                         >
                           <Plus className="w-4 h-4" strokeWidth={1.5} />
                         </button>
@@ -815,13 +816,13 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                             block w-full text-left text-[12px] leading-tight truncate whitespace-nowrap
                             rounded-md px-2 py-1 cursor-pointer transition
                             ${
-                              event.color === "green"
+                              previewEventColor(event) === "green"
                                 ? "bg-green-50 text-black hover:bg-green-100"
-                                : event.color === "red"
+                                : previewEventColor(event) === "red"
                                   ? "bg-red-50 text-black hover:bg-red-100"
-                                  : event.color === "yellow"
+                                  : previewEventColor(event) === "yellow"
                                     ? "bg-yellow-50 text-black hover:bg-yellow-100"
-                                    : event.color === "white"
+                                    : previewEventColor(event) === "white"
                                       ? "bg-white text-black hover:bg-gray-50 border border-gray-200"
                                       : "bg-blue-50 text-black hover:bg-blue-100"
                             }
@@ -872,7 +873,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                       className="w-4 h-4 cursor-pointer mt-0.5"
                     />
                     {editingChecklistId === item.id ? (
-                      <input
+                      <input data-ui-field="true"
                         type="text"
                         value={editingChecklistText}
                         onChange={(e) =>
@@ -918,7 +919,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
               </div>
 
               {checklistInputOpen && checklists.length < 10 && (
-                <input
+                <input data-ui-field="true"
                   autoFocus type="text" value={checklistText}
                   onChange={e => setChecklistText(e.target.value)}
                   placeholder="체크리스트 입력 후 Enter"
@@ -940,7 +941,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
 
               <div className="mb-4 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
+                <input data-ui-field="true" data-page-search-input="true"
                   type="text"
                   placeholder="일정 검색"
                   value={searchText}
@@ -958,7 +959,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                     <div className="space-y-1">
                       {filteredEvents.filter(event => event.date === date).map(event => (
                         <button key={event.id} type="button" onClick={() => { setEditingEvent(event); setFormData(event); setShowEventModal(true); }} className="flex w-full min-w-0 items-center gap-2 py-1 text-left rounded hover:bg-gray-50 transition cursor-pointer" title={event.title}>
-                          <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-sm" style={{ background: event.color === "green" ? "#00a389" : event.color === "red" ? "#ff4589" : event.color === "yellow" ? "#eab308" : "#2563eb" }} />
+                          <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-sm" style={{ background: previewEventColor(event) === "green" ? "#00a389" : previewEventColor(event) === "red" ? "#ff4589" : previewEventColor(event) === "yellow" ? "#eab308" : "#2563eb" }} />
                           <span className="shrink-0 text-xs text-gray-500">{formatCalendarTime(event.time) || "종일"}</span>
                           <span className="flex-1 min-w-0 truncate text-sm text-black">{event.title}</span>
                           <ChevronRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0 text-gray-400" />
@@ -1012,7 +1013,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                     setShowMobileDayPopup(false);
                     openEventModal(mobileDayDate);
                   }}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-100 transition"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-200 transition"
                 >
                   <Plus className="w-3.5 h-3.5" strokeWidth={2} />
                   일정 추가
@@ -1044,13 +1045,13 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                       setShowEventModal(true);
                     }}
                     className={`p-3 border border-gray-200 rounded-2xl cursor-pointer transition flex items-center justify-between ${
-                      event.color === "green"
+                      previewEventColor(event) === "green"
                         ? "bg-green-50"
-                        : event.color === "red"
+                        : previewEventColor(event) === "red"
                           ? "bg-red-50"
-                          : event.color === "yellow"
+                          : previewEventColor(event) === "yellow"
                             ? "bg-yellow-50"
-                            : event.color === "white"
+                            : previewEventColor(event) === "white"
                               ? "bg-white"
                               : "bg-blue-50"
                     }`}
@@ -1310,57 +1311,14 @@ function CompactCalendar({ identity }: { identity: Identity }) {
         </>
       ) : (
         <>
-          <div className={styles.heading}>
-            <h2>
-              <Link
-                className={styles.calendarPageLink}
-                href="/calendar"
-                aria-label="캘린더 페이지로 이동"
-                title="캘린더 페이지로 이동"
-              >
-                <CalendarDays />
-              </Link>
-              {month.getFullYear()}년 {month.getMonth() + 1}월
-            </h2>
-            <div className={styles.actions}>
-              <button
-                className={styles.iconButton}
-                aria-label="이전 달"
-                onClick={() =>
-                  setMonth(
-                    new Date(month.getFullYear(), month.getMonth() - 1, 1),
-                  )
-                }
-              >
-                <ChevronLeft />
-              </button>
-              <button
-                className={styles.smallButton}
-                onClick={() => {
-                  setMonth(
-                    new Date(
-                      new Date().getFullYear(),
-                      new Date().getMonth(),
-                      1,
-                    ),
-                  );
-                  setSelected(today);
-                }}
-              >
-                오늘
-              </button>
-              <button
-                className={styles.iconButton}
-                aria-label="다음 달"
-                onClick={() =>
-                  setMonth(
-                    new Date(month.getFullYear(), month.getMonth() + 1, 1),
-                  )
-                }
-              >
-                <ChevronRight />
-              </button>
+          <div className={`${styles.heading} ${styles.calendarHeading}`}>
+            <Link className={styles.calendarPageLink} href="/calendar" aria-label="캘린더 페이지로 이동" title="캘린더 페이지로 이동"><CalendarDays /></Link>
+            <div className={styles.calendarMonthNavigation}>
+              <button type="button" className={styles.iconButton} aria-label="이전 달" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}><ChevronLeft /></button>
+              <h2>{month.getFullYear()}년 {month.getMonth() + 1}월</h2>
+              <button type="button" className={styles.iconButton} aria-label="다음 달" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}><ChevronRight /></button>
             </div>
+            <span aria-hidden="true" />
           </div>
           <div className={styles.calendarBody}>
             <div className={styles.week}>
@@ -1405,7 +1363,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
                   >
                     {date.getDate()}
                     <span className={styles.dots}>
-                      {Array.from(new Set(entries.map((e) => e.color)))
+                      {Array.from(new Set(entries.map((e) => draft?.id === e.id ? draft.color : e.color)))
                         .slice(0, 3)
                         .map((color) => (
                           <span

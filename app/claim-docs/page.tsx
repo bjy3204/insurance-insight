@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type SVGProps, type ComponentType } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
@@ -9,6 +9,8 @@ import { useAuth } from "@/app/components/AuthProvider";
 import { LayoutGrid,
   ArrowLeft,
   FileText,
+  Stethoscope, Scissors, Bandage, Brain, Baby, Accessibility, Car, Shield, PawPrint, UserRound, UsersRound, Info,
+  Ribbon, BedSingle, Syringe, Bone, Flame, Ambulance, HeartCrack, Hospital as HospitalIcon, Scale, Gavel, CircleDollarSign, IdCard, Droplets, HeartPulse, ClipboardList,
   Newspaper,
   MessageCircle,
   Hospital,
@@ -61,6 +63,32 @@ const tabs = [
 ] as const;
 
 type Tab = (typeof tabs)[number];
+const claimGroups: { title: string; items: Tab[] }[] = [
+  { title: "기본 청구", items: ["공통"] },
+  { title: "질병·상해", items: ["실손의료비", "수술", "골절/화상/응급", "치아"] },
+  { title: "가족·돌봄", items: ["태아", "치매/간병", "사망/장해"] },
+  { title: "사고·배상", items: ["운전자", "배상/누수"] },
+  { title: "반려동물·기타", items: ["펫", "기타"] },
+];
+type ClaimIcon = ComponentType<{ size?: number; "aria-hidden"?: boolean | "true" | "false" }>;
+function ToothIcon({size=24,...props}: SVGProps<SVGSVGElement> & {size?:number}) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 4.5C9 2 4 3 4 7.5c0 3 1.6 4.5 2 7 .4 2.8 1 6.5 2.8 6.5 1.4 0 1.3-6.5 3.2-6.5s1.8 6.5 3.2 6.5c1.8 0 2.4-3.7 2.8-6.5.4-2.5 2-4 2-7C20 3 15 2 12 4.5Z"/><path d="M9 4c1 .3 2.1 1 3 1.5"/></svg>;
+}
+const claimIcons: Record<Tab, ClaimIcon> = { "공통": ClipboardList, "실손의료비": Stethoscope, "수술": Scissors, "골절/화상/응급": Bandage, "치매/간병": Brain, "태아": Baby, "사망/장해": Ribbon, "운전자": Car, "치아": ToothIcon, "배상/누수": Shield, "펫": PawPrint, "기타": HeartPulse };
+const documentIcons: Record<string, ClaimIcon> = {
+  "본인 청구": UserRound, "대리인(가족) 청구": UsersRound,
+  "입원": BedSingle, "통원": Stethoscope,
+  "1~5종 수술비": Scissors, "N대 수술비": Syringe,
+  "골절 진단비": Bone, "화상 진단비": Flame, "응급실 내원비": Ambulance,
+  "치매 진단비": Brain, "간병인 (지원/사용)": Accessibility,
+  "출생 / 선천이상": Baby, "유산 / 사산": HeartCrack, "응급 제왕절개": HospitalIcon,
+  "사망 보험금": Ribbon, "후유장해": Accessibility,
+  "자동차부상치료비": Ambulance, "교통사고처리지원금": UsersRound,
+  "변호사선임비용": Scale, "벌금": Gavel, "면허정지/취소 위로금": IdCard,
+  "치아": ToothIcon, "일상생활배상책임": Shield, "급배수시설 누출손해": Droplets,
+  "통원 / 입원 / 수술": PawPrint, "독감 / 대상포진": Syringe, "고혈압 / 당뇨 / 통풍": HeartPulse,
+};
+
 
 const claimDocs = {
   공통: [
@@ -781,77 +809,56 @@ left-0
         </div>
       </header>
 
-      <section data-page-content="true" className="max-w-7xl mx-auto px-5 py-6">
 
-        {/* 탭 */}
-<div className="overflow-x-auto mb-7">
-  <div data-tab-group="true" className="grid grid-cols-12 bg-gray-200 rounded-2xl p-1 gap-1 min-w-[1180px]">
-    {tabs.map((item) => (
-      <button
-        key={item}
-        onClick={() => setTab(item)}
-        className={`
-          rounded-xl
-          py-3
-          font-bold
-          text-sm
-          whitespace-nowrap
-          transition
-          ${
-            tab === item
-              ? "bg-white text-blue-600 shadow-sm"
-              : "text-gray-600"
-          }
-        `}
-      >
-        {item}
-      </button>
-    ))}
-  </div>
-</div>
-        {/* 카드 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-          {claimDocs[tab]?.map((doc) => (
-            <div data-menu-card="true"
-              key={doc.title}
-              className="
-                bg-white
-                rounded-3xl
-                border
-                border-gray-200
-                shadow-sm
-                p-6
-              "
-            >
-
-              <h2 className="text-xl font-black text-blue-600 mb-5">
-                {doc.title}
-              </h2>
-
-              <ol className="space-y-3 text-gray-800">
-
-                {doc.items.map((item, index) => (
-                  <li
-                    key={item}
-                    className="flex gap-3 font-semibold leading-relaxed"
-                  >
-                    <span className="text-blue-600 shrink-0">
-                      {index + 1}.
-                    </span>
-
-                    <span>{item}</span>
-                  </li>
-                ))}
-
-              </ol>
-
+      <section data-page-content="true" className="max-w-7xl mx-auto px-4 md:px-6 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-[265px_minmax(0,1fr)] gap-3 items-start">
+          <nav aria-label="청구서류 종류" className="bg-white border border-blue-100/60 rounded-2xl p-3 md:p-4 md:sticky md:top-6">
+            <div className="flex gap-5 overflow-x-auto md:block">
+              {claimGroups.map((group) => (
+                <div key={group.title} className="shrink-0 md:mb-5 md:last:mb-0">
+                  <p className="px-2 mb-2 text-xs font-bold text-slate-500">{group.title}</p>
+                  <div className="flex gap-1 md:flex-col">
+                    {group.items.map((item) => {
+                      const Icon = claimIcons[item];
+                      return <button type="button" key={item} onClick={() => setTab(item)} aria-current={tab === item ? "page" : undefined}
+                        className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold whitespace-nowrap cursor-pointer transition-colors ${tab === item ? "bg-blue-50 text-blue-600 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:bg-blue-600 before:rounded-full" : "text-slate-700 hover:bg-blue-50/50"}`}>
+                        <Icon size={18} aria-hidden="true" />{item}
+                      </button>;
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-
+          </nav>
+          <div className="min-w-0 bg-white border border-blue-100/60 rounded-2xl p-5 md:p-7">
+            <span className="inline-block rounded-xl bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-600 mb-3">{claimGroups.find(group => group.items.includes(tab))?.title}</span>
+            <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-6">{tab === "공통" ? "공통 청구서류" : `${tab} 청구서류`}</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {claimDocs[tab]?.map((doc, docIndex) => {
+                const Icon = documentIcons[doc.title] ?? claimIcons[tab];
+                return <div key={doc.title} className="rounded-2xl border border-blue-100/70 bg-white hover:bg-blue-50/40 transition-colors duration-200 cursor-default p-5 md:p-6">
+                  <div className="flex items-center gap-4 pb-5 mb-5 border-b border-blue-100/70">
+                    <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${docIndex % 2 === 0 ? "bg-blue-50 text-blue-600" : "bg-pink-50 text-pink-500"}`}><Icon size={28} aria-hidden="true" /></div>
+                    <h3 className="text-xl font-bold text-slate-900">{doc.title}</h3>
+                  </div>
+                  <ol className="space-y-4 text-slate-800">
+                    {doc.items.map((item,index) => <li key={item} className="flex items-start gap-3 leading-relaxed">
+                      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-bold ${docIndex % 2 === 0 ? "bg-blue-50 text-blue-600" : "bg-pink-50 text-pink-600"}`}>{index+1}</span>
+                      <span className="pt-0.5 font-medium">{item}</span>
+                    </li>)}
+                  </ol>
+                </div>;
+              })}
+            </div>
+            <div className="rounded-2xl bg-slate-50 p-5 mt-6 text-sm text-slate-600 leading-relaxed">
+              <p className="flex items-center gap-2 font-bold text-slate-800 mb-2"><Info size={18} />안내사항</p>
+              <p>보험사 및 상품에 따라 추가 서류가 필요할 수 있습니다</p>
+              <p>원본 제출 여부와 제출 방법은 해당 보험사에 확인해 주세요</p>
+            </div>
+          </div>
         </div>
-
       </section>
+
 
 
 

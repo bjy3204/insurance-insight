@@ -790,7 +790,7 @@ const fileRec = fileRecords.find(
         <div className="px-5 py-2.5 border-b border-gray-100 bg-white shrink-0 no-drag">
           <div className="relative flex items-center">
             <Search className="absolute left-3 w-4 h-4 text-gray-400 pointer-events-none" />
-            <input
+            <input data-ui-field="true" data-page-search-input="true"
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
@@ -832,7 +832,7 @@ const fileRec = fileRecords.find(
         {/* ── 폴더 이름 입력 ── */}
         {showNewFolder && (
           <div className="flex items-center gap-2 px-5 py-3 bg-blue-50 border-b border-blue-100 no-drag shrink-0">
-            <input type="text" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createFolder()} placeholder="폴더 이름 입력 (한글 가능)" className="flex-1 px-3 py-2 rounded-xl border border-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" autoFocus />
+            <input data-ui-field="true" type="text" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createFolder()} placeholder="폴더 이름 입력 (한글 가능)" className="flex-1 px-3 py-2 rounded-xl border border-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" autoFocus />
             <button onClick={createFolder} className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 transition cursor-default">만들기</button>
             <button onClick={() => { setShowNewFolder(false); setNewFolderName(""); }} className="px-3 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200 transition cursor-default">취소</button>
           </div>
