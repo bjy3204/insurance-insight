@@ -733,7 +733,7 @@ updateData.pin_changed_at = new Date().toISOString();
 </div>
 
 <div className={activeTab === "notice" ? "block" : "hidden"}>
-  <NoticeTab />
+  <NoticeTab active={activeTab === "notice"} />
 </div>
 
         
