@@ -60,8 +60,7 @@ return (<>{mainMenuManageMode === "normal" && (
     </div>
 
         
-                       {authStatus === "approved" && (
-          <button
+                       <button
             onClick={() => {
               window.location.href = "/calendar";
               setPcQuickOpen(false);
@@ -70,7 +69,6 @@ return (<>{mainMenuManageMode === "normal" && (
           >
             캘린더
           </button>
-        )}
 
        
 
@@ -238,8 +236,7 @@ return (<>{mainMenuManageMode === "normal" && (
         </button>
         
 
-                {authStatus === "approved" && (
-          <button
+                <button
             onClick={() => {
               window.location.href = "/calendar";
               setPcQuickOpen(false);
@@ -248,7 +245,6 @@ return (<>{mainMenuManageMode === "normal" && (
           >
             캘린더
           </button>
-        )}
 
        
  

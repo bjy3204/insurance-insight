@@ -5,7 +5,7 @@ export default function MobileInstallHint({ controller }: { controller: HomeCont
 const { showInstall, setShowInstall, deferredPrompt, setDeferredPrompt } = controller;
 return (<>{showInstall &&
   /iPhone|iPad|iPod|Android/i.test(window.navigator.userAgent) && (
-        <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-10 md:hidden">
+        <div className="max-w-[1500px] mx-auto px-5 -mt-3 mb-3 md:hidden">
           <button
             onClick={async () => {
   if (deferredPrompt) {

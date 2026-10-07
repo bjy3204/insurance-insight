@@ -98,6 +98,25 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
   const [selectedFile, setSelectedFile] = useState<DisplayItem | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [imageZoom, setImageZoom] = useState(100);
+  const imageViewport = useRef<HTMLDivElement>(null);
+  const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
+  const previewCache = useRef(new Map<string, { url: string; expires: number }>());
+  const signedPreview = async (path: string) => {
+    const cached = previewCache.current.get(path);
+    if (cached && cached.expires > Date.now()) return { data: { signedUrl: cached.url }, error: null };
+    const result = await supabase.storage.from("resources").createSignedUrl(path, 300);
+    if (result.data?.signedUrl) previewCache.current.set(path, { url: result.data.signedUrl, expires: Date.now() + 240000 });
+    return result;
+  };
+  useEffect(() => { setImageZoom(100); }, [previewUrl]);
+  useEffect(() => {
+    const area = imageViewport.current;
+    if (!previewOpen || !area || !(selectedFile?.mimetype?.startsWith("image/") || /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(selectedFile?.displayName || ""))) return;
+    const wheel = (event: WheelEvent) => { event.preventDefault(); if (!event.deltaY) return; setImageZoom(value => Math.max(25, Math.min(400, value + (event.deltaY < 0 ? 10 : -10)))); };
+    area.addEventListener("wheel", wheel, { passive: false });
+    return () => area.removeEventListener("wheel", wheel);
+  }, [previewOpen, previewUrl, selectedFile]);
   const [previewFiles, setPreviewFiles] = useState<DisplayItem[]>([]);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [deleteConfirm, setDeleteConfirm] = useState<DisplayItem | null>(null);
@@ -387,20 +406,26 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
 
   // 다중 다운로드 (선택된 파일들)
   const handleBulkDownload = async () => {
+    if (bulkDownloading) return;
     setBulkDownloading(true);
-    const prefix = getCurrentStoragePrefix();
-    const displayItems = searchResults || items;
-    const toDownload = displayItems.filter(item => selectedItems.has(item.storageName) && !item.isFolder);
-    for (const item of toDownload) {
-      const fileRec = fileRecords.find(f => f.display_name === item.displayName && f.storage_path.endsWith(item.storageName));
-      const filePath = fileRec ? fileRec.storage_path : prefix + item.storageName;
-      const { data } = await supabase.storage.from("resources").createSignedUrl(filePath, 60);
-      if (data?.signedUrl) {
-        await downloadBlob(data.signedUrl, item.displayName);
-        await new Promise(r => setTimeout(r, 400));
+    try {
+      const prefix = getCurrentStoragePrefix();
+      const toDownload = (searchResults || items).filter(item => selectedItems.has(item.storageName) && !item.isFolder);
+      const zip = new JSZip();
+      for (const item of toDownload) {
+        const fileRec = fileRecords.find(file => file.display_name === item.displayName && file.storage_path.endsWith(item.storageName));
+        const { data, error } = await signedPreview(fileRec ? fileRec.storage_path : prefix + item.storageName);
+        if (error || !data?.signedUrl) throw new Error("파일 다운로드 주소를 가져오지 못했습니다.");
+        const response = await fetch(data.signedUrl);
+        if (!response.ok) throw new Error("파일을 다운로드하지 못했습니다.");
+        const name = zip.file(item.displayName) ? String(Object.keys(zip.files).length + 1) + "_" + item.displayName : item.displayName;
+        zip.file(name, await response.blob());
       }
-    }
-    setBulkDownloading(false);
+      if (!toDownload.length) return;
+      const url = URL.createObjectURL(await zip.generateAsync({ type: "blob" }));
+      const link = document.createElement("a"); link.href = url; link.download = "선택자료.zip"; document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch { alert("선택 자료를 다운로드하지 못했습니다. 다시 시도하시기 바랍니다."); }
+    finally { setBulkDownloading(false); }
   };
 
   // 현재 폴더 전체 파일 다운로드 → ZIP
@@ -538,7 +563,7 @@ const downloadBlob = async (signedUrl: string, fileName: string) => {
     const isImage = mime.startsWith("image/") || /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(item.displayName);
     const isPdf = mime === "application/pdf" || /\.pdf$/i.test(item.displayName);
     if (isImage || isPdf) {
-      const { data } = await supabase.storage.from("resources").createSignedUrl(filePath, 300);
+      const { data } = await signedPreview(filePath);
       if (data?.signedUrl) {
         const imageFiles = displayItems.filter(
   (f) =>
@@ -585,9 +610,7 @@ const fileRec = fileRecords.find(
 
   if (!fileRec) return;
 
-  const { data } = await supabase.storage
-    .from("resources")
-    .createSignedUrl(fileRec.storage_path, 300);
+  const { data } = await signedPreview(fileRec.storage_path);
 
   if (!data?.signedUrl) return;
 
@@ -617,9 +640,7 @@ const fileRec = fileRecords.find(
 
   if (!fileRec) return;
 
-  const { data } = await supabase.storage
-    .from("resources")
-    .createSignedUrl(fileRec.storage_path, 300);
+  const { data } = await signedPreview(fileRec.storage_path);
 
   if (!data?.signedUrl) return;
 
@@ -684,6 +705,26 @@ const fileRec = fileRecords.find(
   const rootFolders = folderRecords.filter(f => f.parent_path === "");
   const rawDisplayItems = searchResults !== null ? searchResults : items;
   const displayItems = sortItems(rawDisplayItems);
+  const visibleImagePaths = displayItems.filter(item => !item.isFolder && (item.mimetype?.startsWith("image/") || /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(item.displayName))).map(item => fileRecords.find(file => file.display_name === item.displayName && file.storage_path.endsWith(item.storageName))?.storage_path).filter((path): path is string => !!path);
+  const thumbnailKey = JSON.stringify(visibleImagePaths);
+  useEffect(() => {
+    if (authStatus !== "approved") return;
+    let active = true;
+    const paths: string[] = JSON.parse(thumbnailKey);
+    const missing = paths.filter(path => !previewCache.current.has(path) || previewCache.current.get(path)!.expires <= Date.now());
+    if (!missing.length) return;
+    (async () => {
+      for (let i = 0; i < missing.length; i += 50) {
+        const { data } = await supabase.storage.from("resources").createSignedUrls(missing.slice(i, i + 50), 300);
+        if (!active) return;
+        const next: Record<string, string> = {};
+        for (const item of data || []) if (item.path && item.signedUrl) { previewCache.current.set(item.path, { url: item.signedUrl, expires: Date.now() + 240000 }); next[item.path] = item.signedUrl; }
+        setThumbnailUrls(previous => ({ ...previous, ...next }));
+      }
+    })();
+    return () => { active = false; };
+  }, [thumbnailKey, authStatus]);
+  const thumbnailFor = (item: DisplayItem) => { const path = fileRecords.find(file => file.display_name === item.displayName && file.storage_path.endsWith(item.storageName))?.storage_path; return path ? thumbnailUrls[path] : undefined; };
   const selectedFileCount = displayItems.filter(i => selectedItems.has(i.storageName) && !i.isFolder).length;
   const selectedCount = selectedItems.size;
   const currentFolderFileCount = fileRecords.filter(f => f.folder_path === getCurrentParentPath()).length;
@@ -834,6 +875,11 @@ const fileRec = fileRecords.find(
 </div>
         </div>
 
+        <div className="flex flex-wrap items-center gap-2 px-5 py-2 border-b border-gray-100 no-drag shrink-0">
+          <button type="button" onClick={() => { setSelectMode(true); const files = displayItems.filter(item => !item.isFolder); setSelectedItems(selectedFileCount === files.length ? new Set() : new Set(files.map(item => item.storageName))); }} className="px-3 py-2 rounded-xl bg-gray-100 text-xs font-semibold text-gray-700 cursor-pointer">{selectedFileCount > 0 && selectedFileCount === displayItems.filter(item => !item.isFolder).length ? "전체 해제" : "전체 선택"}</button>
+          <button type="button" onClick={handleBulkDownload} disabled={!selectedFileCount || bulkDownloading} className="flex items-center gap-1 px-3 py-2 rounded-xl bg-blue-50 text-blue-600 text-xs font-semibold cursor-pointer disabled:opacity-40">{bulkDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}선택 다운로드{selectedFileCount > 0 ? ` (${selectedFileCount})` : ""}</button>
+          {searchResults === null && <button type="button" onClick={handleAllDownload} disabled={!currentFolderFileCount || allDownloading} className="flex items-center gap-1 px-3 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold cursor-pointer disabled:opacity-40">{allDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}전체 다운로드</button>}
+        </div>
         {/* ── 본문 ── */}
         <div className="flex flex-1 overflow-hidden no-drag">
           {/* 사이드바 */}
@@ -883,15 +929,15 @@ const fileRec = fileRecords.find(
                         }`}
                         onClick={() => handlePreview(item)}
                       >
-                        {(selectMode || isSelected) && (
-                          <div className={`absolute top-2 left-2 w-5 h-5 rounded-full border-2 flex items-center justify-center transition ${isSelected ? "bg-blue-500 border-blue-500" : "bg-white border-gray-300"}`}>
+                        {!item.isFolder && (
+                          <button type="button" aria-label={`${item.displayName} 선택`} aria-pressed={isSelected} onClick={event => { event.stopPropagation(); setSelectMode(true); toggleSelect(item.storageName); }} className={`absolute top-2 left-2 z-10 w-5 h-5 rounded border-2 flex items-center justify-center transition ${isSelected ? "bg-blue-500 border-blue-500" : "bg-white border-gray-300"}`}>
                             {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
-                          </div>
+                          </button>
                         )}
-                        <div className="w-14 h-14 flex items-center justify-center">
+                        <div className="w-full h-24 flex items-center justify-center">
                           {item.isFolder
                             ? (isFolderDownloading ? <Loader2 className="w-12 h-12 text-blue-400 animate-spin" /> : <FolderOpen className="w-12 h-12 text-yellow-400" />)
-                            : getFileIcon(item, true)}
+                            : thumbnailFor(item) ? <img src={thumbnailFor(item)} alt={item.displayName} loading="lazy" decoding="async" className="w-full h-24 object-contain rounded-lg" onError={event => { event.currentTarget.style.display = "none"; }} /> : getFileIcon(item, true)}
                         </div>
                         <span className="text-xs text-center text-gray-700 font-medium leading-tight line-clamp-2 w-full break-all">{item.displayName}</span>
                         {!item.isFolder && item.size && <span className="text-[10px] text-gray-400">{formatSize(item.size)}</span>}
@@ -1030,7 +1076,7 @@ const fileRec = fileRecords.find(
       {/* ── 미리보기 팝업 ── */}
       {previewOpen && selectedFile && previewUrl && (
         <div className="fixed inset-0 z-[10000] bg-black/70 flex items-center justify-center p-4" onClick={() => setPreviewOpen(false)}>
-          <div data-popup-frame="true" className="relative bg-white rounded-3xl shadow-2xl overflow-hidden max-w-2xl w-full max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div data-popup-frame="true" className="relative bg-white rounded-3xl shadow-2xl overflow-hidden w-[min(640px,92vw,64dvh)] h-[90dvh] max-w-[96vw] max-h-[94dvh] min-w-[280px] min-h-[300px] resize flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <span className="font-bold text-gray-800 truncate text-sm">{selectedFile.displayName}</span>
               <div className="flex items-center gap-2">
@@ -1042,7 +1088,7 @@ const fileRec = fileRecords.find(
                 </button>
               </div>
             </div>
-            <div className="relative flex-1 overflow-auto flex items-center justify-center px-0 py-7 bg-gray-50">
+            <div ref={imageViewport} className="relative flex-1 min-h-0 overflow-auto px-4 py-4 bg-gray-50">
   {(selectedFile.mimetype?.startsWith("image/") || /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(selectedFile.displayName)) ? (
     <>
       {previewFiles.length > 1 && (
@@ -1066,7 +1112,7 @@ const fileRec = fileRecords.find(
       <img
         src={previewUrl}
         alt={selectedFile.displayName}
-        className="max-w-[90%] max-h-[80vh] rounded-2xl shadow object-contain"
+        decoding="async" style={imageZoom <= 100 ? { maxWidth: `${imageZoom}%`, maxHeight: `${imageZoom}%`, width: "auto", height: "auto" } : { width: `${imageZoom}%`, maxWidth: "none", height: "auto" }} className="mx-auto rounded-xl shadow object-contain"
       />
     </>
   ) : (

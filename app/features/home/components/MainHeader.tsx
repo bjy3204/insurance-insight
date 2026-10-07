@@ -1,5 +1,6 @@
 "use client";
 
+import MobileHeaderMenu from "./MobileHeaderMenu";
 import DesktopHeader from "./DesktopHeader";
 import SiteHeader from "@/app/components/SiteHeader";
 import { Settings, Home as HomeIcon } from "lucide-react";
@@ -282,18 +283,6 @@ return (<><DesktopHeader controller={controller} /><div className="md:hidden"><S
 )}
 
     
-  <div className="absolute left-0 top-1/2 -translate-y-1/2 md:hidden">
-    <div className="text-center">
-      <p className="text-[10px] leading-none text-gray-400 font-bold">
-        TODAY
-      </p>
-
-      <p className="text-sm font-black text-blue-600 mt-1">
-        {today.toLocaleString()}
-      </p>
-    </div>
-  </div>
-
   {/* 로고 */}
   <div className="text-center">
     <h1 className="text-2xl font-black text-blue-600">
@@ -305,18 +294,7 @@ return (<><DesktopHeader controller={controller} /><div className="md:hidden"><S
     </p>
   </div>
 
-  {/* 모바일 TOTAL */}
-  <div className="absolute right-0 top-1/2 -translate-y-1/2 md:hidden">
-    <div className="text-center">
-      <p className="text-[10px] leading-none text-gray-400 font-bold">
-        TOTAL
-      </p>
-
-      <p className="text-sm font-black text-gray-900 mt-1">
-        {total.toLocaleString()}
-      </p>
-    </div>
-  </div>
+  <MobileHeaderMenu controller={controller} />
 
     {/* PC 방문자 카운터 + 설정 */}
   <div

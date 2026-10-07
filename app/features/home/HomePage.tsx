@@ -9,8 +9,6 @@ import DashboardCards from "./components/dashboard/DashboardCards";
 import MainMenuGrid from "./components/MainMenuGrid";
 import ProfileSettingsDialog from "./components/ProfileSettingsDialog";
 import MenuContextMenu from "./components/MenuContextMenu";
-import MobileInstallHint from "./components/MobileInstallHint";
-import MobileMessageButton from "./components/MobileMessageButton";
 import MemberButton from "./components/MemberButton";
 import MemberMenu from "./components/MemberMenu";
 import QuickMenuPanel from "./components/QuickMenuPanel";
@@ -62,10 +60,10 @@ return ((
 
       {/* 앱처럼 사용하기 */}
       {/* 앱처럼 사용하기 */}
-<MobileInstallHint controller={controller} />
+
 
       {/* 모바일 메세지 버튼 */}
-<MobileMessageButton controller={controller} />
+
 
 <MemberButton controller={controller} />
 
