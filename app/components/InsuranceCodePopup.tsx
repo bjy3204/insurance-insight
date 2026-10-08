@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Lock, X, Search, Star } from "lucide-react";
+import { reorderWithinFavoriteGroup } from "@/lib/insurance-order";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
 import {
@@ -17,7 +18,6 @@ import {
   SortableContext,
   verticalListSortingStrategy,
   useSortable,
-  arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -118,9 +118,10 @@ code: string;
     >
       {/* 별표는 여유 있는 전용 칸의 정중앙에 배치 */}
       <td className="w-24 px-0 py-3 text-center"><div className="flex items-center justify-center">
-        {editMode ? (
+        {editMode || rowEditMode ? (
           <button
             onClick={(e) => { e.stopPropagation(); onToggleFav(); }}
+            onDoubleClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
             className="transition cursor-pointer"
           >
@@ -324,10 +325,10 @@ const handleOpen = () => {
 }, []);
 
   // ── 현재 탭 데이터 ────────────────────────────────────────
-  const currentOrder = editMode
+  const currentOrder = editMode || rowEditMode
     ? (tab === "nonlife" ? tempNonlifeOrder : tempLifeOrder)
     : (tab === "nonlife" ? nonlifeOrder : lifeOrder);
-  const currentFavs = editMode
+  const currentFavs = editMode || rowEditMode
     ? (tab === "nonlife" ? tempNonlifeFavs : tempLifeFavs)
     : (tab === "nonlife" ? nonlifeFavs : lifeFavs);
   const tempFavs = tab === "nonlife" ? tempNonlifeFavs : tempLifeFavs;
@@ -340,21 +341,20 @@ const handleOpen = () => {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
+    const activeName = String(active.id), overName = String(over.id);
+    if (currentFavs.includes(activeName) !== currentFavs.includes(overName)) return;
+    const reorder = (order: string[]) => reorderWithinFavoriteGroup(order.map(id => ({ id })), currentFavs, activeName, overName).map(item => item.id);
 
     const setter = tab === "nonlife" ? setTempNonlifeOrder : setTempLifeOrder;
     setter((prev) => {
-      const oldIdx = prev.indexOf(active.id as string);
-      const newIdx = prev.indexOf(over.id as string);
-      return arrayMove(prev, oldIdx, newIdx);
+      return reorder(prev);
     });
 
     // 수정 모드가 아닐 때도 순서 즉시 저장
-    if (!editMode) {
+    if (!editMode && !rowEditMode) {
       const orderSetter = tab === "nonlife" ? setNonlifeOrder : setLifeOrder;
       orderSetter((prev) => {
-        const oldIdx = prev.indexOf(active.id as string);
-        const newIdx = prev.indexOf(over.id as string);
-        const next = arrayMove(prev, oldIdx, newIdx);
+        const next = reorder(prev);
         if (authUser && authStatus === "approved") {
           const col = tab === "nonlife" ? "insurance_order_nonlife" : "insurance_order_life";
           supabase.from("profiles").update({ [col]: next }).eq("id", authUser.id);
@@ -515,7 +515,7 @@ const handleOpen = () => {
   code: "",
   password: "",
 };
-                      const isFav = (editMode ? tempFavs : currentFavs).includes(name);
+                      const isFav = (editMode || rowEditMode ? tempFavs : currentFavs).includes(name);
                       return (
 <SortableRow
   key={name}
@@ -525,7 +525,13 @@ const handleOpen = () => {
   focusCode={editingRow === name}
   onStartRowEdit={(top) => {
   pendingRowTop.current = top;
-  if (!editMode && !rowEditMode) setTempCodes(codes);
+  if (!editMode && !rowEditMode) {
+    setTempCodes(codes);
+    setTempNonlifeOrder(nonlifeOrder);
+    setTempLifeOrder(lifeOrder);
+    setTempNonlifeFavs(nonlifeFavs);
+    setTempLifeFavs(lifeFavs);
+  }
   setEditingRow(name);
   setRowEditMode(true);
 }}
