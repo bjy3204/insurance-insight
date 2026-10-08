@@ -922,7 +922,11 @@ const [pcQuickDocked, setPcQuickDocked] = useState<"left" | "right" | null>("rig
 useEffect(() => {
   try {
     const raw=localStorage.getItem("pcQuickPosition");
-    if(!raw) return;
+    if(!raw) {
+      const bottom = pcQuickWrapRef.current ? parseFloat(getComputedStyle(pcQuickWrapRef.current).bottom) || 0 : 100;
+      setPcQuickPos({ x: 0, y: bottom - window.innerHeight / 2 + 18 });
+      return;
+    }
     const saved=JSON.parse(raw);
     if(!Number.isFinite(saved.x)||!Number.isFinite(saved.y)) return;
     const dock=saved.docked === "left" || saved.docked === "right" ? saved.docked : null;

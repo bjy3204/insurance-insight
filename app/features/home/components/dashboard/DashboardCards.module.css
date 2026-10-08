@@ -64,9 +64,9 @@
 .day { position:relative; height:34px; font-size:14px; font-weight:500; border-radius:50%; max-width:36px; width:100%; margin:auto; }
 .calendarCard > .heading:has(.calendarPageLink) { padding-left:16px; }
 .calendarPageLink { width:25px; height:28px; padding:0; border:0; border-radius:7px; display:grid; place-items:center; background:transparent; transition:background-color .2s ease; }
-.calendarPageLink:hover { background:#edf4ff; }
+.calendarPageLink:hover { background:transparent; }
 .marketPageLink { width:25px; height:28px; padding:0; border:0; border-radius:7px; display:grid; place-items:center; background:transparent; cursor:pointer; transition:background-color .2s ease; }
-.marketPageLink:hover { background:#edf4ff; }
+.marketPageLink:hover { background:transparent; }
 .marketPageLink:focus-visible { outline:2px solid #0864ff; outline-offset:3px; }
 .day:hover { background:#edf5ff; }
 .sunday { color:#fb2548; } .saturday { color:#0864ff; } .outside { opacity:.35; }
@@ -128,3 +128,6 @@
 .calendarHeading > .calendarPageLink svg { width:25px; height:25px; }
 .calendarMonthNavigation { display:flex; align-items:center; justify-content:center; gap:8px; }
 .calendarMonthNavigation button { cursor:pointer; }
+
+.card .marketPageLink,.card .marketPageLink *,.card .calendarPageLink,.card .calendarPageLink * {cursor:pointer;}
+.calendarHeading{position:relative}.calendarHeading>.calendarPageLink{position:absolute;right:calc(15px + (100% - 30px)/14 - 12.5px);top:50%;transform:translateY(-50%)}.calendarHeading>.calendarMonthNavigation{grid-column:2;grid-row:1}.calendarHeading>span{grid-column:1;grid-row:1}

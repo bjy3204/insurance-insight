@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useAuth } from "@/app/components/AuthProvider";
 import { createPortal } from "react-dom";
 import {
   CalendarDays,
@@ -95,59 +96,13 @@ export default function Calendar({
   beforeChecklist?: ReactNode;
   identity?: Identity;
 }) {
-  const [identity, setIdentity] = useState<Identity>({
-    userId: null,
-    approved: false,
-    loading: true,
-  });
-  useEffect(() => {
-    if (provided) return;
-    let active = true,
-      version = 0;
-    const load = async () => {
-      const token = ++version;
-      setIdentity((previous) => ({
-        ...previous,
-        loading: true,
-        error: undefined,
-      }));
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        const user = data.session?.user;
-        let approved = false;
-        if (user) {
-          const result = await supabase
-            .from("profiles")
-            .select("status")
-            .eq("id", user.id)
-            .maybeSingle();
-          if (result.error) throw result.error;
-          approved = result.data?.status === "approved";
-        }
-        if (active && token === version)
-          setIdentity({ userId: user?.id || null, approved, loading: false });
-      } catch {
-        if (active && token === version)
-          setIdentity({
-            userId: null,
-            approved: false,
-            loading: false,
-            error: "회원 상태를 확인하지 못했습니다. 새로고침해 주세요.",
-          });
-      }
-    };
-    void load();
-    const { data } = supabase.auth.onAuthStateChange(() => {
-      void load();
-    });
-    return () => {
-      active = false;
-      version++;
-      data.subscription.unsubscribe();
-    };
-  }, [provided]);
-  const account = provided || identity;
+  const { authUser, authStatus, authLoading } = useAuth();
+  const account: Identity = provided || {
+    userId: authUser?.id || null,
+    approved: authStatus === "approved",
+    loading: authLoading,
+    error: !authLoading && authUser && !authStatus ? "회원 상태를 확인하지 못했습니다. 새로고침해 주세요." : undefined,
+  };
   const owner = account.loading
     ? "loading"
     : account.error
@@ -160,8 +115,8 @@ export default function Calendar({
       <div
         className={
           mode === "compact"
-            ? `${styles.card} ${styles.calendarCard}`
-            : "p-6 text-center"
+            ? `${styles.card} ${styles.calendarCard} flex items-center justify-center text-sm text-slate-400`
+            : "flex min-h-[calc(100dvh-210px)] items-center justify-center p-6 text-center text-sm text-slate-400"
         }
       >
         캘린더를 불러오는 중입니다.
@@ -643,7 +598,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
 
   if (!store.ready)
     return (
-      <div className="p-6 text-center" role="status">
+      <div className="flex min-h-[calc(100dvh-210px)] flex-col items-center justify-center gap-3 p-6 text-center text-sm text-slate-400" role="status">
         {store.error || "캘린더를 불러오는 중입니다."}
         {store.error && (
           <button onClick={() => void store.reload()}>다시 시도</button>
