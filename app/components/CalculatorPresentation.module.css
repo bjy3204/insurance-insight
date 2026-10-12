@@ -1,5 +1,5 @@
 .page {
-  --calculator-control-height: 48px;
+  --calculator-control-height: 56px;
   background: var(--page-background);
 }
 
@@ -147,5 +147,5 @@
   padding-bottom: 0;
 }
 @media (max-width: 767px) {
-  .page { --calculator-control-height: 44px; }
+  .page { --calculator-control-height: 48px; }
 }
