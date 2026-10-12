@@ -5,7 +5,7 @@ export default function DeleteMenuDialog({ controller }: { controller: HomeContr
 const { deleteConfirmOpen, setDeleteConfirmOpen, deletePersonalMenu } = controller;
 return (<>{deleteConfirmOpen && (
   <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">
-    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+    <div data-popup-small="true" className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
       <h2 className="text-xl font-black text-gray-900">
         메뉴 삭제
       </h2>

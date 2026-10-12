@@ -62,17 +62,16 @@ type ViewMode = "grid" | "list";
 type SortKey = "name" | "size" | "type";
 type SortDir = "asc" | "desc";
 
+// Reuse image URLs when the explorer is reopened within their validity period.
+const resourcePreviewCache = new Map<string, { url: string; expires: number }>();
+
 export default function ResourceExplorer({ onClose, authStatus, authRole }: ResourceExplorerProps) {
   const isAdmin = authRole === "admin";
 
   // 팝업 위치/크기
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [initialized, setInitialized] = useState(false);
-  const dragging = useRef(false);
-  const dragOffset = useRef({ x: 0, y: 0 });
   const [size, setSize] = useState({ width: 900, height: 620 });
-  const resizing = useRef(false);
-  const resizeStart = useRef({ x: 0, y: 0, w: 0, h: 0 });
 
   // 탐색 상태
   const [currentPath, setCurrentPath] = useState<{ path: string; displayName: string }[]>([]);
@@ -101,7 +100,13 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
   const [imageZoom, setImageZoom] = useState(100);
   const imageViewport = useRef<HTMLDivElement>(null);
   const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
-  const previewCache = useRef(new Map<string, { url: string; expires: number }>());
+  const previewCache = useRef(resourcePreviewCache);
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") resourcePreviewCache.clear();
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
   const signedPreview = async (path: string) => {
     const cached = previewCache.current.get(path);
     if (cached && cached.expires > Date.now()) return { data: { signedUrl: cached.url }, error: null };
@@ -138,42 +143,6 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
       setInitialized(true);
     }
   }, [initialized]);
-
-  // 드래그 이동
-  const onMouseDownDrag = useCallback((e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.closest("button, input, a, .no-drag")) return;
-    dragging.current = true;
-    dragOffset.current = { x: e.clientX - pos.x, y: e.clientY - pos.y };
-    e.preventDefault();
-  }, [pos]);
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (dragging.current) {
-        setPos({
-          x: Math.max(0, Math.min(window.innerWidth - size.width, e.clientX - dragOffset.current.x)),
-          y: Math.max(0, Math.min(window.innerHeight - size.height, e.clientY - dragOffset.current.y)),
-        });
-      }
-      if (resizing.current) {
-        setSize({
-          width: Math.max(500, Math.min(1400, resizeStart.current.w + (e.clientX - resizeStart.current.x))),
-          height: Math.max(400, Math.min(900, resizeStart.current.h + (e.clientY - resizeStart.current.y))),
-        });
-      }
-    };
-    const onMouseUp = () => { dragging.current = false; resizing.current = false; };
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-    return () => { window.removeEventListener("mousemove", onMouseMove); window.removeEventListener("mouseup", onMouseUp); };
-  }, [size]);
-
-  const onMouseDownResize = useCallback((e: React.MouseEvent) => {
-    resizing.current = true;
-    resizeStart.current = { x: e.clientX, y: e.clientY, w: size.width, h: size.height };
-    e.preventDefault(); e.stopPropagation();
-  }, [size]);
 
   const getCurrentStoragePrefix = useCallback(() => {
     if (currentPath.length === 0) return "";
@@ -712,6 +681,10 @@ const fileRec = fileRecords.find(
     let active = true;
     const paths: string[] = JSON.parse(thumbnailKey);
     const missing = paths.filter(path => !previewCache.current.has(path) || previewCache.current.get(path)!.expires <= Date.now());
+    setThumbnailUrls(Object.fromEntries(paths.flatMap(path => {
+      const cached = previewCache.current.get(path);
+      return cached && cached.expires > Date.now() ? [[path, cached.url]] : [];
+    })));
     if (!missing.length) return;
     (async () => {
       for (let i = 0; i < missing.length; i += 50) {
@@ -752,10 +725,10 @@ const fileRec = fileRecords.find(
             : { position: "fixed", left: pos.x, top: pos.y, width: size.width, height: size.height, zIndex: 9999 }
         }
         className="bg-white md:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-gray-100"
-        data-popup-frame="true" onMouseDown={onMouseDownDrag}
+        data-popup-frame="true" data-resource-explorer="true"
       >
         {/* ── 헤더 ── */}
-        <div data-popup-header="true" className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white cursor-move select-none shrink-0">
+        <div data-popup-header="true" className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white cursor-default select-none shrink-0">
           <div className="flex items-center gap-2">
             <FolderOpen className="w-5 h-5 text-blue-500" />
             <span className="font-bold text-gray-800 text-base">구독자 전용 자료실</span>
@@ -839,8 +812,8 @@ const fileRec = fileRecords.find(
         )}
 
         {/* ── 경로 표시 + 뷰 전환 ── */}
-        <div className="flex items-center justify-between px-5 py-2 border-b border-gray-100 bg-gray-50 shrink-0 no-drag">
-          <div className="flex items-center gap-1 text-sm overflow-x-auto">
+        <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-y-2 px-5 py-2 border-b border-gray-100 bg-gray-50 shrink-0 no-drag">
+          <div className="flex items-center gap-1 text-sm overflow-x-auto min-w-0 flex-1 md:flex-none">
             {searchResults !== null ? (
               <span className="text-gray-500 text-xs">
                 검색 결과: <span className="font-semibold text-blue-600">"{searchQuery}"</span> ({searchResults.length}건)
@@ -859,7 +832,7 @@ const fileRec = fileRecords.find(
               </>
             )}
           </div>
-          <div className="flex-1 flex justify-center px-4">
+          <div className="order-last md:order-none w-full md:w-auto md:flex-1 flex justify-center md:px-4">
   <span className="text-red-500 font-semibold text-sm text-center">
     ⭐ 구독자료는 무단배포, 공유, SNS게시 절대 불가능 합니다. 상담, 교육용으로 이용해 주세요 ! 
   </span>
@@ -881,7 +854,7 @@ const fileRec = fileRecords.find(
           {searchResults === null && <button type="button" onClick={handleAllDownload} disabled={!currentFolderFileCount || allDownloading} className="flex items-center gap-1 px-3 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold cursor-pointer disabled:opacity-40">{allDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}전체 다운로드</button>}
         </div>
         {/* ── 본문 ── */}
-        <div className="flex flex-1 overflow-hidden no-drag">
+        <div className="flex flex-1 min-h-0 overflow-hidden no-drag">
           {/* 사이드바 */}
           <div className="hidden md:flex flex-col w-48 border-r border-gray-100 bg-gray-50 overflow-y-auto py-3 px-2 shrink-0">
             <button onClick={() => { setCurrentPath([]); clearSearch(); }} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition cursor-default mb-1 ${currentPath.length === 0 && !searchResults ? "bg-blue-100 text-blue-700" : "text-gray-600 hover:bg-gray-100"}`}>
@@ -937,7 +910,7 @@ const fileRec = fileRecords.find(
                         <div className="w-full h-24 flex items-center justify-center">
                           {item.isFolder
                             ? (isFolderDownloading ? <Loader2 className="w-12 h-12 text-blue-400 animate-spin" /> : <FolderOpen className="w-12 h-12 text-yellow-400" />)
-                            : thumbnailFor(item) ? <img src={thumbnailFor(item)} alt={item.displayName} loading="lazy" decoding="async" className="w-full h-24 object-contain rounded-lg" onError={event => { event.currentTarget.style.display = "none"; }} /> : getFileIcon(item, true)}
+                            : thumbnailFor(item) ? <img src={thumbnailFor(item)} alt={item.displayName} loading="eager" decoding="async" className="w-full h-24 object-contain rounded-lg" onError={event => { event.currentTarget.style.display = "none"; }} /> : getFileIcon(item, true)}
                         </div>
                         <span className="text-xs text-center text-gray-700 font-medium leading-tight line-clamp-2 w-full break-all">{item.displayName}</span>
                         {!item.isFolder && item.size && <span className="text-[10px] text-gray-400">{formatSize(item.size)}</span>}
@@ -952,7 +925,7 @@ const fileRec = fileRecords.find(
                           </button>
                         )}
                         {isAdmin && !selectMode && (
-                          <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(item); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 items-center justify-center transition hidden group-hover:flex cursor-pointer">
+                          <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(item); }} className="w-6 h-6 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 flex items-center justify-center transition cursor-pointer disabled:opacity-50">
                             <Trash2 className="w-3 h-3" />
                           </button>
                         )}
@@ -970,7 +943,7 @@ const fileRec = fileRecords.find(
               /* ── 리스트 보기 ── */
               <div className="bg-white">
                 {/* 헤더 행 */}
-                <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-3 px-4 py-2 bg-gray-50 border-b border-gray-100 select-none">
+                <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] sm:grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] items-center gap-3 px-4 py-2 bg-gray-50 border-b border-gray-100 select-none">
                   <span className="w-8"></span>
                   <div className="pl-2"><SortButton label="이름" k="name" /></div>
                   <div className="w-20 text-right hidden sm:block"><SortButton label="종류" k="type" /></div>
@@ -1010,7 +983,7 @@ const fileRec = fileRecords.find(
                   return (
                     <div
                       key={item.storageName}
-                      className={`grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-3 px-4 py-2.5 transition cursor-default select-none border-b border-gray-50 last:border-0 ${
+                      className={`grid grid-cols-[auto_minmax(0,1fr)_auto] sm:grid-cols-[auto_minmax(0,1fr)_auto_auto_auto] items-center gap-3 px-4 py-2.5 transition cursor-default select-none border-b border-gray-50 last:border-0 ${
                         isSelected ? "bg-blue-50" : idx % 2 === 0 ? "bg-white hover:bg-blue-50" : "bg-gray-50/50 hover:bg-blue-50"
                       }`}
                       onClick={() => handlePreview(item)}
@@ -1042,7 +1015,7 @@ const fileRec = fileRecords.find(
                       {/* 작업 버튼 */}
                       <div className="w-auto flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                         {item.isFolder && (
-                          <button onClick={() => handleFolderDownload(item)} disabled={isFolderDownloading} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 items-center justify-center transition hidden group-hover:flex cursor-pointer" title="폴더 전체 다운로드">
+                          <button onClick={() => handleFolderDownload(item)} disabled={isFolderDownloading} className="w-6 h-6 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 flex items-center justify-center transition cursor-pointer disabled:opacity-50" title="폴더 전체 다운로드">
                             {isFolderDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ArrowDownToLine className="w-3.5 h-3.5" />}
                           </button>
                         )}
@@ -1065,18 +1038,13 @@ const fileRec = fileRecords.find(
           </div>
         </div>
 
-        {/* 리사이즈 핸들 */}
-        <div className="hidden md:block absolute bottom-0 right-0 w-6 h-6 cursor-se-resize" onMouseDown={onMouseDownResize} style={{ zIndex: 10 }}>
-          <svg width="16" height="16" viewBox="0 0 16 16" className="absolute bottom-1 right-1 text-gray-300">
-            <path d="M14 2L2 14M14 8L8 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </div>
+
       </div>
 
       {/* ── 미리보기 팝업 ── */}
       {previewOpen && selectedFile && previewUrl && (
         <div className="fixed inset-0 z-[10000] bg-black/70 flex items-center justify-center p-4" onClick={() => setPreviewOpen(false)}>
-          <div data-popup-frame="true" className="relative bg-white rounded-3xl shadow-2xl overflow-hidden w-[min(640px,92vw,64dvh)] h-[90dvh] max-w-[96vw] max-h-[94dvh] min-w-[280px] min-h-[300px] resize flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div data-popup-frame="true" className="relative bg-white rounded-3xl shadow-2xl overflow-hidden w-[min(640px,92vw,64dvh)] h-[90dvh] max-w-[96vw] max-h-[94dvh] min-w-[280px] min-h-[300px] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <span className="font-bold text-gray-800 truncate text-sm">{selectedFile.displayName}</span>
               <div className="flex items-center gap-2">

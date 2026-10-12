@@ -276,7 +276,7 @@ export default function Calculator() {
       {isOpen && initialized && (
 
                 <div
-          data-mobile-movable="true" data-widget-kind="calculator" ref={calcRef}
+          data-mobile-movable="true" data-popup-resize="custom" data-widget-kind="calculator" ref={calcRef}
           role="dialog"
           aria-label="계산기"
           tabIndex={0}

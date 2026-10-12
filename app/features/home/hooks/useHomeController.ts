@@ -1139,28 +1139,17 @@ const saveProfileSettings = async () => {
 };
 
 const handleKakaoConnect = async () => {
-  setKakaoConnecting(true);
-
-  const { error } = await supabase.auth.linkIdentity({
-    provider: "kakao",
-    options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
-    },
-  });
-
-  if (error) {
-    setKakaoConnecting(false);
-    alert(error.message);
-    return;
+  if (!authUser?.id || kakaoConnecting) return;
+  const { data, error: identityError } = await supabase.auth.getUserIdentities();
+  if (identityError) { alert("카카오 연결 상태를 확인하지 못했습니다."); return; }
+  if (data.identities.some(identity => identity.provider === "kakao")) {
+    setKakaoConnected(true); alert("이미 카카오 계정이 연결되어 있습니다."); return;
   }
-
-  await supabase
-    .from("profiles")
-    .update({ kakao_connected: true })
-    .eq("id", authUser.id);
-
-  setKakaoConnected(true);
-  setKakaoConnecting(false);
+  setKakaoConnecting(true);
+  const { error } = await supabase.auth.linkIdentity({
+    provider: "kakao", options: { redirectTo: `${window.location.origin}/auth/callback` },
+  });
+  if (error) { setKakaoConnecting(false); alert(error.message); }
 };
 
 const handleKakaoDisconnect = async () => {

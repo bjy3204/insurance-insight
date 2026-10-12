@@ -29,7 +29,7 @@ const controller = useSharedHomeController();
 const { authStatus, authRole, resourceOpen, setResourceOpen } = controller;
 return ((
     <>
-    <main className={styles.page}>
+    <main data-home-page="true" className={styles.page}>
 
         <FortuneWidget controller={controller} />
 

@@ -25,7 +25,14 @@ function AuthPopup({
 onSignup,
 onResetPassword,
 onKakaoLogin,
+  signupKakao, onStartKakaoSignup, onClearKakaoSignup, completingKakao, completingSignup, signupBusy,
 }: {
+  signupKakao: boolean;
+  onStartKakaoSignup: () => void;
+  onClearKakaoSignup: () => void;
+  completingKakao: boolean;
+  completingSignup: boolean;
+  signupBusy: boolean;
   mode: ModeType;
   setMode: React.Dispatch<React.SetStateAction<ModeType>>;
   email: string;
@@ -62,6 +69,8 @@ onKakaoLogin,
         className="
           w-full
           max-w-sm
+          max-h-[calc(100dvh-32px)]
+          overflow-y-auto
           rounded-2xl
           bg-white
           p-6
@@ -96,10 +105,7 @@ onKakaoLogin,
 
         <div className="mb-4 rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs leading-relaxed text-gray-500">
   로그인기능은 보험나무 구독자만 이용가능합니다 😄
-  <br />
-  구독 회원은 메모, 캘린더 등 모든 입력값들이 저장되며
-  <br />
-  PC-모바일 연동, 구독자료 다운, 히든 기능 사용 가능합니다
+
   <br />
 <span className="text-blue-500 font-bold">
   {mode === "login"
@@ -131,6 +137,7 @@ onKakaoLogin,
 
           <input
             type="email"
+            readOnly={mode === "signup" && completingSignup}
             placeholder="이메일"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -148,7 +155,17 @@ onKakaoLogin,
   className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
 />
 
+          {mode === "signup" && (
+            completingKakao ? <div className="rounded-xl bg-yellow-50 p-3 text-sm text-gray-700">카카오 연결됨 · 이메일과 비밀번호로도 로그인할 수 있습니다.</div> :
+            <div className="space-y-2">
+              <button type="button" disabled={signupBusy || signupKakao} onClick={onStartKakaoSignup} className="h-11 w-full rounded-xl bg-[#FEE500] text-sm font-bold text-[#191919] cursor-pointer disabled:cursor-default">
+                {signupKakao ? "카카오 연결됨 (가입 시 확정)" : "카카오 연결하기"}
+              </button>
+              {signupKakao && <button type="button" onClick={onClearKakaoSignup} className="w-full text-xs text-gray-500 cursor-pointer">연결 없이 가입하기</button>}
+            </div>
+          )}
           <button
+            disabled={signupBusy}
             onClick={mode === "login" ? onLogin : onSignup}
             className="h-11 w-full rounded-xl bg-gray-900 text-sm font-bold text-white hover:bg-gray-800 cursor-pointer"
           >
@@ -242,12 +259,51 @@ export default function AuthButton({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [signupKakao, setSignupKakao] = useState(false);
+  const [completingKakao, setCompletingKakao] = useState(false);
+  const [completingSignup, setCompletingSignup] = useState(false);
+  const [signupBusy, setSignupBusy] = useState(false);
   const [signupNickname, setSignupNickname] = useState("");
   const [signupInstagram, setSignupInstagram] = useState("");
 
   useEffect(() => {
     setMounted(true);
+    const params = new URLSearchParams(window.location.search);
+    const kakaoResult = params.get("kakao_signup");
+    const complete = params.get("complete_signup") === "1";
+    if (complete || kakaoResult) {
+      params.delete("complete_signup"); params.delete("kakao_signup");
+      window.history.replaceState(null, "", window.location.pathname + (params.size ? `?${params}` : ""));
+      setMode("signup"); setAuthOpen(true);
+      try {
+        const draft = JSON.parse(sessionStorage.getItem("signup-kakao-draft") || "null");
+        if (draft && draft.expires > Date.now()) {
+          setEmail(draft.email || ""); setSignupNickname(draft.nickname || ""); setSignupInstagram(draft.instagram || "");
+        }
+      } catch { /* A stale draft is optional. */ }
+      if (kakaoResult === "error") alert("카카오 인증을 완료하지 못했습니다. 다시 시도하거나 연결 없이 가입해 주세요.");
+      void fetch("/api/auth/kakao/signup", { cache: "no-store" }).then(response => response.json()).then(result => setSignupKakao(result.ready === true)).catch(() => setSignupKakao(false));
+      if (complete) void supabase.auth.getUser().then(({ data: { user: current } }) => {
+        if (current) {
+          setCompletingSignup(true);
+          setCompletingKakao(!!current.identities?.some(identity => identity.provider === "kakao"));
+          setEmail(current.email || "");
+          setSignupNickname(current.user_metadata?.signup_nickname || "");
+          setSignupInstagram(current.user_metadata?.signup_instagram || "");
+        }
+      });
+    }
   }, []);
+
+  useEffect(() => {
+    if (!authOpen || mode !== "signup" || completingKakao) return;
+    let active = true;
+    void fetch("/api/auth/kakao/signup", { cache: "no-store" })
+      .then(response => response.json())
+      .then(result => { if (active) setSignupKakao(result.ready === true); })
+      .catch(() => { if (active) setSignupKakao(false); });
+    return () => { active = false; };
+  }, [authOpen, mode, completingKakao]);
 
   
   
@@ -267,6 +323,20 @@ const handleLogin = async () => {
     return;
   }
 
+const { data: { user: signedIn } } = await supabase.auth.getUser();
+if (signedIn) {
+  const { data: profile, error: lookupError } = await supabase.from("profiles").select("id").eq("id", signedIn.id).maybeSingle();
+  if (lookupError) { alert("회원정보를 확인하지 못했습니다."); return; }
+  if (!profile) {
+    alert("회원가입을 진행해 주세요.");
+    setCompletingSignup(true);
+    setCompletingKakao(!!signedIn.identities?.some(identity => identity.provider === "kakao"));
+    setSignupNickname(signedIn.user_metadata?.signup_nickname || "");
+    setSignupInstagram(signedIn.user_metadata?.signup_instagram || "");
+    setMode("signup");
+    return;
+  }
+}
 setAuthOpen(false);
 setEmail("");
 setPassword("");
@@ -317,59 +387,92 @@ const handleResetPassword = async () => {
   alert("비밀번호 재설정 메일을 발송했습니다. 이메일을 확인해주세요.");
 };
 
+  const clearKakaoSignup = async () => {
+    setSignupKakao(false);
+    sessionStorage.removeItem("signup-kakao-draft");
+    await fetch("/api/auth/kakao/signup", { method: "DELETE" }).catch(() => {});
+  };
+  const startKakaoSignup = async () => {
+    if (signupBusy) return;
+    setSignupBusy(true);
+    try {
+      const response = await fetch("/api/auth/kakao/signup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "start" }) });
+      const result = await response.json();
+      if (!response.ok || !result.url) throw new Error(result.error || "카카오 인증을 시작하지 못했습니다.");
+      // Never persist the password across the provider redirect.
+      sessionStorage.setItem("signup-kakao-draft", JSON.stringify({ email, nickname: signupNickname, instagram: signupInstagram, expires: Date.now() + 900000 }));
+      setPassword("");
+      window.location.assign(result.url);
+    } catch (error) { alert(error instanceof Error ? error.message : "카카오 인증을 시작하지 못했습니다."); }
+    finally { setSignupBusy(false); }
+  };
+
   const handleSignup = async () => {
-    if (!signupNickname.trim()) {
-      alert("닉네임을 입력해주세요.");
-      return;
+    if (signupBusy) return;
+    if (!signupNickname.trim() || !signupInstagram.trim() || !email.trim() || !password) {
+      alert("닉네임, 인스타그램 아이디, 이메일, 비밀번호를 입력해주세요."); return;
     }
-
-    if (!signupInstagram.trim()) {
-      alert("인스타그램 아이디를 입력해주세요.");
-      return;
-    }
-
-    if (!email || !password) {
-      alert("이메일과 비밀번호를 입력해주세요.");
-      return;
-    }
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    const userId = data.user?.id;
-
-    if (userId) {
-      const { error: profileError } = await supabase
-.from("profiles")
-.upsert({
-  id: userId,
-  nickname: signupNickname.trim(),
-  instagram_id: signupInstagram.trim(),
-  status: "pending",
-  role: "user",
-});
-
-if (profileError) {
-  console.error("profiles 저장 실패:", profileError);
-  alert("회원정보 저장에 실패했습니다. 관리자에게 문의해주세요.");
-  return;
-}
-    }
-
-    alert("회원가입이 완료되었습니다. 관리자 승인 후 저장 기능을 이용할 수 있습니다.");
-
-    setMode("login");
-    setSignupNickname("");
-    setSignupInstagram("");
-    setEmail("");
-    setPassword("");
+    if (password.length < 6) { alert("비밀번호는 6자 이상 입력해주세요."); return; }
+    setSignupBusy(true);
+    let membershipSaved = false;
+    try {
+      let userId: string | undefined;
+      let connected = false;
+      if (completingSignup) {
+        const { data: { user: current }, error } = await supabase.auth.getUser();
+        if (error || !current || current.email !== email.trim()) throw new Error("인증이 만료되었습니다. 기존 로그인 방법으로 다시 로그인해 주세요.");
+        const { data: existing, error: lookupError } = await supabase.from("profiles").select("id").eq("id", current.id).maybeSingle();
+        if (lookupError) throw lookupError;
+        if (existing) throw new Error("이미 회원가입한 계정입니다. 로그인해 주세요.");
+        connected = current.identities?.filter(identity => identity.provider === "kakao").length === 1;
+        if (completingKakao && !connected) throw new Error("연결된 카카오 계정을 확인할 수 없습니다.");
+        const { error: passwordError } = await supabase.auth.updateUser({ password });
+        if (passwordError) throw passwordError;
+        userId = current.id;
+      } else {
+        const { data, error } = await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: `${window.location.origin}/auth/callback`, data: { signup_nickname: signupNickname.trim(), signup_instagram: signupInstagram.trim(), signup_link_kakao: signupKakao } } });
+        if (error) throw error;
+        if (!data.user || data.user.identities?.length === 0) throw new Error("이미 등록된 이메일입니다. 기존 로그인 방법으로 로그인해 주세요.");
+        userId = data.user.id;
+        if (!data.session) { alert("이메일 인증 후 회원가입을 완료해 주세요."); return; }
+      }
+      const { error: profileError } = await supabase.from("profiles").insert({
+        id: userId, nickname: signupNickname.trim(), instagram_id: signupInstagram.trim(),
+        status: "pending", role: "user", kakao_connected: connected,
+      });
+      if (profileError) throw profileError;
+      membershipSaved = true;
+      setPassword("");
+      await onAuthChange?.();
+      if (signupKakao && !connected) {
+        const { data: { session } } = await supabase.auth.getSession();
+        const response = await fetch("/api/auth/kakao/signup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "commit", access_token: session?.access_token, refresh_token: session?.refresh_token }) });
+        const result = await response.json();
+        if (!response.ok) {
+          alert(`회원가입은 완료되었습니다. ${result.error || "카카오 연결은 개인설정에서 다시 진행해 주세요."}`);
+          setAuthOpen(false); setCompletingSignup(false); setCompletingKakao(false);
+          await clearKakaoSignup();
+          return;
+        }
+        if (result.session) await supabase.auth.setSession(result.session);
+        await onAuthChange?.();
+      }
+      await clearKakaoSignup();
+      alert("회원가입이 완료되었습니다. 관리자 승인 후 저장 기능을 이용할 수 있습니다.");
+      setAuthOpen(false);
+      setCompletingKakao(false);
+      setCompletingSignup(false);
+      setSignupKakao(false);
+      setSignupNickname(""); setSignupInstagram(""); setEmail("");
+    } catch (error) {
+      if (membershipSaved) {
+        alert("회원가입은 완료되었습니다. 카카오 연결 상태는 개인설정에서 확인해 주세요.");
+        setAuthOpen(false);
+        await clearKakaoSignup();
+      } else {
+        alert(error instanceof Error ? error.message : "회원가입에 실패했습니다. 다시 시도해 주세요.");
+      }
+    } finally { setSignupBusy(false); }
   };
 
   const handleLogout = async () => {
@@ -443,11 +546,13 @@ if (profileError) {
             setSignupNickname={setSignupNickname}
             signupInstagram={signupInstagram}
             setSignupInstagram={setSignupInstagram}
-            onClose={() => setAuthOpen(false)}
+            onClose={() => { setAuthOpen(false); void clearKakaoSignup(); }}
             onLogin={handleLogin}
             onSignup={handleSignup}
             onResetPassword={handleResetPassword}
             onKakaoLogin={handleKakaoLogin}
+            signupKakao={signupKakao} onStartKakaoSignup={startKakaoSignup} onClearKakaoSignup={() => { void clearKakaoSignup(); }}
+            completingKakao={completingKakao} completingSignup={completingSignup} signupBusy={signupBusy}
           />,
           document.body
         )

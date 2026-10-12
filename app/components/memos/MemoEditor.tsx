@@ -74,8 +74,8 @@ export default function MemoEditor({ memo, onClose, kind = "memo", extraFields, 
     finally { setBusy(false); }
   };
   const content = <div className={inline ? "w-full" : "fixed inset-0 z-[6000] bg-black/40 flex items-center justify-center p-4"} onClick={() => { if (!busy) onClose(); }}>
-    <div ref={panel} role="dialog" aria-modal="true" aria-label={kind === "diary" ? (memo ? "일기 수정" : "일기 쓰기") : (memo ? "메모 수정" : "메모 추가")} onClick={e => e.stopPropagation()} className={inline ? "memo-editor-panel bg-white w-full" : "memo-editor-panel bg-white w-full max-w-lg rounded-3xl shadow-xl p-5 md:p-6 max-h-[calc(100dvh-32px)] overflow-y-auto"} style={{ transform: `translate(${position.x}px,${position.y}px)` }}>
-      <div className="flex items-center justify-between mb-4" onPointerDown={event => {
+    <div data-popup-frame={inline ? undefined : "true"} ref={panel} role="dialog" aria-modal="true" aria-label={kind === "diary" ? (memo ? "일기 수정" : "일기 쓰기") : (memo ? "메모 수정" : "메모 추가")} onClick={e => e.stopPropagation()} className={inline ? "memo-editor-panel bg-white w-full" : "memo-editor-panel bg-white w-full max-w-lg rounded-3xl shadow-xl p-5 md:p-6 max-h-[calc(100dvh-32px)] overflow-y-auto"} style={{ transform: `translate(${position.x}px,${position.y}px)` }}>
+      <div data-popup-drag-handle={inline ? undefined : "true"} className="flex items-center justify-between mb-4" onPointerDown={event => {
         if (inline || (event.target as HTMLElement).closest("button") || event.button !== 0) return;
         const startX = event.clientX, startY = event.clientY;
         const x = position.x, y = position.y;

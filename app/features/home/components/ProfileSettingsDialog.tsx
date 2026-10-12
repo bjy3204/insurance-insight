@@ -10,6 +10,7 @@ return (<>{profileSettingOpen && (
     onClick={() => setProfileSettingOpen(false)}
   >
     <div
+      data-popup-resize="false"
       onClick={(e) => e.stopPropagation()}
       className="
         w-full

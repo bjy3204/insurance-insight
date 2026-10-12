@@ -111,7 +111,7 @@ return (<>{bankRateOpen && (
           ))}
         </div>
 
-       <div className="border-t border-gray-100 mt-5 pt-4">
+       <div className="border-t border-gray-100 mt-3 pt-3">
   <p className="text-xs font-medium text-gray-500 mb-2">금리 공시월 · {bankBaseDate}</p>
   <p className="text-xs text-gray-400 leading-relaxed break-keep">
     ※ 금리는 변동될 수 있으니 정확한 내용은 각 은행 홈페이지에서 확인해주세요.

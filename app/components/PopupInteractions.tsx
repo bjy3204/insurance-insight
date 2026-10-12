@@ -6,9 +6,25 @@ import { useEffect } from "react";
 export default function PopupInteractions() {
   useEffect(() => {
     let cleanupDrag: (() => void) | undefined;
+    let resizingPopup = false;
+    let ignoreResizeClickUntil = 0;
+    let releaseResizeScroll: (() => void) | undefined;
+    const finishResize = () => {
+      if (!resizingPopup) return;
+      releaseResizeScroll?.();
+      releaseResizeScroll = undefined;
+      resizingPopup = false;
+      ignoreResizeClickUntil = performance.now() + 400;
+    };
+    const ignoreResizeClick = (event: MouseEvent) => {
+      if (resizingPopup || performance.now() < ignoreResizeClickUntil) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    };
     let unlockScroll: (() => void) | undefined;
     const syncScroll = () => {
-      const open = window.innerWidth < 768 && !!document.querySelector('[data-popup-frame]:not([data-mobile-movable])');
+      const open = window.innerWidth < 768 && !!document.querySelector('[data-popup-frame]:not([data-mobile-movable]), [data-popup-small]');
       if (open && !unlockScroll) {
         const y = window.scrollY;
         const body = document.body;
@@ -33,7 +49,13 @@ export default function PopupInteractions() {
       document.querySelectorAll<HTMLElement>('.fixed.inset-0').forEach(overlay => {
         if (!overlay.className.includes("bg-black/") || overlay.querySelector('[data-popup-frame]')) return;
         const panel = overlay.firstElementChild;
-        if (panel instanceof HTMLElement && panel.className.includes("bg-white")) panel.setAttribute("data-popup-frame", "true");
+        if (panel instanceof HTMLElement && panel.className.includes("bg-white")) {
+          if (panel.querySelector('[data-popup-header], [data-popup-drag-handle]') || /\bh-\[/.test(panel.className)) {
+            panel.setAttribute("data-popup-frame", "true");
+          } else {
+            panel.setAttribute("data-popup-small", "true");
+          }
+        }
       });
       syncScroll();
     };
@@ -47,7 +69,7 @@ export default function PopupInteractions() {
       if (!frame || event.button !== 0) return;
       const mobile = window.innerWidth < 768;
       const movable = frame.hasAttribute("data-mobile-movable");
-      const header = target.closest("[data-popup-header]");
+      const header = target.closest("[data-popup-header], [data-popup-drag-handle]");
       const control = target.closest("button, input, textarea, select, a, [contenteditable], .calc-btn, .calc-resize");
       if (mobile && !movable) {
         if (!control && (header || event.type === "mousedown")) event.stopPropagation();
@@ -55,7 +77,31 @@ export default function PopupInteractions() {
       }
       if (event.type !== "pointerdown") return;
       const rect = frame.getBoundingClientRect();
-      if (!mobile && event.clientX > rect.right - 18 && event.clientY > rect.bottom - 18) {
+      if (!mobile && frame.dataset.popupResize !== "false" && frame.dataset.popupResize !== "custom" && event.clientX > rect.right - 18 && event.clientY > rect.bottom - 18) {
+        resizingPopup = true;
+        if (frame.hasAttribute("data-resource-explorer")) {
+          const scrollers = Array.from(frame.querySelectorAll<HTMLElement>(".overflow-y-auto, .overflow-auto")).map(element => ({
+            element, top: element.scrollTop, left: element.scrollLeft,
+            overflow: element.style.overflow, behavior: element.style.scrollBehavior,
+          }));
+          const keepScroll = () => scrollers.forEach(({ element, top, left }) => {
+            element.scrollTop = top;
+            element.scrollLeft = left;
+          });
+          scrollers.forEach(({ element }) => {
+            element.style.overflow = "hidden";
+            element.style.scrollBehavior = "auto";
+            element.addEventListener("scroll", keepScroll);
+          });
+          releaseResizeScroll = () => {
+            scrollers.forEach(({ element, overflow, behavior }) => {
+              element.style.overflow = overflow;
+              element.removeEventListener("scroll", keepScroll);
+              element.style.scrollBehavior = behavior;
+            });
+            keepScroll();
+          };
+        }
         frame.style.width = `${rect.width}px`;
         frame.style.height = `${rect.height}px`;
         frame.style.maxWidth = "calc(100vw - 16px)";
@@ -86,14 +132,23 @@ export default function PopupInteractions() {
     };
     document.addEventListener("pointerdown", down, true);
     document.addEventListener("mousedown", down, true);
+    document.addEventListener("click", ignoreResizeClick, true);
+    window.addEventListener("pointerup", finishResize, true);
+    window.addEventListener("mouseup", finishResize, true);
+    window.addEventListener("pointercancel", finishResize, true);
     window.addEventListener("resize", syncScroll);
     return () => {
       observer.disconnect();
       cleanupDrag?.();
       unlockScroll?.();
+      releaseResizeScroll?.();
       window.removeEventListener("resize", syncScroll);
       document.removeEventListener("pointerdown", down, true);
       document.removeEventListener("mousedown", down, true);
+      document.removeEventListener("click", ignoreResizeClick, true);
+      window.removeEventListener("pointerup", finishResize, true);
+      window.removeEventListener("mouseup", finishResize, true);
+      window.removeEventListener("pointercancel", finishResize, true);
     };
   }, []);
   return null;

@@ -10,11 +10,13 @@ return (<>{menuAddOpen && (
     className="fixed inset-0 z-[1400] bg-black/40 flex items-center justify-center p-4"
   >
     <div
+  data-popup-resize="false"
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("menuAdd")}
   className="bg-white w-full max-w-md rounded-3xl shadow-xl p-6"
 >
       <div
+  data-popup-drag-handle="true"
   onPointerDown={(e) => startPopupDrag("menuAdd", e)}
   className="flex items-center justify-between mb-5"
 >

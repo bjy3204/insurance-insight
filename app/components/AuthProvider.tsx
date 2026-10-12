@@ -70,7 +70,8 @@ const loadProfile = async (userId: string) => {
   }
 
   if (!profile) {
-    console.warn("profiles 데이터 없음:", userId);
+    setAuthUser(null);
+    setAuthNickname(null); setAuthInstagram(null); setAuthStatus(null); setAuthRole(null); setAuthCreatedAt(null);
     return;
   }
 

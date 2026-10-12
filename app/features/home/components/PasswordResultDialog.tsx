@@ -6,7 +6,7 @@ const { passwordResultOpen, setPasswordResultOpen, passwordResultSuccess, setPas
 return (<>{(passwordResultOpen || passwordResultRef.current) && (
     <div className="fixed inset-0 z-[99999] bg-black/40 flex items-center justify-center p-5">
 
-    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+    <div data-popup-small="true" className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
             <h2 className="text-xl font-black text-gray-900">
         {(passwordResultSuccess || passwordResultSuccessRef.current) ? "저장 완료" : "저장 실패"}
       </h2>

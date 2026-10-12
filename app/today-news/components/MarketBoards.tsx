@@ -20,7 +20,7 @@ function Tile({item,currency}:{item:Item;currency:boolean}) {
  return <a href={visual.link} target="_blank" rel="noopener noreferrer" className={styles.tile} aria-label={`${visual.name} 상세 지표 새 탭`}>
   <div className={styles.label}>{visual.image?<img src={visual.image} alt="" className={currency?styles.flag:styles.metal}/>:visual.icon==='growth'?<TrendingUp className={styles.indexIcon}/>:<ChartNoAxesCombined className={styles.indexIcon}/>}<span title={item.label==='JPY'?'100엔 기준':undefined}>{visual.name}</span></div>
   <strong>{valid?item.value.toLocaleString('ko-KR',{minimumFractionDigits:decimals,maximumFractionDigits:decimals}):'—'}{valid&&(currency||gold)&&<span className={styles.unit}>원</span>}</strong>
-  <span className={`${styles.change} ${styles[direction]}`}>{valid?`${direction==='up'?'▲ ':direction==='down'?'▼ ':''}${Math.abs(item.change).toLocaleString('ko-KR',{maximumFractionDigits:2,minimumFractionDigits:gold?0:2})}`:'조회 대기'}</span>
+  <span className={`${styles.change} ${styles[direction]}`}>{valid?<>{direction!=='same'&&<span className={styles.changeArrow}>{direction==='up'?'▲':'▼'}</span>}{Math.abs(item.change).toLocaleString('ko-KR',{maximumFractionDigits:2,minimumFractionDigits:gold?0:2})}</>:'조회 대기'}</span>
  </a>;
 }
 export default function MarketBoards({exchangeItems,marketItems}:{exchangeItems:Item[];marketItems:Item[]}) {

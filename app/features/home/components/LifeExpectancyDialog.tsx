@@ -8,7 +8,7 @@ return (<>{lifeOpen && (
   <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
     <div data-popup-frame="true"
   style={getPopupStyle("life")}
-  className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
+  className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
 >
       <div data-popup-header="true"
   onPointerDown={(e) => startPopupDrag("life", e)}
@@ -38,7 +38,7 @@ return (<>{lifeOpen && (
       </div>
 
       <div className="p-5 overflow-y-auto">
-        <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
+        <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-3">
           {(["남성", "여성"] as const).map((item) => (
             <button
               key={item}
@@ -54,7 +54,7 @@ return (<>{lifeOpen && (
           ))}
         </div>
 
-        <div className="mb-5">
+        <div className="mb-3">
           <div className="relative">
             <input data-ui-field="true"
               value={lifeAge}
@@ -84,7 +84,7 @@ return (<>{lifeOpen && (
           </div>
         </div>
 {!selectedLife && (
-  <div className="bg-blue-50 rounded-3xl p-8 text-center mb-5">
+  <div className="bg-blue-50 rounded-3xl p-8 text-center mb-3">
     <img
       src={`/icons/pension/${lifeGender === "남성" ? "male" : "female"}.png`}
       alt={lifeGender}
@@ -100,7 +100,7 @@ return (<>{lifeOpen && (
 )}
         {selectedLife && (
   <>
-    <div className="bg-blue-50 rounded-3xl p-6 text-center mb-5">
+    <div className="bg-blue-50 rounded-3xl p-6 text-center mb-3">
       <img
         src={`/icons/pension/${lifeGender === "남성" ? "male" : "female"}.png`}
         alt={lifeGender}
@@ -151,7 +151,7 @@ return (<>{lifeOpen && (
       </div>
     </div>
 
-    <div className="mt-5 rounded-2xl bg-gray-50 border border-gray-200 p-4">
+    <div className="mt-3 rounded-2xl bg-gray-50 border border-gray-200 p-4">
      <p className="text-sm text-gray-700 leading-relaxed">
   현재 <span className="font-bold">{lifeAge}세</span>{" "}
   <span className="font-bold">{lifeGender}</span> 기준,
@@ -182,7 +182,7 @@ return (<>{lifeOpen && (
     </div>
   </>
 )}
-<p className="text-xs text-gray-500 leading-relaxed mt-5 px-1">
+<p className="text-xs text-gray-500 leading-relaxed mt-3 px-1">
   본 자료는 통계청 「2024년 생명표」 및
   유병기간 제외 기대수명(건강수명) 통계를 참고하여 계산한 추정값이며,
   개인의 건강상태 · 생활습관 · 질병 이력 등에 따라 실제 결과와 다를 수 있습니다.

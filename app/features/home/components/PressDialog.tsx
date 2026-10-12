@@ -166,20 +166,19 @@ return (<>{pressOpen && (
               {selectedPress.title}
             </h2>
 
-            <p className="text-sm text-gray-400 mt-2">
+            <div className="flex items-center justify-between gap-3 mt-2">
+<p className="text-sm text-gray-400 whitespace-nowrap">
               {selectedPress.date} · {selectedPress.source}
             </p>
-
-            <div className="border-t border-gray-200 mt-4 pt-3 break-keep text-[15px] leading-[1.8] text-gray-700">
   {selectedPress.pdfs && (
-    <div className="flex flex-wrap gap-3 mb-4">
+    <div className="flex items-center justify-end gap-3 shrink-0">
       {selectedPress.pdfs.map((pdf: string, index: number) => (
         <a
           key={index}
           href={pdf}
           download
           className="
-            inline-flex
+            inline-flex whitespace-nowrap
             items-center
             gap-1.5
             text-sm
@@ -197,7 +196,9 @@ return (<>{pressOpen && (
       ))}
     </div>
   )}
+</div>
 
+<div className="border-t border-gray-200 mt-4 pt-3 break-keep text-[15px] leading-[1.8] text-gray-700">
   <div className="whitespace-pre-line">
     {selectedPress.body}
   </div>

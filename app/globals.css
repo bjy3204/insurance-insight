@@ -34,6 +34,28 @@ body {
   cursor: default;
 }
 
+@media (max-width:767px) {
+  html:has([data-home-page="true"]),
+  body:has([data-home-page="true"]),
+  [data-home-page="true"] {
+    scrollbar-width:none;
+  }
+  html:has([data-home-page="true"])::-webkit-scrollbar,
+  body:has([data-home-page="true"])::-webkit-scrollbar,
+  [data-home-page="true"]::-webkit-scrollbar {
+    display:none;
+  }
+}
+
+@media (max-width:767px) {
+  header[data-page-header="true"], [data-mobile-main-header="true"] {
+    position:sticky !important;
+    top:0 !important;
+    z-index:40;
+    flex-shrink:0;
+  }
+}
+
 [data-page-search-wrapper="true"]:focus-within {
   background-color: #fff !important;
   border-color: #9ca3af !important;
@@ -626,14 +648,12 @@ input:disabled, textarea:disabled { cursor: default !important; }
 }
 
 @media (max-width:767px) {
-  body { --mobile-popup-footer:0px; }
-  body:has([data-site-footer="true"]) { --mobile-popup-footer:69px; }
-  [data-popup-frame="true"]:not([data-mobile-movable]) {
+  [data-popup-frame="true"]:not([data-mobile-movable]):not([data-popup-small]) {
     --mobile-popup-height:min(83dvh, calc(100dvh - 105px));
     position:fixed !important;
     left:12px !important;
     right:12px !important;
-    top:calc((100dvh - var(--mobile-popup-footer) - var(--mobile-popup-height)) / 2) !important;
+    top:50dvh !important;
     bottom:auto !important;
     width:calc(100vw - 24px) !important;
     height:var(--mobile-popup-height) !important;
@@ -653,7 +673,7 @@ input:disabled, textarea:disabled { cursor: default !important; }
 }
 
 @media (max-width:767px) {
-  [data-popup-frame="true"]:not([data-mobile-movable]) { transform:none !important; translate:none !important; resize:none !important; }
+  [data-popup-frame="true"]:not([data-mobile-movable]):not([data-popup-small]) { transform:translateY(-50%) !important; translate:none !important; resize:none !important; }
   [data-popup-frame="true"] [data-popup-header] { touch-action:pan-y; }
   [data-mobile-movable="true"] { left:50% !important; top:50% !important; transform:translate(-50%, -50%); width:min(340px, calc(100vw - 24px)) !important; height:min(620px, calc(100dvh - 24px)) !important; }
   [data-mobile-movable="true"] { touch-action:none; }
@@ -666,4 +686,61 @@ input:disabled, textarea:disabled { cursor: default !important; }
 
 @media (max-width:767px) {
   [data-mobile-movable="true"][data-widget-kind="calculator"] { height:min(560px, calc(100dvh - 24px)) !important; }
+}
+
+[data-popup-resize="false"], [data-popup-resize="custom"] { resize:none !important; }
+.memo-editor-panel[data-popup-frame="true"] {
+  display:flex;
+  flex-direction:column;
+  height:min(480px, calc(100dvh - 32px));
+  min-height:360px;
+  overflow:hidden;
+}
+.memo-editor-panel[data-popup-frame="true"] > :not(.memo-rich-editor) { flex-shrink:0; }
+.memo-editor-panel[data-popup-frame="true"] > .memo-rich-editor {
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  min-height:0;
+}
+.memo-editor-panel[data-popup-frame="true"] .memo-custom-toolbar { flex-shrink:0; }
+.memo-editor-panel[data-popup-frame="true"] .quill { display:flex; flex-direction:column; flex:1; min-height:0; }
+.memo-editor-panel[data-popup-frame="true"] .ql-container { flex:1; min-height:0; height:0; }
+.memo-editor-panel[data-popup-frame="true"] .ql-editor { height:100%; min-height:0; max-height:none; overflow-y:auto; }
+@media (min-width:768px) {
+  [data-popup-frame="true"] > .overflow-y-auto:not(.flex-1):not(.memo-rich-editor) { flex:1; min-height:0; }
+}
+
+[data-popup-small="true"] { resize:none !important; }
+
+/* Resize the explorer frame without creating an outer scrolling surface. */
+[data-popup-frame="true"][data-resource-explorer="true"] {
+  overflow:hidden !important;
+  overflow-anchor:none;
+}
+[data-resource-explorer="true"] .overflow-y-auto {
+  overscroll-behavior:contain;
+  overflow-anchor:none;
+}
+
+/* Match body sections and card lists to the popup's 12px control spacing. */
+[data-popup-frame="true"] > .overflow-y-auto > :is([class~="mt-4"], [class~="mt-5"], [class~="mt-6"]) {
+  margin-top:var(--popup-section-gap, 12px) !important;
+}
+[data-popup-frame="true"] > .overflow-y-auto > :is([class~="mb-4"], [class~="mb-5"], [class~="mb-6"]) {
+  margin-bottom:var(--popup-section-gap, 12px) !important;
+}
+[data-popup-frame="true"] :is(.grid[class~="gap-4"], .grid[class~="gap-5"], .grid[class~="gap-6"]) {
+  gap:var(--popup-section-gap, 12px) !important;
+}
+[data-popup-frame="true"] :is([class~="space-y-4"], [class~="space-y-5"], [class~="space-y-6"]) > :not(:last-child) {
+  margin-block-end:var(--popup-section-gap, 12px) !important;
+}
+
+/* Keep the last body section as close to the bottom as adjacent sections. */
+[data-popup-frame="true"] > :is(.overflow-y-auto, .overflow-auto):last-child {
+  padding-bottom:var(--popup-section-gap, 12px) !important;
+}
+[data-popup-frame="true"] > :is(.overflow-y-auto, .overflow-auto):last-child > :last-child {
+  margin-bottom:0 !important;
 }

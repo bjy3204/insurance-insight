@@ -16,4 +16,4 @@
   .tabs button:hover { color:#46658d; background-color:#edf2fa; }
 }
 .tabs button:focus-visible, .nearby:focus-visible { outline:2px solid #3574db; outline-offset:3px; }
-@media(max-width:767px) { .tabs { gap:18px; justify-content:center; } .tabs button { font-size:14px; padding:12px 0; } }
+@media(max-width:767px) { .tabs { gap:24px; justify-content:center; } .tabs button { font-size:14px; padding:12px 0; } }

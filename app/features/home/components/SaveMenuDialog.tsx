@@ -5,7 +5,7 @@ export default function SaveMenuDialog({ controller }: { controller: HomeControl
 const { saveConfirmOpen, setSaveConfirmOpen, saveConfirmType, saveConfirmMessage } = controller;
 return (<>{saveConfirmOpen && (
   <div className="fixed inset-0 z-[2100] bg-black/40 flex items-center justify-center p-5">
-    <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+    <div data-popup-small="true" className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
       <h2 className="text-xl font-black text-gray-900">
         저장 완료
       </h2>

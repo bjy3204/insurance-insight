@@ -145,7 +145,7 @@ return (<>{menuSortOpen && (
     .filter((menu) => !menu.approvedOnly || authStatus === "approved")
     .map((menu) => menu.id)}
 >
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
 {tempMenus
   .filter((menu) => menu.id !== "lecture")
   .filter((menu) => !menu.approvedOnly || authStatus === "approved")
@@ -222,7 +222,7 @@ return (<>{menuSortOpen && (
         saveEditingMenuAndClose();
       }
     }}
-    className="space-y-5"
+    className="space-y-3"
   >
     <div
       className="
@@ -248,7 +248,7 @@ sm:pb-4
         추후 기능이 추가되면 선택 가능한 메뉴도 함께 추가됩니다.
       </p>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
         {Array.from({ length: 4 }).map((_, index) => {
           const selectedKey = tempQuickMenuKeys[index];
 
@@ -342,7 +342,7 @@ sm:pb-4
     </div>
 
         
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 items-start">
                 {tempPersonalMenus.map((menu) => {
           const Icon = personalMenuIcons[menu.iconKey];
           const isSelected = selectedPersonalMenuId === menu.id;
@@ -512,7 +512,7 @@ hover:-translate-y-1
 )}
 
   {menuManageMode === "delete" && (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
       {personalMenus.length === 0 ? (
         <div className="col-span-full min-h-[380px] flex items-center justify-center pt-16 text-center text-sm text-gray-400">
   삭제할 개인 메뉴가 없습니다.

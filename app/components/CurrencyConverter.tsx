@@ -546,7 +546,7 @@ naverData.items?.forEach((item: any) => {
     <>
       {isOpen && initialized && (
         <div
-          data-mobile-movable="true" ref={calcRef}
+          data-mobile-movable="true" data-popup-resize="custom" ref={calcRef}
           style={{
             position: "fixed",
             left: pos.x,

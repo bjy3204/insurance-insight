@@ -8,7 +8,7 @@ import AuthButton from "@/components/AuthButton";
 import type { HomeController } from "../hooks/useHomeController";
 export default function MainHeader({ controller }: { controller: HomeController }) {
 const { authUser, authNickname, authStatus, authCreatedAt, authLoading, setFortuneOpen, menus, hiddenMenuIds, setTempHiddenMenuIds, today, total, showInstall, setShowInstall, deferredPrompt, setDeferredPrompt, WEATHER_REGIONS, setWeatherRegion, weatherOpen, setWeatherOpen, weather, specialDays, settingOpen, setSettingOpen, setMemoOpen, setResourceOpen, setMenuSortOpen, setTempMenus, setMenuAddOpen, personalMenus, setTempPersonalMenus, setMenuManageMode, setSelectedPersonalMenuId, setSelectedDeleteMenuIds, setEditIconOpen, mainMenuManageMode, setMainMenuManageMode, resetPopupPosition, quickMenuKeys, setTempQuickMenuKeys, goBackMainScreen } = controller;
-return (<><DesktopHeader controller={controller} /><div className="md:hidden"><SiteHeader variant="main">
+return (<><DesktopHeader controller={controller} /><div data-mobile-main-header="true" className="md:hidden"><SiteHeader variant="main">
           <div className="relative flex items-center justify-center md:justify-center">
 
     {/* PC 좌측 버튼 */}

@@ -39,7 +39,7 @@ export default function NpsTableModal({onClose}:{onClose:()=>void}) {
           <table className="cursor-default w-full min-w-[900px] text-sm"><thead className="bg-gray-50 text-gray-500 sticky top-0 z-10"><tr>{columns.map(([key,label])=><th key={key} className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">{label}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.no} className="hover:bg-gray-50">{columns.map(([key])=><td key={key} className="py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap">{(row as unknown as Record<string,number>)[key].toLocaleString()}</td>)}</tr>)}</tbody></table>
           {!rows.length&&<div className="text-center text-sm text-gray-400 py-10">검색 결과가 없습니다</div>}
         </div>
-        <p className="text-xs text-gray-500 leading-relaxed mt-4 px-1">본 표는 {tables.effectiveMonth.replace('-','년 ')}월 국민연금 예상연금월액표 기준이며, 실제 수령액은 가입이력 · 재평가율 · 연금개시연령 · 부양가족연금액 및 제도 변경 등에 따라 달라질 수 있습니다. (단위 :원) <a href={tables.sourceUrl} target="_blank" rel="noopener noreferrer" className="cursor-pointer underline">국민연금공단 원문</a></p>
+        <p className="text-xs text-gray-500 leading-relaxed mt-3 px-1">본 표는 {tables.effectiveMonth.replace('-','년 ')}월 국민연금 예상연금월액표 기준이며, 실제 수령액은 가입이력 · 재평가율 · 연금개시연령 · 부양가족연금액 및 제도 변경 등에 따라 달라질 수 있습니다. (단위 :원) <a href={tables.sourceUrl} target="_blank" rel="noopener noreferrer" className="cursor-pointer underline">국민연금공단 원문</a></p>
       </div>
     </div>
   </div>;
