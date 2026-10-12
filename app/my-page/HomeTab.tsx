@@ -1,5 +1,6 @@
 "use client";
 
+import Pagination from "@/app/components/Pagination";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 
@@ -906,46 +907,7 @@ const diaryEndPage = Math.min(
 </div>
         ))}
        <div className="flex items-center justify-center gap-1 mt-3">
-<nav data-pagination="true" aria-label="페이지 이동">
-  <button
-    onClick={() => setDiaryPage((prev) => Math.max(1, prev - PAGE_GROUP))}
-    className="px-2 h-8 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 text-sm font-bold hover:bg-blue-100 transition"
-  >
-    이전
-  </button>
-
-  {Array.from(
-    { length: Math.max(1, diaryEndPage - diaryStartPage + 1) },
-    (_, i) => {
-      const page = diaryStartPage + i;
-
-      return (
-        <button
-          key={page}
-          onClick={() => setDiaryPage(page)}
-          className={`w-8 h-8 rounded-xl text-sm font-bold transition ${
-            diaryPage === page
-              ? "bg-blue-500 text-white shadow-sm"
-              : "bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100"
-          }`}
-        >
-          {page}
-        </button>
-      );
-    }
-  )}
-
-  <button
-    onClick={() =>
-      setDiaryPage((prev) =>
-        Math.min(Math.max(1, diaryTotalPages), prev + PAGE_GROUP)
-      )
-    }
-    className="px-2 h-8 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 text-sm font-bold hover:bg-blue-100 transition"
-  >
-    다음
-  </button>
-</nav>
+<Pagination page={diaryPage} totalPages={diaryTotalPages} onPageChange={setDiaryPage} />
 </div>
       </div>
     );

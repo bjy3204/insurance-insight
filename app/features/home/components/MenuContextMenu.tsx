@@ -6,14 +6,14 @@ const { memos, setTempMenus, personalMenus, tempPersonalMenus, setTempPersonalMe
 return (<>{contextMenu && (
  <div
   style={{
-    left: contextMenu.x,
-    top: contextMenu.y,
+    left: Math.max(8, Math.min(contextMenu.x, window.innerWidth - 152)),
+    top: Math.max(8, Math.min(contextMenu.y, window.innerHeight - 112)),
   }}
   onPointerDown={(e) => e.stopPropagation()}
   onClick={(e) => e.stopPropagation()}
     className="
       fixed
-      z-[5000]
+      z-[10000]
       w-36
       rounded-2xl
       bg-white

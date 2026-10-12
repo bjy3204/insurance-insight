@@ -131,3 +131,8 @@
 
 .card .marketPageLink,.card .marketPageLink *,.card .calendarPageLink,.card .calendarPageLink * {cursor:pointer;}
 .calendarHeading{position:relative}.calendarHeading>.calendarPageLink{position:absolute;right:calc(15px + (100% - 30px)/14 - 12.5px);top:50%;transform:translateY(-50%)}.calendarHeading>.calendarMonthNavigation{grid-column:2;grid-row:1}.calendarHeading>span{grid-column:1;grid-row:1}
+
+.dialog[data-popup-search-dialog="true"] .dialogHeader { margin-bottom:12px; }
+.dialog[data-popup-search-dialog="true"] label { margin-top:0; }
+.dialog[data-popup-search-dialog="true"] .formActions { margin-top:12px; }
+.dialog[data-popup-search-dialog="true"] form { margin-bottom:12px; }

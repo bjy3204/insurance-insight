@@ -1,4 +1,5 @@
 "use client";
+import Pagination from "@/app/components/Pagination";
 import { useEffect, useRef, useState } from "react";
 import { hospitalData } from "./hospital-data";
 import {
@@ -191,11 +192,11 @@ const toggleType = (type: string) => {
 </button>
                 </div>
 
-        <div className="hospital-scroll flex-1 overflow-y-auto p-5">
+        <div className="hospital-scroll flex-1 overflow-y-auto px-5 pt-4 pb-5">
           
 
-          <div className="mb-5">
-            <div data-tab-group="true" className="grid grid-cols-4 bg-gray-200 rounded-2xl p-1 gap-1">
+          <div className="mb-3">
+            <div data-tab-group="true" className="grid grid-cols-2 md:grid-cols-4 bg-gray-200 rounded-2xl p-1 gap-1">
               {["전체", ...hospitalTypes].map((item) => {
                 const active = selectedType === item;
 
@@ -203,7 +204,7 @@ const toggleType = (type: string) => {
                   <button
                     key={item}
                     onClick={() => toggleType(item)}
-                    className={`rounded-2xl py-3 text-[11px] sm:text-sm font-bold transition whitespace-nowrap ${
+                    className={`rounded-2xl py-3 text-sm font-bold transition whitespace-nowrap ${
                       active
                         ? "bg-white text-blue-600 shadow-sm"
                         : "text-gray-600"
@@ -215,7 +216,7 @@ const toggleType = (type: string) => {
               })}
             </div>
                     </div>
-<div className="rounded-2xl border border-gray-200 bg-[#f8fafc] overflow-hidden">
+<div data-popup-search-section="true" className="rounded-2xl border border-gray-200 bg-[#f8fafc] overflow-hidden">
 <button type="button" aria-expanded={filterOpen} aria-controls="hospital-search-filters"
   onClick={() => setFilterOpen(!filterOpen)}
   className="
@@ -287,19 +288,13 @@ const toggleType = (type: string) => {
           )}
 
 </div>
-          <div className="mt-6 mb-4">
-            <p className="text-sm font-bold text-gray-700">
-              검색 결과 {results.length.toLocaleString()}개 · {page} /{" "}
-              {totalPages}페이지
-            </p>
-          </div>
 
           {loading ? (
             <div className="text-center py-16 text-gray-400 text-sm font-medium">
               병원 정보를 불러오는 중입니다
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="mt-3 space-y-3">
               {results.length === 0 ? (
                <div className="text-center py-16">
   
@@ -321,24 +316,24 @@ const toggleType = (type: string) => {
     border
     border-gray-200
     rounded-3xl
-    p-5
+    p-4 md:p-5
     shadow-sm
   "
 >
 
-  <div className="grid grid-cols-3 md:grid-cols-[minmax(0,1fr)_165px_110px_100px_100px] items-center gap-3">
-    <div className="col-span-3 md:col-span-1 min-w-0">
+  <div className="grid grid-cols-2 md:grid-cols-[minmax(0,1fr)_165px_110px_100px_100px] items-center gap-3">
+    <div className="col-span-2 md:col-span-1 min-w-0">
       <div className="flex items-center gap-2 flex-wrap">
         <h2 className="text-[17px] font-black text-gray-900 break-words">{hospital.name}</h2>
         <span className="px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600">{hospital.originalType || hospital.type}</span>
       </div>
       <div className="flex items-start gap-1.5 mt-1"><MapPin size={14} className="shrink-0 mt-0.5 text-slate-400" /><p className="text-xs text-slate-500 break-words">{hospital.address}</p></div>
     </div>
-    <a href={hospital.tel !== "-" ? `tel:${hospital.tel}` : undefined} className="flex items-center gap-2 min-w-0">
-      <Phone size={17} className="hidden sm:block shrink-0 text-slate-400" />
-      <div className="min-w-0"><p className="text-xs sm:text-sm text-slate-500">전화번호</p><p className="text-sm sm:text-base font-bold text-slate-900 break-words">{hospital.tel}</p></div>
-    </a>
-    <div className="flex items-center gap-2"><UsersRound size={18} className="hidden sm:block text-slate-400" /><div><p className="text-xs sm:text-sm text-slate-500">총 의사수</p><p className="text-base font-bold text-blue-600">{String(hospital.doctorCount).replace("명", "")}명</p></div></div>
+    <div className="flex items-center gap-3 min-w-0">
+      <Phone size={22} className="w-5 h-5 sm:w-[22px] sm:h-[22px] shrink-0 text-slate-400" />
+      <div className="min-w-0"><p className="text-xs sm:text-sm text-slate-500">전화번호</p>{hospital.tel !== "-" ? <a href={`tel:${hospital.tel}`} className="inline-block rounded-md px-1 -mx-1 text-sm sm:text-base font-bold text-slate-900 break-words cursor-pointer hover:bg-blue-50 transition-colors">{hospital.tel}</a> : <p className="text-sm sm:text-base font-bold text-slate-900">{hospital.tel}</p>}</div>
+    </div>
+    <div className="flex items-center gap-3 min-w-0"><UsersRound size={23} className="w-5 h-5 sm:w-[23px] sm:h-[23px] shrink-0 text-slate-400" /><div><p className="text-xs sm:text-sm text-slate-500">총 의사수</p><p className="text-base font-bold text-blue-600">{String(hospital.doctorCount).replace("명", "")}명</p></div></div>
     <button type="button" onClick={() => setOpenedIndex(openedIndex === index ? null : index)} aria-expanded={openedIndex === index} className="flex items-center justify-center gap-1 rounded-xl bg-blue-50 px-2 py-2.5 text-xs font-bold text-slate-600 hover:bg-blue-100 transition cursor-pointer">
       상세정보 {openedIndex === index ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
     </button>
@@ -379,54 +374,7 @@ const toggleType = (type: string) => {
           <div className="pt-4 pb-3">
   <div className="flex justify-center">
     <div className="flex    text-sm">
-<nav data-pagination="true" aria-label="페이지 이동">
-      <button
-        onClick={() => setPage((p) => Math.max(1, p - 1))}
-        disabled={page === 1}
-        className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300"
-      >
-        이전
-      </button>
-
-      {Array.from({ length: Math.min(totalPages, 10) }).map((_, index) => {
-        const pageNumber = index + 1;
-
-        return (
-          <button
-            key={pageNumber}
-            onClick={() => {
-  setPage(pageNumber);
-
-  const container = document.querySelector(
-    ".hospital-scroll"
-  );
-
-  if (container) {
-    container.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  }
-}}
-            className={`px-4 py-2 border-l border-gray-200 ${
-              page === pageNumber
-                ? "bg-slate-800 text-white"
-                : "bg-white text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            {pageNumber}
-          </button>
-        );
-      })}
-
-      <button
-        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-        disabled={page === totalPages}
-        className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300"
-      >
-        다음
-      </button>
-    </nav>
+<Pagination page={page} totalPages={totalPages} onPageChange={nextPage => { setPage(nextPage); document.querySelector(".hospital-scroll")?.scrollTo({ top: 0, behavior: "smooth" }); }} />
 </div>
   </div>
 

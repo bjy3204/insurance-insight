@@ -1,5 +1,6 @@
 "use client";
 
+import Pagination from "@/app/components/Pagination";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
@@ -1174,7 +1175,7 @@ const pagedMemos = filteredMemos.slice(
 
       {!selectedPress ? (
         <>
-          <div className="px-4 pt-4 pb-2 md:overflow-y-hidden" style={{ scrollbarGutter: "stable" }}>
+          <div data-popup-search-section="true" className="px-4 py-4 shrink-0 md:overflow-y-hidden" style={{ scrollbarGutter: "stable" }}>
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
@@ -1192,7 +1193,7 @@ const pagedMemos = filteredMemos.slice(
 
                     <div className="flex-1 min-h-0 flex flex-col">
   {/* 모바일 카드형 */}
-  <div className="overflow-y-auto flex-1 px-4 py-3 space-y-2 md:hidden">
+  <div className="overflow-y-auto flex-1 px-4 pt-0 pb-4 space-y-2 md:hidden">
     {paginatedPress.map((item, index) => (
       <div
         key={item.id}
@@ -1271,48 +1272,7 @@ const pagedMemos = filteredMemos.slice(
 
     <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
     <div className="flex    text-sm">
-<nav data-pagination="true" aria-label="페이지 이동">
-      <button
-        onClick={() => setPressPage((p) => Math.max(1, p - 1))}
-        disabled={pressPage === 1}
-        className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-      >
-        이전
-      </button>
-
-      {Array.from({
-        length: Math.min(totalPressPages, 10),
-      }).map((_, index) => {
-        const page = index + 1;
-        const start = Math.max(1, Math.min(pressPage - 2, totalPressPages - 4));
-        const end = Math.min(totalPressPages, start + 4);
-        if (page < start || page > end) return null;
-
-        return (
-          <button
-            key={page}
-            onClick={() => setPressPage(page)}
-            className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
-              pressPage === page
-                ? "bg-slate-800 text-white"
-                : "bg-white text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            {page}
-          </button>
-        );
-      })}
-
-      <button
-        onClick={() =>
-          setPressPage((p) => Math.min(totalPressPages, p + 1))
-        }
-        disabled={pressPage === totalPressPages}
-        className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-      >
-        다음
-      </button>
-    </nav>
+<Pagination page={pressPage} totalPages={totalPressPages} onPageChange={setPressPage} />
 </div>
   </div>
 

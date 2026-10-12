@@ -140,8 +140,8 @@ setItems(rows);
           </button>
         </div>
 
-        <div className="p-5 flex-1 min-h-0 flex flex-col">
-          <div className="relative mb-4">
+        <div className="px-5 pt-4 pb-5 flex-1 min-h-0 flex flex-col">
+          <div data-popup-search-section="true" className="relative mb-4 shrink-0">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
             <input data-ui-field="true" data-page-search-input="true"
@@ -212,16 +212,17 @@ setItems(rows);
             )}
           </div>
 
-          <div className="flex flex-wrap items-center justify-end gap-3 mt-3 shrink-0 text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-3 shrink-0 text-xs">
+            <p className="min-w-0 text-gray-500 leading-relaxed px-1">
+              상병코드는 건강보험심사평가원 에서 배포한 상병마스터(26.03) 기준으로 제공되며, 실제 보험금 청구 및 보험사 심사 결과와 다를 수 있습니다.
+            </p>
+            <div className="flex items-center justify-end gap-3 shrink-0 whitespace-nowrap">
             {!loaded ? <span className="text-gray-400">상병코드 데이터 불러오는 중...</span> : <>
               <span className="text-slate-500">전체 <strong className="font-semibold text-slate-700">{items.length.toLocaleString()}</strong>개</span>
               <span className="rounded-lg bg-blue-50 px-3 py-1.5 text-blue-600">검색 결과 <strong>{filteredItems.length.toLocaleString()}</strong>개</span>
             </>}
+            </div>
           </div>
-
-          <p className="text-xs text-gray-500 leading-relaxed mt-4 px-1">
-            상병코드는 건강보험심사평가원 에서 배포한 상병마스터(26.03) 기준으로 제공되며, 실제 보험금 청구 및 보험사 심사 결과와 다를 수 있습니다.
-          </p>
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import Pagination from "@/app/components/Pagination";
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
@@ -137,37 +138,7 @@ function AdminPagination({
   return (
     <div className="sticky bottom-0 z-30 -mx-5 mt-4 bg-gray-50/95 backdrop-blur px-5 py-3 flex justify-center">
       <div className="flex    text-sm bg-white">
-<nav data-pagination="true" aria-label="페이지 이동">
-        <button
-          onClick={() => onPageChange(Math.max(1, page - 1))}
-          disabled={page === 1}
-          className="h-10 px-4 bg-white text-gray-500 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer whitespace-nowrap"
-        >
-          이전
-        </button>
-
-        {pages.map((p) => (
-          <button
-            key={p}
-            onClick={() => onPageChange(p)}
-            className={`h-10 min-w-10 px-3 border-l border-gray-200 cursor-pointer ${
-              page === p
-                ? "bg-slate-800 text-white"
-                : "bg-white text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            {p}
-          </button>
-        ))}
-
-        <button
-          onClick={() => onPageChange(Math.min(totalPages, page + 1))}
-          disabled={page === totalPages}
-          className="h-10 px-4 border-l border-gray-200 bg-white text-gray-500 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer whitespace-nowrap"
-        >
-          다음
-        </button>
-      </nav>
+<Pagination page={page} totalPages={totalPages} onPageChange={onPageChange} />
 </div>
     </div>
   );
@@ -2138,7 +2109,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
       {isSelectPopupOpen && (
         <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4" onClick={() => setIsSelectPopupOpen(false)}>
           <div data-popup-frame="true" onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl flex flex-col max-h-[80vh]">
-            <div className="mb-5 flex items-center justify-between">
+            <div className="mb-3 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">이번 달 명단에 추가</h2>
               <button data-popup-close="true" onClick={() => setIsSelectPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
                 <X className="w-4 h-4" />
@@ -2181,7 +2152,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
       {isSubPopupOpen && (
         <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4" onClick={() => setIsSubPopupOpen(false)}>
           <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
-            <div className="mb-5 flex items-center justify-between">
+            <div className="mb-3 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">{subForm.id ? "구독자 정보 수정" : "새 구독자 마스터 등록"}</h2>
               <button data-popup-close="true" onClick={() => setIsSubPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
                 <X className="w-4 h-4" />
@@ -2315,10 +2286,10 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
               </div>
             </div>
 
-            <div className="p-3 md:p-6 flex-1 flex flex-col overflow-hidden bg-white">
+            <div className="px-3 md:px-6 pt-4 pb-6 flex-1 flex flex-col overflow-hidden bg-white">
                 
               {/* 탭 3개 및 검색창 */}
-              <div className="mb-2">
+              <div className="mb-3">
                 <div data-tab-group="true" className="flex bg-gray-200 p-1 rounded-xl w-full  mb-3">
   <button onClick={() => setAllSubTab("all")} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${allSubTab === "all" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"}`}>
     전체목록 <span className="text-xs font-black ml-1">{allSubscribers.length}</span>
@@ -2336,7 +2307,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                   <input data-ui-field="true" data-page-search-input="true" placeholder="이름 또는 아이디 검색" value={allSubSearch} onChange={(e) => setAllSubSearch(e.target.value)} className="w-full outline-none text-sm" />
                                 </div>
                 {/* 필터/정렬 버튼 */}
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2 mt-3">
                   <button
                     onClick={() => setAllSubPayFilter(v => !v)}
                     className={`text-xs font-bold px-3 py-1.5 rounded-lg transition ${allSubPayFilter ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
@@ -2506,7 +2477,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
         <div className="font-bold flex items-center gap-2"><NotebookPen className="w-5 h-5" />메모장</div>
         <button data-popup-close="true" onClick={() => setIsMemoOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"><X className="w-5 h-5" /></button>
       </div>
-      <div className="p-4 flex gap-3">
+      <div data-popup-search-section="true" className="px-4 py-3 flex items-center gap-3 shrink-0">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input data-ui-field="true" data-page-search-input="true" value={memoSearch} onChange={(e) => setMemoSearch(e.target.value)} placeholder="메모 검색" className="w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm outline-none focus:border-gray-400" />
@@ -2515,7 +2486,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
           <Plus className="w-4 h-4" />추가
         </button>
       </div>
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto px-4 pt-0 pb-4">
         {filteredMemos.length === 0 ? (
           <div className="h-full flex items-center justify-center text-sm text-gray-400 py-20">저장된 메모가 없습니다.</div>
         ) : (
@@ -2554,16 +2525,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
       </div>
       <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
         <div className="flex    text-sm">
-<nav data-pagination="true" aria-label="페이지 이동">
-          <button onClick={() => setMemoPage((p) => Math.max(1, p - 1))} disabled={memoPage === 1} className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer">이전</button>
-          {Array.from({ length: Math.min(totalMemoPages, 10) }).map((_, index) => {
-            const page = index + 1;
-            return (
-              <button key={page} onClick={() => setMemoPage(page)} className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${memoPage === page ? "bg-slate-800 text-white" : "bg-white text-gray-600 hover:bg-gray-100"}`}>{page}</button>
-            );
-          })}
-          <button onClick={() => setMemoPage((p) => Math.min(totalMemoPages, p + 1))} disabled={memoPage === totalMemoPages} className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer">다음</button>
-        </nav>
+<Pagination page={memoPage} totalPages={totalMemoPages} onPageChange={setMemoPage} />
 </div>
       </div>
     </div>

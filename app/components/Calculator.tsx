@@ -24,14 +24,15 @@ export default function Calculator() {
   const [justCalculated, setJustCalculated] = useWidgetSessionState("calculator:justCalculated", false);
 
   // 드래그 상태
-  const [pos, setPos, positionReady, positionRestored] = useWidgetSessionState("calculator:pos", { x: 0, y: 0 });
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const positionReady = true, positionRestored = false;
   const [initialized, setInitialized] = useState(false);
   const dragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const calcRef = useRef<HTMLDivElement>(null);
 
   // 리사이즈 상태
-  const [size, setSize] = useWidgetSessionState("calculator:size", { width: 340, height: 560 });
+  const [size, setSize] = useState({ width: 340, height: 560 });
   const resizing = useRef(false);
   const resizeStart = useRef({ x: 0, y: 0, w: 0, h: 0 });
 
@@ -275,7 +276,7 @@ export default function Calculator() {
       {isOpen && initialized && (
 
                 <div
-          ref={calcRef}
+          data-mobile-movable="true" data-widget-kind="calculator" ref={calcRef}
           role="dialog"
           aria-label="계산기"
           tabIndex={0}

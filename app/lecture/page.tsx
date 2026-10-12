@@ -1,5 +1,6 @@
 "use client";
 
+import Pagination from "@/app/components/Pagination";
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -1085,41 +1086,7 @@ transition
 
     <div className="shrink-0 border-t border-gray-200 bg-white px-5 pt-3 pb-4">
       <div className="flex items-center justify-center gap-2 flex-wrap">
-<nav data-pagination="true" aria-label="페이지 이동">
-        <button
-          onClick={() => setReviewPage((prev) => Math.max(prev - 1, 1))}
-          className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm cursor-pointer hover:bg-gray-50"
-        >
-          이전
-        </button>
-
-        {Array.from({ length: totalReviewPages }).map((_, index) => {
-          const page = index + 1;
-
-          return (
-            <button
-              key={page}
-              onClick={() => setReviewPage(page)}
-              className={`w-9 h-9 rounded-xl text-sm font-semibold border cursor-pointer ${
-                reviewPage === page
-                  ? "bg-slate-800 text-white border-slate-800"
-                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-              }`}
-            >
-              {page}
-            </button>
-          );
-        })}
-
-        <button
-          onClick={() =>
-            setReviewPage((prev) => Math.min(prev + 1, totalReviewPages))
-          }
-          className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm cursor-pointer hover:bg-gray-50"
-        >
-          다음
-        </button>
-      </nav>
+<Pagination page={reviewPage} totalPages={totalReviewPages} onPageChange={setReviewPage} />
 </div>
     </div>
   </>

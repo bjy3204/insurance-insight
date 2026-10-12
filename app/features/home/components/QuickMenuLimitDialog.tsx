@@ -4,7 +4,7 @@ import type { HomeController } from "../hooks/useHomeController";
 export default function QuickMenuLimitDialog({ controller }: { controller: HomeController }) {
 const { quickLimitOpen, setQuickLimitOpen } = controller;
 return (<>{quickLimitOpen && (
-  <div className="fixed inset-0 z-[999] bg-black/40 flex items-center justify-center p-5">
+  <div className="fixed inset-0 z-[10001] bg-black/40 flex items-center justify-center p-5">
     <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
       <h2 className="text-xl font-black text-gray-900">
         빠른메뉴 선택

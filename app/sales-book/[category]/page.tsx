@@ -1,5 +1,6 @@
 "use client";
 
+import Pagination from "@/app/components/Pagination";
 import Link from "next/link";
 import useSalesBookPageSize from "../useSalesBookPageSize";
 import styles from "../SalesBook.module.css";
@@ -254,37 +255,7 @@ const pagedSubcategories = filteredSubcategories.slice(
 
             {totalPages > 1 && (
   <div className="mt-auto pt-5 flex items-center justify-center gap-2">
-<nav data-pagination="true" aria-label="페이지 이동">
-    <button
-      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-      disabled={page === 1}
-      className="px-3 py-2 rounded-xl border border-gray-200 text-sm font-bold disabled:opacity-40"
-    >
-      이전
-    </button>
-
-    {Array.from({ length: totalPages }).map((_, index) => (
-      <button
-        key={index}
-        onClick={() => setPage(index + 1)}
-        className={`w-9 h-9 rounded-xl text-sm font-black ${
-          page === index + 1
-            ? "bg-blue-600 text-white"
-            : "bg-white border border-gray-200 text-gray-600"
-        }`}
-      >
-        {index + 1}
-      </button>
-    ))}
-
-    <button
-      onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-      disabled={page === totalPages}
-      className="px-3 py-2 rounded-xl border border-gray-200 text-sm font-bold disabled:opacity-40"
-    >
-      다음
-    </button>
-  </nav>
+<Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 </div>
 )}
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Pagination from "@/app/components/Pagination";
 import { supabase } from "@/lib/supabase";
 import { X, User } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
@@ -204,49 +205,7 @@ setNoticeImageIndex(0);
     {/* 페이지네이션 */}
 <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
   <div className="flex    text-sm">
-<nav data-pagination="true" aria-label="페이지 이동">
-    <button
-      onClick={() => setNoticePage((p) => Math.max(1, p - 1))}
-      disabled={noticePage === 1}
-      className="px-4 py-2 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 disabled:text-gray-300 cursor-pointer"
-    >
-      이전
-    </button>
-
-       {Array.from({
-  length: Math.min(totalNoticePages, 10),
-}).map((_, index) => {
-      const page = index + 1;
-      const start = Math.max(1, Math.min(noticePage - 2, totalNoticePages - 4));
-      const end = Math.min(totalNoticePages, start + 4);
-      if (page < start || page > end) return null;
-
-      return (
-        <button
-          key={page}
-          aria-current={noticePage === page ? "page" : undefined}
-          onClick={() => setNoticePage(page)}
-          className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
-            noticePage === page
-              ? "bg-blue-50 text-blue-600"
-              : "bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600"
-          }`}
-        >
-          {page}
-        </button>
-      );
-    })}
-
-    <button
-      onClick={() =>
-        setNoticePage((p) => Math.min(totalNoticePages, p + 1))
-      }
-      disabled={noticePage === totalNoticePages}
-      className="px-4 py-2 border-l border-gray-200 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 disabled:text-gray-300 cursor-pointer"
-    >
-      다음
-    </button>
-  </nav>
+<Pagination page={noticePage} totalPages={totalNoticePages} onPageChange={setNoticePage} />
 </div>
 </div>
 

@@ -1091,7 +1091,7 @@ const pagedMemos = filteredMemos.slice(
 </button>
             </div>
 
-            <div className="px-5 pt-5">
+            <div className="px-5 pt-3 pb-3">
               <div data-tab-style="rounded" className="grid grid-cols-2 gap-1 bg-white border border-gray-200 rounded-2xl p-1.5">
                 <button
                   onClick={() => setManageTab("nonlife")}
@@ -1117,7 +1117,7 @@ const pagedMemos = filteredMemos.slice(
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-5">
+            <div className="flex-1 overflow-y-auto px-5 pt-0 pb-5">
               <DndContext
                 sensors={sensors}
                 collisionDetection={groupedCollisionDetection}

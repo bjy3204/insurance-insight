@@ -1,5 +1,6 @@
 "use client";
 
+import Pagination from "@/app/components/Pagination";
 import { useMemoPreviews } from "@/lib/memos/preview";
 import MemoBody from "./memos/MemoBody";
 import MemoEditor from "./memos/MemoEditor";
@@ -377,7 +378,7 @@ export default function MemoManager({ open, onClose }: Props) {
               </button>
             </div>
 
-            <div className="p-4 flex gap-3">
+            <div data-popup-search-section="true" className="px-4 py-3 flex items-center gap-3 shrink-0">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
@@ -385,7 +386,7 @@ export default function MemoManager({ open, onClose }: Props) {
                   value={memoSearch}
                   onChange={(e) => setMemoSearch(e.target.value)}
                   placeholder="메모 검색" aria-label="메모 검색"
-                  className="w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm text-gray-900 caret-gray-900 cursor-text outline-none focus:border-blue-400"
+                  className="block w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm text-gray-900 caret-gray-900 cursor-text outline-none focus:border-blue-400"
                 />
               </div>
 
@@ -403,7 +404,7 @@ export default function MemoManager({ open, onClose }: Props) {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto px-4 pt-0 pb-4">
               {memosError && <p role="alert" className="text-sm text-red-500 mb-3">{memosError}<button onClick={reloadMemos} className="ml-3 underline">다시 시도</button></p>}
               {memosLoading ? <div className="text-center text-sm text-gray-400 py-20">메모를 불러오는 중입니다.</div> : filteredMemos.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-sm text-gray-400 py-20">
@@ -509,46 +510,7 @@ export default function MemoManager({ open, onClose }: Props) {
 
             <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
               <div className="flex    text-sm">
-<nav data-pagination="true" aria-label="페이지 이동">
-                <button
-                  onClick={() => setMemoPage((p) => Math.max(1, p - 1))}
-                  disabled={memoPage === 1}
-                  className="px-4 py-2 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 disabled:text-gray-300 cursor-pointer"
-                >
-                  이전
-                </button>
-
-                {Array.from({ length: Math.min(totalMemoPages, 10) }).map(
-                  (_, index) => {
-                    const page = index + 1;
-
-                    return (
-                      <button
-                        key={page}
-          aria-current={memoPage === page ? "page" : undefined}
-                        onClick={() => setMemoPage(page)}
-                        className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
-                          memoPage === page
-                            ? "bg-blue-50 text-blue-600"
-                            : "bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    );
-                  }
-                )}
-
-                <button
-                  onClick={() =>
-                    setMemoPage((p) => Math.min(totalMemoPages, p + 1))
-                  }
-                  disabled={memoPage === totalMemoPages}
-                  className="px-4 py-2 border-l border-gray-200 bg-white text-slate-600 hover:bg-blue-50 hover:text-blue-600 disabled:text-gray-300 cursor-pointer"
-                >
-                  다음
-                </button>
-              </nav>
+<Pagination page={memoPage} totalPages={totalMemoPages} onPageChange={setMemoPage} />
 </div>
             </div>
           </div>

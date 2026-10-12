@@ -119,11 +119,12 @@ export default function CurrencyConverter() {
 
   const [isOpen, setIsOpen] = useWidgetSessionState("currency:isOpen", false);
   const [initialized, setInitialized] = useState(false);
-  const [pos, setPos, positionReady, positionRestored] = useWidgetSessionState("currency:pos", { x: 0, y: 0 });
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const positionReady = true, positionRestored = false;
   const dragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const calcRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useWidgetSessionState("currency:size", { width: 340, height: 620 });
+  const [size, setSize] = useState({ width: 340, height: 620 });
   const resizing = useRef(false);
   const resizeStart = useRef({ x: 0, y: 0, w: 0, h: 0 });
   const [theme, setTheme] = useState<"dark" | "light">("dark");
@@ -545,7 +546,7 @@ naverData.items?.forEach((item: any) => {
     <>
       {isOpen && initialized && (
         <div
-          ref={calcRef}
+          data-mobile-movable="true" ref={calcRef}
           style={{
             position: "fixed",
             left: pos.x,

@@ -1,5 +1,6 @@
 "use client";
 
+import Pagination from "@/app/components/Pagination";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import styles from "./Job.module.css";
@@ -549,48 +550,7 @@ const currentCompanies = filteredCompanies.slice(
           </div>
          
   <div className="flex justify-center px-4 mt-auto pt-8">
-<nav data-pagination="true" aria-label="채용공고 페이지 이동" className="inline-flex text-sm">
-  <button
-    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-    disabled={page === 1}
-    className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-600 text-sm cursor-pointer hover:bg-gray-100 disabled:text-gray-300"
-  >
-    이전
-  </button>
-
-  {Array.from({
-    length: Math.min(
-      10,
-      totalPages - Math.floor((page - 1) / 10) * 10
-    ),
-  }).map((_, index) => {
-    const startPage = Math.floor((page - 1) / 10) * 10 + 1;
-    const pageNumber = startPage + index;
-
-    return (
-      <button
-        key={pageNumber}
-        onClick={() => setPage(pageNumber)}
-        aria-current={page === pageNumber ? "page" : undefined}
-        className={`w-10 h-10 rounded-xl text-sm font-semibold border cursor-pointer ${
-          page === pageNumber
-            ? "bg-blue-50 text-blue-600 border-blue-100"
-            : "bg-white text-gray-600 border-gray-200 hover:bg-gray-100"
-        }`}
-      >
-        {pageNumber}
-      </button>
-    );
-  })}
-
-  <button
-    onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-    disabled={page === totalPages}
-    className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-600 text-sm cursor-pointer hover:bg-gray-100 disabled:text-gray-300"
-  >
-    다음
-  </button>
-</nav>
+<Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 </div>
 
         </section>

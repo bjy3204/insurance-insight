@@ -108,6 +108,7 @@ return (<>{mainMenuManageMode === "normal" && (
       key={selectedMenu.key}
       onContextMenu={(e) => {
         e.preventDefault();
+        e.stopPropagation();
 
         setContextMenu({
           x: e.clientX,
@@ -286,6 +287,7 @@ return (<>{mainMenuManageMode === "normal" && (
       key={selectedMenu.key}
       onContextMenu={(e) => {
         e.preventDefault();
+        e.stopPropagation();
 
         setContextMenu({
           x: e.clientX,

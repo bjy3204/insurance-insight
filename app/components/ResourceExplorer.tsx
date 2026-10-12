@@ -752,10 +752,10 @@ const fileRec = fileRecords.find(
             : { position: "fixed", left: pos.x, top: pos.y, width: size.width, height: size.height, zIndex: 9999 }
         }
         className="bg-white md:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-gray-100"
-        onMouseDown={onMouseDownDrag}
+        data-popup-frame="true" onMouseDown={onMouseDownDrag}
       >
         {/* ── 헤더 ── */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white cursor-move select-none shrink-0">
+        <div data-popup-header="true" className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white cursor-move select-none shrink-0">
           <div className="flex items-center gap-2">
             <FolderOpen className="w-5 h-5 text-blue-500" />
             <span className="font-bold text-gray-800 text-base">구독자 전용 자료실</span>
@@ -787,7 +787,7 @@ const fileRec = fileRecords.find(
         </div>
 
         {/* ── 검색창 ── */}
-        <div className="px-5 py-2.5 border-b border-gray-100 bg-white shrink-0 no-drag">
+        <div data-popup-search-section="true" className="px-5 py-4 border-b border-gray-100 bg-white shrink-0 no-drag">
           <div className="relative flex items-center">
             <Search className="absolute left-3 w-4 h-4 text-gray-400 pointer-events-none" />
             <input data-ui-field="true" data-page-search-input="true"

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import GlobalWidgets from "./components/GlobalWidgets";
+import PopupInteractions from "./components/PopupInteractions";
 import AuthProvider from "./components/AuthProvider";
 import HomeControllerProvider from "./features/home/HomeControllerProvider";
 
@@ -74,6 +75,7 @@ export default function RootLayout({
 <HomeControllerProvider>
 {children}
 <GlobalWidgets />
+<PopupInteractions />
 </HomeControllerProvider>
   </AuthProvider>
 </body>

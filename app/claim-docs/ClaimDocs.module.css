@@ -1,3 +1,8 @@
+@media (max-width: 767px) {
+  .tabScroll { scrollbar-width: none; }
+  .tabScroll::-webkit-scrollbar { display: none; }
+}
+
 @media (min-width: 768px) {
   .page {
     height: 100dvh;

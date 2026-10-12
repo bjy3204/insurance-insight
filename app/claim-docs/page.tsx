@@ -814,16 +814,16 @@ left-0
       <section data-page-content="true" className={`${styles.content} max-w-7xl mx-auto px-4 md:px-6 py-6`}>
         <div className={`${styles.layout} grid grid-cols-1 md:grid-cols-[265px_minmax(0,1fr)] gap-3 items-start`}>
           <nav aria-label="청구서류 종류" className={`${styles.menu} bg-white border border-blue-100/60 rounded-2xl p-3 md:p-4`}>
-            <div className="flex gap-5 overflow-x-auto md:block">
+            <div className={`${styles.tabScroll} flex gap-1 overflow-x-auto md:block`}>
               {claimGroups.map((group) => (
                 <div key={group.title} className="shrink-0 md:mb-5 md:last:mb-0">
-                  <p className="px-2 mb-2 text-xs font-bold text-slate-500">{group.title}</p>
+                  <p className="hidden md:block px-2 mb-2 text-xs font-bold text-slate-500">{group.title}</p>
                   <div className="flex gap-1 md:flex-col">
                     {group.items.map((item) => {
                       const Icon = claimIcons[item];
                       return <button type="button" key={item} onClick={() => setTab(item)} aria-current={tab === item ? "page" : undefined}
                         className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold whitespace-nowrap cursor-pointer transition-colors ${tab === item ? "bg-blue-50 text-blue-600" : "text-slate-700 hover:bg-blue-50/50"}`}>
-                        <Icon size={18} aria-hidden="true" />{item}
+                        <span className="hidden md:block"><Icon size={18} aria-hidden="true" /></span>{item}
                       </button>;
                     })}
                   </div>

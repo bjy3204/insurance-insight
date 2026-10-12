@@ -4,7 +4,7 @@ import type { HomeController } from "../hooks/useHomeController";
 export default function DeleteQuickMenuDialog({ controller }: { controller: HomeController }) {
 const { setQuickMenuKeys, setTempQuickMenuKeys, quickDeleteConfirmOpen, setQuickDeleteConfirmOpen, quickDeleteKey, setQuickDeleteKey } = controller;
 return (<>{quickDeleteConfirmOpen && (
-  <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">
+  <div className="fixed inset-0 z-[10001] bg-black/40 flex items-center justify-center p-5">
     <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
       <h2 className="text-xl font-black text-gray-900">
         빠른메뉴 삭제

@@ -1487,7 +1487,7 @@ const pagedMemos = filteredMemos.slice(
         </button>
       </div>
 
-      <div data-ui-field-wrapper="true" className="p-5 border-b border-gray-100 shrink-0">
+      <div data-ui-field-wrapper="true" data-popup-search-section="true" className="px-5 py-4 border-b border-gray-100 shrink-0">
         <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-4">
           <button
             onClick={() => setArsTab("nonlife")}
@@ -1524,7 +1524,7 @@ const pagedMemos = filteredMemos.slice(
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-5">
+      <div className="flex-1 overflow-y-auto px-5 pt-0 pb-5">
         {(() => {
           const arsList = arsTab === "nonlife" ? nonlifeArsImages : lifeArsImages;
 

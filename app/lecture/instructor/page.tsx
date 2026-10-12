@@ -1,5 +1,6 @@
 "use client";
 
+import Pagination from "@/app/components/Pagination";
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -257,53 +258,7 @@ const currentInstructors = filteredInstructors.slice(
 
 <div className="fixed bottom-[73px] left-0 right-0 z-40 bg-gray-100 py-4 after:absolute after:left-0 after:right-0 after:top-full after:h-[73px] after:bg-gray-100 after:content-['']">
   <div className="flex items-center justify-center gap-2 flex-wrap px-4">
-<nav data-pagination="true" aria-label="페이지 이동">
-
-    <button
-      onClick={() =>
-        setCurrentPage((prev) => Math.max(prev - 1, 1))
-      }
-      className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm cursor-pointer hover:bg-gray-50"
-    >
-      이전
-    </button>
-
-    {Array.from({
-      length: Math.min(
-        10,
-        totalPages - Math.floor((currentPage - 1) / 10) * 10
-      ),
-    }).map((_, index) => {
-      const startPage =
-        Math.floor((currentPage - 1) / 10) * 10 + 1;
-
-      const page = startPage + index;
-
-      return (
-        <button
-          key={page}
-          onClick={() => setCurrentPage(page)}
-          className={`w-10 h-10 rounded-xl text-sm font-semibold border cursor-pointer ${
-            currentPage === page
-              ? "bg-slate-800 text-white border-slate-800"
-              : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-          }`}
-        >
-          {page}
-        </button>
-      );
-    })}
-
-    <button
-      onClick={() =>
-        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-      }
-      className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm cursor-pointer hover:bg-gray-50"
-    >
-      다음
-    </button>
-
-  </nav>
+<Pagination page={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
 </div>
 </div>
 {selectedInstructor && (

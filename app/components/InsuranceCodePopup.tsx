@@ -468,8 +468,8 @@ const handleOpen = () => {
             </div>
 
             {/* 탭 + 검색 */}
-            <div className="px-5 pt-4 pb-2 flex flex-col gap-3">
-              <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1">
+            <div data-popup-search-section="true" className="px-5 py-4 shrink-0 flex flex-col gap-4">
+              <div data-tab-group="true" data-popup-tab-in-stack="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1">
                 <button
                   onClick={() => { setTab("nonlife"); setSearch(""); }}
                   className={`rounded-xl py-2.5 text-sm font-bold transition ${

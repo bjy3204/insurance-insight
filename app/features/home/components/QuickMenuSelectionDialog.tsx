@@ -7,7 +7,7 @@ export default function QuickMenuSelectionDialog({ controller }: { controller: H
 const { authUser, authStatus, menuSortOpen, mainMenuManageMode, quickMenuKeys, setQuickMenuKeys, tempQuickMenuKeys, setTempQuickMenuKeys, setQuickLimitOpen, quickMenuSelectOpen, setQuickMenuSelectOpen, quickMenuOptions } = controller;
 const validSelection = [...new Set(tempQuickMenuKeys)].filter((key) => quickMenuOptions.some((item) => item.key === key));
 return (<>{quickMenuSelectOpen && (
-  <div className="fixed inset-0 z-[999] bg-black/40 flex items-center justify-center p-5">
+  <div className="fixed inset-0 z-[10001] bg-black/40 flex items-center justify-center p-5">
     <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl">
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-xl font-black text-gray-900">

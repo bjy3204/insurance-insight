@@ -1,5 +1,6 @@
 "use client";
 
+import Pagination from "@/app/components/Pagination";
 import { supabase } from "@/lib/supabase";
 import { FileText, Megaphone, X, Search } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
@@ -46,7 +47,7 @@ return (<>{pressOpen && (
 
       {!selectedPress ? (
         <>
-          <div data-ui-field-wrapper="true" className="px-4 pt-4 pb-2 md:overflow-y-hidden" style={{ scrollbarGutter: "stable" }}>
+          <div data-ui-field-wrapper="true" data-popup-search-section="true" className="px-4 py-4 shrink-0 md:overflow-y-hidden" style={{ scrollbarGutter: "stable" }}>
   <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
     <Search className="w-5 h-5 text-gray-400" />
 
@@ -64,7 +65,7 @@ return (<>{pressOpen && (
 
                                         <div className="flex-1 min-h-0 flex flex-col">
   {/* 모바일 카드형 */}
-  <div className="overflow-y-auto flex-1 px-4 py-3 space-y-2 md:hidden">
+  <div className="overflow-y-auto flex-1 px-4 pt-0 pb-4 space-y-2 md:hidden">
               {paginatedPress.map((item, index) => (
                 <div
                   key={item.id}
@@ -152,48 +153,7 @@ return (<>{pressOpen && (
 
                                                <div className="flex justify-center pt-4 pb-4 shrink-0 border-t border-gray-100">
               <div className="flex    text-sm">
-<nav data-pagination="true" aria-label="페이지 이동">
-                <button
-                  onClick={() => setPressPage((p) => Math.max(1, p - 1))}
-                  disabled={pressPage === 1}
-                  className="px-4 py-2 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-                >
-                  이전
-                </button>
-
-                               {Array.from({
-                  length: Math.min(totalPressPages, 10),
-                }).map((_, index) => {
-                  const page = index + 1;
-                  const start = Math.max(1, Math.min(pressPage - 2, totalPressPages - 4));
-                  const end = Math.min(totalPressPages, start + 4);
-                  if (page < start || page > end) return null;
-
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setPressPage(page)}
-                      className={`px-4 py-2 border-l border-gray-200 cursor-pointer ${
-                        pressPage === page
-                          ? "bg-slate-800 text-white"
-                          : "bg-white text-gray-600 hover:bg-gray-100"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
-
-                <button
-                  onClick={() =>
-                    setPressPage((p) => Math.min(totalPressPages, p + 1))
-                  }
-                  disabled={pressPage === totalPressPages}
-                  className="px-4 py-2 border-l border-gray-200 bg-white text-gray-600 hover:bg-gray-100 disabled:text-gray-300 cursor-pointer"
-                >
-                  다음
-                </button>
-              </nav>
+<Pagination page={pressPage} totalPages={totalPressPages} onPageChange={setPressPage} />
 </div>
             </div>
 
