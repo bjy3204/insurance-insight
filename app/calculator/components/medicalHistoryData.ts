@@ -5,9 +5,9 @@ const cell = (text: string): HistoryCell => ({ text });
 const row = (label: string, values: string[]): HistoryRow => ({ label, cells: values.map(cell) });
 export const historyColumns = [
   { generation: '1세대', subtitle: '표준화 이전', period: '~2009.09' },
-  { generation: '2세대', subtitle: '표준화Ⅰ', period: '2009.10~2013.03' },
-  { generation: '2세대', subtitle: '표준화Ⅱ', period: '2013.01~2015.08' },
-  { generation: '2세대', subtitle: '표준화Ⅲ', period: '2015.09~2017.03' },
+  { generation: '2세대', subtitle: '표준화Ⅰ', period: '2009.10~' },
+  { generation: '2세대', subtitle: '표준화Ⅱ', period: '2013.01~' },
+  { generation: '2세대', subtitle: '표준화Ⅲ', period: '2015.09~' },
   { generation: '3세대', subtitle: '착한실손', period: '2017.04~2021.06' },
   { generation: '4세대', subtitle: '비급여 할증제', period: '2021.07~2026.04' },
   { generation: '5세대', subtitle: '비급여 중증/비중증', period: '2026.05~' },

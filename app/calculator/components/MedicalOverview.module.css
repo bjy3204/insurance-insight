@@ -4,7 +4,7 @@
 .table td { font-weight:400; }
 .table th,.table td { border:1px solid #dce5f0; padding:9px 7px; white-space:pre-line; vertical-align:middle; }
 .table th { font-weight:600; color:#344d73; }
-.table .label { min-width:150px; max-width:210px; }
+.table .label { min-width:150px; max-width:210px; background:#f7f7f8; color:#4b5563; font-weight:600; }
 .table .highlight th,.table .highlight td { background:#f0f5fc; }
 .table .categoryHead { background:#edf2f9; }
 .table .dentalNote { color:#c43442; font-weight:600; }

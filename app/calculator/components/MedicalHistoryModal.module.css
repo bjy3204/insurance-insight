@@ -12,6 +12,11 @@
 .sidebar .collapseButton { align-self:flex-end; padding:6px; }
 .generationButton { display:flex; align-items:center; justify-content:space-between; width:100%; }
 .collapsed .generationButton { justify-content:center; }
+.sidebar.collapsed > button:not(.collapseButton) { display:flex; align-items:center; justify-content:center; width:100%; }
+@media(min-width:768px) {
+  .sidebar.collapsed > button:not(.collapseButton) { padding-left:0; padding-right:0; }
+  .sidebar.collapsed > button:not(.collapseButton) > svg { width:20px; height:20px; flex-shrink:0; }
+}
 .subTabs { display:flex; flex-direction:column; gap:3px; padding:4px 0 8px 10px; }
 .sidebar .subTabs button { font-size:13px; font-weight:400; padding:9px 10px; }
 .subTabs small { display:block; font-size:12px; margin-top:3px; }
@@ -49,6 +54,8 @@
 @media(max-width:767px) { .overlay { padding:12px; } .modal { height:calc(100dvh - 24px); max-height:calc(100dvh - 24px); } .header { padding:12px; } .sidebar { width:150px; padding:12px 6px; } .sidebar button { padding:12px 8px; font-size:14px; } .generationHeading { padding:16px 12px 12px; flex-wrap:wrap; } .content { padding:0 12px 16px; } .detailTable th,.detailTable td { padding:8px; } .disclaimer { padding:12px; } }
 
 @media(max-width:767px) {
+  .miniTabs { flex-wrap:nowrap; gap:4px; padding:0 12px 12px; overflow-x:auto; }
+  .miniTabs button { flex:1 0 0; min-width:76px; padding:10px 2px; font-size:13px; white-space:nowrap; }
   .main.generationMode { min-height:0; overflow-y:auto; overscroll-behavior:contain; }
   .generationMode .content { flex:none; overflow:visible; }
 }
