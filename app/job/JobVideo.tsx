@@ -9,7 +9,7 @@ export default function JobVideo() {
   const collapse = () => { setOpen(false); drag.current = null; };
   if (!open) return <button type="button" aria-label="이직컨설팅 영상 열기" onClick={() => { setPoint({ x: side === "left" ? 20 : Math.max(16, window.innerWidth - 380), y: Math.min(point.y, Math.max(80, window.innerHeight - 320)) }); setOpen(true); }} className={`fixed z-[1400] bottom-28 flex items-center gap-2 bg-blue-600 text-white px-3 py-3 text-xs font-semibold shadow-md cursor-pointer ${side === "left" ? "left-0 rounded-r-xl" : "right-0 rounded-l-xl"}`}><Play size={14} fill="currentColor"/>영상</button>;
   return <section aria-label="이직컨설팅 미니 영상" className="fixed z-[1400] w-[360px] max-w-[calc(100vw-32px)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl" style={{ left: point.x, top: point.y }}>
-    <div className="flex items-center justify-between px-4 py-3 select-none touch-none cursor-move" onPointerDown={e => {
+    <div className="flex items-center justify-between px-4 py-3 select-none touch-none cursor-default" onPointerDown={e => {
       if (e.button !== 0 || (e.target as HTMLElement).closest("button")) return;
       const rect = e.currentTarget.parentElement!.getBoundingClientRect();
       drag.current = { sx: e.clientX, sy: e.clientY, x: rect.left, y: rect.top, width: rect.width, height: rect.height };
@@ -23,8 +23,8 @@ export default function JobVideo() {
       if (x <= 16 || x + d.width >= window.innerWidth - 16) { setSide(x <= 16 ? "left" : "right"); collapse(); }
       drag.current = null;
     }} onPointerCancel={() => { drag.current = null; }}>
-      <h2 className="text-sm font-bold text-slate-800">이직컨설팅 영상</h2><button type="button" aria-label="영상 접기" onClick={collapse} className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"><X size={18}/></button>
+      <h2 className="text-sm font-bold text-slate-800">여러분은 나의 가치를 알아봐 주는 곳에 있나요?</h2><button type="button" aria-label="영상 접기" onClick={collapse} className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"><X size={18}/></button>
     </div>
-    <iframe src="https://www.youtube.com/embed/2264CwLZRb4" title="이직컨설팅 영상" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="w-full aspect-video border-0"/>
+    <iframe src="https://www.youtube.com/embed/2264CwLZRb4" title="여러분은 나의 가치를 알아봐 주는 곳에 있나요?" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="w-full aspect-video border-0"/>
   </section>;
 }

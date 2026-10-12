@@ -48,7 +48,7 @@ body {
 }
 
 @media (max-width:767px) {
-  header[data-page-header="true"], [data-mobile-main-header="true"] {
+  header[data-page-header="true"] {
     position:sticky !important;
     top:0 !important;
     z-index:40;

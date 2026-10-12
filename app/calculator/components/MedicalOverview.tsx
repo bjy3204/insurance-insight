@@ -1,45 +1,52 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from 'react';
-import { exemptionColumns, exemptionHistoryRows, historyColumns, medicalHistoryRows } from './medicalHistoryData';
+import { historyColumns, medicalHistoryRows, uncompensatedHistoryRows } from './medicalHistoryData';
 import styles from './MedicalOverview.module.css';
+import MedicalCoverageText from './MedicalCoverageText';
 
-function Text({ text }: { text: string }) {
-  return <>{text.split('\n').map((line, i) => <span key={i} className={/^\s*[(（*※]/.test(line) ? styles.fine : styles.line}>{line}</span>)}</>;
+function Text({ text, emphasize = true, coverageOnly = false }: { text: string; emphasize?: boolean; coverageOnly?: boolean }) {
+  return <>{text.split('\n').map((line, i) => <span key={i} className={/^\s*[(（*※]/.test(line) ? styles.fine : styles.line}>{emphasize ? <MedicalCoverageText text={line} coverageOnly={coverageOnly}/> : line}</span>)}</>;
 }
-function OverviewTable({ exemption }: { exemption: boolean }) {
-  const columns = exemption ? exemptionColumns : historyColumns;
-  const rows = exemption ? exemptionHistoryRows : medicalHistoryRows;
-  const shadedExemptionLabels = new Set([
-    '질병구분', '선천성 뇌질환 (Q00~Q04)(급여)', '임신·출산관련', '건강검진관련비용',
-    '천재지변, 핵연료, 방사능', '선천성 비신생물성 모반 (Q82.5)',
-    '습관성유산, 불임, 인공수정\n합병증 (급여)', '비응급환자의응급실이용료',
-    '중증도여성형유방증 (지방흡입)\n장기이식수술 기증자수술비보장',
-  ]);
-  return <table className={styles.table}><thead><tr><th rowSpan={2} colSpan={2} className={styles.categoryHead}>구분</th>
-    {['1세대','2세대','3세대','4세대','5세대'].map((name,i) => <th key={name} colSpan={[3,4,1,1,1][i]} className={styles[`generation${i+1}`]}>{name}</th>)}{exemption && <th rowSpan={2} className={styles.categoryHead}>비고</th>}</tr>
-    <tr>{columns.map((column,i) => i < 3 ? i === 0 && <th key={i} colSpan={3} className={styles.generation1}>표준화 이전</th> : <th key={i} className={styles[`generation${i<7?2:i-4}`]}><Text text={column.subtitle}/></th>)}</tr></thead>
-    <tbody>{rows.map((row,index) => {
-      let groupLength = 1;
-      while (rows[index + groupLength]?.section === row.section && row.section) groupLength++;
-      const shaded = exemption
-        ? ['치과치료', '정신질환', '안과'].includes(row.section || '') || shadedExemptionLabels.has(row.label)
-        : row.section === '입원' || row.label.startsWith('3대비급여');
-      const noteCovered = rows.slice(0, index).some((previous, previousIndex) => previousIndex + (previous.noteRowSpan || 1) > index);
-      return <tr key={index} className={shaded ? styles.highlight : undefined}>
-        {row.section && rows[index-1]?.section !== row.section && <th className={styles.section} rowSpan={groupLength}>{row.section}</th>}
-        <th colSpan={row.section ? 1 : 2} className={styles.label}><Text text={row.label}/></th>
-        {row.cells.map((cell,i) => <td key={i} colSpan={cell.span || 1} rowSpan={cell.rowSpan || 1}><Text text={cell.text}/></td>)}
-        {exemption && !noteCovered && <td rowSpan={row.noteRowSpan || 1} className={`${styles.note} ${row.section === '치과치료' ? styles.dentalNote : ''}`}><Text text={row.note || ''}/></td>}
-      </tr>;
-    })}</tbody>
-  </table>;
+function OverviewTable() {
+  const rows = medicalHistoryRows.filter(row => row.label !== '구분');
+  const renderRow = (row: typeof rows[number], index: number) => <tr key={index}>
+    <th className={styles.label}><Text text={row.label}/></th>
+    {row.cells.map((cell, i) => <td key={i}><Text text={cell.text} emphasize={row.label !== '담보구성'} coverageOnly={i === 6 && ['본인부담 한도', '보장비율'].includes(row.label)}/></td>)}
+  </tr>;
+  return <table className={styles.table}><thead>
+    <tr><th rowSpan={2} className={styles.categoryHead}>구분</th>
+      {['1세대','2세대','3세대','4세대','5세대'].map((name,i) => <th key={name} colSpan={historyColumns.filter(column => column.generation === name).length} className={styles[`generation${i+1}`]}>{name}</th>)}
+    </tr>
+    <tr>{historyColumns.map((column,i) => <th key={i} className={styles[`generation${column.generation[0]}`]}><Text text={column.subtitle}/></th>)}</tr>
+    </thead><tbody>
+      {rows.map(renderRow)}
+      <tr className={styles.highlight}><th colSpan={historyColumns.length + 1}>보상하지 않는 손해</th></tr>
+      {uncompensatedHistoryRows.map(renderRow)}
+    </tbody></table>;
 }
+
 type View = { scale:number; x:number; y:number };
-export default function MedicalOverview({ exemption }: { exemption:boolean }) {
+export default function MedicalOverview() {
   const viewportRef = useRef<HTMLDivElement>(null), tableRef = useRef<HTMLDivElement>(null);
   const current = useRef<View>({scale:1,x:0,y:0}), fitScale = useRef(1);
-  const drag = useRef<{id:number;x:number;y:number;origin:View}|null>(null);
+  const pointers = useRef(new Map<number,{x:number;y:number}>());
+  const gesture = useRef<{origin:View;x:number;y:number;distance:number}|null>(null);
+  function gesturePoints() {
+    const points=Array.from(pointers.current.values()).slice(0,2);
+    if (!points.length || !viewportRef.current) return null;
+    const rect=viewportRef.current.getBoundingClientRect();
+    const [a,b]=points;
+    return {x:(b?(a.x+b.x)/2:a.x)-rect.left,y:(b?(a.y+b.y)/2:a.y)-rect.top,distance:b?Math.hypot(b.x-a.x,b.y-a.y):0};
+  }
+  function beginGesture() {
+    const point=gesturePoints();
+    gesture.current=point?{...point,origin:{...current.current}}:null;
+  }
+  function endPointer(id:number) {
+    pointers.current.delete(id);
+    beginGesture();
+  }
   const [view,setView] = useState(current.current), [ready,setReady] = useState(false);
   useLayoutEffect(() => {
     const viewport=viewportRef.current, table=tableRef.current;
@@ -64,10 +71,30 @@ export default function MedicalOverview({ exemption }: { exemption:boolean }) {
     return () => {observer.disconnect();viewport.removeEventListener('wheel',wheel);};
   },[]);
   return <div ref={viewportRef} className={styles.viewer}
-    onPointerDown={event => {if(event.button!==0)return;event.preventDefault();drag.current={id:event.pointerId,x:event.clientX,y:event.clientY,origin:current.current};event.currentTarget.setPointerCapture(event.pointerId);}}
-    onPointerMove={event => {const start=drag.current;if(!start || start.id!==event.pointerId)return;current.current={...start.origin,x:start.origin.x+event.clientX-start.x,y:start.origin.y+event.clientY-start.y};setView(current.current);}}
-    onPointerUp={event => {drag.current=null;if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);}}
-    onPointerCancel={()=>{drag.current=null;}} onLostPointerCapture={()=>{drag.current=null;}}>
-    <div ref={tableRef} className={styles.canvas} style={{width:exemption?1700:1500,visibility:ready?'visible':'hidden',transform:`translate(${view.x}px,${view.y}px) scale(${view.scale})`}}><OverviewTable exemption={exemption}/></div>
+    onPointerDown={event => {
+      if(event.button!==0)return;
+      event.preventDefault();
+      pointers.current.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      event.currentTarget.setPointerCapture(event.pointerId);
+      beginGesture();
+    }}
+    onPointerMove={event => {
+      if(!pointers.current.has(event.pointerId))return;
+      event.preventDefault();
+      pointers.current.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      const start=gesture.current,point=gesturePoints();
+      if(!start || !point)return;
+      const scale=start.distance>0?Math.max(fitScale.current*.5,Math.min(3,start.origin.scale*point.distance/start.distance)):start.origin.scale;
+      const ratio=scale/start.origin.scale;
+      current.current={scale,x:point.x-(start.x-start.origin.x)*ratio,y:point.y-(start.y-start.origin.y)*ratio};
+      setView(current.current);
+    }}
+    onPointerUp={event => {
+      endPointer(event.pointerId);
+      if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);
+    }}
+    onPointerCancel={event=>endPointer(event.pointerId)} onLostPointerCapture={event=>endPointer(event.pointerId)}>
+
+    <div ref={tableRef} className={styles.canvas} style={{width:1500,visibility:ready?'visible':'hidden',transform:`translate(${view.x}px,${view.y}px) scale(${view.scale})`}}><OverviewTable/></div>
   </div>;
 }

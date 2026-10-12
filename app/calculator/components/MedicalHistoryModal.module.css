@@ -31,22 +31,24 @@
 .miniTabs button { flex:1; min-width:140px; padding:10px 8px; border:1px solid #e1e7f0; border-radius:8px; background:#f8faff; color:#64748b; font-size:14px; }
 .miniTabs .activePeriod { background:#edf4ff; color:#2563eb; border-color:#a9c9fc; font-weight:600; }
 .content { flex:1; min-height:0; overflow:auto; padding:0 24px 24px; scrollbar-width:thin; }
-.detailSection + .detailSection { margin-top:28px; }
+.detailSection + .detailSection { margin-top:12px; }
 .detailSection h3 { font-size:16px; font-weight:700; color:#344d73; margin:5px 0 12px; }
 .detailTable { width:100%; border-collapse:collapse; font-size:14px; line-height:1.6; }
+.detailTable td { font-weight:400; }
 .detailTable th,.detailTable td { border:1px solid #dce5f0; padding:12px; white-space:pre-line; vertical-align:middle; text-align:left; overflow-wrap:anywhere; }
 .detailTable thead th { background:#f0f5fc; color:#344d73; font-weight:600; }
 .detailTable tbody th { font-weight:500; }
-.detailTable .detailLabel { width:24%; }
+.detailTable .detailLabel { width:24%; background:#f4f7fc; color:#344d73; font-weight:600; }
+.detailTable .categoryRow th,.detailTable .categoryRow td { background:#e7f0ff; color:#2458a6; font-weight:700; }
 .detailTable .sectionCell { width:34px; padding:12px 7px; writing-mode:vertical-rl; text-orientation:upright; letter-spacing:2px; text-align:center; }
 .detailTable .highlightRow th,.detailTable .highlightRow td { background:#f0f5fc; }
 .note { font-size:13px; color:#64748b; width:35%; }
 .textLine { display:block; }
 .finePrint { display:block; font-size:12px; line-height:1.5; font-weight:400; }
-@media(min-width:768px) {
-  .detailTable td { white-space:normal; }
-  .detailTable td .textLine { display:inline; }
-  .detailTable td .textLine + .textLine::before { content:' '; }
-}
 .disclaimer { flex-shrink:0; padding:14px 20px; font-size:14px; color:#64748b; border-top:1px solid #e5e7eb; }
 @media(max-width:767px) { .overlay { padding:12px; } .modal { height:calc(100dvh - 24px); max-height:calc(100dvh - 24px); } .header { padding:12px; } .sidebar { width:150px; padding:12px 6px; } .sidebar button { padding:12px 8px; font-size:14px; } .generationHeading { padding:16px 12px 12px; flex-wrap:wrap; } .content { padding:0 12px 16px; } .detailTable th,.detailTable td { padding:8px; } .disclaimer { padding:12px; } }
+
+@media(max-width:767px) {
+  .main.generationMode { min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+  .generationMode .content { flex:none; overflow:visible; }
+}

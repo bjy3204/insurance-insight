@@ -84,7 +84,7 @@
 
 .menuSortDialog :global([data-card-highlight="true"]) { display:flex; flex-direction:column; justify-content:center; }
 
-button.quickMenuEdge {height:36px;padding:0 12px;border-radius:10px 0 0 10px;border-right:0;transform:none;background:#f8fafc;color:#334155;border-color:#dbe3ef;font-size:13px;font-weight:600;gap:6px;justify-content:center;}
+button.quickMenuEdge {height:36px;padding:0 12px;border-radius:10px 0 0 10px;border-right:0;transform:none;background:#f8fafc;color:#334155;border-color:#dbe3ef;font-size:13px;font-weight:600;gap:6px;justify-content:flex-start;text-align:left;}
 button.quickMenuEdge:hover {background:#eff6ff;transform:none;}
 button.quickMenuEdge svg {color:#64748b;}
 
@@ -109,3 +109,5 @@ button.quickMenuEdge svg {color:#64748b;}
 .quickMenuFloating[data-quick-edge] [data-pc-quick-menu] button {height:36px;min-height:36px;padding:0 10px;font-size:12px;font-weight:600;line-height:18px;display:flex;align-items:center;justify-content:center;border-color:#e8edf4;}
 .quickMenuFloating[data-quick-edge] [data-pc-quick-menu] button:hover {background:#edf3fb;}
 .quickMenuFloating[data-quick-edge] [data-pc-quick-menu] > div:first-child {border-top:0;}
+
+.quickMenuFloating[data-quick-edge="right"] {right:calc(100% - 100vw) !important;}

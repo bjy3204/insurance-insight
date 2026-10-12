@@ -973,9 +973,9 @@ const pagedMemos = filteredMemos.slice(
   rounded-xl
   bg-[#f0f5fc]
   text-[#405b85]
-  text-[11px]
-  md:text-sm
-  font-medium
+  text-[13px]
+  md:text-[15px]
+  font-bold
   whitespace-nowrap
   transition-all
   duration-200
