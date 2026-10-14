@@ -713,20 +713,16 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                   `}
                   >
                     {/* 모바일: 날짜 숫자만 중앙 표시 */}
-                    <div className="sm:hidden flex flex-col items-center justify-center h-full">
+                    <div className="sm:hidden relative flex items-center justify-center h-full">
                       <span
-                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${isToday ? "bg-blue-600 text-white" : ""}`}
-                        style={{ color: isToday ? "#ffffff" : numberColor }}
+                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${isToday ? holiday ? "bg-red-100" : "bg-blue-600 text-white" : ""}`}
+                        style={{ color: holiday ? isOtherMonth ? "#fecaca" : "#ef4444" : isToday ? "#ffffff" : numberColor }}
                       >
                         {displayDay}
                       </span>
                       {/* 일정 있으면 파란 점 */}
                       {hasEvents && (
-                        <div className="w-1 h-1 rounded-full bg-blue-400 mt-0.5" />
-                      )}
-                      {/* 공휴일 점 (일정 없을 때) */}
-                      {!hasEvents && holiday && (
-                        <div className="w-1 h-1 rounded-full bg-red-300 mt-0.5" />
+                        <div className="absolute left-1/2 top-[calc(50%+16px)] -translate-x-1/2 w-1 h-1 rounded-full bg-blue-400" />
                       )}
                     </div>
 
