@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box}body{margin:0;padding:24px;font:14px Arial,'Malgun Gothic',sans-serif;background:#f5f7fb;color:#203047}h1{margin:0 0 6px;font-size:24px}.sub{color:#657388;margin:0 0 20px}.section{background:white;border:1px solid #e0e6ee;border-radius:12px;padding:18px;margin-bottom:14px}.section h2{font-size:15px;margin:0 0 16px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}label{display:block;font-size:12px;font-weight:600;color:#536177}input,select,textarea{width:100%;margin-top:7px;border:1px solid #ccd6e3;border-radius:7px;padding:10px;background:#fff;font:14px Arial,'Malgun Gothic',sans-serif;color:#203047}input:focus,select:focus,textarea:focus{outline:2px solid #79a8e6;outline-offset:1px}textarea{resize:vertical;min-height:64px}.wide{grid-column:1/-1}.foot{position:sticky;bottom:0;padding:14px 0 0;background:#f5f7fb;display:flex;align-items:center;gap:12px}button{border:0;border-radius:8px;padding:12px 22px;font-weight:bold;font-size:14px;cursor:pointer}.primary{background:#155b9e;color:white}.secondary{background:#e6ebf2;color:#334155}#status{flex:1;font-size:13px;color:#b42318}button:disabled{opacity:.5;cursor:wait}.ok{color:#167443!important}@media(max-width:560px){.grid{grid-template-columns:1fr 1fr}}
+</style></head><body>
+<h1>고객 등록</h1><p class="sub">Tab은 다음 항목으로, Enter는 다음 줄로 이동합니다.</p>
+<form id="form" novalidate><div id="sections"></div><div class="foot"><span id="status" role="status" aria-live="polite"></span><button class="secondary" type="button" id="close">닫기</button><button class="primary" id="submit" type="submit">고객 등록</button></div></form>
+<script>
+const groups=[
+['고객정보',[
+['category','구분','select'],['name','이름','text'],['resident','주민번호 / 생년월일','text'],
+['phone','전화번호','tel'],['job','직업','text'],['email','E-Mail','email'],
+['address','주소','text','wide'],['memo','메모','textarea','wide']]],
+['카드결제',[
+['payday','결제일','text'],['cardOwner','명의자','text'],['cardBirth','생년월일','text'],
+['cardCompany','카드사','select'],['cardNumber','카드번호','text'],['cardExpiry','유효기간','text']]],
+['보험금 청구',[
+['accountOwner','예금주','text'],['accountBirth','생년월일','text'],['bank','은행','select'],
+['accountNumber','계좌번호','text','wide']]],
+['차량정보',[
+['vehicleNumber','차량번호','text'],['vehicleType','차종','text'],['renewal','갱신일','text'],
+['insurer','보험사','select'],['driver','운전자지정','text'],['discount','할인','text']]]];
+const form=document.getElementById('form'),status=document.getElementById('status'),submit=document.getElementById('submit');
+const order=[],vertical={category:'phone',name:'job',resident:'email',phone:'address',job:'address',email:'address',address:'memo',memo:'payday',payday:'cardCompany',cardOwner:'cardNumber',cardBirth:'cardExpiry',cardCompany:'accountOwner',cardNumber:'accountBirth',cardExpiry:'bank',accountOwner:'accountNumber',accountBirth:'accountNumber',bank:'accountNumber',accountNumber:'vehicleNumber',vehicleNumber:'insurer',vehicleType:'driver',renewal:'discount'};
+groups.forEach(([title,fields])=>{const section=document.createElement('section');section.className='section';const h=document.createElement('h2');h.textContent=title;section.append(h);const grid=document.createElement('div');grid.className='grid';fields.forEach(([id,title,type,cls])=>{order.push(id);const label=document.createElement('label');label.textContent=title;if(cls)label.className=cls;const el=document.createElement(type==='textarea'?'textarea':type==='select'?'select':'input');el.id=id;el.name=id;if(el.tagName==='INPUT')el.type=type;el.autocomplete='off';if(type==='select'){const o=document.createElement('option');o.value='';o.textContent='선택';el.append(o);}if(id==='resident')el.placeholder='YYMMDD 또는 주민번호';if(id==='payday'){el.placeholder='1~31';el.inputMode='numeric';el.maxLength=2;el.pattern='([1-9]|[12][0-9]|3[01])';el.addEventListener('input',()=>{el.value=el.value.replace(/[^0-9]/g,'').slice(0,2);});}label.append(el);grid.append(label);});section.append(grid);document.getElementById('sections').append(section);});
+function options(id,values){const el=document.getElementById(id);values.forEach(value=>{const o=document.createElement('option');o.value=value;o.textContent=value;el.append(o);});}
+options('category',['지인','소개','가족','DB','인하우스','산모교실']);
+form.addEventListener('keydown',e=>{if(e.isComposing||e.target.tagName==='BUTTON')return;const id=e.target.id;if(!order.includes(id))return;let next;if(e.key==='Tab'){const index=order.indexOf(id)+(e.shiftKey?-1:1);if(index<0)return;next=order[index]||'submit';}else if(e.key==='Enter'&&!(e.target.tagName==='TEXTAREA'&&e.shiftKey)){next=vertical[id]||order[order.indexOf(id)+1]||'submit';}else return;e.preventDefault();document.getElementById(next).focus();});
+document.getElementById('resident').addEventListener('input',e=>{const value=e.target.value;if(/^\d{6,13}$/.test(value))e.target.value=value.slice(0,6)+'-'+value.slice(6);});
+const expiryInput=document.getElementById('cardExpiry');expiryInput.inputMode='numeric';expiryInput.maxLength=5;expiryInput.placeholder='2801 → 28/01';
+expiryInput.addEventListener('input',e=>{const digits=e.target.value.replace(/\D/g,'').slice(0,4);e.target.value=digits.length>2?digits.slice(0,2)+'/'+digits.slice(2):digits;});
+document.getElementById('phone').addEventListener('blur',e=>{const s=e.target.value.replace(/[\s-]/g,'');if(/^02\d{7,8}$/.test(s))e.target.value=s.slice(0,2)+'-'+s.slice(2,-4)+'-'+s.slice(-4);else if(/^050[0-9]\d{8}$/.test(s))e.target.value=s.slice(0,4)+'-'+s.slice(4,8)+'-'+s.slice(8);else if(/^0\d{9,10}$/.test(s))e.target.value=s.slice(0,3)+'-'+s.slice(3,-4)+'-'+s.slice(-4);});
+function formatRenewalInput2(value){const s=String(value).trim();if(!/^[0-9-]*$/.test(s))return value;const digits=s.replace(/-/g,'');if(digits.length>8)return value;if(digits.length<=4)return digits;return digits.slice(0,4)+'-'+digits.slice(4,6)+(digits.length>6?'-'+digits.slice(6):'');}
+const renewalInput=document.getElementById('renewal');
+renewalInput.placeholder='20260901 또는 2026-09-01';
+renewalInput.inputMode='numeric';
+renewalInput.addEventListener('input',e=>{const input=e.target,position=input.selectionStart,old=input.value,digitPosition=old.slice(0,position==null?old.length:position).replace(/-/g,'').length;input.value=formatRenewalInput2(old);if(position!=null){let count=0,index=0;while(index<input.value.length&&count<digitPosition){if(input.value[index]!=='-')count++;index++;}input.setSelectionRange(index,index);}});
+const renewalPicker=document.createElement('input');renewalPicker.type='date';renewalPicker.id='renewalPicker';renewalPicker.tabIndex=-1;renewalPicker.style.position='absolute';renewalPicker.style.opacity='0';renewalPicker.style.pointerEvents='none';renewalPicker.style.width='1px';renewalPicker.style.height='1px';
+const calendarButton=document.createElement('button');calendarButton.type='button';calendarButton.id='calendarButton';calendarButton.textContent='달력 선택';calendarButton.className='secondary';calendarButton.style.padding='5px 10px';calendarButton.style.fontSize='12px';calendarButton.style.marginTop='6px';
+calendarButton.onclick=()=>{const normalized=formatRenewalInput2(renewalInput.value);renewalPicker.value=/^\d{4}-\d{2}-\d{2}$/.test(normalized)?normalized:'';if(typeof renewalPicker.showPicker==='function')renewalPicker.showPicker();else{renewalPicker.focus();renewalPicker.click();}};
+renewalPicker.addEventListener('change',()=>{renewalInput.value=renewalPicker.value;renewalInput.focus();});
+renewalInput.parentElement.append(calendarButton,renewalPicker);
+document.getElementById('close').onclick=()=>{if(window.google&&google.script)google.script.host.close();else window.close();};
+form.onsubmit=e=>{e.preventDefault();status.className='';status.textContent='';const payload=Object.fromEntries(new FormData(form));if(!payload.name.trim()){status.textContent='고객 이름을 입력하세요.';document.getElementById('name').focus();return;}if(![6,13].includes(payload.resident.replace(/\D/g,'').length)){status.textContent='주민번호와 생년월일을 확인하세요.';document.getElementById('resident').focus();return;}if(!window.google||!google.script){status.textContent='미리보기입니다. 실제 저장은 Google 시트 입력창에서 가능합니다.';return;}submit.disabled=true;status.textContent='등록 중…';google.script.run.withSuccessHandler(result=>{form.reset();status.className='ok';status.textContent=result.message;submit.disabled=false;document.getElementById('category').focus();}).withFailureHandler(error=>{status.textContent=error.message||'등록하지 못했습니다.';submit.disabled=false;}).submitCustomerDialog2(payload);};
+if(window.google&&google.script){submit.disabled=true;google.script.run.withSuccessHandler(data=>{options('cardCompany',data.cards);options('bank',data.banks);options('insurer',data.insurers);submit.disabled=false;}).withFailureHandler(error=>{status.textContent='목록을 불러오지 못했습니다. 입력창을 다시 열어주세요.';}).getCustomerDialogOptions2();}
+document.getElementById('category').focus();
+</script></body></html>

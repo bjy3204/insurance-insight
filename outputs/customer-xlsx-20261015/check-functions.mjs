@@ -1,0 +1,12 @@
+import {createRequire}from'node:module';import{pathToFileURL}from'node:url';
+const require=createRequire('C:/Users/bjy32/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/package.json');
+const{Workbook}=await import(pathToFileURL(require.resolve('@oai/artifact-tool')).href);
+const wb=Workbook.create(),s=wb.worksheets.add('Check');
+s.getRange('A1:B2').values=[['검증고객','900101'],['검증고객','001010']];
+s.getRange('C1:C2').formulas=[['=TEXT(B1,"000000")'],['=TEXT(B2,"000000")']];
+s.getRange('D1:D2').formulas=[['=A1&"|"&C1'],['=A2&"|"&C2']];
+s.getRange('F1:F4').formulas=[['=COUNTIF(D1:D999,"검증고객|001010")'],['=MATCH("검증고객|001010",D1:D999,0)'],['=TEXT("001010","000000")'],['=COUNTIF(A1:A999,"검증고객")']];
+s.getRange('G1:G2').formulas=[['=IF(B1="","",IF(LEN(SUBSTITUTE(B1&"","-",""))<=6,TEXT(B1,"000000"),LEFT(SUBSTITUTE(B1&"","-",""),6)))'],['=IF(B2="","",IF(LEN(SUBSTITUTE(B2&"","-",""))<=6,TEXT(B2,"000000"),LEFT(SUBSTITUTE(B2&"","-",""),6)))']];
+s.getRange('E1:E2').values=[[1],[2]];
+s.getRange('H1:H3').formulas=[['=VLOOKUP("검증고객|001010",D1:E999,2,FALSE)'],['=MATCH("001010",B1:B2,0)'],['=INDEX(B1:B2,2)']];
+wb.recalculate();console.log(JSON.stringify(s.getRange('A1:H4').values));
