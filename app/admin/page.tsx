@@ -1,5 +1,7 @@
 "use client";
 
+import { hasCompletedMembership } from "@/lib/auth/membership";
+
 import Pagination from "@/app/components/Pagination";
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
@@ -411,7 +413,7 @@ useEffect(() => {
       .select("id, nickname, instagram_id, email, status, role, created_at, linked_subscriber_id")
 
       .order("created_at", { ascending: false });
-    setProfiles((data as Profile[]) || []);
+    setProfiles(((data as Profile[]) || []).filter(hasCompletedMembership));
   };
 
   const updateStatus = async (id: string, newStatus: string) => {

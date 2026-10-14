@@ -1,5 +1,7 @@
 "use client";
 
+import { hasCompletedMembership } from "@/lib/auth/membership";
+
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import type { MemoItem } from "@/lib/memos/model";
@@ -69,7 +71,7 @@ const loadProfile = async (userId: string) => {
     return;
   }
 
-  if (!profile) {
+  if (!profile || !hasCompletedMembership(profile)) {
     setAuthUser(null);
     setAuthNickname(null); setAuthInstagram(null); setAuthStatus(null); setAuthRole(null); setAuthCreatedAt(null);
     return;

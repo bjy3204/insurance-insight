@@ -1,5 +1,7 @@
 "use client";
 
+import { hasCompletedMembership } from "@/lib/auth/membership";
+
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -29,10 +31,10 @@ export default function AuthCallbackPage() {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error || !user) { router.replace("/"); return; }
       const { data: profile, error: profileError } = await supabase.from("profiles")
-        .select("id, kakao_connected").eq("id", user.id).maybeSingle();
+        .select("id, nickname, instagram_id, role, kakao_connected").eq("id", user.id).maybeSingle();
       if (profileError) { setMessage("회원정보를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요."); return; }
       // Authentication alone is not a completed site membership.
-      if (!profile) { setSignupRequired(true); return; }
+      if (!hasCompletedMembership(profile)) { setSignupRequired(true); return; }
       const kakao = user.identities?.filter(identity => identity.provider === "kakao") || [];
       if (kakao.length === 0 && user.identities?.some(identity => identity.provider === "email")) { router.replace("/"); return; }
       if (kakao.length !== 1) {
@@ -40,7 +42,7 @@ export default function AuthCallbackPage() {
         setMessage("연결된 카카오 계정을 확인할 수 없습니다. 이메일로 로그인해 주세요.");
         return;
       }
-      if (!profile.kakao_connected) {
+      if (!profile?.kakao_connected) {
         const { error: saveError } = await supabase.from("profiles").update({ kakao_connected: true }).eq("id", user.id);
         if (saveError) { setMessage("카카오 연결 상태를 저장하지 못했습니다. 다시 시도해 주세요."); return; }
       }

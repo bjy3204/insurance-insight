@@ -1,3 +1,4 @@
+import { hasCompletedMembership } from "@/lib/auth/membership";
 import { NextRequest, NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
@@ -67,8 +68,8 @@ export async function POST(request: NextRequest) {
     if (sessionError) return json({ error: "로그인이 필요합니다." }, 401);
     const { data: { user }, error: userError } = await client.auth.getUser();
     if (userError || !user) return json({ error: "로그인이 필요합니다." }, 401);
-    const { data: profile, error: profileError } = await client.from("profiles").select("id").eq("id", user.id).maybeSingle();
-    if (profileError || !profile) return json({ error: "회원가입을 먼저 완료해 주세요." }, 403);
+    const { data: profile, error: profileError } = await client.from("profiles").select("id, nickname, instagram_id, role").eq("id", user.id).maybeSingle();
+    if (profileError || !hasCompletedMembership(profile)) return json({ error: "회원가입을 먼저 완료해 주세요." }, 403);
     if (user.identities?.some(identity => identity.provider === "kakao")) return clear(json({ error: "이미 카카오 계정이 연결되어 있습니다." }, 409));
     // This is the first operation that actually links Kakao to the site account.
     const { data, error } = await client.auth.linkIdentity({ provider: "kakao", token: ticket.idToken, access_token: ticket.accessToken });

@@ -1,5 +1,7 @@
 "use client";
 
+import { hasCompletedMembership } from "@/lib/auth/membership";
+
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/lib/supabase";
@@ -325,9 +327,9 @@ const handleLogin = async () => {
 
 const { data: { user: signedIn } } = await supabase.auth.getUser();
 if (signedIn) {
-  const { data: profile, error: lookupError } = await supabase.from("profiles").select("id").eq("id", signedIn.id).maybeSingle();
+  const { data: profile, error: lookupError } = await supabase.from("profiles").select("id, nickname, instagram_id, role").eq("id", signedIn.id).maybeSingle();
   if (lookupError) { alert("회원정보를 확인하지 못했습니다."); return; }
-  if (!profile) {
+  if (!hasCompletedMembership(profile)) {
     alert("회원가입을 진행해 주세요.");
     setCompletingSignup(true);
     setCompletingKakao(!!signedIn.identities?.some(identity => identity.provider === "kakao"));
@@ -421,9 +423,9 @@ const handleResetPassword = async () => {
       if (completingSignup) {
         const { data: { user: current }, error } = await supabase.auth.getUser();
         if (error || !current || current.email !== email.trim()) throw new Error("인증이 만료되었습니다. 기존 로그인 방법으로 다시 로그인해 주세요.");
-        const { data: existing, error: lookupError } = await supabase.from("profiles").select("id").eq("id", current.id).maybeSingle();
+        const { data: existing, error: lookupError } = await supabase.from("profiles").select("id, nickname, instagram_id, role, status").eq("id", current.id).maybeSingle();
         if (lookupError) throw lookupError;
-        if (existing) throw new Error("이미 회원가입한 계정입니다. 로그인해 주세요.");
+        if (hasCompletedMembership(existing) || (existing && existing.status !== "pending")) throw new Error("이미 회원가입한 계정입니다. 로그인해 주세요.");
         connected = current.identities?.filter(identity => identity.provider === "kakao").length === 1;
         if (completingKakao && !connected) throw new Error("연결된 카카오 계정을 확인할 수 없습니다.");
         const { error: passwordError } = await supabase.auth.updateUser({ password });
@@ -436,9 +438,8 @@ const handleResetPassword = async () => {
         userId = data.user.id;
         if (!data.session) { alert("이메일 인증 후 회원가입을 완료해 주세요."); return; }
       }
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: userId, nickname: signupNickname.trim(), instagram_id: signupInstagram.trim(),
-        status: "pending", role: "user", kakao_connected: connected,
+      const { error: profileError } = await supabase.rpc("complete_email_signup", {
+        p_nickname: signupNickname.trim(), p_instagram: signupInstagram.trim(),
       });
       if (profileError) throw profileError;
       membershipSaved = true;
