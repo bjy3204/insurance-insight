@@ -107,7 +107,8 @@ export default function WeatherCard({ onFortune }: { onFortune: () => void }) {
   };
   const light = daylightWeights(now,weather?.sunrise ?? 0,weather?.sunset ?? 0);
   const phase = Object.entries(light).sort((a,b) => b[1]-a[1])[0][0];
-  const mix = (day:number[],night:number[],alpha=1) => `rgb(${day.map((value,i) => Math.round(value+(night[i]-value)*light.night)).join(" ")} / ${alpha})`;
+  const darkBackgroundWeight = 1 - light.day;
+  const mix = (day:number[],night:number[],alpha=1) => `rgb(${day.map((value,i) => Math.round(value+(night[i]-value)*darkBackgroundWeight)).join(" ")} / ${alpha})`;
   const appearance = {"--night-weight":light.night,"--day-weight":1-light.night,"--weather-text":mix([11,20,50],[255,255,255]),"--weather-secondary":mix([51,65,85],[241,245,255])} as CSSProperties;
   return <article className={styles.card} aria-label="오늘의 날씨">
     <div key={weather ? 'weather-ready' : 'weather-loading'} className={styles.weatherTop} data-phase={weather ? phase : 'loading'} style={weather ? appearance : undefined}>

@@ -36,6 +36,8 @@
 .weatherTop .iconButton:hover { background:transparent; }
 .weatherTop .iconButton svg { opacity:.85; transition:opacity 150ms ease; }
 .weatherTop .iconButton:hover svg { opacity:1; }
+.weatherTop:is([data-phase="dusk"], [data-phase="night"], [data-phase="dawn"]) .heading,
+.weatherTop:is([data-phase="dusk"], [data-phase="night"], [data-phase="dawn"]) .weatherMain { text-shadow:0 1px 3px #0005; }
 .forecast { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); align-items:center; flex:1; padding:12px 8px; text-align:center; gap:2px; }
 .forecastDay { font-size:14px; color:#576e95; }
 .forecastDay svg { display:block; margin:12px auto 10px; width:32px; height:32px; }

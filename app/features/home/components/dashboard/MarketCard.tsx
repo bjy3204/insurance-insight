@@ -32,7 +32,9 @@ function MarketTile({ slot, item }: { slot: typeof slots[number]; item?: Item })
   const Icon = slot.icon;
   const valid = item && Number.isFinite(item.value) && item.value > 0;
   const direction = amount === 0 ? "same" : item?.direction || "same";
-  return <a className={styles.marketItem} href={links[slot.key]} target="_blank" rel="noopener noreferrer" aria-label={`${slot.name} 상세 지표 새 창`}>
+  return <a className={styles.marketItem} href={links[slot.key]} target="_blank" rel="noopener noreferrer" aria-label={`${slot.name} 상세 지표 새 창`} title="더블클릭하여 상세 지표 열기"
+    onClick={event => { if (event.detail !== 0) event.preventDefault(); }}
+    onDoubleClick={event => { event.preventDefault(); window.open(links[slot.key], "_blank", "noopener,noreferrer"); }}>
     <div className={styles.marketLabel}>{slot.image ? <Image src={slot.image} width={22} height={22} alt={slot.name} className={slot.key.length === 3 ? styles.flag : styles.metalIcon} unoptimized /> : Icon ? <Icon /> : null}<span title={slot.key === "JPY" ? "100엔 기준" : undefined}>{slot.name}</span></div>
     <strong className={styles.marketValue}>{valid ? `${item.value.toLocaleString("ko-KR", { maximumFractionDigits: slot.unit ? 0 : 2, minimumFractionDigits: slot.unit ? 0 : 2 })}${slot.unit}` : "—"}</strong>
     <span className={`${styles.change} ${styles[direction]}`}>{valid ? <>
