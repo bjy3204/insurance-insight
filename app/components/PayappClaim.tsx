@@ -21,7 +21,6 @@ export default function PayappClaim() {
         if (result.state === "linked") await refreshAuth();
         else if (result.state === "pending" && attempt < 12) timer = setTimeout(() => void claim(attempt + 1), 5000);
         else if (result.state === "identity_mismatch") setNotice("결제할 때 입력한 인스타그램 아이디와 가입한 아이디가 다릅니다. 관리자에게 결제 연결을 요청해 주세요.");
-        else if (result.state === "pending") setNotice("결제완료 확인이 지연되고 있습니다. 다시 결제하지 말고 관리자에게 확인해 주세요.");
         else if (["conflict", "review"].includes(result.state)) setNotice("결제와 회원정보 연결에 관리자 확인이 필요합니다.");
       } catch { /* A later sign-in can retry; never approve based on the redirect. */ }
     }

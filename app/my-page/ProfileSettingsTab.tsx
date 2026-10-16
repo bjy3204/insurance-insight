@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/app/components/AuthProvider";
 import { supabase } from "@/lib/supabase";
 
-export default function ProfileSettingsTab({ onSaved }: { onSaved: () => Promise<void> }) {
+export default function ProfileSettingsTab({ onSaved, embedded = false }: { onSaved: () => Promise<void>; embedded?: boolean }) {
   const { authUser, authNickname, authInstagram, refreshAuth } = useAuth();
   const [nickname, setNickname] = useState(authNickname || "");
   const [instagram, setInstagram] = useState(authInstagram || "");
@@ -95,8 +95,8 @@ export default function ProfileSettingsTab({ onSaved }: { onSaved: () => Promise
     finally { setBusy(null); }
   };
 
-  return <section className="personal-grid bg-white p-5 md:p-6 space-y-5">
-    <h2 className="text-base font-bold text-gray-900">계정 설정</h2>
+  return <section className={embedded ? "space-y-5" : "personal-grid bg-white p-5 md:p-6 space-y-5"}>
+    {!embedded && <h2 className="text-base font-bold text-gray-900">계정 설정</h2>}
     <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 flex flex-wrap items-center gap-2">
       <span className="text-xs font-semibold text-gray-500">현재 이메일</span>
       <span className="text-sm font-semibold text-gray-700 break-all">{authUser?.email}</span>

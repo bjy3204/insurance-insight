@@ -1193,7 +1193,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
                     )}
                   </div>
                   <div className={styles.eventActions}>
-                    <button
+                    {event.date >= today && <button
                       onClick={() => void reminders.toggle(event)}
                       disabled={saving||reminders.saving||!reminders.ready}
                       aria-label={`${event.title} 알림 ${reminders.enabled[event.id]?"끄기":"켜기"}`}
@@ -1201,7 +1201,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
                       title={reminders.enabled[event.id]?"알림 끄기":"알림 켜기"}
                     >
                       {reminders.enabled[event.id]?<Bell style={{color:"#2563eb"}}/>:<BellOff />}
-                    </button>
+                    </button>}
                     <button
                       onClick={() => open(event)}
                       disabled={saving}

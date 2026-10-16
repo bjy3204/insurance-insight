@@ -38,7 +38,7 @@ function Cover({ report }: { report: CoverageReport }) {
 function Comparison({ before, after }: { before: CoverageReport; after: CoverageReport }) {
   const current=reportTotals(before), proposed=reportTotals(after);
   const groups=COVERAGE_GROUPS.filter(g=>["암","뇌","심장","수술","골절 / 화상"].includes(g.title)).flatMap(g=>[{title:g.title,fields:g.fields}]);
-  groups.splice(4,0,{title:"입원",fields:COVERAGE_GROUPS.find(g=>g.title==="입원 / 1인실")!.fields.slice(0,4)});
+  groups.splice(4,0,COVERAGE_GROUPS.find(g=>g.title==="입원")!,COVERAGE_GROUPS.find(g=>g.title==="1인실")!);
   const difference=remodelingDifference(before,after);
   const change=(field:CoverageField)=>{if(field.manual)return "";const sum=(r:CoverageReport)=>r.policies.reduce((total,p)=>total+(reportNumber(p.amounts[field.id]||"")||0),0);const amount=sum(after)-sum(before);return amount?`${amount>0?"+":"−"}${amountText(Math.abs(amount)*(field.unit==="억"?10000:1))}`:"";};
   return <article className="coverage-report-page cr-comparison" aria-label="전후 비교제안서">{heading(before,"리모델링 비교제안서")}

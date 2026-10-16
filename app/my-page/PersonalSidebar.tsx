@@ -6,12 +6,12 @@ import { lockPageScroll } from "@/app/features/home/components/dashboard/Dashboa
 import { PERSONAL_MENU_GROUPS } from "./personal-menu-order";
 import { SortablePersonalMenu, SortablePersonalMenuButton } from "./SortablePersonalMenu";
 import PlantSVG, { type PlantStage } from "./PlantSVG";
-import { X, Menu, Home, SlidersHorizontal, ChevronDown, type LucideIcon } from "lucide-react";
+import { X, Menu, Home, ChevronDown, type LucideIcon } from "lucide-react";
 
 type Item = { id: string; label: string; icon: LucideIcon };
 type Shortcut = { id: string; label: string; icon: LucideIcon; onClick: () => void };
 
-export default function PersonalSidebar({ collapsed, onCollapsedChange, mobileOpen, onMobileClose, activeTab, tabs, onSelect, shortcuts, onSettings, nickname, plantStage, onPlantOpen, onReorder, reorderDisabled = false, reorderError }: {
+export default function PersonalSidebar({ collapsed, onCollapsedChange, mobileOpen, onMobileClose, activeTab, tabs, onSelect, shortcuts, nickname, plantStage, onPlantOpen, onReorder, reorderDisabled = false, reorderError }: {
   collapsed: boolean;
   onCollapsedChange: (collapsed: boolean) => void;
   onPlantOpen: () => void;
@@ -23,7 +23,6 @@ export default function PersonalSidebar({ collapsed, onCollapsedChange, mobileOp
   tabs: Item[];
   onSelect: (id: string) => void;
   shortcuts: Shortcut[];
-  onSettings: () => void;
   onReorder: (active: string, over: string) => void;
   reorderDisabled?: boolean;
   reorderError?: string;
@@ -46,10 +45,7 @@ export default function PersonalSidebar({ collapsed, onCollapsedChange, mobileOp
       })}
       {expanded ? <details open className="group border-t border-gray-100 px-2 py-3"><summary className="flex list-none items-center justify-between px-1 pb-2 text-xs font-semibold text-gray-500 cursor-pointer [&::-webkit-details-marker]:hidden">바로가기<ChevronDown className="h-4 w-4 -rotate-90 group-open:rotate-0 transition-transform" /></summary><SortablePersonalMenu ids={shortcuts.map(link => `shortcut:${link.id}`)} disabled={reorderDisabled} onReorder={onReorder}>{shortcuts.map(link => <SortablePersonalMenuButton key={link.id} id={`shortcut:${link.id}`} label={link.label} disabled={reorderDisabled} onClick={link.onClick} className={itemClass()}><link.icon className="h-5 w-5 shrink-0" />{link.label !== "바로가기 추가" && <span className="truncate">{link.label}</span>}</SortablePersonalMenuButton>)}</SortablePersonalMenu></details> : <section className="border-t border-gray-100 px-2 py-3"><SortablePersonalMenu ids={shortcuts.map(link => `shortcut:${link.id}`)} disabled={reorderDisabled} onReorder={onReorder}>{shortcuts.map(link => <SortablePersonalMenuButton key={link.id} id={`shortcut:${link.id}`} label={link.label} disabled={reorderDisabled} onClick={link.onClick} className={itemClass()}><link.icon className="h-5 w-5" /></SortablePersonalMenuButton>)}</SortablePersonalMenu></section>}
       {reorderError && <p role="alert" className="px-3 py-2 text-xs text-red-500">{reorderError}</p>}
-      <section className="border-t border-gray-100 px-2 py-3">
-        {expanded && <h2 className="px-1 pb-2 text-xs font-semibold text-gray-500">설정</h2>}
-        <button title="개인설정" aria-label="개인설정" onClick={onSettings} className={itemClass(activeTab === "settings")}><SlidersHorizontal className="h-5 w-5 shrink-0" />{expanded && "개인설정"}</button>
-      </section>
+
     </nav>;
   };
   return <>
@@ -63,7 +59,6 @@ export default function PersonalSidebar({ collapsed, onCollapsedChange, mobileOp
           {PERSONAL_MENU_GROUPS.slice(0, 2).map(group => <section key={group.title}><h3 className="text-xs font-semibold text-slate-500 mb-3">{group.title}</h3><div className="grid grid-cols-2 gap-2.5"><SortablePersonalMenu grid ids={tabs.filter(tab => group.ids.includes(tab.id)).map(tab => tab.id)} disabled={reorderDisabled} onReorder={onReorder}>{tabs.filter(tab => group.ids.includes(tab.id)).map(tab => <SortablePersonalMenuButton key={tab.id} id={tab.id} label={tab.label} disabled={reorderDisabled} onClick={() => { onSelect(tab.id); onMobileClose(); }} className={`flex flex-col items-start gap-3 min-h-[92px] p-4 rounded-2xl border text-sm font-semibold cursor-pointer ${activeTab === tab.id ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-gray-200 text-gray-700"}`}><tab.icon className="w-5 h-5" />{tab.label}</SortablePersonalMenuButton>)}</SortablePersonalMenu></div></section>)}
           <section><h3 className="text-xs font-semibold text-slate-500 mb-3">바로가기</h3><div className="grid grid-cols-2 gap-2.5"><SortablePersonalMenu grid ids={shortcuts.map(link => `shortcut:${link.id}`)} disabled={reorderDisabled} onReorder={onReorder}>{shortcuts.map(link => <SortablePersonalMenuButton key={link.id} id={`shortcut:${link.id}`} label={link.label} disabled={reorderDisabled} onClick={() => { link.onClick(); onMobileClose(); }} className="flex items-center gap-2 p-3 min-h-12 rounded-xl bg-white border border-gray-200 text-xs text-gray-600 cursor-pointer"><link.icon className="w-4 h-4 shrink-0" /><span className="break-words">{link.label}</span></SortablePersonalMenuButton>)}</SortablePersonalMenu></div></section>
           {reorderError && <p role="alert" className="text-xs text-red-500">{reorderError}</p>}
-          <button type="button" onClick={() => { onSettings(); onMobileClose(); }} className={`flex items-center gap-3 w-full p-4 rounded-2xl border text-sm font-semibold cursor-pointer ${activeTab === "settings" ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-gray-200 text-gray-700"}`}><SlidersHorizontal className="w-5 h-5" />개인설정</button>
         </nav>
       </aside>
     </>}

@@ -67,6 +67,7 @@ import HomeTab from "./HomeTab";
 import CustomerReminderNotice from "@/app/features/home/components/CustomerReminderNotice";
 import PersonalSidebar from "./PersonalSidebar";
 import ProfileSettingsTab from "./ProfileSettingsTab";
+import PersonalSettingsDialog from "./PersonalSettingsDialog";
 import type { PlantStage } from "./PlantSVG";
 import CalendarTab from "./CalendarTab";
 
@@ -240,6 +241,8 @@ export default function CustomerManagePage() {
 
   // 설정 드롭다운
   const [settingOpen, setSettingOpen] = useState(false);
+  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+  const [settingsDialog, setSettingsDialog] = useState<"account" | "space" | null>(null);
 const [sidebarOpen, setSidebarOpen] = useState(false);
 const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 const [homeMenuSettingOpen, setHomeMenuSettingOpen] = useState(false);
@@ -512,11 +515,12 @@ useEffect(() => {
   const handleClickOutside = (e: MouseEvent) => {
     if (settingRef.current && !settingRef.current.contains(e.target as Node)) {
       setSettingOpen(false);
+      setSettingsMenuOpen(false);
     }
   };
-  if (settingOpen) document.addEventListener("mousedown", handleClickOutside);
+  if (settingOpen || settingsMenuOpen) document.addEventListener("mousedown", handleClickOutside);
   return () => document.removeEventListener("mousedown", handleClickOutside);
-}, [settingOpen]);
+}, [settingOpen, settingsMenuOpen]);
 
 useEffect(() => {
  const handleOpenMemoDetail = (e: Event) => {
@@ -682,11 +686,11 @@ updateData.pin_changed_at = new Date().toISOString();
             </button>
 
             {/* 타이틀 */}
-<div className="text-center">
-  <div className="flex items-center justify-center gap-2">
-    <User className="w-7 h-7 text-blue-600" />
+<div className="max-w-[calc(100%-184px)] text-center md:max-w-none">
+  <div className="flex min-w-0 items-center justify-center gap-2">
+    <User className="hidden w-7 h-7 shrink-0 text-blue-600 md:block" />
 
-    <h1 className="text-2xl font-black text-gray-900">
+    <h1 className="truncate text-2xl font-black text-gray-900">
       {settings?.nickname
         ? `${settings.nickname}님의 공간`
         : "나의 공간"}
@@ -696,13 +700,20 @@ updateData.pin_changed_at = new Date().toISOString();
   
 </div>
 
-<button data-header-control="true" aria-label="개인공간 메뉴" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(v => !v)} className="absolute right-0 w-10 h-10 rounded-full md:!hidden border border-gray-200 bg-white shadow-sm flex items-center justify-center hover:bg-gray-50 cursor-pointer"><Menu className="w-5 h-5 text-gray-500" /></button>
-<div ref={settingRef} className="absolute right-0 hidden md:block" onKeyDown={event => { if (event.key === "Escape") setSettingOpen(false); }}>
-  <button type="button" data-header-control="true" aria-label="도구 메뉴" aria-expanded={settingOpen} aria-controls="personal-header-tools" onClick={() => setSettingOpen(open => !open)}><LayoutGrid /></button>
+<div ref={settingRef} className="absolute right-0 flex items-center gap-2" onKeyDown={event => { if (event.key === "Escape") { setSettingOpen(false); setSettingsMenuOpen(false); } }}>
+  <div className="relative">
+    <button type="button" aria-label="설정" aria-haspopup="menu" aria-expanded={settingsMenuOpen} aria-controls="personal-settings-menu" onClick={() => { setSettingsMenuOpen(open => !open); setSettingOpen(false); }} className="flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white px-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-blue-50 hover:text-blue-600"><Settings size={18}/><span className="hidden md:inline">설정</span></button>
+    {settingsMenuOpen && <div id="personal-settings-menu" role="menu" aria-label="설정" className="absolute right-0 top-12 z-[1000] w-40 overflow-hidden rounded-xl border border-gray-200 bg-white p-1 shadow-xl">{([{id:"account",label:"계정설정"},{id:"space",label:"개인공간"}] as const).map(item => <button role="menuitem" key={item.id} type="button" onClick={() => { setSettingsDialog(item.id); setSettingsMenuOpen(false); setIconPickerOpen(null); setSettingMsg(""); }} className="block w-full cursor-pointer rounded-lg px-4 py-3 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-600">{item.label}</button>)}</div>}
+  </div>
+  <div className="relative hidden md:block">
+    <button type="button" data-header-control="true" aria-label="도구 메뉴" aria-expanded={settingOpen} aria-controls="personal-header-tools" onClick={() => { setSettingOpen(open => !open); setSettingsMenuOpen(false); }}><LayoutGrid /></button>
   {settingOpen && <div id="personal-header-tools" className="absolute right-0 top-12 z-[1000] w-40 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
     <button type="button" onClick={() => { window.dispatchEvent(new Event("open-memo-manager")); setSettingOpen(false); }} className="block w-full px-4 py-3 text-sm font-bold text-gray-700 text-center hover:bg-blue-50 hover:text-blue-600 cursor-pointer">메모장</button>
     {[{ label: "계산기", event: "open-calculator" }, { label: "환율변환기", event: "open-currency-converter" }].map(item => <button key={item.event} type="button" onClick={() => { setSettingOpen(false); window.dispatchEvent(new CustomEvent(item.event)); }} className="block w-full border-t border-gray-100 px-4 py-3 text-sm font-bold text-gray-700 text-center hover:bg-gray-50 cursor-pointer">{item.label}</button>)}
   </div>}
+
+  </div>
+  <button data-header-control="true" aria-label="개인공간 메뉴" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(v => !v)} className="flex h-10 w-10 cursor-pointer items-center justify-center md:!hidden"><Menu className="h-5 w-5"/></button>
 </div>
           </div>
         </div>
@@ -710,7 +721,7 @@ updateData.pin_changed_at = new Date().toISOString();
 
 <PersonalSidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} onPlantOpen={() => { setPlantPopupOpen(open => !open); }} nickname={settings?.nickname || "회원"} plantStage={sidebarPlantStage} mobileOpen={sidebarOpen} onMobileClose={() => setSidebarOpen(false)} activeTab={activeTab} tabs={tabs} onSelect={id => setActiveTab(id as ActiveTab)} onReorder={handlePersonalMenuReorder} reorderDisabled={menuSaving} reorderError={menuSaveError}
  shortcuts={([{type:"kakao",name:settings?.kakao_name,icon:settings?.kakao_icon},{type:"mysite",name:settings?.my_site_name,icon:settings?.my_site_icon},{type:"spreadsheet",name:settings?.spreadsheet_name,icon:settings?.spreadsheet_icon}] as const).slice().sort((a, b) => shortcutOrder.indexOf(a.type) - shortcutOrder.indexOf(b.type)).map(link => ({id:link.type,label:link.name || "바로가기 추가",icon:LINK_ICONS.find(item => item.id === (link.icon || "CirclePlus"))?.icon || CirclePlus,onClick:() => handleUrlButtonClick(link.type)}))}
- onSettings={() => { setActiveTab("settings"); setSidebarOpen(false); }} />
+ />
 <div className={`transition-[padding] duration-200 motion-reduce:transition-none ${sidebarCollapsed ? "md:pl-0" : "md:pl-24"}`}><div className="min-w-0">
       {activeTab === "home" && <CustomerReminderNotice />}
       {/* ── 탭 콘텐츠 ── */}
@@ -760,11 +771,11 @@ updateData.pin_changed_at = new Date().toISOString();
 
         
 
-{activeTab === "settings" && (
-  <div className="space-y-5">
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
-      <ProfileSettingsTab onSaved={loadSettings} />
-      <section className="personal-grid bg-white p-5 md:p-6 space-y-4">
+      </main>
+
+</div></div>
+     {settingsDialog && <PersonalSettingsDialog title={settingsDialog === "account" ? "계정설정" : "개인공간"} onClose={() => { if (!settingSaving) { setSettingsDialog(null); setIconPickerOpen(null); } }}>
+       {settingsDialog === "account" ? <ProfileSettingsTab embedded onSaved={loadSettings}/> : (      <section className="space-y-4">
 <h2 className="text-base font-bold text-gray-900">바로가기 · 개인공간 PIN</h2>
               <div>
                 <label className="text-xs text-gray-500 font-semibold mb-1 block">바로가기 1</label>
@@ -944,13 +955,8 @@ updateData.pin_changed_at = new Date().toISOString();
                 
                 {settingSaving ? "저장 중..." : "바로가기 · PIN 저장"}
               </button>
-            </section>
-    </div>
-  </div>
-)}
-      </main>
-
-</div></div>
+            </section>)}
+     </PersonalSettingsDialog>}
      {/* ── URL 설정 팝업 ── */}
 {urlPopupType && (
   <div className="fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4">

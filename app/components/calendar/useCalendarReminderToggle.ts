@@ -13,7 +13,7 @@ export default function useCalendarReminderToggle(userId:string|null){
  },[userId]);
  const toggle=async(event:CalendarEvent)=>{
   if(!ready||busy.current)return;
-  if(!enabled[event.id]&&event.date<koreaDate()){setError("지난 일정은 알림을 켤 수 없습니다.");return;}
+  if(event.date<koreaDate()){setError("");return;}
   const requestedOwner=userId,next=!enabled[event.id];busy.current=true;setSaving(true);setError("");
   try{if(next)await saveReminder({event_id:event.id,lead_days:0,notification_date:event.date,acknowledged_at:null},userId);else await removeReminder(event.id,userId);if(owner.current===requestedOwner)setEnabled(current=>({...current,[event.id]:next}));}
   catch{if(owner.current===requestedOwner)setError("알림 설정을 저장하지 못했습니다.");}

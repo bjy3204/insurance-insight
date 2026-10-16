@@ -58,6 +58,8 @@ export const REPORT_CSS = `
 .cr-reference .cr-detail th,.cr-reference .cr-detail td{height:15.3px}
 .cr-reference .cr-detail .cr-ornament{padding:0;background:radial-gradient(circle at 0 25%,transparent 18px,var(--cr-line) 19px,transparent 20px),radial-gradient(circle at 100% 75%,transparent 27px,var(--cr-line) 28px,transparent 29px),linear-gradient(160deg,var(--cr-soft),white);color:var(--cr-accent);text-align:center}
 .cr-ornament div{font-size:23px;opacity:.65}
+
+.cr-reference .cr-cards > .cr-card:last-child{grid-column:1 / -1;min-height:0;display:flex;align-items:center}.cr-reference .cr-cards > .cr-card:last-child h2{border-bottom:0;min-width:90px}.cr-reference .cr-cards > .cr-card:last-child dl{flex:1}
 `;
 
 export async function printCoverageReport(html: string, title: string) {
