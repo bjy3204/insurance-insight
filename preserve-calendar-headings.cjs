@@ -1,0 +1,1 @@
+const fs=require('fs'),vm=require('vm');let s=fs.readFileSync('Code-CRM-calendar-icons.txt','utf8');s=s.replace(/  sheet\.getRange\('AL4:AP4'\)\.setValues\([^\n]+\r?\n/,'');new vm.Script(s);fs.writeFileSync('Code-CRM-calendar-icons.txt',s);

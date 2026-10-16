@@ -9,6 +9,8 @@ const CUSTOMER_FIELDS = {
 };
 
 function onOpen(e) {
+  refreshCrmCalendar();
+  refreshMobileRegistrationNotes_();
   SpreadsheetApp.getUi().createMenu('고객 관리')
     .addItem('고객 등록', 'registerCustomer')
     .addItem('등록 기능 연결 완료', 'setupCustomerRegistration')
@@ -20,6 +22,8 @@ function onOpen(e) {
 }
 
 function onEdit(e) {
+  refreshMobileRegistrationNotes_(e && e.source);
+  if(handleCrmCalendarEdit(e))return;
   if(handleContractEdit(e))return;
   if(e && e.range && crmSheetRole_(e.range.getSheet())==='고객 관리 카드') {
     refreshCustomerCard(e.source);
@@ -37,6 +41,8 @@ function onEdit(e) {
     refreshCustomerListLayout(e.source);
     refreshCustomerCard(e.source);
     refreshAllContractCustomerInfo(e.source);
+    refreshOperationalViews(e.source);
+    refreshCrmCalendar(e.source);
   }
 }
 
@@ -52,6 +58,7 @@ function refreshCustomerCard(source) {
   const ss=source && typeof source.getSheetByName==='function'?source:SpreadsheetApp.getActiveSpreadsheet();
   const card=crmSheet_(ss,'고객 관리 카드'),list=crmSheet_(ss,'고객 LIST');
   if(!card||!list)return;
+  clearCustomerCardContracts_(card);
   const mapping={E6:2,C8:4,C9:5,E10:28,C10:7,C11:6,C12:8,H8:22,J8:23,H9:25,J9:24,H10:26,J10:27,C15:10,E15:11,H15:17,J15:18,C16:13,E16:12,H16:19,J16:20,C17:14,E17:15};
   const targets=Object.keys(mapping).concat(['B1','E5','E8','E9','J4','H4','AH1','AH2','AH3']);
   card.getRangeList(targets).clearContent();
@@ -67,6 +74,7 @@ function refreshCustomerCard(source) {
     return;
   }
   const item=found[0],row=item.row;
+  refreshCustomerCardContracts_(ss,card,name,row[3]);
   Object.entries(mapping).forEach(([address,col])=>{
     const cell=card.getRange(address);
     if(address==='J9')cell.setNumberFormat('m"월 "d"일"').setValue(raw[item.index][col-1]);
@@ -292,6 +300,8 @@ function registerCustomer(source) {
     list.getRange(rowNumber,2,1,27).setValues([output]);
     committed = true;
     refreshCustomerListLayout(ss);
+    refreshOperationalViews(ss);
+    refreshCrmCalendar(ss);
     form.getRangeList(['B1','K4','K6','B36']).clearContent();
     form.getRangeList(Object.keys(CUSTOMER_FIELDS)).clearContent();
     ss.toast('고객 LIST에 등록했습니다.', '고객 등록');
@@ -406,3 +416,4 @@ function assertDropdownValue(rule,value) {
   else if (type === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) allowed = args[0];
   if (allowed && !allowed.includes(value)) throw new Error('목록에서 카드사·은행·보험사를 선택하세요.');
 }
+

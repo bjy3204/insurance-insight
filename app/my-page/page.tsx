@@ -5,6 +5,7 @@ import MemoBoard from "@/app/components/memos/MemoBoard";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { chooseCustomerTemplate } from "@/lib/google/customer-sheet-picker";
 import { useAuth } from "@/app/components/AuthProvider";
 import { Menu,
   LayoutGrid,
@@ -13,6 +14,7 @@ import { Menu,
   X,
   Lock,
   Users,
+  ClipboardList,
   BookOpen,
 CalendarDays,
 MessageSquare,
@@ -62,6 +64,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 import HomeTab from "./HomeTab";
+import CustomerReminderNotice from "@/app/features/home/components/CustomerReminderNotice";
 import PersonalSidebar from "./PersonalSidebar";
 import ProfileSettingsTab from "./ProfileSettingsTab";
 import type { PlantStage } from "./PlantSVG";
@@ -69,6 +72,10 @@ import CalendarTab from "./CalendarTab";
 
 import AiMessageTab from "./AiMessageTab";
 import NoticeTab from "./NoticeTab";
+import CustomerManagementTab from "./CustomerManagementTab";
+import CoverageAnalysisTab from "./CoverageAnalysisTab";
+import SpreadsheetIcon from "./SpreadsheetIcon";
+import { normalizePersonalMenuOrder, reorderPersonalMenu, SHORTCUT_ORDER } from "./personal-menu-order";
 
 
 
@@ -82,6 +89,8 @@ type ActiveTab =
   | "calendar"
   | "ai"
   | "customer"
+  | "customer-management"
+  | "coverage-analysis"
   | "notice"
   | "settings";
 
@@ -156,20 +165,23 @@ function SortableMemoCard({ memo, children }: { memo: MemoItem; children: React.
 // ─────────────────────────────────────────────
 // 탭 정의
 // ─────────────────────────────────────────────
+// Keep the unfinished report available locally while hiding it in production.
+const COVERAGE_ANALYSIS_ENABLED = process.env.NODE_ENV !== "production";
 const TABS = [
   { id: "home" as ActiveTab, label: "홈", icon: BookOpen },
-  { id: "customer" as ActiveTab, label: "고객관리", icon: Users },
+  { id: "customer-management" as ActiveTab, label: "고객관리", icon: Users },
+  { id: "coverage-analysis" as ActiveTab, label: "보장분석표", icon: ClipboardList },
+  { id: "ai" as ActiveTab, label: "AI메시지", icon: MessageSquare },
   { id: "notice" as ActiveTab, label: "안내장", icon: FileText },
+  { id: "customer" as ActiveTab, label: "스프레드시트", icon: SpreadsheetIcon },
   { id: "memo" as ActiveTab, label: "메모", icon: NotebookPen },
   { id: "diary" as ActiveTab, label: "일기", icon: BookOpen },
   { id: "calendar" as ActiveTab, label: "캘린더", icon: CalendarDays },
-  { id: "ai" as ActiveTab, label: "AI메시지", icon: MessageSquare },
-];
+].filter(tab => COVERAGE_ANALYSIS_ENABLED || tab.id !== "coverage-analysis");
+const DEFAULT_MENU_ORDER = [...TABS.map(tab => tab.id), ...SHORTCUT_ORDER.map(id => `shortcut:${id}`)];
 
 const HOME_MENU_ITEMS = [
   { id: "dday", label: "D-Day", desc: "중요한 날짜 표시", icon: CalendarDays, color: "text-blue-500", bg: "bg-blue-50" },
-  { id: "schedule", label: "오늘 일정", desc: "오늘 등록된 일정", icon: CalendarDays, color: "text-indigo-500", bg: "bg-indigo-50" },
-  { id: "checklist", label: "체크리스트", desc: "오늘 할 일 관리", icon: CheckSquare, color: "text-green-500", bg: "bg-green-50" },
   { id: "memo", label: "메모", desc: "개인 메모 확인", icon: NotebookPen, color: "text-yellow-500", bg: "bg-yellow-50" },
   { id: "diary", label: "일기", desc: "월별 일기 기록", icon: BookOpen, color: "text-blue-500", bg: "bg-blue-50" },
 ];
@@ -214,9 +226,17 @@ export default function CustomerManagePage() {
 
   const [settings, setSettings] = useState<CustomerSettings | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("home");
+  useEffect(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    if (TABS.some(item => item.id === tab)) setActiveTab(tab as ActiveTab);
+  }, []);
   const [plantPopupOpen, setPlantPopupOpen] = useState(false);
   const [sidebarPlantStage, setSidebarPlantStage] = useState<PlantStage>("seed");
   const [tabs, setTabs] = useState(TABS);
+  const [shortcutOrder, setShortcutOrder] = useState(SHORTCUT_ORDER);
+  const [menuSaving, setMenuSaving] = useState(false);
+  const menuSavingRef = useRef(false);
+  const [menuSaveError, setMenuSaveError] = useState("");
 
   // 설정 드롭다운
   const [settingOpen, setSettingOpen] = useState(false);
@@ -421,21 +441,30 @@ useEffect(() => {
   };
 
   
-  const handleTabDragEnd = async (event: any) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    
-    const oldIndex = tabs.findIndex((t) => t.id === active.id);
-    const newIndex = tabs.findIndex((t) => t.id === over.id);
-    
-    const newTabs = arrayMove(tabs, oldIndex, newIndex);
-    setTabs(newTabs);
-    
-    if (authUser) {
-      await supabase.from("customer_settings").upsert(
-        { user_id: authUser.id, tab_order: newTabs.map((t: typeof TABS[number]) => t.id) },
-        { onConflict: "user_id" }
+  const applyPersonalMenuOrder = (order: string[]) => {
+    setTabs(order.map(id => TABS.find(tab => tab.id === id)).filter((tab): tab is typeof TABS[number] => !!tab));
+    setShortcutOrder(order.filter(id => id.startsWith("shortcut:")).map(id => id.slice(9)));
+  };
+  const handlePersonalMenuReorder = async (active: string, over: string) => {
+    if (!authUser || menuSavingRef.current) return;
+    const previous = [...tabs.map(tab => tab.id), ...shortcutOrder.map(id => `shortcut:${id}`)];
+    const next = reorderPersonalMenu(previous, active, over);
+    if (next === previous) return;
+    menuSavingRef.current = true;
+    setMenuSaving(true);
+    setMenuSaveError("");
+    applyPersonalMenuOrder(next);
+    try {
+      const { error } = await supabase.from("customer_settings").upsert(
+        { user_id: authUser.id, tab_order: next }, { onConflict: "user_id" }
       );
+      if (error) throw error;
+    } catch {
+      applyPersonalMenuOrder(previous);
+      setMenuSaveError("순서를 저장하지 못했습니다. 다시 시도해 주세요.");
+    } finally {
+      menuSavingRef.current = false;
+      setMenuSaving(false);
     }
   };
 
@@ -538,19 +567,7 @@ setHiddenHomeMenus(
   Array.isArray(data?.hidden_home_menus) ? data.hidden_home_menus : []
 );
 
-if (data?.tab_order && Array.isArray(data.tab_order)) {
-  const order = data.tab_order as string[];
-
-  const orderedTabs = order
-    .map((id: string) => TABS.find((t) => t.id === id))
-    .filter((t): t is typeof TABS[number] => Boolean(t));
-
-  const missingTabs = TABS.filter((t) => !order.includes(t.id));
-
-  setTabs([...orderedTabs, ...missingTabs]);
-} else {
-  setTabs(TABS);
-}
+applyPersonalMenuOrder(normalizePersonalMenuOrder(data?.tab_order, DEFAULT_MENU_ORDER));
 
 if (!data) return;
   setSettingForm((f) => ({
@@ -629,9 +646,9 @@ updateData.pin_changed_at = new Date().toISOString();
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8 text-gray-400" />
           </div>
-          <h2 className="text-lg font-bold text-gray-900 mb-2">접근 제한</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-2">{authStatus === "payment_error" ? "결제오류" : "접근 제한"}</h2>
           <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-            개인공간 기능은 승인된 회원만<br />이용 가능합니다.
+            {authStatus === "payment_error" ? <>정기결제에 오류가 발생했습니다.<br />결제 상태를 확인하거나 관리자에게 문의해 주세요.</> : <>개인공간 기능은 승인된 회원만<br />이용 가능합니다.</>}
           </p>
           <button
             onClick={() => router.push("/")}
@@ -691,10 +708,11 @@ updateData.pin_changed_at = new Date().toISOString();
         </div>
       </header>
 
-<PersonalSidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} onPlantOpen={() => { setPlantPopupOpen(open => !open); }} nickname={settings?.nickname || "회원"} plantStage={sidebarPlantStage} mobileOpen={sidebarOpen} onMobileClose={() => setSidebarOpen(false)} activeTab={activeTab} tabs={tabs} onSelect={id => setActiveTab(id as ActiveTab)}
- shortcuts={([{type:"kakao",name:settings?.kakao_name,icon:settings?.kakao_icon},{type:"mysite",name:settings?.my_site_name,icon:settings?.my_site_icon},{type:"spreadsheet",name:settings?.spreadsheet_name,icon:settings?.spreadsheet_icon}] as const).map(link => ({id:link.type,label:link.name || "바로가기 추가",icon:LINK_ICONS.find(item => item.id === (link.icon || "CirclePlus"))?.icon || CirclePlus,onClick:() => handleUrlButtonClick(link.type)}))}
+<PersonalSidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} onPlantOpen={() => { setPlantPopupOpen(open => !open); }} nickname={settings?.nickname || "회원"} plantStage={sidebarPlantStage} mobileOpen={sidebarOpen} onMobileClose={() => setSidebarOpen(false)} activeTab={activeTab} tabs={tabs} onSelect={id => setActiveTab(id as ActiveTab)} onReorder={handlePersonalMenuReorder} reorderDisabled={menuSaving} reorderError={menuSaveError}
+ shortcuts={([{type:"kakao",name:settings?.kakao_name,icon:settings?.kakao_icon},{type:"mysite",name:settings?.my_site_name,icon:settings?.my_site_icon},{type:"spreadsheet",name:settings?.spreadsheet_name,icon:settings?.spreadsheet_icon}] as const).slice().sort((a, b) => shortcutOrder.indexOf(a.type) - shortcutOrder.indexOf(b.type)).map(link => ({id:link.type,label:link.name || "바로가기 추가",icon:LINK_ICONS.find(item => item.id === (link.icon || "CirclePlus"))?.icon || CirclePlus,onClick:() => handleUrlButtonClick(link.type)}))}
  onSettings={() => { setActiveTab("settings"); setSidebarOpen(false); }} />
 <div className={`transition-[padding] duration-200 motion-reduce:transition-none ${sidebarCollapsed ? "md:pl-0" : "md:pl-24"}`}><div className="min-w-0">
+      {activeTab === "home" && <CustomerReminderNotice />}
       {/* ── 탭 콘텐츠 ── */}
       <main data-page-content="true" className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-8">
        {activeTab === "memo" && <MemoBoard />}
@@ -711,14 +729,17 @@ updateData.pin_changed_at = new Date().toISOString();
 </div>
 
 <div className={activeTab === "calendar" ? "block" : "hidden"}>
-  <CalendarTab />
+  <CalendarTab active={activeTab === "calendar"} />
 </div>
 
 <div className={activeTab === "ai" ? "block" : "hidden"}>
   <AiMessageTab active={activeTab === "ai"} />
 </div>
 
-<div className={activeTab === "customer" ? "block" : "hidden"}>
+{activeTab === "customer-management" && <CustomerManagementTab />}
+{COVERAGE_ANALYSIS_ENABLED && activeTab === "coverage-analysis" && <CoverageAnalysisTab />}
+
+<div data-compact-corners="true" className={activeTab === "customer" ? "block" : "hidden"}>
   <CustomerTab
     spreadsheetUrl={settings?.customer_url || null}
     onSaveUrl={async (url: string) => {
@@ -727,7 +748,8 @@ updateData.pin_changed_at = new Date().toISOString();
         { user_id: authUser.id, customer_url: url },
         { onConflict: "user_id" }
       );
-      if (!error) setSettings((prev) => prev ? { ...prev, customer_url: url } : null);
+      if (error) throw new Error("시트 연결 정보를 저장하지 못했습니다. 다시 시도해 주세요.");
+      setSettings((prev) => prev ? { ...prev, customer_url: url } : null);
     }}
   />
 </div>
@@ -751,7 +773,7 @@ updateData.pin_changed_at = new Date().toISOString();
     <button
       type="button"
       onClick={() => setIconPickerOpen(iconPickerOpen === "kakao" ? null : "kakao")}
-      className="flex items-center gap-1.5 px-2.5 h-9 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+      className="flex items-center gap-1.5 px-2.5 h-11 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
     >
       {(() => {
         const found = LINK_ICONS.find(i => i.id === settingForm.kakao_icon);
@@ -779,7 +801,7 @@ updateData.pin_changed_at = new Date().toISOString();
     value={settingForm.kakao_name}
     onChange={(e) => setSettingForm((f) => ({ ...f, kakao_name: e.target.value }))}
     placeholder="버튼 이름"
-    className="flex-1 h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+    className="flex-1 min-w-0 h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
   />
 </div>
 
@@ -787,7 +809,7 @@ updateData.pin_changed_at = new Date().toISOString();
                   value={settingForm.kakao_url}
                   onChange={(e) => setSettingForm((f) => ({ ...f, kakao_url: e.target.value }))}
                   placeholder="https://"
-                  className="w-full h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+                  className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
                 />
               </div>
               <div>
@@ -797,7 +819,7 @@ updateData.pin_changed_at = new Date().toISOString();
       <button
         type="button"
         onClick={() => setIconPickerOpen(iconPickerOpen === "mysite" ? null : "mysite")}
-        className="flex items-center gap-1.5 px-2.5 h-9 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+        className="flex items-center gap-1.5 px-2.5 h-11 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
       >
         {(() => {
           const found = LINK_ICONS.find(i => i.id === settingForm.my_site_icon);
@@ -825,14 +847,14 @@ updateData.pin_changed_at = new Date().toISOString();
       value={settingForm.my_site_name}
       onChange={(e) => setSettingForm((f) => ({ ...f, my_site_name: e.target.value }))}
       placeholder="버튼 이름"
-      className="flex-1 h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+      className="flex-1 min-w-0 h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
     />
   </div>
   <input data-ui-field="true"
     value={settingForm.my_site_url}
     onChange={(e) => setSettingForm((f) => ({ ...f, my_site_url: e.target.value }))}
     placeholder="https://"
-    className="w-full h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+    className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
   />
 </div>
 
@@ -843,7 +865,7 @@ updateData.pin_changed_at = new Date().toISOString();
       <button
         type="button"
         onClick={() => setIconPickerOpen(iconPickerOpen === "spreadsheet" ? null : "spreadsheet")}
-        className="flex items-center gap-1.5 px-2.5 h-9 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
+        className="flex items-center gap-1.5 px-2.5 h-11 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
       >
         {(() => {
           const found = LINK_ICONS.find(i => i.id === settingForm.spreadsheet_icon);
@@ -871,14 +893,14 @@ updateData.pin_changed_at = new Date().toISOString();
       value={settingForm.spreadsheet_name}
       onChange={(e) => setSettingForm((f) => ({ ...f, spreadsheet_name: e.target.value }))}
       placeholder="버튼 이름"
-      className="flex-1 h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+      className="flex-1 min-w-0 h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
     />
   </div>
   <input data-ui-field="true"
     value={settingForm.spreadsheet_url}
     onChange={(e) => setSettingForm((f) => ({ ...f, spreadsheet_url: e.target.value }))}
     placeholder="https://"
-    className="w-full h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+    className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
   />
 </div>
 
@@ -890,7 +912,7 @@ updateData.pin_changed_at = new Date().toISOString();
                     value={settingForm.new_pin}
                     onChange={(e) => setSettingForm((f) => ({ ...f, new_pin: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
                     placeholder="새 PIN 4자리"
-                    className="w-full h-9 px-3 pr-9 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
+                    className="w-full h-11 px-4 pr-9 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
                   />
                   <button
                     onClick={() => setShowNewPin(!showNewPin)}
@@ -905,7 +927,7 @@ updateData.pin_changed_at = new Date().toISOString();
                     value={settingForm.confirm_pin}
                     onChange={(e) => setSettingForm((f) => ({ ...f, confirm_pin: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
                     placeholder="새 PIN 확인"
-                    className="w-full h-9 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition mt-2"
+                    className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition mt-2"
                   />
                 )}
               </div>
@@ -1332,9 +1354,93 @@ function PinKeypad({ onPress }: { onPress: (val: string) => void }) {
   );
 }
 function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | null; onSaveUrl: (url: string) => Promise<void> }) {
-  const [urlInputOpen, setUrlInputOpen] = useState(false);
-  const [urlInput, setUrlInput] = useState("");
+  const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+  const [message, setCustomerMessage] = useState("");
+  const setMessage = (value: string) => {
+    setCustomerMessage(value);
+    if (new URLSearchParams(window.location.search).get("tab") === "calendar") window.dispatchEvent(new CustomEvent("insurance-sheet-calendar-error", { detail: value }));
+  };
+  const [pickerPending, setPickerPending] = useState(false);
+  const pickerStarted = useRef(false);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("google_sheet");
+    if (!status) return;
+    if (status === "ready") {
+      setMessage("");
+      params.delete("google_sheet");
+      window.history.replaceState(null, "", `${window.location.pathname}?${params}${window.location.hash}`);
+      return;
+    }
+    if (status === "picker") {
+      if (pickerStarted.current) return;
+      pickerStarted.current = true;
+      setPickerPending(true);
+      params.delete("google_sheet");
+      window.history.replaceState(null, "", `${window.location.pathname}?${params}${window.location.hash}`);
+      void selectTemplate();
+      return;
+    }
+    const messages: Record<string, string> = {
+      cancelled: "구글 연결을 취소했습니다. 다시 시도할 수 있습니다.",
+      expired: "연결 시간이 만료되었습니다. 다시 시작해 주세요.",
+      template: "원본 시트를 복사할 권한이 없습니다. 관리자의 원본 시트·앱 접근 설정 확인이 필요합니다.",
+      template_app_access: "구글에서 원본 시트에 대한 앱 접근 승인이 필요하다고 응답했습니다. 최초 원본 시트 선택 단계가 필요합니다.",
+      template_not_found: "구글 앱에서 원본 시트에 접근하지 못했습니다. 원본 공유 설정과 앱의 파일 접근 승인을 확인해야 합니다.",
+      storage_full: "구글 드라이브 용량이 부족해 사본을 만들지 못했습니다.",
+      drive_disabled: "구글 프로젝트에서 Google Drive API를 활성화해야 합니다.",
+      permission: "시트 생성 권한을 확인하지 못했습니다. 구글 권한 동의 후 다시 시도해 주세요.",
+      copy_error: "시트를 복사하지 못했습니다. 구글 드라이브 용량과 원본 접근 권한을 확인해 주세요.",
+      save_error: "시트 연결 정보를 저장하지 못했습니다. 다시 시도해 주세요.",
+      error: "구글 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+    };
+    setMessage(messages[status] ?? messages.error);
+    params.delete("google_sheet");
+    window.history.replaceState(null, "", `${window.location.pathname}?${params}${window.location.hash}`);
+  }, []);
+
+  async function selectTemplate() {
+    setConnecting(true);
+    setMessage("");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("보험인사이트에 먼저 로그인해 주세요.");
+      const headers = { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" };
+      const configResponse = await fetch("/api/google/customer-sheet?action=picker", { headers, cache: "no-store" });
+      const config = await configResponse.json();
+      if (!configResponse.ok) {
+        if (configResponse.status === 401) setPickerPending(false);
+        throw new Error(config.error || "구글 선택창을 준비하지 못했습니다.");
+      }
+      const fileId = await chooseCustomerTemplate(config);
+      const response = await fetch("/api/google/customer-sheet", { method: "POST", headers, body: JSON.stringify({ action: fileId ? "picker-complete" : "picker-cancel", fileId }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "시트 생성에 실패했습니다.");
+      if (!fileId) { setPickerPending(false); setMessage("시트 선택을 취소했습니다."); return; }
+      window.location.assign(result.tab === "calendar" ? "/my-page?tab=calendar" : "/my-page?tab=customer");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "시트 생성에 실패했습니다."); }
+    finally { setConnecting(false); }
+  }
+
+  const connectGoogle = async () => {
+    if (pickerPending) { await selectTemplate(); return; }
+    setConnecting(true);
+    setMessage("");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("보험인사이트에 먼저 로그인해 주세요.");
+      const response = await fetch("/api/google/customer-sheet", { method: "POST", headers: { Authorization: `Bearer ${session.access_token}` } });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "구글 연결을 시작하지 못했습니다.");
+      if (result.existing) { window.location.assign("/my-page?tab=customer"); return; }
+      window.location.assign(result.url);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "구글 연결을 시작하지 못했습니다.");
+      setConnecting(false);
+    }
+  };
 
   const getEmbedUrl = (url: string) => {
     const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
@@ -1344,19 +1450,28 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
 
   const embedUrl = spreadsheetUrl ? getEmbedUrl(spreadsheetUrl ) : null;
 
-  const handleSave = async () => {
-    if (!urlInput.trim()) return;
+  const removeSheet = async () => {
     setSaving(true);
-    await onSaveUrl(urlInput.trim());
-    setSaving(false);
-    setUrlInputOpen(false);
-    setUrlInput("");
+    try {
+      await onSaveUrl("");
+      setRemoveConfirmOpen(false);
+      setMessage("");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "시트를 화면에서 없애지 못했습니다. 다시 시도해 주세요.");
+    } finally { setSaving(false); }
   };
 
   return (
     <div className="w-full">
+      {!embedUrl && <div className="flex items-start justify-start">
+          <button onClick={connectGoogle} disabled={connecting} className="h-11 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50 cursor-pointer">
+            {connecting ? "연결중" : "내 고객관리 시트 만들기"}
+          </button>
+      </div>}
+      {message && <p role="status" className="mb-3 rounded-xl bg-blue-50 p-3 text-sm text-blue-800">{message}</p>}
            {embedUrl && (
         <iframe
+          title="내 고객관리 스프레드시트"
           src={embedUrl}
           className="personal-grid w-full rounded-2xl border border-gray-200 shadow"
           style={{ height: "85vh" }}
@@ -1365,80 +1480,33 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
         />
       )}
            
-            <div className="flex items-center gap-5 mt-5 flex-wrap">
-        <a
-          href="https://docs.google.com/spreadsheets/d/1AXjvjrINd5GwRRM-WuBeV2_AFKDmAWZDKlOD_uyQhzg/copy"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-4 h-9 bg-green-50 text-green-700 text-xs font-bold rounded-xl hover:bg-green-100 transition flex items-center gap-1.5"
-        >
-          📥 고객관리 시트 다운로드
-        </a>
-
- <a
-    href="/excel/보장분석 리포트.xlsx"
-    download
-    className="px-4 h-9 bg-blue-50 text-blue-700 text-xs font-bold rounded-xl hover:bg-blue-100 transition flex items-center gap-1.5"
-  >
-    📊 보장분석 리포트 다운로드
-  </a>
-
-
-        
-        <button
-          onClick={( ) => { setUrlInput(spreadsheetUrl || ""); setUrlInputOpen(true); }}
-          className="ml-auto px-4 h-9 bg-gray-100 text-gray-600 text-xs font-bold rounded-xl hover:bg-gray-200 transition cursor-pointer"
-        >
-          {embedUrl ? "URL 변경" : "스프레드시트 연결"}
-        </button>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        {embedUrl && (
+          <button type="button" onClick={() => { setMessage(""); setRemoveConfirmOpen(true); }}
+            className="ml-auto flex h-9 items-center gap-1.5 rounded-xl bg-red-50 px-4 text-xs font-bold text-red-500 transition hover:bg-red-100 cursor-pointer">
+            <Trash2 className="h-3.5 w-3.5" />시트 없애기
+          </button>
+        )}
       </div>
 
 
-      {!embedUrl && (
-  <div className="h-[70vh] flex flex-col items-center justify-center gap-2">
-    <p className="text-gray-400 text-sm">
-      연결된 스프레드시트가 없습니다.
-    </p>
-  </div>
-)}
-
       
 
-      {urlInputOpen && (
-        <div className="fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <span className="font-bold text-gray-900">스프레드시트 URL 설정</span>
-              <button data-popup-close="true" onClick={() => setUrlInputOpen(false)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer">
-                <X className="w-4 h-4 text-gray-500" />
-              </button>
+      {removeConfirmOpen && (
+        <div className="fixed inset-0 z-[6000] flex items-center justify-center bg-black/40 p-4"
+          onClick={() => { if (!saving) setRemoveConfirmOpen(false); }}
+          onKeyDown={event => { if (event.key === "Escape" && !saving) { event.stopPropagation(); setRemoveConfirmOpen(false); } }}>
+          <div role="alertdialog" aria-modal="true" aria-labelledby="remove-customer-sheet-title"
+            className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl" onClick={event => event.stopPropagation()}>
+            <h3 id="remove-customer-sheet-title" className="font-bold text-gray-900">시트를 삭제할까요?</h3>
+            {message && <p role="alert" className="mt-3 text-sm text-red-500">{message}</p>}
+            <div className="mt-5 flex gap-3">
+              <button type="button" autoFocus disabled={saving} onClick={() => setRemoveConfirmOpen(false)} className="h-11 flex-1 rounded-2xl bg-gray-100 text-sm font-bold text-gray-700 hover:bg-gray-200 disabled:opacity-50 cursor-pointer">취소</button>
+              <button type="button" disabled={saving} onClick={removeSheet} className="h-11 flex-1 rounded-2xl bg-red-500 text-sm font-bold text-white hover:bg-red-600 disabled:opacity-50 cursor-pointer">{saving ? "삭제중" : "삭제"}</button>
             </div>
-            <input data-ui-field="true"
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              placeholder="https://docs.google.com/spreadsheets/..."
-              className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition mb-4"
-            />
-                       <div className="flex gap-3">
-              <button onClick={() => setUrlInputOpen(false)} className="flex-1 h-11 rounded-2xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-pointer">취소</button>
-              {spreadsheetUrl && (
-                <button
-                  onClick={async () => { setSaving(true); await onSaveUrl(""); setSaving(false); setUrlInputOpen(false); setUrlInput(""); }}
-                  disabled={saving}
-                  className="flex-1 h-11 rounded-2xl bg-red-50 text-red-500 text-sm font-bold hover:bg-red-100 transition cursor-pointer disabled:opacity-50"
-                >
-                  삭제
-                </button>
-              )}
-              <button onClick={handleSave} disabled={saving} className="flex-1 h-11 rounded-2xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition cursor-pointer disabled:opacity-50">
-                {saving ? "저장 중..." : "저장"}
-              </button>
-            </div>
-
           </div>
         </div>
       )}
     </div>
   );
 }
-

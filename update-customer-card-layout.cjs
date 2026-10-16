@@ -1,0 +1,7 @@
+const fs=require('fs'),vm=require('vm');let s=fs.readFileSync('Code-CRM-calendar-confirmation-saved.txt','utf8');const a=s.indexOf('function refreshCustomerCard(source)'),b=s.indexOf('function formatPhoneNumber',a);let card=s.slice(a,b);
+card=card.replace(/  const mapping=\{[^\r\n]+/, '  const mapping={E9:2,C7:4,C8:5,H10:28,C9:7,C10:6,C11:8,H7:22,J7:23,H8:25,J8:24,H9:26,J9:27,C14:10,E14:11,H14:17,J14:18,C15:13,E15:12,H15:19,J15:20,C16:14,E16:15};');
+card=card.replace("['B1','E5','E8','E9','J4','H4','AH1','AH2','AH3']", "['B1','E7','E8','J4','H4','AH1','AH2','AH3']");
+card=card.replace("getRange('C5')","getRange('E4')").replace("address==='J9'","address==='J8'").replace("address==='C15'","address==='C14'");
+card=card.replace("card.getRange('E8').setValue(age)","card.getRange('E7').setValue(age)").replace("card.getRange('E9').setValue(digits", "card.getRange('E8').setValue(digits");
+card=card.replace("card.getRange('J8').setNumberFormat('@');","card.getRange('J7').setNumberFormat('@');").replace("card.getRange('J9').setNumberFormat", "card.getRange('J8').setNumberFormat").replace("card.getRange('C15').setNumberFormat", "card.getRange('C14').setNumberFormat");
+s=s.slice(0,a)+card+s.slice(b);s=s.replace("card.getRange('C5').setNumberFormat('@').setValue(String(birth));", "card.getRange('E4').setNumberFormat('@').setValue(String(birth));");new vm.Script(s);fs.writeFileSync('Code-CRM-customer-card-layout-fixed.txt',s);console.log('PASS full syntax; current card cells mapped');

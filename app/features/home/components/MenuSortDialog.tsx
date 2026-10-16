@@ -1,7 +1,8 @@
 "use client";
 
 import styles from "../HomePage.module.css";
-import { X, Settings, Plus } from "lucide-react";
+import { X, Settings, Plus, Bell, Eye, EyeOff } from "lucide-react";
+import { NOTIFICATION_BANNER_ID } from "../notification-banner";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { personalMenuIcons, PersonalMenuIconKey } from "../data";
@@ -131,6 +132,13 @@ return (<>{menuSortOpen && (
 </div>
 
 <div className="flex-1 overflow-y-auto p-5">
+
+  {menuManageMode === "sort" && <div className="mb-4 flex h-11 items-center justify-between gap-3 rounded-lg border border-blue-100 bg-[#edf4ff] px-4 text-sm font-semibold text-[#4572ad]" aria-label="알림 배너 표시 설정">
+    <span className="flex items-center gap-2"><Bell className="h-4 w-4" />알림 배너</span>
+    <button type="button" aria-label={tempHiddenMenuIds.includes(NOTIFICATION_BANNER_ID) ? "알림 배너 표시" : "알림 배너 숨기기"} aria-pressed={!tempHiddenMenuIds.includes(NOTIFICATION_BANNER_ID)} onClick={() => setTempHiddenMenuIds(previous => previous.includes(NOTIFICATION_BANNER_ID) ? previous.filter(id => id !== NOTIFICATION_BANNER_ID) : [...previous, NOTIFICATION_BANNER_ID])} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-blue-100">
+      {tempHiddenMenuIds.includes(NOTIFICATION_BANNER_ID) ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+    </button>
+  </div>}
 
   {menuManageMode === "sort" && (
     <DndContext

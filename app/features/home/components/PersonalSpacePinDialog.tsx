@@ -3,7 +3,7 @@
 import { X, Users } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
 export default function PersonalSpacePinDialog({ controller }: { controller: HomeController }) {
-const { cmPinOpen, setCmPinOpen, cmPinState, cmPinStep, cmPinInput, cmPinConfirm, cmPinError, handleCmKeypad } = controller;
+const { authStatus, cmPinOpen, setCmPinOpen, cmPinState, cmPinStep, cmPinInput, cmPinConfirm, cmPinError, handleCmKeypad } = controller;
 return (<>{cmPinOpen && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
           <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm mx-4 px-8 pt-10 pb-8">
@@ -19,8 +19,8 @@ return (<>{cmPinOpen && (
                 <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
                   <Users className="w-8 h-8 text-gray-400" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800 mb-2">승인 회원 전용</h2>
-                <p className="text-sm text-gray-500 mb-6">개인공간 기능은 승인된 회원만 이용 가능합니다.<br />로그인 후 승인을 받으세요.</p>
+                <h2 className="text-xl font-bold text-gray-800 mb-2">{authStatus === "payment_error" ? "결제오류" : "승인 회원 전용"}</h2>
+                <p className="text-sm text-gray-500 mb-6">{authStatus === "payment_error" ? <>정기결제에 오류가 발생했습니다.<br />결제 상태를 확인하거나 관리자에게 문의해 주세요.</> : <>개인공간 기능은 승인된 회원만 이용 가능합니다.<br />로그인 후 승인을 받으세요.</>}</p>
                 <button onClick={() => setCmPinOpen(false)}
                   className="w-full py-3 rounded-2xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition cursor-pointer">확인</button>
               </div>

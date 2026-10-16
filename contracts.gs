@@ -61,9 +61,8 @@ function contractCustomerRows(ss) {
 
 function buildContractRecord(data,customers,todayText) {
   if(!String(data.ownerBirth||'').trim())throw new Error('계약자 생년월일을 입력하세요.');
-  if(!String(data.insuredBirth||'').trim())throw new Error('피보험자 생년월일을 입력하세요.');
   const owner=contractFindCustomer(customers,data.owner,data.ownerBirth,'계약자');
-  const insured=contractFindCustomer(customers,data.insured,data.insuredBirth,'피보험자');
+  const insured={name:String(data.insured||'').trim(),birth:normalizeContractBirth(data.insuredBirth),category:'',phone:''};
   const premiumText=String(data.premium==null?'':data.premium).replace(/[\s,원]/g,'');
   const premium=premiumText===''?'':Number(premiumText);
   if(premium!==''&&(!Number.isFinite(premium)||premium<0))throw new Error('보험료는 0 이상의 숫자로 입력하세요.');
@@ -93,6 +92,8 @@ function registerContract(source) {
     list.getRange(destination,11).setNumberFormat('#,##0"원"');
     list.getRange(destination,12,1,2).setNumberFormat('0"개월"');
     target.setValues([record.slice(1)]);saved=true;
+    refreshCustomerCard(ss);
+    refreshCrmCalendar(ss);
     form.getRangeList(Object.values(addresses)).clearContent();
     ss.toast('계약 목록 '+destination+'행에 등록했습니다.','계약 추가');
   } catch(error){form.getRange('B1').setValue(saved?'저장은 완료됐습니다. 입력칸을 정리하기 전에 계약 목록을 확인하세요.':error.message);}
@@ -101,12 +102,12 @@ function registerContract(source) {
 
 function refreshContractRowCustomers(ss,sheet,row,customers) {
   const values=sheet.getRange(row,1,1,16).getDisplayValues()[0];
-  [{name:4,birth:5,category:2,phone:6,label:'계약자'},{name:7,birth:8,category:15,phone:16,label:'피보험자'}].forEach(role=>{
+  [{name:4,birth:5,category:2,phone:6,label:'계약자'}].forEach(role=>{
     const cell=sheet.getRange(row,role.name);
     if(!values[role.name-1].trim()){sheet.getRange(row,role.category).clearContent();sheet.getRange(row,role.phone).clearContent();cell.clearNote();return;}
     try {
       const person=contractFindCustomer(customers,values[role.name-1],values[role.birth-1],role.label);
-      sheet.getRange(row,role.birth).setNumberFormat('@').setValue(person.birth);
+      if(role.label==='계약자')sheet.getRange(row,role.birth).setNumberFormat('@').setValue(person.birth);
       sheet.getRange(row,role.category).setNumberFormat('@').setValue(literalText(person.category));
       sheet.getRange(row,role.phone).setNumberFormat('@').setValue(literalText(person.phone));cell.clearNote();
     } catch(error){sheet.getRange(row,role.category).clearContent();sheet.getRange(row,role.phone).clearContent();cell.setNote(error.message);}
@@ -151,6 +152,7 @@ function handleContractEdit(e) {
       }
     }
   }
+  if(name==='계약 목록'){refreshCustomerCard(e.source);refreshCrmCalendar(e.source);}
   return true;
 }
 

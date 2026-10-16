@@ -136,17 +136,10 @@ export default function HomeTab({
   const { authUser } = useAuth();
 
   // ── 오늘 일정 ──
-  const [todayEvents, setTodayEvents] = useState<{ id: string; title: string; time: string; icon: string; color: string; place: string; date: string; memo: string; }[]>([]);
-  const [todayEventEditOpen, setTodayEventEditOpen] = useState(false);
-  const [editingTodayEvent, setEditingTodayEvent] = useState<{ id: string; title: string; time: string; icon: string; color: string; place: string; date: string; memo: string; } | null>(null);
   const [todayEventForm, setTodayEventForm] = useState({ title: "", time: "", place: "", memo: "", icon: "📅", color: "blue" });
 
 
    // ── 체크리스트 ──
-  const [checklists, setChecklists] = useState<{ id: string; text: string; completed: boolean; }[]>([]);
-  const [checklistText, setChecklistText] = useState("");
-  const [editingChecklistId, setEditingChecklistId] = useState<string | null>(null);
-  const [editingChecklistText, setEditingChecklistText] = useState("");
 
   // ── 날씨 위젯 ──
 
@@ -220,11 +213,7 @@ const [plantDragInfo, setPlantDragInfo] = useState<null | {
   const kstOffset = 9 * 60 * 60 * 1000;
   const todayStr = new Date(today.getTime() + kstOffset).toISOString().split("T")[0];
 
-useEffect(() => {
-  if (!authUser) return;
-  supabase.from("calendar_checklists").select("*").eq("user_id", authUser.id).limit(10)
-    .then(({ data }) => setChecklists(data || []));
-}, [authUser]);
+
 
 
 
@@ -237,20 +226,7 @@ useEffect(() => {
 
   }, [authUser]);
 
-useEffect(() => {
-  if (!authUser) return;
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
-  supabase
-    .from("calendar_events")
-    .select("id, title, time, icon, color, place, date, memo")
-
-    .eq("user_id", authUser.id)
-    .eq("date", todayStr)
-    .order("time", { ascending: true })
-    .then(({ data }) => setTodayEvents(data || []));
-}, [authUser]);
 
 
   useEffect(() => {
@@ -570,250 +546,6 @@ const diaryEndPage = Math.min(
         </div>, document.body
       )}
 
-{view === "home" && <>
-{/* ── 오늘 일정 + 체크리스트 ── */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-
-  {!isHidden("schedule") && (
-  <div className="personal-grid bg-white rounded-3xl border border-gray-200 shadow p-5">
-      <h2 className="text-base font-black text-gray-900 mb-3">오늘 일정</h2>
-{todayEvents.length === 0 ? (
-  <div className="flex items-center justify-center py-10">
-    <p className="text-sm text-gray-300">
-      오늘 일정이 없습니다.
-    </p>
-  </div>
-) : (
-    <div className="space-y-2">
-      {todayEvents.map((ev) => (
-        <div
-          key={ev.id}
-          className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 hover:bg-blue-50 transition"
-          onClick={() => {
-            setEditingTodayEvent(ev);
-                        setTodayEventForm({ title: ev.title, time: ev.time || "", place: ev.place || "", memo: ev.memo || "", icon: ev.icon, color: ev.color });
-
-            setTodayEventEditOpen(true);
-          }}
-        >
-{/* 일정 정보 */}
-<div className="flex items-center gap-5 min-w-0 flex-1 overflow-hidden">
-
-  {/* 아이콘 */}
-  <span className="shrink-0 text-base">{ev.icon}</span>
-
-  {/* 제목 */}
-  <div className="min-w-[120px] max-w-[160px] truncate">
-    <p className="font-bold text-gray-900 text-sm truncate">
-      {ev.title}
-    </p>
-  </div>
-
-  {/* 시간 */}
-  <div className="min-w-[90px] max-w-[90px] truncate">
-    <p className="text-sm text-gray-500 truncate">
-      {ev.time || ""}
-    </p>
-  </div>
-
-  {/* 장소 */}
-  <div className="min-w-[120px] max-w-[120px] truncate">
-    <p className="text-sm text-gray-500 truncate">
-      {ev.place || ""}
-    </p>
-  </div>
-
-  {/* 메모 */}
-  <div className="flex-1 min-w-[120px] truncate">
-    <p className="text-sm text-gray-400 truncate">
-      {ev.memo || ""}
-    </p>
-  </div>
-
-  {/* 날짜 */}
-  <div className="shrink-0 min-w-[90px] text-right">
-    <p className="text-sm text-gray-400">
-      {new Date(ev.date).toLocaleDateString("ko-KR", {
-        month: "numeric",
-        day: "numeric",
-        weekday: "short",
-      })}
-    </p>
-  </div>
-
-</div>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-  )}
-
-{/* 체크리스트 카드 */}
-{!isHidden("checklist") && (
-<div className="personal-grid bg-white rounded-3xl border border-gray-200 shadow p-5">
-    <h2 className="text-base font-black text-gray-900 mb-3">체크리스트</h2>
-    <div className="space-y-2 mb-3">
-      {checklists.map((item) => (
-        <div key={item.id} className="flex items-center gap-2 p-1 hover:bg-gray-50 rounded transition">
-          <input type="checkbox" checked={item.completed} onChange={async () => {
-            await supabase.from("calendar_checklists").update({ completed: !item.completed }).eq("id", item.id);
-            const { data } = await supabase.from("calendar_checklists").select("*").eq("user_id", authUser!.id).limit(10);
-            setChecklists(data || []);
-          }} className="w-4 h-4 cursor-pointer" />
-          {editingChecklistId === item.id ? (
-            <input data-ui-field="true" type="text" value={editingChecklistText}
-              onChange={(e) => setEditingChecklistText(e.target.value)}
-              onBlur={async () => {
-                if (!editingChecklistText.trim()) return;
-                await supabase.from("calendar_checklists").update({ text: editingChecklistText }).eq("id", item.id);
-                const { data } = await supabase.from("calendar_checklists").select("*").eq("user_id", authUser!.id).limit(10);
-                setChecklists(data || []);
-                setEditingChecklistId(null);
-              }}
-              onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
-              autoFocus
-              className="flex-1 px-3 py-1 border border-gray-200 rounded-xl text-sm outline-none" />
-          ) : (
-            <span onClick={() => { setEditingChecklistId(item.id); setEditingChecklistText(item.text); }}
-              className={`flex-1 text-sm cursor-pointer ${item.completed ? "line-through text-gray-400" : "text-gray-700"}`}>
-              {item.text}
-            </span>
-          )}
-          <button onClick={async () => {
-            await supabase.from("calendar_checklists").delete().eq("id", item.id);
-            const { data } = await supabase.from("calendar_checklists").select("*").eq("user_id", authUser!.id).limit(10);
-            setChecklists(data || []);
-          }} className="text-gray-300 hover:text-red-400 transition">
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      ))}
-    </div>
-    {checklists.length < 10 && (
-      <div className="flex gap-2">
-        <input data-ui-field="true" type="text" value={checklistText} onChange={(e) => setChecklistText(e.target.value)}
-          placeholder="항목 추가"
-          onKeyDown={async (e) => {
-            if (e.key === "Enter" && checklistText.trim() && authUser) {
-              await supabase.from("calendar_checklists").insert([{ user_id: authUser.id, text: checklistText, completed: false }]);
-              const { data } = await supabase.from("calendar_checklists").select("*").eq("user_id", authUser.id).limit(10);
-              setChecklists(data || []);
-              setChecklistText("");
-            }
-          }}
-          className="flex-1 px-3 py-2 border border-gray-200 rounded-2xl text-sm outline-none focus:border-gray-400 transition" />
-        <button onClick={async () => {
-          if (!authUser) return;
-          await supabase.from("calendar_checklists").insert([{ user_id: authUser.id, text: checklistText, completed: false }]);
-          const { data } = await supabase.from("calendar_checklists").select("*").eq("user_id", authUser.id).limit(10);
-          setChecklists(data || []);
-          setChecklistText("");
-        }} className="px-3 py-2 bg-gray-100 text-gray-500 rounded-2xl hover:bg-gray-200 transition">
-          <Plus className="w-4 h-4" />
-        </button>
-      </div>
-    )}
-</div>
-)}
-</div>
-
-{/* 오늘 일정 수정 팝업 */}
-
-{todayEventEditOpen && editingTodayEvent && (
-  <div onClick={() => setTodayEventEditOpen(false)} className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center">
-    <div onClick={(e) => e.stopPropagation()} className="bg-white w-[90%] max-w-lg rounded-3xl shadow-xl flex flex-col">
-      <div className="flex items-center justify-between px-6 pt-6 pb-4">
-        <h2 className="text-xl font-black text-gray-900">일정 수정</h2>
-        <button data-popup-close="true" onClick={() => setTodayEventEditOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition cursor-pointer">
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-      <div className="px-6 pt-2 pb-4 overflow-y-auto flex-1 min-w-0">
-        <div className="space-y-3">
-          {/* 이모지 + 제목 */}
-          <div className="flex gap-2">
-            <button className="w-12 h-12 border border-gray-200 rounded-2xl text-2xl hover:bg-gray-50 transition flex items-center justify-center outline-none">
-              {todayEventForm.icon}
-            </button>
-            <input data-ui-field="true" type="text" placeholder="제목" value={todayEventForm.title}
-              onChange={(e) => setTodayEventForm(f => ({ ...f, title: e.target.value }))}
-              className="flex-1 h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition" />
-          </div>
-          {/* 날짜 (수정 불가, 표시만) */}
-          <button type="button" disabled className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm text-left flex items-center gap-2 bg-gray-50">
-            <span className="text-gray-400">📅</span>
-            <span className="text-gray-800">{editingTodayEvent.date}</span>
-          </button>
-          {/* 시간 */}
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-base pointer-events-none">⏰</span>
-            <input data-ui-field="true" type="text" placeholder="시간 (예: 오후 2시)" value={todayEventForm.time}
-              onChange={(e) => setTodayEventForm(f => ({ ...f, time: e.target.value }))}
-              className="w-full h-12 rounded-2xl border border-gray-200 pl-10 pr-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition" />
-          </div>
-          {/* 장소 */}
-          <input data-ui-field="true" type="text" placeholder="장소" value={todayEventForm.place}
-            onChange={(e) => setTodayEventForm(f => ({ ...f, place: e.target.value }))}
-            className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition" />
-          {/* 메모 */}
-          <textarea data-ui-field="true" placeholder="메모" value={todayEventForm.memo ?? ""}
-            onChange={(e) => setTodayEventForm(f => ({ ...f, memo: e.target.value }))}
-            className="w-full h-20 rounded-2xl border border-gray-200 p-4 text-sm outline-none resize-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition" />
-          {/* 색상 */}
-          <div className="flex gap-3">
-            {[
-              { value: "white", color: "bg-white" },
-              { value: "blue", color: "bg-blue-50" },
-              { value: "green", color: "bg-green-50" },
-              { value: "yellow", color: "bg-yellow-50" },
-              { value: "red", color: "bg-red-50" },
-            ].map((opt) => (
-              <button key={opt.value} onClick={() => setTodayEventForm(f => ({ ...f, color: opt.value }))}
-                className={`w-8 h-8 rounded-full border border-gray-200 transition hover:scale-105 cursor-pointer ${opt.color} ${todayEventForm.color === opt.value ? "ring-2 ring-gray-400 ring-offset-2" : ""}`} />
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="flex gap-3 px-6 pb-6 pt-4">
-        <button
-          onClick={async () => {
-            if (!authUser || !editingTodayEvent) return;
-            await supabase.from("calendar_events").delete().eq("id", editingTodayEvent.id);
-            const now = new Date();
-            const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
-              const { data } = await supabase.from("calendar_events").select("id, title, time, icon, color, place, date, memo").eq("user_id", authUser.id).eq("date", todayStr).order("time", { ascending: true });
-            setTodayEvents(data || []);
-            setTodayEventEditOpen(false);
-          }}
-          className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-600 text-sm font-bold hover:bg-red-50 hover:text-red-500 transition cursor-pointer"
-        >삭제</button>
-        <button
-          onClick={async () => {
-            if (!authUser || !editingTodayEvent) return;
-            await supabase.from("calendar_events").update({
-              title: todayEventForm.title,
-              time: todayEventForm.time || null,
-              place: todayEventForm.place || null,
-              memo: todayEventForm.memo || null,
-              color: todayEventForm.color,
-            }).eq("id", editingTodayEvent.id);
-            const now = new Date();
-            const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
-              const { data } = await supabase.from("calendar_events").select("id, title, time, icon, color, place, date, memo").eq("user_id", authUser.id).eq("date", todayStr).order("time", { ascending: true });
-            setTodayEvents(data || []);
-            setTodayEventEditOpen(false);
-          }}
-          className="flex-1 h-12 rounded-2xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition cursor-pointer"
-        >완료</button>
-      </div>
-    </div>
-  </div>
-)}
-
-
-
-      </>}
 
       {/* ── 메모와 일기 탭 ── */}
 

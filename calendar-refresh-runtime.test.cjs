@@ -1,0 +1,5 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');let rendered=0,cacheArg,releases=0;
+const c={Date,LockService:{getDocumentLock:()=>({tryLock:()=>true,releaseLock:()=>releases++})}};vm.createContext(c);vm.runInContext(fs.readFileSync('Code-CRM-calendar-cache-parameter-fixed.txt','utf8'),c);
+const sheet={getLastRow:()=>5,getRange(addr){let p;p=new Proxy({getValue:()=>addr==='G2'?2026:addr==='I2'?10:'',getDisplayValue:()=>'',getValues:()=>[]},{get:(o,k)=>o[k]||(()=>p)});return p;}};
+const ss={getSheetByName:()=>sheet};c.crmSheet_=()=>sheet;c.ensureCrmCalendarStorage_=()=>{};c.contractTodayText=()=> '2026-10-15';c.parseContractDate=()=>46310;c.crmCalendarSourceData_=(s,cached)=>{cacheArg=cached;return {customers:[],contracts:[]}};c.crmCalendarHolidays_=()=>({46310:'test'});c.renderCrmCalendar_=()=>rendered++;
+c.refreshCrmCalendar(ss,false,true);assert.equal(cacheArg,true);assert.equal(rendered,1);assert.equal(releases,1);c.refreshCrmCalendar(ss);assert.equal(cacheArg,undefined);assert.equal(rendered,2);console.log('PASS: full refresh call, cached month refresh and uncached opening, lock release');

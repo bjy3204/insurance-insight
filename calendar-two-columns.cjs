@@ -1,0 +1,14 @@
+const fs=require('fs'),vm=require('vm');let s=fs.readFileSync('Code-CRM-calendar-personal-only.txt','utf8');
+s=s.replaceAll("'B4:H34'","'B4:O34'").replaceAll("'B4:H4'","'B4:O4'").replaceAll("'B5:H34'","'B5:O34'");
+s=s.replace("sheet.showColumns(10,6);sheet.hideColumns(16,sheet.getMaxColumns()-15);", "sheet.showColumns(2,21);sheet.hideColumns(23,sheet.getMaxColumns()-22);");
+s=s.replace(/sheet\.setColumnWidth\(10,100\);[^\r\n]+/,"sheet.setColumnWidths(2,14,65);sheet.setColumnWidths(17,6,100);sheet.setColumnWidth(21,260);");
+s=s.replaceAll("'J2:O2'","'Q2:V2'").replaceAll("'J3'","'Q3'").replaceAll("'K3'","'R3'").replaceAll("'J4:O4'","'Q4:V4'");
+s=s.replace("sheet.getRange('B4:O4').setValues([['일','월','화','수','목','금','토']]).setFontWeight('bold').setHorizontalAlignment('center');", "sheet.getRange('B4:O4').breakApart();\n  ['일','월','화','수','목','금','토'].forEach((day,i)=>sheet.getRange(4,2+i*2,1,2).merge().setValue(day).setFontWeight('bold').setHorizontalAlignment('center'));");
+s=s.replaceAll("Array(7).fill", "Array(14).fill").replace('col=2+day','col=2+day*2').replaceAll('[day]', '[day*2]');
+s=s.replace("values[week*5][day*2]=crmCalendarDate_(date).getUTCDate();", "values[week*5][day*2]=crmCalendarDate_(date).getUTCDate();\n    values[week*5][day*2+1]=(model.holidays||{})[date]||'';");
+s=s.replace("sheet.getRange('B5:O34').setNumberFormat", "sheet.getRange('B5:O34').breakApart().setNumberFormat");
+s=s.replace("sheet.getRange(row,2,1,7).setNumberFormat('0').setHorizontalAlignment('right').setFontWeight('bold');", "for(let day=0;day<7;day++){const col=2+day*2;sheet.getRange(row,col).setNumberFormat('0').setHorizontalAlignment('left').setFontWeight('bold');sheet.getRange(row,col+1).setHorizontalAlignment('right');for(let k=1;k<5;k++)sheet.getRange(row+k,col,1,2).merge();}");
+s=s.replaceAll('getRange(5,10,','getRange(5,17,').replaceAll('getRange(5,12,','getRange(5,19,').replaceAll('getRange(i+5,15)','getRange(i+5,22)').replaceAll('getRange(row,11,','getRange(row,18,').replaceAll('getRange(e.range.getRow(),11,','getRange(e.range.getRow(),18,').replaceAll('col===11||col===12','col===18||col===19').replaceAll('getColumn()===15','getColumn()===22');
+s=s.replace('col<=Math.min(8,e.range.getLastColumn());col++','col<=Math.min(15,e.range.getLastColumn());col++').replace("const date=targets[header+':'+col];if(!date)continue;","const inputCol=col%2===0?col:col-1;const date=targets[header+':'+inputCol];if(!date)continue;").replace('sheet.getRange(first,col,4,1)','sheet.getRange(first,inputCol,4,1)');
+s=s.replace("calendarDateTargets[(row+1+k)+':'+col]=date;","calendarDateTargets[(row+1+k)+':'+col]=date;calendarDateTargets[(row+1+k)+':'+(col+1)]=date;").replace("calendarDateTargets[row+':'+col]=date;","calendarDateTargets[row+':'+col]=date;calendarDateTargets[row+':'+(col+1)]=date;");
+new vm.Script(s);fs.writeFileSync('Code-CRM-calendar-two-columns.txt',s);console.log('PASS full script syntax');

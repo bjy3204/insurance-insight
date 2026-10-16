@@ -1,6 +1,9 @@
 "use client";
 
 import { hasCompletedMembership } from "@/lib/auth/membership";
+import { findSubscriberLinks, normalizeInstagramId, subscriberLinkCandidates } from "@/lib/subscriber-links";
+import useSubscriberKeyboard from "./useSubscriberKeyboard";
+import { uncheckedActiveSubscriberIds } from "@/lib/subscriber-bulk-status";
 
 import Pagination from "@/app/components/Pagination";
 import { useState, useEffect, useRef } from "react";
@@ -100,12 +103,14 @@ type SubscriberMonthly = {
 const STATUS_LABEL: Record<string, string> = {
   approved: "승인",
   pending: "대기",
+  payment_error: "결제오류",
   rejected: "거절",
 };
 
 const STATUS_COLOR: Record<string, string> = {
   approved: "bg-green-100 text-green-700",
   pending: "bg-yellow-100 text-yellow-700",
+  payment_error: "bg-orange-100 text-orange-700",
   rejected: "bg-red-100 text-red-600",
 };
 
@@ -217,6 +222,13 @@ const [noticePickerMonth, setNoticePickerMonth] = useState(new Date().getMonth()
   // --- 기존 회원 관리 상태 ---
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const subscriberSaveLock = useRef(false);
+  const subscriberSyncLock = useRef(false);
+  const subscriberCheckLocks = useRef(new Set<string>());
+  const subscriberSaveButton = useRef<HTMLButtonElement>(null);
+  const [subscriberSaving, setSubscriberSaving] = useState(false);
+  const [bulkCanceling, setBulkCanceling] = useState(false);
+  const bulkCancelLock = useRef(false);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
@@ -418,7 +430,8 @@ useEffect(() => {
 
   const updateStatus = async (id: string, newStatus: string) => {
     setUpdating(id);
-    await supabase.from("profiles").update({ status: newStatus }).eq("id", id);
+    const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("id", id);
+    if (error) { setUpdating(null); alert("회원 상태를 저장하지 못했습니다. 상태 설정을 확인해 주세요."); return; }
     setProfiles((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status: newStatus } : p))
     );
@@ -564,15 +577,51 @@ useEffect(() => {
   };
 
   const fetchAllSubscribers = async () => {
-    const { data } = await supabase
-      .from("subscribers")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setAllSubscribers((data as Subscriber[]) || []);
+    const subscribers = await readAllSubscribers();
+    if (!subscribers) return;
+    setAllSubscribers(subscribers);
+    await autoLinkSubscribers(subscribers);
   };
 
-  const toggleSubscriberCheck = async (sub: Subscriber) => {
-  const nextChecked = !sub.is_checked;
+  const readAllSubscribers = async (): Promise<Subscriber[] | null> => {
+    const rows: Subscriber[] = [];
+    for (let start = 0; ; start += 500) {
+      const { data, error } = await supabase.from("subscribers").select("*").order("created_at", { ascending: false }).order("id").range(start, start + 499);
+      if (error) return null;
+      rows.push(...(data as Subscriber[]));
+      if (data.length < 500) return rows;
+    }
+  };
+
+  const autoLinkSubscribers = async (subscribers: Subscriber[]) => {
+    if (subscriberSyncLock.current) return;
+    subscriberSyncLock.current = true;
+    try {
+      const members: Profile[] = [];
+      for (let start = 0; ; start += 500) {
+        const { data, error } = await supabase.from("profiles").select("id,nickname,instagram_id,email,status,role,created_at,linked_subscriber_id").order("id").range(start, start + 499);
+        if (error) return;
+        members.push(...data as Profile[]);
+        if (data.length < 500) break;
+      }
+      const eligible = new Set(members.filter(hasCompletedMembership).map(member => member.id));
+      const links = findSubscriberLinks(members, subscribers).filter(link => eligible.has(link.profileId));
+      const linked = new Map<string, string>();
+      for (const link of links) {
+        const { data, error } = await supabase.from("profiles").update({ linked_subscriber_id: link.subscriberId }).eq("id", link.profileId).eq("instagram_id", link.instagramId).is("linked_subscriber_id", null).select("id");
+        if (!error && data?.length) linked.set(link.profileId, link.subscriberId);
+      }
+      if (linked.size) {
+        setProfiles(current => current.map(member => linked.has(member.id) ? { ...member, linked_subscriber_id: linked.get(member.id)! } : member));
+        setSelectedProfile(current => current && linked.has(current.id) ? { ...current, linked_subscriber_id: linked.get(current.id)! } : current);
+      }
+    } finally { subscriberSyncLock.current = false; }
+  };
+
+  const toggleSubscriberCheck = async (sub: Subscriber, checkOnly = false) => {
+  if (subscriberCheckLocks.current.has(sub.id) || (checkOnly && sub.is_checked)) return;
+  subscriberCheckLocks.current.add(sub.id);
+  const nextChecked = checkOnly ? true : !sub.is_checked;
 
   setAllSubscribers((prev) =>
     prev.map((s) =>
@@ -580,6 +629,7 @@ useEffect(() => {
     )
   );
 
+  try {
   const { error } = await supabase
     .from("subscribers")
     .update({ is_checked: nextChecked })
@@ -589,6 +639,7 @@ useEffect(() => {
     alert("체크 저장에 실패했습니다.");
     fetchAllSubscribers();
   }
+  } finally { subscriberCheckLocks.current.delete(sub.id); }
 };
 
 const toggleAllSubscriberChecks = async () => {
@@ -638,34 +689,30 @@ const toggleAllSubscriberChecks = async () => {
   };
 
   const saveSubscriber = async () => {
-    if (!subForm.subscriber_id) return alert("아이디를 입력해주세요.");
-
-    if (!subForm.id) {
-      await supabase.from("subscribers").insert({
-        subscriber_id: subForm.subscriber_id,
-        name: subForm.name,
-        data_room: subForm.data_room,
-        video_room: subForm.video_room,
-        pay_app: subForm.pay_app,
-         pay_app_code: subForm.pay_app_code,
-        memo: subForm.memo,
-        status: "active",
-      });
-    } else {
-      await supabase.from("subscribers").update({
-        subscriber_id: subForm.subscriber_id,
-        name: subForm.name,
-        data_room: subForm.data_room,
-        video_room: subForm.video_room,
-        pay_app: subForm.pay_app,
-         pay_app_code: subForm.pay_app_code,
-        memo: subForm.memo,
-      }).eq("id", subForm.id);
-    }
-
-    setIsSubPopupOpen(false);
-    fetchAllSubscribers();
-    fetchSubscribers();
+    const instagramId = normalizeInstagramId(subForm.subscriber_id);
+    if (!instagramId) return alert("아이디를 입력해주세요.");
+    if (subscriberSaveLock.current) return;
+    subscriberSaveLock.current = true; setSubscriberSaving(true);
+    try {
+      const latest = await readAllSubscribers();
+      if (!latest) throw new Error("기존 구독자를 확인하지 못했습니다. 다시 시도해 주세요.");
+      const duplicates = latest.filter(sub => sub.id !== subForm.id && normalizeInstagramId(sub.subscriber_id) === instagramId);
+      if (duplicates.length > 1) throw new Error("동일한 아이디로 등록된 구독자가 여러 명입니다. 전체목록에서 확인해 주세요.");
+      if (duplicates.length === 1) {
+        setAllSubscribers(latest);
+        openSubPopup(duplicates[0]);
+        alert("이미 등록된 아이디입니다. 기존 구독자 수정으로 전환했습니다.");
+        return;
+      }
+      const values = { subscriber_id: instagramId, name: subForm.name, data_room: subForm.data_room, video_room: subForm.video_room, pay_app: subForm.pay_app, pay_app_code: subForm.pay_app_code, memo: subForm.memo };
+      const { error } = subForm.id
+        ? await supabase.from("subscribers").update(values).eq("id", subForm.id)
+        : await supabase.from("subscribers").insert({ ...values, status: "active", is_checked: true });
+      if (error) throw new Error("구독자 저장에 실패했습니다. 다시 시도해 주세요.");
+      setIsSubPopupOpen(false);
+      await Promise.all([fetchAllSubscribers(), fetchSubscribers()]);
+    } catch (error) { alert(error instanceof Error ? error.message : "구독자 저장에 실패했습니다."); }
+    finally { subscriberSaveLock.current = false; setSubscriberSaving(false); }
   };
 
 const saveActiveSubscribersToMonth = async () => {
@@ -765,6 +812,34 @@ console.log(
     await supabase.from("subscriber_monthly").update({ status: "canceled" }).eq("subscriber_id", subId).eq("month_key", monthKey);
     fetchSubscribers();
     fetchAllSubscribers();
+  };
+
+  const cancelUncheckedSubscribers = async () => {
+    if (bulkCancelLock.current) return;
+    bulkCancelLock.current = true; setBulkCanceling(true);
+    let changed = 0;
+    try {
+      const latest = await readAllSubscribers();
+      if (!latest) throw new Error("구독자 체크 상태를 확인하지 못했습니다. 처리하지 않았습니다.");
+      const ids = uncheckedActiveSubscriberIds(latest);
+      if (!ids.length) { alert("해지할 미체크 구독자가 없습니다."); return; }
+      if (!window.confirm(`전체 구독자 중 체크하지 않은 구독중 ${ids.length}명을 해지 처리할까요?\n\n검색·탭·필터와 관계없이 전체목록이 대상입니다.\n체크된 구독자는 제외됩니다.\n사이트 상태만 변경하며 페이앱 실제 정기결제는 해지되지 않습니다.`)) return;
+      for (let start = 0; start < ids.length; start += 100) {
+        const { data, error } = await supabase.from("subscribers").update({ status: "canceled" }).in("id", ids.slice(start, start + 100)).eq("status", "active").or("is_checked.eq.false,is_checked.is.null").select("id");
+        if (error) throw new Error("일괄 해지 중 오류가 발생했습니다. 남은 구독자를 확인해 주세요.");
+        const updatedIds = (data || []).map(row => row.id);
+        changed += updatedIds.length;
+        if (updatedIds.length) {
+          const { error: monthlyError } = await supabase.from("subscriber_monthly").update({ status: "canceled" }).in("subscriber_id", updatedIds).eq("month_key", monthKey);
+          if (monthlyError) throw new Error("구독자 상태는 변경됐지만 선택 월 명단 반영에 실패했습니다. 월별 명단을 확인해 주세요.");
+        }
+      }
+      alert(`${changed}명을 사이트에서 해지 처리했습니다. 체크 상태는 변경하지 않았습니다.`);
+    } catch (error) { alert(`${error instanceof Error ? error.message : "일괄 해지에 실패했습니다."}${changed ? `\n이미 상태가 변경된 구독자: ${changed}명` : ""}`); }
+    finally {
+      await Promise.allSettled([fetchAllSubscribers(), fetchSubscribers()]);
+      bulkCancelLock.current = false; setBulkCanceling(false);
+    }
   };
 
   // [복구] - 해지된 구독자 다시 활성화
@@ -968,10 +1043,12 @@ const unlinkProfileSubscriber = async (profileId: string) => {
   // --- 렌더링용 데이터 필터링 ---
   const filteredProfiles = profiles.filter((p) => {
     const matchSearch = !search || (p.nickname || "").toLowerCase().includes(search.toLowerCase()) || (p.instagram_id || "").toLowerCase().includes(search.toLowerCase());
-    const matchStatus = filterStatus === "all" || p.status === filterStatus;
+    const matchStatus = filterStatus === "all" || (filterStatus === "unlinked" ? !p.linked_subscriber_id : p.status === filterStatus);
     return matchSearch && matchStatus;
   });
   const pagedProfiles = filteredProfiles.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const candidateCounts = new Map(pagedProfiles.filter(profile => !profile.linked_subscriber_id).map(profile => [profile.id, subscriberLinkCandidates(profile, allSubscribers).length]));
+  const selectedCandidates = new Map((selectedProfile && !selectedProfile.linked_subscriber_id ? subscriberLinkCandidates(selectedProfile, allSubscribers) : []).map(candidate => [candidate.id, candidate]));
   const totalPages = Math.max(1, Math.ceil(filteredProfiles.length / PAGE_SIZE));
 
   const activeMonthly = monthlyData
@@ -1022,6 +1099,16 @@ const matchSearch =
 
   return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
 });
+
+  const subscriberKeyboard = useSubscriberKeyboard({
+    open: isAllSubPopupOpen,
+    blocked: deleteConfirmOpen || isSelectPopupOpen,
+    editorOpen: isSubPopupOpen,
+    editorId: subForm.id,
+    count: filteredAllSubs.length,
+    newSubscriber: () => openSubPopup(),
+    checkOnly: async () => { if (filteredAllSubs.length === 1) await toggleSubscriberCheck(filteredAllSubs[0], true); },
+  });
 
   // 선택 팝업용 필터링 (현재 달에 이미 등록된 사람은 제외, 해지자 제외)
   const currentMonthlySubIds = new Set(monthlyData.map(d => d.subscriber_id));
@@ -1131,12 +1218,14 @@ const matchSearch =
         {/* ==================== 회원 관리 탭 ==================== */}
         {adminTab === "members" && (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
               {[
                 { key: "all", label: "전체", icon: Users, color: "text-gray-700" },
                 { key: "pending", label: "대기", icon: Clock, color: "text-yellow-600" },
                 { key: "approved", label: "승인", icon: CheckCircle, color: "text-green-600" },
+                { key: "payment_error", label: "결제오류", icon: XCircle, color: "text-orange-600" },
                 { key: "rejected", label: "거절", icon: XCircle, color: "text-red-500" },
+                { key: "unlinked", label: "미연결", icon: Users, color: "text-red-500" },
               ].map(({ key, label, icon: Icon, color }) => (
                 <button
                   key={key}
@@ -1149,7 +1238,7 @@ const matchSearch =
                   <div className="text-left">
                     <p className="text-xs font-bold text-gray-400">{label}</p>
                     <p className="text-xl font-black text-gray-900">
-                      {key === "all" ? profiles.length : profiles.filter((p) => p.status === key).length}
+                      {key === "all" ? profiles.length : profiles.filter((p) => key === "unlinked" ? !p.linked_subscriber_id : p.status === key).length}
                     </p>
                   </div>
                 </button>
@@ -1190,7 +1279,7 @@ const matchSearch =
                   <div key={profile.id} onClick={() => setSelectedProfile(profile)} className="bg-white rounded-2xl border border-gray-200 p-5 hover:shadow-md transition cursor-default">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <p className="text-base font-black text-gray-900">{profile.nickname || "(닉네임 없음)"}</p>
+                        <p className="flex items-center gap-2 text-base font-black text-gray-900"><span>{profile.nickname || "(닉네임 없음)"}</span><span role="img" aria-label={profile.linked_subscriber_id ? "구독자 연결됨" : "구독자 연결 안 됨"} title={profile.linked_subscriber_id ? "구독자 연결됨" : "구독자 연결 안 됨"} className={`inline-block h-2 w-2 shrink-0 rounded-full ${profile.linked_subscriber_id ? "bg-blue-500" : "bg-red-500"}`} /></p>
                         <p className="text-sm text-gray-400 mt-0.5">{profile.instagram_id ? `@${profile.instagram_id}` : "인스타 없음"}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1">
@@ -1204,6 +1293,7 @@ const matchSearch =
 )}
                       </div>
                     </div>
+                    {!!candidateCounts.get(profile.id) && <p className="mb-2 text-xs font-semibold text-amber-600">연결 후보 {candidateCounts.get(profile.id)}명 · 이름 확인</p>}
                     <p className="text-xs text-gray-400 mb-4">가입일: {formatDate(profile.created_at)}</p>
                     {profile.role !== "admin" && (
                       <div className="flex gap-2">
@@ -1251,6 +1341,7 @@ const matchSearch =
 >
   거절
 </button>
+<button onClick={event => { event.stopPropagation(); void updateStatus(profile.id, "payment_error"); }} disabled={profile.status === "payment_error" || updating === profile.id} className="flex-1 h-9 whitespace-nowrap rounded-xl bg-orange-50 text-xs font-bold text-orange-700 transition hover:bg-orange-100 cursor-pointer disabled:cursor-default disabled:opacity-60">결제오류</button>
                       </div>
                     )}
                      </div>
@@ -1990,7 +2081,8 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
           />
         </div>
 
-        <div className="flex items-center justify-end mb-3">
+        <div className="flex items-center justify-between gap-2 mb-3">
+  <span className="text-xs text-amber-600">{selectedCandidates.size ? `연결 후보 ${selectedCandidates.size}명 · 이름 대조 후 선택` : ""}</span>
   <button
     onClick={() => setProfileSubPayFilter((v) => !v)}
     className={`text-xs font-bold px-3 py-1.5 rounded-lg transition ${
@@ -2026,7 +2118,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
   const bLinked =
     selectedProfile?.linked_subscriber_id === b.id ? 1 : 0;
 
-  return bLinked - aLinked;
+  return bLinked - aLinked || (selectedCandidates.get(b.id)?.score || 0) - (selectedCandidates.get(a.id)?.score || 0);
 })
             .map((sub) => {
               const isLinked =
@@ -2044,6 +2136,8 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
         <p className="text-sm font-black text-gray-900 truncate">
           {sub.subscriber_id}
         </p>
+
+        {selectedCandidates.has(sub.id) && <span className="shrink-0 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">{selectedCandidates.get(sub.id)!.reason}{selectedCandidates.get(sub.id)!.nameMatches ? " · 이름 일치" : ""}</span>}
 
         {sub.pay_app && (
           <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold shrink-0">
@@ -2153,7 +2247,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
       {/* ==================== 팝업 2: 구독자 마스터 정보 등록/수정 ==================== */}
       {isSubPopupOpen && (
         <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4" onClick={() => setIsSubPopupOpen(false)}>
-          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+          <div ref={subscriberKeyboard.editorRef} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">{subForm.id ? "구독자 정보 수정" : "새 구독자 마스터 등록"}</h2>
               <button data-popup-close="true" onClick={() => setIsSubPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
@@ -2169,7 +2263,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">이름</label>
-                  <input data-ui-field="true" value={subForm.name} onChange={(e) => setSubForm({...subForm, name: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="이름 입력" />
+                  <input data-ui-field="true" value={subForm.name} onChange={(e) => setSubForm({...subForm, name: e.target.value})} onKeyDown={event => { if (!subForm.id && event.key === "Tab" && !event.shiftKey) { event.preventDefault(); subscriberSaveButton.current?.focus(); } }} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="이름 입력" />
                 </div>
               </div>
 
@@ -2209,8 +2303,8 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                 <textarea data-ui-field="true" value={subForm.memo} onChange={(e) => setSubForm({...subForm, memo: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 resize-none h-24" placeholder="메모를 입력하세요" />
               </div>
 
-              <button onClick={saveSubscriber} className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-sm">
-                저장하기
+              <button ref={subscriberSaveButton} onClick={saveSubscriber} disabled={subscriberSaving} className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-sm disabled:cursor-wait disabled:opacity-60">
+                {subscriberSaving ? "저장 중…" : "저장하기"}
               </button>
             </div>
           </div>
@@ -2306,7 +2400,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
                 <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-2.5 flex items-center gap-2">
                   <Search className="w-4 h-4 text-gray-400" />
-                  <input data-ui-field="true" data-page-search-input="true" placeholder="이름 또는 아이디 검색" value={allSubSearch} onChange={(e) => setAllSubSearch(e.target.value)} className="w-full outline-none text-sm" />
+                  <input ref={subscriberKeyboard.searchRef} data-ui-field="true" data-page-search-input="true" placeholder="이름 또는 아이디 검색" value={allSubSearch} onChange={(e) => setAllSubSearch(e.target.value)} className="w-full outline-none text-sm" />
                                 </div>
                 {/* 필터/정렬 버튼 */}
                 <div className="flex items-center gap-2 mt-3">
@@ -2342,9 +2436,11 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
     : "체크순"}
 </button>
 
+<span className="ml-auto whitespace-nowrap text-xs font-semibold text-blue-600" aria-live="polite">체크 {allSubscribers.filter(sub => sub.is_checked).length}명</span>
+<button type="button" onClick={() => void cancelUncheckedSubscribers()} disabled={bulkCanceling} className="whitespace-nowrap rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-100 cursor-pointer disabled:opacity-50 disabled:cursor-wait">{bulkCanceling ? "처리 중…" : "미체크 일괄 해지"}</button>
 <button
   onClick={() => openSubPopup()}
-  className="md:hidden ml-auto flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold"
+  className="md:hidden flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold"
 >
   <UserPlus className="w-3 h-3" />
   등록
@@ -2358,21 +2454,12 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
               <div className="flex-1 overflow-hidden flex flex-col border border-gray-200 rounded-2xl">
                 {/* 리스트 헤더 */}
                 <div className="hidden md:flex items-center py-3 px-5 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-500">
-                 <div className="w-36 flex items-center gap-2">
-  <button
-    onClick={toggleAllSubscriberChecks}
-    className="shrink-0 cursor-pointer"
-  >
-    {filteredAllSubs.length > 0 &&
-    filteredAllSubs.every((s) => s.is_checked) ? (
-      <CheckSquare className="w-4 h-4 text-blue-600" />
-    ) : (
-      <Square className="w-4 h-4 text-gray-400" />
-    )}
-  </button>
-
-  <span>아이디</span>
-</div>
+                  <div className="w-36 flex items-center gap-2">
+                    <button type="button" tabIndex={-1} onKeyDown={event => { if (event.key === " " || event.key === "Enter") { event.preventDefault(); event.stopPropagation(); } }} onClick={event => { if (event.detail > 0) void toggleAllSubscriberChecks(); }} aria-label="표시된 구독자 전체 체크" aria-pressed={filteredAllSubs.length > 0 && filteredAllSubs.every(sub => sub.is_checked)} className="shrink-0 cursor-pointer rounded transition-colors hover:bg-gray-200">
+                      {filteredAllSubs.length > 0 && filteredAllSubs.every(sub => sub.is_checked) ? <CheckSquare className="h-4 w-4 text-blue-600" /> : <Square className="h-4 w-4 text-gray-400" />}
+                    </button>
+                    <span>아이디</span>
+                  </div>
                   <div className="w-50">이름</div>
                   <div className="w-40">페이앱 코드</div>
                   <div className="w-40">영상방</div>
@@ -2381,30 +2468,19 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                 </div>
 
                 {/* 리스트 바디 */}
-                <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+                <div ref={subscriberKeyboard.listRef} className="subscriber-keyboard-list flex-1 overflow-y-auto divide-y divide-gray-100">
                   {filteredAllSubs.length === 0 ? (
                     <div className="p-10 text-center text-gray-400 text-sm">데이터가 없습니다.</div>
                   ) : (
                     filteredAllSubs.map((sub) => (
-                      <div key={sub.id} className={`flex flex-col md:flex-row md:items-center py-3 px-3 md:px-5 hover:bg-gray-50 transition gap-1 md:gap-0 ${sub.status === "canceled" ? "opacity-60 bg-gray-50/50" : ""}`}>
+                      <div key={sub.id} data-subscriber-row={sub.id} data-subscriber-name={sub.name || sub.subscriber_id} className={`flex flex-col md:flex-row md:items-center py-3 px-3 md:px-5 hover:bg-gray-50 transition gap-1 md:gap-0 ${sub.status === "canceled" ? "opacity-60 bg-gray-50/50" : ""}`}>
                         <div
   className="md:w-36 text-xs md:text-sm text-gray-500 flex items-center gap-2 truncate"
   title={sub.subscriber_id}
 >
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      toggleSubscriberCheck(sub);
-    }}
-    className="shrink-0 cursor-pointer"
-  >
-    {sub.is_checked ? (
-      <CheckSquare className="w-4 h-4 text-blue-600" />
-    ) : (
-      <Square className="w-4 h-4 text-gray-400" />
-    )}
+  <button type="button" data-subscriber-action="check" onClick={(event) => { event.stopPropagation(); subscriberKeyboard.markChecked(event.currentTarget.closest<HTMLElement>("[data-subscriber-row]")); toggleSubscriberCheck(sub); }} aria-label={`${sub.subscriber_id} 체크`} aria-pressed={sub.is_checked} className="shrink-0 cursor-pointer rounded transition-colors hover:bg-blue-50">
+    {sub.is_checked ? <CheckSquare className="h-4 w-4 text-blue-600" /> : <Square className="h-4 w-4 text-gray-400" />}
   </button>
-
   <span className="truncate">
     {sub.subscriber_id}
   </span>
@@ -2418,13 +2494,13 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                         <div className="md:w-25 text-xs text-gray-400">{formatDate(sub.created_at)}</div>
                         
                         <div className="flex items-center justify-end gap-1.5 -translate-y-8 -mb-7 ml-auto md:translate-y-0 md:mb-0 md:shrink-0">
-                          <button onClick={() => openSubPopup(sub)} className="text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">수정</button>
+                          <button data-subscriber-action="edit" onClick={() => openSubPopup(sub)} className="text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">수정</button>
                           {sub.status === "active" ? (
-                            <button onClick={() => cancelSubscriber(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition cursor-pointer">해지</button>
+                            <button data-subscriber-action="status" onClick={() => cancelSubscriber(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition cursor-pointer">해지</button>
                           ) : (
-                            <button onClick={() => restoreSubscriber(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition cursor-pointer">복구</button>
+                            <button data-subscriber-action="status" onClick={() => restoreSubscriber(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition cursor-pointer">복구</button>
                           )}
-                          <button onClick={() => confirmDelete(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition cursor-pointer">삭제</button>
+                          <button data-subscriber-action="delete" onClick={() => confirmDelete(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition cursor-pointer">삭제</button>
                         </div>
                       </div>
                     ))
@@ -2452,6 +2528,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
             <div className="flex gap-3 mt-6">
               <button
+                autoFocus
                 onClick={() => {
                   setDeleteConfirmOpen(false);
                   setTargetToDelete(null);
@@ -2564,4 +2641,6 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
     </main>
   );
 }
+
+
 

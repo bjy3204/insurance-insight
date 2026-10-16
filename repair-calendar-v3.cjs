@@ -1,0 +1,10 @@
+const fs=require('fs');let s=fs.readFileSync('crm-calendar.gs','utf8');
+s=s.replace('function refreshCrmCalendar(source,dailyOnly) {','function refreshCrmCalendar(source,dailyOnly) {\n  const lock=LockService.getDocumentLock();if(!lock.tryLock(100))return;\n  try{return refreshCrmCalendarUnlocked_(source,dailyOnly);}finally{lock.releaseLock();}\n}\nfunction refreshCrmCalendarUnlocked_(source,dailyOnly) {');
+s=s.replace('const calendarDateTargets={},values=',"const colors=Array.from({length:30},()=>Array(7).fill('#202124'));\n  const calendarDateTargets={},values=");
+s=s.replace('values[week*5][day]=date;',"values[week*5][day]=crmCalendarDate_(date).getUTCDate();\n    colors[week*5][day]=!inMonth?'#b7b7b7':day===0||(model.holidays||{})[date]?'#d93025':day===6?'#1a73e8':'#202124';");
+s=s.replace(".setNumberFormat('@').setValues(values).setFontWeight('normal');", ".setNumberFormat('@').setValues(values).setFontColors(colors).setFontWeight('normal');");
+const a=s.indexOf("    sheet.getRange(row,2,1,7).setNumberFormat('d')"),b=s.indexOf('\n  PropertiesService',a);
+s=s.slice(0,a)+"    sheet.getRange(row,2,1,7).setNumberFormat('0').setHorizontalAlignment('right').setFontWeight('bold');\n  }\n"+s.slice(b);
+s=s.replace("const date=crmCalendarInputDate_(sheet.getRange(row-4,col).getValue(),ss);saveCalendarPersonalDay_", "const targets=JSON.parse(PropertiesService.getDocumentProperties().getProperty('CRM_CALENDAR_DATE_MAP')||'{}');const date=targets[(row-4)+':'+col];if(!date)continue;saveCalendarPersonalDay_");
+fs.writeFileSync('crm-calendar.gs',s);
+s=fs.readFileSync('customer-registration.gs','utf8');s=s.replace('  refreshMobileRegistrationNotes_();','  refreshCrmCalendar();\n  refreshMobileRegistrationNotes_();').replace('  refreshOperationalViews();\n  refreshCrmCalendar();','  refreshOperationalViews();');fs.writeFileSync('customer-registration.gs',s);

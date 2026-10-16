@@ -1,0 +1,318 @@
+/** @OnlyCurrentDoc */
+// 이 파일 전체를 새 Apps Script 파일에 넣고 setupCoverageReport를 한 번 실행하세요.
+function setupCoverageReport() {
+  const book = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = coverageReportSheet_(book);
+  if (sheet.getMaxColumns() < 105) {
+    const last = sheet.getMaxColumns();
+    sheet.insertColumnsAfter(last, 105 - last);
+    sheet.getRange('G1:G63').copyFormatToRange(sheet, last + 1, 105, 1, 63);
+  }
+  const props = PropertiesService.getDocumentProperties();
+  if (!props.getProperty('COVERAGE_REPORT_INITIALIZED')) {
+    const range = sheet.getRange('E9:E63');
+    const values = range.getValues(), formulas = range.getFormulas();
+    values.forEach(function(row, i) {
+      if (!formulas[i][0] && row[0] !== '' && !coverageManualOnlyRow_(i + 9)) {
+        props.setProperty('COVERAGE_D_' + (i + 9), JSON.stringify(row[0]));
+        const sources = sheet.getRange(i + 9, 6, 1, Math.min(100, sheet.getMaxColumns() - 5)).getValues()[0];
+        props.setProperty('COVERAGE_D_SOURCE_' + (i + 9), sources.every(v => v === '') ? 'EMPTY' : 'FILLED');
+      }
+    });
+  }
+  const handlers = ['coverageReportEdit', 'coverageReportOpen', 'coverageReportDaily'];
+  ScriptApp.getProjectTriggers().forEach(function(trigger) {
+    if (handlers.includes(trigger.getHandlerFunction())) ScriptApp.deleteTrigger(trigger);
+  });
+  const editTrigger = ScriptApp.newTrigger('coverageReportEdit');
+  const editSource = editTrigger.forSpreadsheet(book);
+  const editEvent = editSource.onEdit();
+  editEvent.create();
+  const openTrigger = ScriptApp.newTrigger('coverageReportOpen');
+  const openSource = openTrigger.forSpreadsheet(book);
+  const openEvent = openSource.onOpen();
+  openEvent.create();
+  const dailyTrigger = ScriptApp.newTrigger('coverageReportDaily');
+  const dailyClock = dailyTrigger.timeBased();
+  dailyClock.everyDays(1);
+  dailyClock.atHour(0);
+  dailyClock.inTimezone('Asia/Seoul');
+  dailyClock.create();
+  props.setProperty('COVERAGE_REPORT_BOOK', book.getId());
+  props.setProperty('COVERAGE_REPORT_INITIALIZED', '1');
+  coverageNormalizeYears_(sheet, 6, Math.min(105, sheet.getMaxColumns()));
+  coverageNormalizePremiums_(sheet, 6, Math.min(105, sheet.getMaxColumns()));
+  coverageNormalizeDates_(book, sheet, 4, 5, 6, Math.min(105, sheet.getMaxColumns()));
+  coverageNormalizeAmounts_(sheet, 9, 63, 6, Math.min(105, sheet.getMaxColumns()));
+  coverageReportRefresh_(book);
+  if (sheet.getMaxRows() > 63) sheet.hideRows(64, sheet.getMaxRows() - 63);
+  book.toast('자동 계산 설정이 완료되었습니다.', '보장분석');
+}
+
+function coverageReportSheet_(book) {
+  const sheet = book.getSheets().find(function(s) { return s.getSheetId() === 1547742226; });
+  if (!sheet) throw new Error('보장분석 시트를 찾지 못했습니다.');
+  return sheet;
+}
+
+function coverageManualOnlyRow_(row) { return [40, 41, 43].includes(row); }
+
+function coverageReportEdit(e) {
+  if (!e || !e.range) return;
+  const sheet = e.range.getSheet();
+  if (sheet.getSheetId() !== 1547742226) return;
+  const first = e.range.getRow(), last = e.range.getLastRow();
+  const left = e.range.getColumn(), right = e.range.getLastColumn();
+  if (first > 63) return;
+  const lock = LockService.getDocumentLock();
+  lock.waitLock(20000);
+  try {
+    const book = e.source || sheet.getParent();
+    if (first <= 3 && last >= 3 && right >= 6 && left <= 105) {
+      coverageNormalizeYears_(sheet, Math.max(6, left), Math.min(105, right));
+    }
+    if (first <= 8 && last >= 8 && right >= 6 && left <= 105) {
+      coverageNormalizePremiums_(sheet, Math.max(6, left), Math.min(105, right));
+    }
+    if (first <= 5 && last >= 4 && right >= 6 && left <= 105) {
+      coverageNormalizeDates_(book, sheet, Math.max(4, first), Math.min(5, last),
+        Math.max(6, left), Math.min(105, right), e);
+    }
+    if (last >= 9 && first <= 63 && right >= 6 && left <= 105) {
+      coverageNormalizeAmounts_(sheet, Math.max(9, first), Math.min(63, last),
+        Math.max(6, left), Math.min(105, right));
+    }
+    // 원래 D열은 맨 앞 열 추가 후 E열로 이동했다.
+    if (left <= 5 && right >= 5 && last >= 9) {
+      const start = Math.max(9, first), end = Math.min(63, last);
+      const values = sheet.getRange(start, 5, end - start + 1, 1).getValues();
+      const props = PropertiesService.getDocumentProperties();
+      values.forEach(function(row, i) {
+        const number = start + i;
+        if (coverageManualOnlyRow_(number)) return;
+        const key = 'COVERAGE_D_' + number;
+        if (row[0] === '') {
+          props.deleteProperty(key);
+          props.deleteProperty('COVERAGE_D_SOURCE_' + number);
+        } else {
+          props.setProperty(key, JSON.stringify(row[0]));
+          const sources = sheet.getRange(number, 6, 1, Math.min(100, sheet.getMaxColumns() - 5)).getValues()[0];
+          props.setProperty('COVERAGE_D_SOURCE_' + number, sources.every(v => v === '') ? 'EMPTY' : 'FILLED');
+        }
+      });
+    }
+    // 보험 입력을 지워 한 행이 비면 그 행의 기존 수동 합계도 해제한다.
+    if (right >= 6 && left <= 105 && last >= 9 && first <= 63) {
+      const props = PropertiesService.getDocumentProperties();
+      const start = Math.max(9, first), end = Math.min(63, last);
+      const rows = sheet.getRange(start, 6, end - start + 1, Math.min(100, sheet.getMaxColumns() - 5)).getValues();
+      rows.forEach(function(values, i) {
+        const number = start + i;
+        if (!coverageManualOnlyRow_(number) && values.every(v => v === '') && !(left <= 5 && right >= 5)) {
+          props.deleteProperty('COVERAGE_D_' + number);
+          props.deleteProperty('COVERAGE_D_SOURCE_' + number);
+        }
+      });
+    }
+    coverageReportRefresh_(e.source || sheet.getParent());
+  } finally { lock.releaseLock(); }
+}
+
+function coverageDateText_(value, year, timezone) {
+  if (value === '' || value === null || value === undefined) return '';
+  if (value instanceof Date) {
+    if (!Number.isFinite(value.getTime())) return null;
+    value = Utilities.formatDate(value, timezone, 'yyyy-MM-dd');
+  }
+  const text = String(value).trim();
+  let y = year, month, day;
+  let match = text.match(/^(\d{4}|\d{2})\s*(?:년|[-./])\s*(\d{1,2})\s*(?:월|[-./,])\s*(\d{1,2})\s*일?\s*\.?$/);
+  if (match) {
+    y = Number(match[1]); if (match[1].length === 2) y += 2000;
+    month = Number(match[2]); day = Number(match[3]);
+  } else if ((match = text.match(/^(\d{1,2})\s*(?:월|[-./])\s*(\d{1,2})\s*일?\s*\.?$/))) {
+    month = Number(match[1]); day = Number(match[2]);
+  } else if (/^\d{8}$/.test(text)) {
+    y = Number(text.slice(0, 4)); month = Number(text.slice(4, 6)); day = Number(text.slice(6));
+  } else if (/^\d{6}$/.test(text)) {
+    y = 2000 + Number(text.slice(0, 2)); month = Number(text.slice(2, 4)); day = Number(text.slice(4));
+  } else if (/^\d{3,4}$/.test(text)) {
+    const digits = text.padStart(4, '0'); month = Number(digits.slice(0, 2)); day = Number(digits.slice(2));
+  } else if (/^\d{5}(?:\.\d+)?$/.test(text) && Number(text) >= 1 && Number(text) < 100000) {
+    return new Date(Date.UTC(1899, 11, 30) + Math.floor(Number(text)) * 86400000).toISOString().slice(0, 10);
+  } else return null;
+  const check = new Date(Date.UTC(y, month - 1, day));
+  if (y < 1900 || y > 9999 || check.getUTCFullYear() !== y ||
+      check.getUTCMonth() !== month - 1 || check.getUTCDate() !== day) return null;
+  return y + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+}
+
+function coverageNormalizeDates_(book, sheet, first, last, left, right, event) {
+  const timezone = 'Asia/Seoul';
+  const year = Number(Utilities.formatDate(new Date(), timezone, 'yyyy'));
+  const range = sheet.getRange(first, left, last - first + 1, right - left + 1);
+  const values = range.getValues(), formulas = range.getFormulas();
+  let invalid = false;
+  values.forEach(function(row, r) {
+    row.forEach(function(value, c) {
+      if (formulas[r][c]) return;
+      const cell = sheet.getRange(first + r, left + c);
+      // 단일 입력은 Sheets가 날짜/숫자로 바꾸기 전의 원래 입력을 우선한다.
+      const raw = event && event.range.getNumRows() === 1 && event.range.getNumColumns() === 1 &&
+        event.value !== undefined ? event.value : value;
+      const text = coverageDateText_(raw, year, timezone);
+      if (text === null) {
+        invalid = true;
+        cell.setNumberFormat('@').setValue(String(raw));
+      } else if (text === '') {
+        cell.setNumberFormat('yyyy-mm-dd');
+      } else {
+        cell.setValue(Utilities.parseDate(text, timezone, 'yyyy-MM-dd')).setNumberFormat('yyyy-mm-dd');
+      }
+    });
+  });
+  if (invalid) book.toast('날짜의 연·월·일을 확인하세요. 예: 260101, 2026-01-01, 1월1일', '날짜 확인');
+}
+
+function coverageReportOpen(e) {
+  coverageReportRunLocked_(e && e.source ? e.source : SpreadsheetApp.getActiveSpreadsheet());
+}
+
+function coverageReportDaily() {
+  const id = PropertiesService.getDocumentProperties().getProperty('COVERAGE_REPORT_BOOK');
+  if (id) coverageReportRunLocked_(SpreadsheetApp.openById(id));
+}
+
+function coverageReportRunLocked_(book) {
+  const lock = LockService.getDocumentLock();
+  lock.waitLock(20000);
+  try { coverageReportRefresh_(book); } finally { lock.releaseLock(); }
+}
+
+function coverageReportRefresh_(book) {
+  const sheet = coverageReportSheet_(book);
+  // 보험 100개: F:DA. 각 보험 열의 납입예정·납입완료도 계산한다.
+  const columns = Math.min(105, sheet.getMaxColumns()) - 5;
+  if (columns < 1) throw new Error('보험 입력 열이 없습니다.');
+  const input = sheet.getRange(3, 6, 61, columns).getValues();
+  const today = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
+  const payment = coveragePaymentValues_(input, today, 'Asia/Seoul');
+  sheet.getRange('B5').setValue(coverageNumericSum_(input[5]));
+  sheet.getRange(6, 6, 2, columns).setValues(payment);
+  const propertyStore = PropertiesService.getDocumentProperties();
+  const props = propertyStore.getProperties();
+  const existing = sheet.getRange('E9:E63').getValues();
+  const output = existing.map(function(row, i) {
+    const number = i + 9;
+    if (coverageManualOnlyRow_(number)) return row;
+    const key = 'COVERAGE_D_' + number;
+    if (Object.prototype.hasOwnProperty.call(props, key)) {
+      const empty = input[number - 3].every(v => v === '');
+      if (!empty || props['COVERAGE_D_SOURCE_' + number] === 'EMPTY') return [JSON.parse(props[key])];
+      propertyStore.deleteProperty(key);
+      propertyStore.deleteProperty('COVERAGE_D_SOURCE_' + number);
+    }
+    const total = coverageNumericSum_(input[number - 3]);
+    // 59행의 입력 단위는 원래부터 '억'. 나머지는 '만원'.
+    return [coverageAmountText_(total, number === 59 ? 10000 : 1)];
+  });
+  sheet.getRange('E9:E63').setValues(output);
+}
+
+function coverageNumericSum_(values) {
+  return values.reduce(function(sum, value) {
+    const number = coverageAmountNumber_(value);
+    return sum + (typeof number === 'number' ? number : 0);
+  }, 0);
+}
+
+function coverageAmountNumber_(value) {
+  if (value === '') return '';
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  const digits = String(value).replace(/[^0-9.+-]/g, '');
+  if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(digits)) return null;
+  const number = Number(digits);
+  return Number.isFinite(number) ? number : null;
+}
+
+function coverageNormalizeYears_(sheet, left, right) {
+  const range = sheet.getRange(3, left, 1, right - left + 1);
+  const values = range.getValues()[0], formulas = range.getFormulas()[0];
+  const formats = values.map(function(value, i) {
+    if (!formulas[i] && typeof value === 'string' && /[가-힣]/.test(value)) return '@';
+    return '#,##0.########"년납"';
+  });
+  range.setNumberFormats([formats]);
+}
+
+function coverageNormalizePremiums_(sheet, left, right) {
+  const range = sheet.getRange(8, left, 1, right - left + 1);
+  const values = range.getValues()[0], formulas = range.getFormulas()[0];
+  const formats = values.map(function(value, i) {
+    if (!formulas[i] && typeof value === 'string' && /[가-힣]/.test(value)) return '@';
+    return '#,##0.########"원"';
+  });
+  range.setNumberFormats([formats]);
+}
+
+function coverageInputAmountFormat_(value, row) {
+  if (row === 59) return '#,##0.########"억"';
+  if (typeof value !== 'number' || value < 10000) return '#,##0.########"만원"';
+  // 숫자 자체는 만원 단위로 유지하고 표시 형식만 바꾼다.
+  return '"' + coverageAmountText_(value, 1) + '"';
+}
+
+function coverageNormalizeAmounts_(sheet, first, last, left, right) {
+  const range = sheet.getRange(first, left, last - first + 1, right - left + 1);
+  const values = range.getValues(), formulas = range.getFormulas();
+  const formats = values.map(function(row, r) {
+    return row.map(function(value) {
+      if (typeof value === 'string' && /[가-힣]/.test(value)) return '@';
+      return coverageInputAmountFormat_(coverageAmountNumber_(value), first + r);
+    });
+  });
+  values.forEach(function(row, r) {
+    row.forEach(function(value, c) {
+      if (formulas[r][c]) return;
+      if (typeof value === 'string' && /[가-힣]/.test(value)) return;
+      const number = coverageAmountNumber_(value);
+      if (number !== null && number !== value) sheet.getRange(first + r, left + c).setValue(number);
+    });
+  });
+  range.setNumberFormats(formats);
+}
+
+function coverageAmountText_(sum, multiplier) {
+  const value = sum * multiplier;
+  if (value === 0) return '';
+  const billion = Math.floor(value / 10000);
+  const rest = Math.round(value - billion * 10000);
+  const grouped = function(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
+  if (value < 10000) return grouped(Math.round(value)) + '만원';
+  if (rest === 10000) return (billion + 1) + '억';
+  return billion + '억' + (rest ? ' ' + grouped(rest) + '만원' : '');
+}
+
+function coveragePaymentValues_(input, today, timezone) {
+  const remaining = [], paid = [];
+  const now = today.split('-').map(Number);
+  for (let c = 0; c < input[0].length; c++) {
+    const startValue = input[1][c];
+    if (startValue === '') { remaining.push(''); paid.push(''); continue; }
+    const startText = coverageDateText_(startValue, now[0], timezone);
+    if (!startText) { remaining.push(''); paid.push(''); continue; }
+    const start = startText.split('-').map(Number);
+    const parsedYears = coverageAmountNumber_(input[0][c]);
+    if (typeof parsedYears !== 'number' || parsedYears < 0) {
+      remaining.push(''); paid.push(''); continue;
+    }
+    const years = parsedYears;
+    const premium = coverageAmountNumber_(input[5][c]) || 0;
+    const months = Math.max(0, years * 12);
+    const elapsed = Math.max(0, (now[0] - start[0]) * 12 + now[1] - start[1] - (now[2] < start[2] ? 1 : 0));
+    const complete = Math.min(months, elapsed);
+    remaining.push((months - complete) * premium);
+    paid.push(complete * premium);
+  }
+  return [remaining, paid];
+}

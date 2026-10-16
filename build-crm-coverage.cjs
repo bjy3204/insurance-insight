@@ -1,0 +1,42 @@
+const fs=require('fs');
+const assert=require('assert');
+let crm=fs.readFileSync('Code-CRM-category-dropdown-next-row.txt','utf8').replace(/\r\n/g,'\n');
+function replace(old,next){assert(crm.includes(old),'Missing source: '+old.slice(0,80));crm=crm.replace(old,next);}
+replace('/** @OnlyCurrentDoc */','// 고객별 별도 파일 복사를 위해 Drive 및 외부 스프레드시트 권한이 필요합니다.');
+replace('function onOpen(e) {','function onOpen(e) {\n  crmCreateCustomerMenu_();');
+replace("  SpreadsheetApp.getUi().createMenu('고객 관리')\n    .addItem('고객등록', 'openCustomerRegistration')\n    .addItem('계약추가', 'activateContractInput')\n    .addToUi();",'');
+replace('I22:19, C24:20,','I22:19, C24:20, I24:21,');
+replace('E16:15};','E16:15,H16:21};');
+replace("'AH2','AH3']);","'AH2','AH3','J16']);\n  card.getRange('J16').clearDataValidations();");
+replace("card.getRange('AH3').setValue(item.index+6);","card.getRange('AH3').setValue(item.index+6);\n  refreshCrmCoverageCard_(ss,card,item.index+6);");
+replace('accountNumber:20,vehicleNumber:22','accountNumber:20,medical:21,vehicleNumber:22');
+replace("['accountNumber','계좌번호','text','wide']", "['accountNumber','계좌번호','text'],['medical','실손의료비','text']");
+replace('function onEdit(e) {','function onEdit(e) {\n  if(crmReportIsActionEdit_(e)){crmCoverageRestoreEditedCell_(e);return;}\n  e=crmReportAdaptEvent_(e);');
+replace('  return found||ss.getSheetByName(role);',"  const result=found||ss.getSheetByName(role);\n  return role==='고객 LIST'&&result?crmReportSheetAdapter_(result):result;");
+replace(".requireFormulaSatisfied('=OR(J6=\"\",AND(ISNUMBER(J6),J6=INT(J6),J6>=1,J6<=31))')",".requireFormulaSatisfied(crmReportHasColumn_(crmReportUnwrap_(list))?'=OR(K6=\"\",AND(ISNUMBER(K6),K6=INT(K6),K6>=1,K6<=31))':'=OR(J6=\"\",AND(ISNUMBER(J6),J6=INT(J6),J6>=1,J6<=31))')");
+replace('  customerListDropdownRules_(ss).forEach(({column,rule})=>{','  refreshCrmCoverageReportCells_(ss);\n  customerListDropdownRules_(ss).forEach(({column,rule})=>{');
+replace('    if(column===2){const count=progressiveCategoryDropdownCount_(rows.map(row=>[row[0]]));list.getRange(6,2,Math.min(height,count),1).setDataValidation(rule);}\n    else plan.segments.forEach(segment=>list.getRange(segment.start,column,segment.end-segment.start+1,1).setDataValidation(rule));', '    const count=progressiveCategoryDropdownCount_(rows.map(row=>[row[column-2]]));\n    list.getRange(6,column,Math.min(height,count),1).setDataValidation(rule);');
+replace('button.setPosition(2,17,0,0)','button.setPosition(2,18,0,0)');
+const start=crm.indexOf('function operationalViewFormulas_('),end=crm.indexOf('\nfunction refreshOperationalViews',start);
+let formulas=crm.slice(start,end);
+const legacyFormulas=formulas.replace('function operationalViewFormulas_(', 'function operationalViewFormulasLegacy_(');
+function column(text){let n=0;for(const c of text)n=n*26+c.charCodeAt(0)-64;n++;let s='';while(n){s=String.fromCharCode(65+(n-1)%26)+s;n=Math.floor((n-1)/26);}return s;}
+formulas=formulas.replace(/\b([A-Z]+)(6)?:([A-Z]+)\b/g,(_,a,row,b)=>column(a)+(row||'')+':'+column(b));
+formulas=formulas.replace('function operationalViewFormulas_(sourceName) {', 'function operationalViewFormulas_(sourceName,shifted) {\n  if(shifted===false)return operationalViewFormulasLegacy_(sourceName);');
+crm=crm.slice(0,start)+legacyFormulas+'\n'+formulas+crm.slice(end);
+replace('const formulas=operationalViewFormulas_(list.getName());','const formulas=operationalViewFormulas_(list.getName(),crmReportHasColumn_(crmReportUnwrap_(list)));');
+replace('const formulas=operationalViewFormulas_(list.getName(),crmReportHasColumn_(crmReportUnwrap_(list)));', 'const formulas=operationalViewFormulas_(list.getName(),crmReportHasColumn_(crmReportUnwrap_(list)));\n  if(CRM_REPORT_SPACER_STATE_)Object.keys(formulas).forEach(key=>{formulas[key]=crmReportShiftVehicleFormula_(formulas[key]);});');
+crm+='\n'+fs.readFileSync('CRM-Report-Column-Adapter.gs','utf8')+'\n'+fs.readFileSync('CRM-Coverage-Reports.gs','utf8');
+crm+='\nconst CRM_COVERAGE_BUTTON_PNG='+JSON.stringify(fs.readFileSync('coverage-button-base64.txt','utf8').trim())+';\n';
+new Function(crm);
+fs.writeFileSync('Code-CRM-Coverage-Reports-Full.txt',crm);
+
+let report=fs.readFileSync('Coverage-Report-Calculations.gs','utf8');
+const first=report.indexOf("  const editTrigger = ScriptApp.newTrigger('coverageReportEdit');");
+const last=report.indexOf("  const dailyTrigger = ScriptApp.newTrigger('coverageReportDaily');",first);
+assert(first>=0&&last>first);
+report=report.slice(0,first)+report.slice(last);
+report+='\n// 사본은 별도 트리거 설정 없이 열기·수정 시 자기 파일 안에서 계산합니다.\nfunction onEdit(e) { coverageReportEdit(e); }\nfunction onOpen(e) { coverageReportOpen(e); }\n';
+new Function(report);
+fs.writeFileSync('Coverage-Template-Copy-Ready-Full.txt',report);
+console.log('Both complete scripts parse; CRM logical columns preserved; native view references shifted; report copies have simple edit/open handlers.');

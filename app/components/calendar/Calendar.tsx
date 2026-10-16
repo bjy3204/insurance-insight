@@ -10,17 +10,20 @@ import {
   Plus,
   ArrowLeft,
   Bell,
+  BellOff,
   Pencil,
   Trash2,
   X,
   Search,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import CalendarEventModal from "./CalendarEventModal";
-import { formatCalendarTime } from "@/lib/calendar-time";
-import DdayWidget from "./DdayWidget";
+import CalendarEventModal, { type CalendarEventForm } from "./CalendarEventModal";
+import CalendarEventDetails, { type CalendarDetails } from "./CalendarEventDetails";
+import layoutStyles from "./CalendarLayout.module.css";
+import { formatCalendarTime, compareCalendarTimes } from "@/lib/calendar-time";
+import useCalendarExtras from "./useCalendarExtras";
 import DashboardDialog from "@/app/features/home/components/dashboard/DashboardDialog";
-import ReminderSettings from "@/app/features/home/components/dashboard/ReminderSettings";
+import useCalendarReminderToggle from "./useCalendarReminderToggle";
 import {
   CALENDAR_UPDATED,
   LOCAL_EVENTS_KEY,
@@ -44,6 +47,7 @@ type Event = {
   memo: string;
   icon: string;
   color: string;
+  category?: string;
 };
 type Checklist = { id: string; text: string; completed: boolean };
 type Holiday = { date: string; name: string };
@@ -73,6 +77,7 @@ const emptyEvent = (date: string): Event => ({
   memo: "",
   icon: "📅",
   color: "blue",
+  category: "개인",
 });
 const normalizeEvent = (event: CalendarEvent): Event => ({
   ...event,
@@ -80,6 +85,7 @@ const normalizeEvent = (event: CalendarEvent): Event => ({
   time: event.time || "",
   place: event.place || "",
   memo: event.memo || "",
+  category: event.category || "개인",
 });
 function readChecklists(): Checklist[] {
   const data = JSON.parse(localStorage.getItem(CHECKLIST_KEY) || "[]");
@@ -89,10 +95,12 @@ function readChecklists(): Checklist[] {
 
 export default function Calendar({
   mode = "full",
+  active = true,
   identity: provided,
   beforeChecklist,
 }: {
   mode?: "compact" | "full";
+  active?: boolean;
   beforeChecklist?: ReactNode;
   identity?: Identity;
 }) {
@@ -131,7 +139,7 @@ export default function Calendar({
   return mode === "compact" ? (
     <CompactCalendar key={owner} identity={account} />
   ) : (
-    <FullCalendar key={owner} identity={account} beforeChecklist={beforeChecklist ?? <DdayWidget />} />
+    <FullCalendar active={active} key={owner} identity={account} beforeChecklist={beforeChecklist} />
   );
 }
 
@@ -278,6 +286,7 @@ function useCalendarData(identity: Identity) {
       if (
         !event.title.trim() ||
         !/^\d{4}-\d{2}-\d{2}$/.test(event.date) ||
+        !!event.time && !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(event.time) ||
         dateKey(new Date(`${event.date}T12:00:00`)) !== event.date
       )
         throw Error("Invalid event");
@@ -287,6 +296,7 @@ function useCalendarData(identity: Identity) {
         time: event.time || null,
         place: event.place || null,
         memo: event.memo || null,
+        category: event.category || "개인",
       };
       if (cloud) {
         const query = id
@@ -363,12 +373,13 @@ function useCalendarData(identity: Identity) {
   };
 }
 
-function FullCalendar({ identity, beforeChecklist }: { identity: Identity; beforeChecklist?: ReactNode }) {
+function FullCalendar({ identity, beforeChecklist, active }: { identity: Identity; beforeChecklist?: ReactNode; active: boolean }) {
   const store = useCalendarData(identity);
   const { events, checklists } = store;
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [viewingEvent,setViewingEvent]=useState<CalendarDetails|null>(null);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [deleteEventConfirmOpen, setDeleteEventConfirmOpen] = useState(false);
 
@@ -384,8 +395,9 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
   const [mobileDayDate, setMobileDayDate] = useState("");
 
   const [searchText, setSearchText] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
-  const [formData, setFormData] = useState({
+  const [selectedDate, setSelectedDate] = useState(koreaDate());
+  const extras = useCalendarExtras(identity, calendarDate, active);
+  const [formData, setFormData] = useState<CalendarEventForm>({
     title: "",
     content: "",
     date: "",
@@ -394,10 +406,14 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
     memo: "",
     icon: "📅",
     color: "blue",
+    category: "개인",
   });
   const previewEventColor=(event:Event)=>showEventModal && editingEvent?.id===event.id ? formData.color : event.color;
   const [checklistText, setChecklistText] = useState("");
-  const [checklistInputOpen, setChecklistInputOpen] = useState(false);
+  const [checklistInputOpen,setChecklistInputOpen]=useState(false);
+  const checklistInput=useRef<HTMLInputElement>(null);
+  const checklistAdding = useRef(false);
+  const [checklistSaving, setChecklistSaving] = useState(false);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -484,7 +500,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
 
   // 날짜별 일정 조회
   const getEventsForDate = (dateStr: string) => {
-    return events.filter((e) => e.date === dateStr);
+    return events.filter((e) => e.date === dateStr).sort((a, b) => compareCalendarTimes(a.time, b.time));
   };
 
   // 공휴일 조회
@@ -526,20 +542,23 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
     }
   };
   const handleAddChecklist = async () => {
-    if (!checklistText.trim()) return;
-    if (checklists.length >= 10) {
-      alert("체크리스트는 최대 10개까지만 추가할 수 있습니다");
+    if (!checklistText.trim() || checklistAdding.current) return;
+    if (checklists.length >= 5) {
+      setChecklistInputOpen(false);
       return;
     }
+    const submitted = checklistText.trim();
+    checklistAdding.current = true; setChecklistSaving(true);
     try {
       await store.changeChecklist(null, {
-        text: checklistText.trim(),
+        text: submitted,
         completed: false,
       });
-      setChecklistText("");
+      setChecklistText(current => current.trim() === submitted ? "" : current);
+      setChecklistInputOpen(false);
     } catch (failure) {
       report(failure);
-    }
+    } finally { checklistAdding.current = false; setChecklistSaving(false); }
   };
   const handleToggleChecklist = async (id: string, completed: boolean) => {
     try {
@@ -574,6 +593,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
       memo: "",
       icon: "📅",
       color: "blue",
+    category: "개인",
     });
     setEditingEvent(null);
   };
@@ -585,16 +605,31 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
 
   // 필터링된 일정 목록
   const filteredEvents = events
-    .filter((e) => {
-      const eventDate = new Date(e.date);
-      return eventDate >= today;
-    })
+    .filter((e) => e.date === selectedDate)
     .filter((e) =>
-      `${e.title} ${e.content}`
+      `${e.title} ${e.content} ${e.memo} ${e.place}`
         .toLowerCase()
         .includes(searchText.toLowerCase()),
     )
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => compareCalendarTimes(a.time, b.time));
+
+  const renderSchedules = (date: string, normal: Event[]) => {
+    const remote = extras.sheetEvents.filter(event => event.date === date && `${event.category} ${event.name} ${event.birth} ${event.content}`.toLowerCase().includes(searchText.toLowerCase()));
+    const rows = [...normal.map(event => ({ key: `event:${event.id}`, title: event.title, detail: [event.content, event.memo].filter(Boolean).join(" · "), icon: event.icon, event, category:event.category||"개인" })), ...remote.map(event => ({ key: event.id, title: [event.category,event.name,event.birth.replace(/\D/g,"").slice(0,6)].filter(Boolean).join("    "), detail: [event.name, event.birth.replace(/\D/g,"").slice(0,6), event.memoContent??event.content].filter(Boolean).join(" · "), icon: event.icon, event: null, category:event.category }))].sort((a, b) => compareCalendarTimes(a.event?.time, b.event?.time));
+    return <>
+      {rows.length === 0 && <p className="text-sm text-gray-400 text-center py-6">이 날의 일정이 없습니다</p>}
+      {rows.map(row => <div key={row.key} className={`${layoutStyles.scheduleRow} flex items-start gap-2 rounded-xl border p-3 ${extras.completed[row.key] ? "bg-gray-50 border-gray-100 text-gray-400" : "border-gray-200 text-gray-900"}`}>
+        <input type="checkbox" aria-label={`${row.title} 확인`} checked={!!extras.completed[row.key]} disabled={!extras.completionReady || extras.completionBusy} onChange={() => void extras.toggleCompleted(row.key)} className="mt-1 h-4 w-4 shrink-0 accent-blue-600" />
+        <button type="button" onClick={() => {setShowMobileDayPopup(false);setViewingEvent(row.event||{title:row.title,date,icon:row.icon,memo:row.detail,category:row.category});}} className={`min-w-0 flex-1 text-left ${extras.completed[row.key] ? "line-through" : ""}`}>
+          <span className={layoutStyles.scheduleLine}><span className={layoutStyles.scheduleTitle}>{row.icon} {row.title}</span>{row.event?.time && <span>{formatCalendarTime(row.event.time)}</span>}</span>
+        </button>
+        {row.event&&<div className={layoutStyles.scheduleActions}>
+          <button type="button" aria-label={`${row.title} 수정`} title="수정" disabled={store.saving} onClick={()=>{setShowMobileDayPopup(false);setEditingEvent(row.event);setFormData(row.event!);setShowEventModal(true);}}><Pencil size={17}/></button>
+          <button type="button" aria-label={`${row.title} 삭제`} title="삭제" disabled={store.saving} onClick={()=>{setDeleteEventId(row.event!.id);setDeleteEventConfirmOpen(true);}}><Trash2 size={17}/></button>
+        </div>}
+      </div>)}
+    </>;
+  };
 
   if (!store.ready)
     return (
@@ -611,11 +646,10 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
       <div className="w-full pt-0 pb-6 mt-2">
         {/* PC: 2열 레이아웃 (왼쪽 1fr: 체크리스트+일정, 오른쪽 3fr: 달력) */}
         <div
-          className="flex flex-col sm:grid sm:gap-3"
-          style={{ gridTemplateColumns: "minmax(220px, 1fr) minmax(0, 4fr)" }}
+          className={layoutStyles.layout}
         >
           {/* 달력 — PC: 오른쪽(order-2) */}
-          <div className="personal-grid order-1 sm:order-2 bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5 mb-6 sm:mb-0">
+          <div className={`${layoutStyles.calendar} personal-grid bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5`}>
             {/* 월 네비게이션 */}
             <div className="relative flex items-center justify-center mb-4 min-h-9">
               <div className="flex items-center gap-3 sm:gap-4">
@@ -625,6 +659,10 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
               </div>
             </div>
 
+            {(extras.sheetError || extras.needsConnection || extras.completionError) && <div role="status" className="mb-3 flex flex-wrap items-center gap-2 text-sm text-gray-500">
+              <span>{extras.completionError || extras.sheetError}</span>
+              {extras.needsConnection ? <button onClick={() => void extras.connect()} disabled={extras.connecting} className="rounded-lg bg-blue-50 px-3 py-2 text-blue-600">{extras.connecting ? "연결중" : "일정 연결"}</button> : (extras.sheetError || extras.completionError) && <button onClick={extras.reloadSheet} className="text-blue-600">다시 시도</button>}
+            </div>}
             {/* 요일 헤더 */}
             <div className="grid grid-cols-7 text-center rounded-t-xl overflow-hidden border border-gray-100">
               {["일", "월", "화", "수", "목", "금", "토"].map((day, index) => (
@@ -675,6 +713,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                 const fullDate = `${dateYear}-${String(dateMonth + 1).padStart(2, "0")}-${String(displayDay).padStart(2, "0")}`;
 
                 const dayEvents = getEventsForDate(fullDate);
+                const sheetIcons = [...new Set(extras.sheetEvents.filter(event => event.date === fullDate).map(event => event.icon))];
                 const holiday = getHolidayForDate(fullDate);
                 const isToday = fullDate === todayValue;
                 const isOtherMonth = dateItem.type !== "current";
@@ -682,7 +721,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                 const hasEvents = dayEvents.length > 0;
 
                 const numberColor =
-                  realDay === 0
+                  holiday || realDay === 0
                     ? isOtherMonth
                       ? "#fecaca"
                       : "#ef4444"
@@ -706,33 +745,34 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                       }
                     }}
                     className={`
-                    min-w-0 aspect-square sm:aspect-auto sm:min-h-[120px]
+                    min-w-0 min-h-0 aspect-square overflow-hidden
                     border-r border-b border-gray-100
-                    ${isToday ? "bg-blue-50" : selectedDate === fullDate ? "bg-gray-50" : holiday ? "bg-red-50/60" : "bg-white"}
+                    ${!isToday && selectedDate === fullDate ? "bg-gray-50" : "bg-white"}
                     hover:bg-gray-50 transition-colors relative group
                   `}
                   >
                     {/* 모바일: 날짜 숫자만 중앙 표시 */}
                     <div className="sm:hidden relative flex items-center justify-center h-full">
                       <span
-                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${isToday ? holiday ? "bg-red-100" : "bg-blue-600 text-white" : ""}`}
+                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${isToday ? holiday ? "ring-2 ring-blue-500" : "bg-blue-600 text-white" : ""}`}
                         style={{ color: holiday ? isOtherMonth ? "#fecaca" : "#ef4444" : isToday ? "#ffffff" : numberColor }}
                       >
                         {displayDay}
                       </span>
                       {/* 일정 있으면 파란 점 */}
-                      {hasEvents && (
+                      {sheetIcons.length > 0 && <div className="absolute right-1 bottom-1 flex text-[10px] leading-none">{sheetIcons.join("")}</div>}
+                      {hasEvents && sheetIcons.length === 0 && (
                         <div className="absolute left-1/2 top-[calc(50%+16px)] -translate-x-1/2 w-1 h-1 rounded-full bg-blue-400" />
                       )}
                     </div>
 
                     {/* PC: 기존 레이아웃 */}
-                    <div className="hidden sm:block p-2 h-full">
+                    <div className={`hidden sm:flex ${layoutStyles.dayContent}`}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-0.5">
                           <span
-                            className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${isToday ? "bg-blue-600 text-white" : ""}`}
-                            style={{ color: isToday ? "#ffffff" : numberColor }}
+                            className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${isToday ? holiday ? "ring-2 ring-blue-500" : "bg-blue-600 text-white" : ""}`}
+                            style={{ color: holiday ? isOtherMonth ? "#fecaca" : "#ef4444" : isToday ? "#ffffff" : numberColor }}
                           >
                             {displayDay}
                           </span>
@@ -743,13 +783,16 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                           )}
                         </div>
                         <button
+                          type="button"
+                          aria-label={`${fullDate} 일정 추가`}
+                          title="일정 추가"
                           onClick={(e) => {
                             e.stopPropagation();
                             openEventModal(fullDate);
                           }}
-                          className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition cursor-pointer opacity-0 group-hover:opacity-100"
+                          className={layoutStyles.dayAdd}
                         >
-                          <Plus className="w-4 h-4" strokeWidth={1.5} />
+                          <Plus size={17} strokeWidth={1.25} />
                         </button>
                       </div>
 
@@ -759,13 +802,10 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                             key={event.id}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setEditingEvent(event);
-                              setFormData(event);
-                              setShowEventModal(true);
+                              setViewingEvent(event);
                             }}
                             className={`
-                            block w-full text-left text-[12px] leading-tight truncate whitespace-nowrap
-                            rounded-md px-2 py-1 cursor-pointer transition
+                            ${layoutStyles.dayEvent}
                             ${
                               previewEventColor(event) === "green"
                                 ? "bg-green-50 text-black hover:bg-green-100"
@@ -779,9 +819,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                             }
                           `}
                           >
-                            <span className="mr-1">{event.icon}</span>
-                            {event.time && <span className="mr-1">{formatCalendarTime(event.time)}</span>}
-                            {event.title}
+                            <span aria-hidden="true">{event.icon}</span><span>{event.title}</span>
                           </button>
                         ))}
                         {dayEvents.length > 3 && (
@@ -790,6 +828,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                           </div>
                         )}
                       </div>
+                      {sheetIcons.length > 0 && <div className={layoutStyles.customerIcons} aria-label="고객 일정">{sheetIcons.join(" ")}</div>}
                     </div>
                   </div>
                 );
@@ -798,22 +837,20 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
           </div>
 
           {/* 왼쪽 컬럼: 체크리스트(위) + 일정목록(아래) — PC: order-1, 모바일: 아래 */}
-          <div className="order-2 sm:order-1 flex flex-col gap-3">
+          <div className={`${layoutStyles.sidebar} flex flex-col gap-3`}>
             {beforeChecklist}
             {/* 체크리스트 — 모바일: order-2(아래), PC: order-1(왼쪽) */}
             <div className="personal-grid bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5">
               <div className="flex items-center justify-between gap-2 mb-3">
                 <h2 className="text-base font-bold text-gray-900">체크리스트</h2>
-                <button type="button" aria-label="체크리스트 추가" title="체크리스트 추가" disabled={checklists.length >= 10} onClick={() => { if (checklistInputOpen && checklistText.trim()) void handleAddChecklist(); else setChecklistInputOpen(open => !open); }} className="h-7 w-7 shrink-0 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center cursor-pointer disabled:opacity-40">
-                  <Plus className="w-4 h-4" />
-                </button>
+
               </div>
 
               <div className="space-y-2 mb-4">
                 {checklists.map((item) => (
                   <div
                     key={item.id}
-                    className="group flex items-start gap-2 py-1 hover:bg-gray-50 rounded transition"
+                    className="group flex items-center gap-2 py-1 hover:bg-gray-50 rounded transition"
                   >
                     <input
                       type="checkbox"
@@ -821,7 +858,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                       onChange={() =>
                         handleToggleChecklist(item.id, item.completed)
                       }
-                      className="w-4 h-4 cursor-pointer mt-0.5"
+                      className="w-4 h-4 shrink-0 cursor-pointer"
                     />
                     {editingChecklistId === item.id ? (
                       <input data-ui-field="true"
@@ -833,13 +870,7 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                         onBlur={() =>
                           handleUpdateChecklist(item.id, editingChecklistText)
                         }
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter")
-                            handleUpdateChecklist(
-                              item.id,
-                              editingChecklistText,
-                            );
-                        }}
+                        onKeyDown={e => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); e.currentTarget.blur(); } }}
                         autoFocus
                         className="flex-1 min-w-0 pl-3 pr-3 py-2 border border-gray-200 rounded-2xl text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition"
                       />
@@ -869,26 +900,26 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                 ))}
               </div>
 
-              {checklistInputOpen && checklists.length < 10 && (
-                <input data-ui-field="true"
-                  autoFocus type="text" value={checklistText}
-                  onChange={e => setChecklistText(e.target.value)}
-                  placeholder="체크리스트 입력 후 Enter"
-                  className="w-full min-w-0 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400"
-                  onKeyDown={e => { if (e.key === "Enter") void handleAddChecklist(); if (e.key === "Escape") setChecklistInputOpen(false); }}
-                />
-              )}
-
-              {checklists.length >= 10 && (
-                <div className="text-xs text-gray-500 text-center py-2">
-                  최대 10개까지만 추가 가능
+              {checklists.length < 5 && (
+                <div className="flex items-center gap-2">
+                  {checklistInputOpen&&<input ref={checklistInput} autoFocus data-ui-field="true" type="text" value={checklistText}
+                    aria-label="새 체크리스트" placeholder="체크리스트 입력" disabled={checklistSaving}
+                    onChange={e => setChecklistText(e.target.value)}
+                    onBlur={() => {if(checklistText.trim())void handleAddChecklist();else setChecklistInputOpen(false);}}
+                    onKeyDown={e => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); void handleAddChecklist(); } }}
+                    className="flex-1 min-w-0 h-10 px-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400" />}
+                  <button type="button" aria-label="체크리스트 추가" aria-expanded={checklistInputOpen} disabled={checklistSaving}
+                    onMouseDown={event=>event.preventDefault()}
+                    onClick={() => {if(!checklistInputOpen)setChecklistInputOpen(true);else if(checklistText.trim())void handleAddChecklist();else checklistInput.current?.focus();}}
+                    className="ml-auto inline-flex h-10 shrink-0 items-center gap-1 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white hover:bg-blue-700 cursor-pointer disabled:opacity-60 disabled:cursor-default"><Plus className="h-4 w-4" />추가</button>
                 </div>
               )}
+
             </div>
 
-            {/* 일정 목록 — 모바일: order-1(위), PC: order-2(오른쪽) */}
-            <div className="personal-grid bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5">
-              <h2 className="text-base font-bold text-gray-900 mb-3">일정</h2>
+            {/* 선택 날짜 일정은 체크리스트 아래에 나열한다. */}
+            <div className={`${layoutStyles.schedules} personal-grid bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5`}>
+              <div className="flex items-center justify-between gap-3 mb-3"><h2 className="text-base font-bold text-gray-900">일정목록</h2><time className="text-sm text-gray-500">{selectedDate}</time></div>
 
               <div className="mb-4 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -901,24 +932,8 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
                 />
               </div>
 
-              <div className="space-y-4 max-h-[420px] overflow-y-auto">
-                {filteredEvents.length === 0 ? (
-                  <p className="text-center text-gray-400 text-sm py-6">예정된 일정이 없습니다</p>
-                ) : Array.from(new Set(filteredEvents.map(event => event.date))).map(date => (
-                  <section key={date}>
-                    <h3 className="text-[13px] font-bold text-gray-900 mb-2">{new Date(date + "T12:00:00").toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "short" })}</h3>
-                    <div className="space-y-1">
-                      {filteredEvents.filter(event => event.date === date).map(event => (
-                        <button key={event.id} type="button" onClick={() => { setEditingEvent(event); setFormData(event); setShowEventModal(true); }} className="flex w-full min-w-0 items-center gap-2 py-1 text-left rounded hover:bg-gray-50 transition cursor-pointer" title={event.title}>
-                          <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-sm" style={{ background: previewEventColor(event) === "green" ? "#00a389" : previewEventColor(event) === "red" ? "#ff4589" : previewEventColor(event) === "yellow" ? "#eab308" : "#2563eb" }} />
-                          <span className="shrink-0 text-xs text-gray-500">{formatCalendarTime(event.time) || "종일"}</span>
-                          <span className="flex-1 min-w-0 truncate text-sm text-black">{event.title}</span>
-                          <ChevronRight aria-hidden="true" className="w-3.5 h-3.5 shrink-0 text-gray-400" />
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-                ))}
+              <div className="space-y-4">
+                {renderSchedules(selectedDate, filteredEvents)}
               </div>
             </div>
           </div>
@@ -981,60 +996,13 @@ function FullCalendar({ identity, beforeChecklist }: { identity: Identity; befor
 
             {/* 일정 목록 */}
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
-              {getEventsForDate(mobileDayDate).length === 0 ? (
-                <div className="text-center text-gray-400 py-8 text-sm">
-                  이 날의 일정이 없습니다
-                </div>
-              ) : (
-                getEventsForDate(mobileDayDate).map((event) => (
-                  <div
-                    key={event.id}
-                    onClick={() => {
-                      setShowMobileDayPopup(false);
-                      setEditingEvent(event);
-                      setFormData(event);
-                      setShowEventModal(true);
-                    }}
-                    className={`p-3 border border-gray-200 rounded-2xl cursor-pointer transition flex items-center justify-between ${
-                      previewEventColor(event) === "green"
-                        ? "bg-green-50"
-                        : previewEventColor(event) === "red"
-                          ? "bg-red-50"
-                          : previewEventColor(event) === "yellow"
-                            ? "bg-yellow-50"
-                            : previewEventColor(event) === "white"
-                              ? "bg-white"
-                              : "bg-blue-50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="shrink-0 text-lg">{event.icon}</span>
-                      <div className="min-w-0">
-                        <p className="font-bold text-gray-900 text-sm truncate">
-                          {event.title}
-                        </p>
-                        {event.content && (
-                          <p className="text-xs text-gray-500 truncate">
-                            {event.content}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="shrink-0 ml-2">
-                      {event.time && (
-                        <span className="text-xs text-gray-400">
-                          {formatCalendarTime(event.time)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
+              {renderSchedules(mobileDayDate, getEventsForDate(mobileDayDate))}
             </div>
           </div>
         </div>
       )}
 
+      {viewingEvent&&<CalendarEventDetails event={viewingEvent} onClose={()=>setViewingEvent(null)} onEdit={viewingEvent.id?()=>{const event=events.find(event=>event.id===viewingEvent.id);if(!event)return;setViewingEvent(null);setEditingEvent(event);setFormData(event);setShowEventModal(true);}:undefined} onDelete={viewingEvent.id?()=>{setDeleteEventId(viewingEvent.id!);setViewingEvent(null);setDeleteEventConfirmOpen(true);}:undefined}/>}
       {showEventModal && (
         <CalendarEventModal
           saving={store.saving}
@@ -1109,7 +1077,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
   );
   const [selected, setSelected] = useState(() => koreaDate());
   const [listDate, setListDate] = useState<string | null>(null);
-  const [reminderEvent, setReminderEvent] = useState<Event | null>(null);
+  const reminders=useCalendarReminderToggle(cloud?userId:null);
   const [draft, setDraft] = useState<Event | null>(null);
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -1159,7 +1127,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
   );
   const dayEvents = visibleEvents
     .filter((e) => e.date === selected)
-    .sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+    .sort((a, b) => compareCalendarTimes(a.time, b.time));
   const open = (event: Event) => {
     setDraft({ ...event });
     setFormError("");
@@ -1168,7 +1136,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
   const closeDraft = useCallback(() => {
     if (!saving) setDraft(null);
   }, [saving]);
-  const closeReminder = useCallback(() => setReminderEvent(null), []);
+
   const today = koreaDate();
   return (
     <article
@@ -1226,12 +1194,13 @@ function CompactCalendar({ identity }: { identity: Identity }) {
                   </div>
                   <div className={styles.eventActions}>
                     <button
-                      onClick={() => setReminderEvent(event)}
-                      disabled={saving}
-                      aria-label={`${event.title} 알림`}
-                      title="알림 설정"
+                      onClick={() => void reminders.toggle(event)}
+                      disabled={saving||reminders.saving||!reminders.ready}
+                      aria-label={`${event.title} 알림 ${reminders.enabled[event.id]?"끄기":"켜기"}`}
+                      aria-pressed={!!reminders.enabled[event.id]}
+                      title={reminders.enabled[event.id]?"알림 끄기":"알림 켜기"}
                     >
-                      <Bell />
+                      {reminders.enabled[event.id]?<Bell style={{color:"#2563eb"}}/>:<BellOff />}
                     </button>
                     <button
                       onClick={() => open(event)}
@@ -1337,13 +1306,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
           )}
         </>
       )}
-      {reminderEvent && ready && (
-        <ReminderSettings
-          event={reminderEvent}
-          userId={cloud ? userId : null}
-          onClose={closeReminder}
-        />
-      )}
+      {reminders.error&&<p role="alert" className="text-sm text-red-500">{reminders.error}</p>}
       {draft && ready && !confirmDelete && (
         <CalendarEventModal
           editingEvent={Boolean(draft.id)}
@@ -1356,6 +1319,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
             memo: draft.memo || "",
             icon: draft.icon,
             color: draft.color,
+            category: draft.category,
           }}
           setFormData={(value) => setDraft({ ...draft, ...value })}
           onClose={closeDraft}

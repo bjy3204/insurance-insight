@@ -1,276 +1,66 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, CalendarDays, Clock } from "lucide-react";
+import { X, CalendarDays, Clock, MapPin, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { lockPageScroll } from "@/app/features/home/components/dashboard/DashboardDialog";
+import { koreaDate } from "@/app/features/home/components/dashboard/reminder-utils";
+import MemoSelect from "@/app/components/memos/MemoSelect";
 import styles from "./CalendarEventModal.module.css";
-
-export type CalendarEventForm = { title:string; content:string; date:string; time:string; place:string; memo:string; icon:string; color:string };
-const EMOJI_LIST = [
-  "📅", "🎉", "🎊", "🎈", "🎁", "🎯", "📝", "📌", "⭐", "🌟",
-  "💼", "📊", "📈", "🔔", "📢", "💡", "🎓", "🏆", "🎂", "🎬",
-  "🎵", "🎸", "🎹", "🎤", "📱", "💻", "⚙️", "❤️", "🛒", "🚗","🚨","⏰","ℹ️","✔️","☠️","🎁","📖","🗂️","✏️","✈️",
-];
-
-// The existing calendar page's editor, shared by all three calendar entry points.
-export default function CalendarEventModal({ formData, setFormData, editingEvent, onClose, onSave, onDelete, saving=false, error="" }: {
-  formData:CalendarEventForm; setFormData:(value:CalendarEventForm)=>void; editingEvent:boolean;
-  onClose:()=>void; onSave:()=>void; onDelete?:()=>void; saving?:boolean; error?:string;
-}) {
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [pickerYear, setPickerYear] = useState(() => Number(formData.date.slice(0,4)) || new Date().getFullYear());
-  const [pickerMonth, setPickerMonth] = useState(() => (Number(formData.date.slice(5,7)) || new Date().getMonth()+1)-1);
-  const [modalPos, setModalPos] = useState({x:0,y:0});
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({x:0,y:0});
-  const panel = useRef<HTMLDivElement>(null);
-  const close = useRef(onClose);
-  useEffect(() => { close.current = onClose; }, [onClose]);
-  useEffect(() => lockPageScroll(), []);
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    panel.current?.querySelector<HTMLInputElement>('input')?.focus();
-    const keyboard = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { e.stopImmediatePropagation(); close.current(); }
-      if (e.key !== "Tab") return;
-      const elements = Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), textarea:not(:disabled)') || []);
-      if (e.shiftKey && document.activeElement === elements[0]) { e.preventDefault(); elements.at(-1)?.focus(); }
-      if (!e.shiftKey && document.activeElement === elements.at(-1)) { e.preventDefault(); elements[0]?.focus(); }
-    };
-    document.addEventListener('keydown',keyboard);
-    return () => { document.removeEventListener('keydown',keyboard); previous?.focus(); };
-  }, []);
-  return createPortal(<div className={styles.editor} role="dialog" aria-modal="true" aria-label={editingEvent ? "일정 수정" : "일정 추가"}>
-    <div
-          onClick={() => onClose()}
-          className="fixed inset-0 z-[3500] bg-black/40 flex items-center justify-center"
-        >
-                    <div ref={panel}
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => {
-              if ((e.target as HTMLElement).closest("input, textarea, button")) return;
-              setIsDragging(true);
-              setDragStart({ x: e.clientX - modalPos.x, y: e.clientY - modalPos.y });
-            }}
-
-            onMouseMove={(e) => {
-              if (isDragging) {
-                setModalPos({
-                  x: e.clientX - dragStart.x,
-                  y: e.clientY - dragStart.y,
-                });
-              }
-            }}
-            onMouseUp={() => setIsDragging(false)}
-            onMouseLeave={() => setIsDragging(false)}
-            className="bg-white w-[90%] max-w-lg rounded-3xl shadow-xl flex flex-col"
-            style={{ transform: `translate(${modalPos.x}px, ${modalPos.y}px)` }}
-          >
-            <div className="flex items-center justify-between gap-3 flex-wrap px-6 pt-6 pb-4">
-              <h2 className="text-xl font-black text-gray-900">
-                {editingEvent ? "일정 수정" : "일정 추가"}
-              </h2>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">{[
-                  { value: "white", label: "흰색", color: "#ffffff" },
-                  { value: "blue", label: "파란색", color: "#edf5ff" },
-                  { value: "green", label: "초록색", color: "#f0fdf4" },
-                  { value: "yellow", label: "노란색", color: "#fffbe5" },
-                  { value: "red", label: "분홍색", color: "#ffedf4" },
-                ].map(option => <button data-color-swatch="true" type="button" key={option.value} disabled={saving} aria-label={option.label} title={option.label} aria-pressed={formData.color === option.value} onClick={() => setFormData({ ...formData, color: option.value })} className={`w-7 h-7 rounded-full border border-gray-200 cursor-pointer ${formData.color === option.value ? "ring-2 ring-gray-400 ring-offset-2" : ""}`} style={{ background: option.color }} />)}</div>
-              <button data-popup-close="true" disabled={saving}
-                onClick={() => { onClose(); }}
-                aria-label="일정 편집 닫기" className="p-2 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-              </div>
-            </div>
-
-            <div className={`px-6 pt-2 pb-4 flex-1 min-w-0 min-h-0 ${showDatePicker ? "overflow-visible" : "overflow-y-auto"}`}>
-              <div className="space-y-3">
-                {/* 제목 + 이모지 */}
-                <div className="flex gap-2">
-                  <div className="relative">
-                    <button disabled={saving}
-                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                      className="w-12 h-12 border border-gray-200 rounded-2xl text-2xl hover:bg-gray-50 transition flex items-center justify-center focus:border-gray-400 focus:ring-2 focus:ring-gray-100 outline-none"
-                    >
-                      {formData.icon}
-                    </button>
-
-                    {showEmojiPicker && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-[99]"
-                          onClick={() => setShowEmojiPicker(false)}
-                        />
-                        <div
-                          className="absolute top-14 left-0 bg-white border border-gray-200 rounded-2xl p-2 z-[100] shadow-lg"
-                          style={{ width: "280px" }}
-                        >
-                          <div className="grid grid-cols-8 gap-1">
-                            {Array.from(new Set(EMOJI_LIST)).map((emoji) => (
-                              <button disabled={saving}
-                                key={emoji}
-                                onClick={() => {
-                                  setFormData({ ...formData, icon: emoji });
-                                  setShowEmojiPicker(false);
-                                }}
-                                className="w-8 h-8 flex items-center justify-center text-lg hover:bg-gray-100 rounded-xl transition"
-                              >
-                                {emoji}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  <input data-ui-field="true" disabled={saving}
-                    type="text"
-                    placeholder="제목"
-                    value={formData.title}
-                    onChange={(e) =>
-                      setFormData({ ...formData, title: e.target.value })
-                    }
-                    className="flex-1 h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition"
-                  />
-                </div>
-
-                {/* 날짜 커스텀 피커 */}
-                <div className="relative">
-                  <button disabled={saving}
-                    type="button"
-                    onClick={() => {
-                      if (formData.date) {
-                        const [y, m] = formData.date.split("-").map(Number);
-                        setPickerYear(y);
-                        setPickerMonth(m - 1);
-                      }
-                      setShowDatePicker(!showDatePicker);
-
-                    }}
-                    className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm text-left flex items-center gap-2 hover:bg-gray-50 transition"
-                  >
-                    <CalendarDays aria-hidden="true" className="w-4 h-4 text-gray-400" />
-                    <span className={formData.date ? "text-gray-800" : "text-gray-400"}>
-                      {formData.date || "날짜 선택"}
-                    </span>
-                  </button>
-
-                  {showDatePicker && (
-                    <>
-                      <div className="fixed inset-0 z-[99]" onClick={() => setShowDatePicker(false)} />
-                      <div className="absolute top-14 left-0 bg-white border border-gray-200 rounded-2xl p-4 z-[100] shadow-lg" style={{ width: "320px" }}>
-                        <div className="flex items-center justify-between mb-3">
-                          <button type="button" onClick={() => { if (pickerMonth === 0) { setPickerMonth(11); setPickerYear(pickerYear - 1); } else setPickerMonth(pickerMonth - 1); }}
-                            className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold">‹</button>
-                          <span className="text-sm font-bold text-gray-800">{pickerYear}년 {pickerMonth + 1}월</span>
-                          <button type="button" onClick={() => { if (pickerMonth === 11) { setPickerMonth(0); setPickerYear(pickerYear + 1); } else setPickerMonth(pickerMonth + 1); }}
-                            className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold">›</button>
-                        </div>
-                        <div className="grid grid-cols-7 mb-1">
-                          {["일","월","화","수","목","금","토"].map((d, i) => (
-                            <div key={d} className={`text-center text-sm font-bold py-1 ${i===0?"text-red-400":i===6?"text-blue-400":"text-gray-400"}`}>{d}</div>
-                          ))}
-                        </div>
-                        <div className="grid grid-cols-7">
-                          {(() => {
-                            const firstDow = new Date(pickerYear, pickerMonth, 1).getDay();
-                            const daysInMonth = new Date(pickerYear, pickerMonth + 1, 0).getDate();
-                            const cells = [];
-                            for (let i = 0; i < firstDow; i++) cells.push(<div key={`e${i}`} />);
-                            for (let d = 1; d <= daysInMonth; d++) {
-                              const dateStr = `${pickerYear}-${String(pickerMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-                              const isSelected = formData.date === dateStr;
-                              const dow = new Date(pickerYear, pickerMonth, d).getDay();
-                              cells.push(
-                                <button key={d} type="button"
-                                  onClick={() => { setFormData({ ...formData, date: dateStr }); setShowDatePicker(false); }}
-                                  className={`h-9 w-full rounded-xl text-sm font-medium transition
-                                    ${isSelected ? "bg-blue-600 text-white" : "hover:bg-gray-100"}
-                                    ${!isSelected && dow===0 ? "text-red-400" : ""}
-                                    ${!isSelected && dow===6 ? "text-blue-400" : ""}
-                                    ${!isSelected && dow!==0 && dow!==6 ? "text-gray-700" : ""}
-                                  `}
-                                >{d}</button>
-                              );
-                            }
-                            return cells;
-                          })()}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* 시간 */}
-                <div className="relative">
-                  <Clock aria-hidden="true" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  <input data-ui-field="true" disabled={saving}
-                    type="text"
-                    aria-label="시간"
-                    placeholder="--:--"
-                    inputMode="numeric"
-                    maxLength={5}
-                    value={formData.time}
-                    onChange={(e) => {
-                      const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
-                      const time = digits.length > 2 ? `${digits.slice(0, 2)}:${digits.slice(2)}` : digits;
-                      setFormData({ ...formData, time });
-                    }}
-                    className="w-full h-12 rounded-2xl border border-gray-200 pl-10 pr-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition"
-                  />
-                </div>
-
-                <input data-ui-field="true" disabled={saving}
-                  type="text"
-                  placeholder="장소"
-                  value={formData.place}
-                  onChange={(e) =>
-                    setFormData({ ...formData, place: e.target.value })
-                  }
-                  className="w-full h-12 rounded-2xl border border-gray-200 px-4 text-sm outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition"
-                />
-
-                <textarea data-ui-field="true" disabled={saving}
-                  placeholder="메모"
-                  value={formData.memo}
-                  onChange={(e) =>
-                    setFormData({ ...formData, memo: e.target.value })
-                  }
-                  className="w-full h-20 rounded-2xl border border-gray-200 p-4 text-sm outline-none resize-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition"
-                />
-
-
-              </div>
-            </div>
-
-            {error && <p className="px-6 text-sm text-red-500" role="alert">{error}</p>}
-            <div className="flex gap-3 px-6 pb-6 pt-4">
-              {editingEvent && (
-                <button disabled={saving}
-                  onClick={() => {
-                    onDelete?.();
-                  }}
-                  className="flex-1 h-12 rounded-2xl bg-gray-100 text-gray-600 text-sm font-bold hover:bg-red-50 hover:text-red-500 transition cursor-pointer"
-                >
-                  삭제
-                </button>
-              )}
-              <button disabled={saving}
-                onClick={() => {
-                  onSave();
-                }}
-                className="flex-1 h-12 rounded-2xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition cursor-pointer"
-              >
-                {editingEvent ? "완료" : "추가"}
-              </button>
-            </div>
-          </div>
-        </div>
-  </div>, document.body);
+export type CalendarEventForm={title:string;content:string;date:string;time:string;place:string;memo:string;icon:string;color:string;category?:string};
+const EMOJI_LIST=["📅","💬","💼","✈️","🎂","🎁","📝","📌","⭐","🎉","🏥","🚗","🍽️","☕","📞","🏠","🏃","🔔","❤️","✅"];
+const categories=["개인","상담","업무","여행","기념일","기타"].map(label=>({value:label,label}));
+export default function CalendarEventModal({formData,setFormData,editingEvent,onClose,onSave,onDelete,saving=false,error=""}:{formData:CalendarEventForm;setFormData:(value:CalendarEventForm)=>void;editingEvent:boolean;onClose:()=>void;onSave:()=>void;onDelete?:()=>void;saving?:boolean;error?:string}){
+ const [emojiOpen,setEmojiOpen]=useState(false),[dateOpen,setDateOpen]=useState(false);
+ const [month,setMonth]=useState(()=>new Date((formData.date||new Date().toLocaleDateString("sv-SE",{timeZone:"Asia/Seoul"})).slice(0,7)+"-01T12:00:00"));
+ const [position,setPosition]=useState({x:0,y:0});
+ const drag=useRef<{x:number;y:number}|null>(null),panel=useRef<HTMLDivElement>(null);
+ const close=useRef(onClose);close.current=onClose;
+ useEffect(()=>lockPageScroll(),[]);
+ useEffect(()=>{
+  const previous=document.activeElement as HTMLElement|null;
+  panel.current?.querySelector<HTMLInputElement>('input[aria-label="일정 제목"]')?.focus();
+  return()=>previous?.focus();
+ },[]);
+ useEffect(()=>{
+  const keyboard=(event:KeyboardEvent)=>{
+   if(event.key==="Escape"){if(event.defaultPrevented||event.target instanceof Element&&event.target.closest('[role="listbox"]'))return;event.stopImmediatePropagation();if(emojiOpen||dateOpen){setEmojiOpen(false);setDateOpen(false);}else close.current();}
+   if(event.key!=="Tab")return;
+   const items=Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),textarea:not(:disabled)')||[]);
+   if(event.shiftKey&&document.activeElement===items[0]){event.preventDefault();items.at(-1)?.focus();}
+   if(!event.shiftKey&&document.activeElement===items.at(-1)){event.preventDefault();items[0]?.focus();}
+  };
+  document.addEventListener("keydown",keyboard);return()=>{document.removeEventListener("keydown",keyboard);};
+ },[emojiOpen,dateOpen]);
+ const update=(patch:Partial<CalendarEventForm>)=>setFormData({...formData,...patch});
+ const year=month.getFullYear(),monthIndex=month.getMonth();
+ const difference=Math.round((Date.parse(formData.date+"T00:00:00Z")-Date.parse(koreaDate()+"T00:00:00Z"))/86400000);
+ const dday=Number.isFinite(difference)?difference===0?"D-Day":difference>0?`D-${difference}`:`D+${Math.abs(difference)}`:"";
+ return createPortal(<div className={styles.editor} role="dialog" aria-modal="true" aria-label={editingEvent?"일정 수정":"일정 추가"} onClick={()=>{if(!saving)onClose();}}>
+ <div ref={panel} className={styles.panel} style={{transform:`translate(${position.x}px,${position.y}px)`}} onClick={event=>event.stopPropagation()}>
+ <header className={styles.header} onPointerDown={event=>{if(window.innerWidth<640||(event.target as HTMLElement).closest("button"))return;drag.current={x:event.clientX-position.x,y:event.clientY-position.y};event.currentTarget.setPointerCapture(event.pointerId);}} onPointerMove={event=>{if(drag.current)setPosition({x:event.clientX-drag.current.x,y:event.clientY-drag.current.y});}} onPointerUp={()=>{drag.current=null;}} onPointerCancel={()=>{drag.current=null;}}>
+ <h2>{editingEvent?"일정 수정":"일정 추가"}</h2><button type="button" className={styles.closeButton} disabled={saving} aria-label="닫기" onClick={onClose}><X size={22}/></button>
+ </header>
+ <div className={styles.body}>
+ <div className={styles.hero}>
+ <div className={styles.relative}><button type="button" className={styles.emojiButton} disabled={saving} aria-label="아이콘 선택" aria-expanded={emojiOpen} onClick={()=>{setEmojiOpen(!emojiOpen);setDateOpen(false);}}>{formData.icon}</button>
+ {emojiOpen&&<><button type="button" className={styles.dismiss} aria-label="아이콘 선택 닫기" onClick={()=>setEmojiOpen(false)}/><div className={styles.emojiMenu}>{EMOJI_LIST.map(icon=><button key={icon} type="button" aria-label={icon} onClick={()=>{update({icon});setEmojiOpen(false);}}>{icon}</button>)}</div></>}
+ </div>
+ <div className={styles.heroText}><MemoSelect label="일정 구분" value={formData.category||"개인"} options={categories} disabled={saving} onChange={category=>update({category})}/><input className={styles.titleInput} aria-label="일정 제목" placeholder="제목 입력" disabled={saving} value={formData.title} onChange={event=>update({title:event.target.value})}/></div>
+ {dday&&<span className={styles.dday}>{dday}</span>}
+ </div>
+ <div className={`${styles.field} ${styles.relative} ${styles.dateField}`}><div className={styles.inputWithIcon}><input aria-label="날짜" inputMode="numeric" maxLength={10} disabled={saving} value={formData.date} onChange={event=>{const digits=event.target.value.replace(/\D/g,"").slice(0,8);update({date:[digits.slice(0,4),digits.slice(4,6),digits.slice(6,8)].filter(Boolean).join("-")});}}/><button type="button" disabled={saving} aria-label="달력 열기" aria-expanded={dateOpen} onClick={()=>{if(/^\d{4}-\d{2}-\d{2}$/.test(formData.date)&&Number.isFinite(Date.parse(formData.date)))setMonth(new Date(formData.date.slice(0,7)+"-01T12:00:00"));setDateOpen(!dateOpen);setEmojiOpen(false);}}><CalendarDays size={22}/></button></div>
+ {dateOpen&&<><button type="button" className={styles.dismiss} aria-label="달력 닫기" onClick={()=>setDateOpen(false)}/><div className={styles.dateMenu}>
+ <div className={styles.monthHeader}><button type="button" aria-label="이전 달" onClick={()=>setMonth(new Date(year,monthIndex-1,1))}><ChevronLeft size={20}/></button><strong>{year}년 {monthIndex+1}월</strong><button type="button" aria-label="다음 달" onClick={()=>setMonth(new Date(year,monthIndex+1,1))}><ChevronRight size={20}/></button></div>
+ <div className={styles.days}>{["일","월","화","수","목","금","토"].map((day,index)=><span key={day} data-weekday={index}>{day}</span>)}{Array.from({length:new Date(year,monthIndex,1).getDay()},(_,index)=><span key={`empty-${index}`}/>)}{Array.from({length:new Date(year,monthIndex+1,0).getDate()},(_,index)=>{const date=`${year}-${String(monthIndex+1).padStart(2,"0")}-${String(index+1).padStart(2,"0")}`;return <button key={date} type="button" aria-label={date} aria-pressed={date===formData.date} onClick={()=>{update({date});setDateOpen(false);}}>{index+1}</button>;})}</div>
+ </div></>}
+ </div>
+ <div className={styles.dateTimeRow}>
+ <label className={styles.field}><span><Clock size={20}/>시간</span><div className={styles.inputWithIcon}><input aria-label="시간" disabled={saving} inputMode="numeric" maxLength={5} value={formData.time} onChange={event=>{const digits=event.target.value.replace(/\D/g,"").slice(0,4);update({time:digits.length>2?`${digits.slice(0,2)}:${digits.slice(2)}`:digits});}}/></div></label>
+ <label className={styles.field}><span><MapPin size={20}/>장소</span><div className={styles.inputWithIcon}><input aria-label="장소" disabled={saving} value={formData.place} onChange={event=>update({place:event.target.value})}/></div></label>
+ </div>
+ <label className={styles.field}><span>메모</span><textarea aria-label="메모" spellCheck={false} disabled={saving} rows={1} value={formData.memo} onChange={event=>update({memo:event.target.value})}/></label>
+ {error&&<p className={styles.error} role="alert">{error}</p>}
+ </div>
+ <footer className={styles.footer}>{editingEvent&&<button type="button" disabled={saving} className={styles.delete} onClick={onDelete}>삭제</button>}{!editingEvent&&<button type="button" disabled={saving} onClick={onClose}>취소</button>}<button type="button" disabled={saving} className={styles.primary} onClick={onSave}>{saving?"저장 중":editingEvent?"저장":"추가"}</button></footer>
+ </div></div>,document.body);
 }

@@ -65,6 +65,8 @@ function submitCustomerDialog2(data) {
     list.getRange(dest,24).setNumberFormat('m"월 "d"일"');
     list.getRange(dest,2,1,27).setValues([output]);
     refreshCustomerListLayout();
+    refreshOperationalViews();
+    refreshCrmCalendar();
     return {message:'등록 완료 · 고객 LIST '+dest+'행'};
   } finally {lock.releaseLock();}
 }

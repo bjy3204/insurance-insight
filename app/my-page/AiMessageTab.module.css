@@ -6,3 +6,8 @@
 .previewScroll::-webkit-scrollbar {
   display: none;
 }
+
+.previewTime { font-size:8px; line-height:1.5; }
+@media (min-width:768px) { .previewTime { font-size:12px; } }
+
+@media (min-width:1280px) { .messagePanels { height:var(--message-panel-height, 534px); } }

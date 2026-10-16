@@ -5,7 +5,6 @@ import { GlobalMemoManager } from "./MemoManager";
 import MemoStickers from "./MemoStickers";
 import Calculator from "./Calculator";
 import CurrencyConverter from "./CurrencyConverter";
-import ScheduleReminders from "@/app/features/home/components/dashboard/ScheduleReminders";
 
 export default function GlobalWidgets() {
   const pathname = usePathname();
@@ -17,7 +16,7 @@ export default function GlobalWidgets() {
       <GlobalMemoManager />
       <Calculator />
       <CurrencyConverter />
-      <ScheduleReminders />
+
     </>
   );
 }

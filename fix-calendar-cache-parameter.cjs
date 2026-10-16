@@ -1,0 +1,1 @@
+const fs=require('fs'),vm=require('vm');let s=fs.readFileSync('Code-CRM-calendar-merged-query-fixed.txt','utf8');s=s.replace('function refreshCrmCalendarUnlocked_(source,dailyOnly) {','function refreshCrmCalendarUnlocked_(source,dailyOnly,useCached) {');new vm.Script(s);fs.writeFileSync('Code-CRM-calendar-cache-parameter-fixed.txt',s);

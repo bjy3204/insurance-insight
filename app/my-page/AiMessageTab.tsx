@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, type CSSProperties } from "react";
 import Script from "next/script";
 import styles from "./AiMessageTab.module.css";
 import { composeMessage, formatDisplayMessage } from "@/lib/ai-messages/format";
@@ -68,6 +68,22 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
   useEffect(() => () => { const request = requestRef.current; requestRef.current = null; request?.abort(); }, []);
   const [searchQuery, setSearchQuery] = useState("");
   const [openGroups, setOpenGroups] = useState<string[]>([]);
+  const messageMenuRef = useRef<HTMLElement>(null);
+  const [panelHeight, setPanelHeight] = useState<number | null>(null);
+  useEffect(() => {
+    const menu = messageMenuRef.current;
+    if (!menu || searchQuery) return;
+    const measure = () => {
+      const height = menu.getBoundingClientRect().height;
+      if (!height) return;
+      const expanded = Array.from(menu.querySelectorAll<HTMLElement>("[data-message-group-options]")).reduce((total, element) => total + element.getBoundingClientRect().height, 0);
+      setPanelHeight(Math.round(height - expanded));
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(menu);
+    return () => observer.disconnect();
+  }, [searchQuery]);
   useEffect(() => { if (active) { setOpenGroups([]); setSearchQuery(""); } }, [active]);
   const [recentMessages, setRecentMessages] = useState<RecentMessage[]>([]);
   useEffect(() => {
@@ -160,7 +176,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
     <h2 className="flex items-center gap-3 text-xl font-bold"><MessageCircle className="w-7 h-7 text-blue-500" />AI 메시지</h2>
   <div className="grid grid-cols-1 xl:grid-cols-[265px_minmax(0,1fr)] gap-3 items-start overflow-visible">
 
-    <aside className="personal-grid min-w-0 xl:min-h-[690px] bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+    <aside ref={messageMenuRef} className="personal-grid min-w-0 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
       <div className="relative mb-4"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input data-ui-field="true" data-page-search-input="true" disabled={generating} value={searchQuery} onChange={event => setSearchQuery(event.target.value)} placeholder="메시지 종류 검색" className="w-full h-10 pl-9 pr-3 rounded-xl border border-gray-200 bg-gray-50 text-xs outline-none focus:border-blue-400" /></div>
       {MESSAGE_GROUPS.map(group => {
         const options = filteredTypes.filter(type => group.ids.includes(type.id));
@@ -172,7 +188,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
               {group.label}<ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${expanded ? "rotate-180" : ""}`} />
             </button>
             {expanded && (
-              <div className="flex flex-col gap-1.5">
+              <div data-message-group-options="true" className="flex flex-col gap-1.5">
                 {options.map(type => (
                   <button type="button" key={type.id} disabled={generating} onClick={() => selectMessage(type.id)} className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer disabled:opacity-50 ${type.id === messageType ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}>
                     {type.label}
@@ -183,11 +199,12 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
           </div>
         );
       })}
-      <div className="hidden md:block mt-4 rounded-xl bg-gray-50 p-3"><h3 className="flex items-center gap-2 text-xs font-semibold text-gray-700 mb-3"><Clock className="w-4 h-4" />최근 사용한 메시지</h3>{recentMessages.length ? recentMessages.map(item => <div key={item.type} className="flex items-center gap-2"><button type="button" disabled={generating} onClick={() => selectMessage(item.type)} className="flex-1 min-w-0 flex items-center justify-between gap-2 py-2 text-xs text-gray-600 cursor-pointer"><span>{MESSAGE_TYPES.find(type => type.id === item.type)?.label}</span><span className="text-gray-400">{new Date(item.date).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })}</span></button><button type="button" onClick={() => removeRecentMessage(item.type)} aria-label={`${MESSAGE_TYPES.find(type => type.id === item.type)?.label} 최근 사용 기록 삭제`} className="shrink-0 flex items-center justify-center w-7 h-7 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200 cursor-pointer"><X className="w-3.5 h-3.5" /></button></div>) : <p className="text-xs text-gray-400">아직 사용한 메시지가 없습니다.</p>}</div>
+      <div className="hidden md:block mt-3 rounded-xl bg-gray-50 p-3"><h3 className="flex items-center gap-2 text-xs font-semibold text-gray-700 mb-2"><Clock className="w-4 h-4" />최근 사용한 메시지</h3>{recentMessages.length ? recentMessages.map(item => <div key={item.type} className="flex items-center gap-2"><button type="button" disabled={generating} onClick={() => selectMessage(item.type)} className="flex-1 min-w-0 flex items-center justify-between gap-2 py-1 text-xs text-gray-600 cursor-pointer"><span>{MESSAGE_TYPES.find(type => type.id === item.type)?.label}</span><span className="text-gray-400">{new Date(item.date).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })}</span></button><button type="button" onClick={() => removeRecentMessage(item.type)} aria-label={`${MESSAGE_TYPES.find(type => type.id === item.type)?.label} 최근 사용 기록 삭제`} className="shrink-0 flex items-center justify-center w-6 h-6 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200 cursor-pointer"><X className="w-3.5 h-3.5" /></button></div>) : <p className="text-xs text-gray-400">아직 사용한 메시지가 없습니다.</p>}</div>
     </aside>
-    <div className="grid min-w-0 grid-cols-1 xl:grid-cols-[minmax(0,1fr)_350px] gap-3 items-stretch">
+    <div className={`${styles.messagePanels} min-w-0 xl:relative`} style={panelHeight ? { "--message-panel-height": `${panelHeight}px` } as CSSProperties : undefined}>
+    <div className="grid min-w-0 grid-cols-1 xl:absolute xl:inset-0 xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_350px] gap-3 items-stretch">
     {/* 가운데: 입력 및 메시지 편집 */}
-    <div className="personal-grid flex flex-col min-w-0 h-[560px] md:h-[640px] gap-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+    <div className="personal-grid flex flex-col min-w-0 h-[560px] md:h-[640px] xl:h-auto xl:min-h-0 xl:overflow-y-auto gap-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
       {/* 오늘의 특별한 날 배지 */}
       {specialDays.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -213,19 +230,13 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
       transition-all
       duration-300
 
-      hover:shadow-sm
-      hover:bg-sky-50
-      hover:border-sky-200
-      hover:text-sky-700
     "
   >
-   <span className="group-hover:opacity-0 text-xs font-medium">
+   <span className="text-xs font-medium">
       {d.emoji} {d.label}
     </span>
 
-    <span className="absolute opacity-0 group-hover:opacity-100 transition-opacity text-xs font-medium">
-      📅 {new Date().getFullYear()}.{String(new Date().getMonth() + 1).padStart(2,"0")}.{String(new Date().getDate()).padStart(2,"0")}
-    </span>
+
   </span>
 ))}
         </div>
@@ -313,7 +324,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
     </div>
 
     {/* 오른쪽: 대화창 미리보기 */}
-    <div className="personal-grid flex flex-col items-center w-full min-w-0 h-[640px] bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+    <div className="personal-grid flex flex-col items-center w-full min-w-0 h-[640px] xl:h-auto xl:min-h-0 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
       <h3 className="w-full mb-3 text-sm font-bold text-gray-900">미리보기</h3>
       <div className="relative flex min-h-0 flex-1 w-full max-w-[350px] mx-auto">
         <div className="flex flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm">
@@ -325,15 +336,15 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
                 <Search className="w-4 h-4 shrink-0" />
                 <Menu className="w-5 h-5 shrink-0" />
               </div>
-              <div className={`${styles.previewScroll} flex-1 min-h-0 overflow-y-auto px-3 pb-6`}>
+              <div className={`${styles.previewScroll} flex-1 min-h-0 overflow-y-auto px-3 pt-2 pb-6`}>
               <div className="text-center mb-6">
-                <span className="text-[11px] text-gray-600 bg-black/10 px-3 py-1.5 rounded-full">
+                <span className="inline-flex items-center text-[11px] leading-5 text-gray-600 bg-black/10 px-3 py-0.5 rounded-full">
                   {today.toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric", weekday: "short" })}
                 </span>
               </div>
               {messageCreated ? (
                 <div className="flex items-end justify-end gap-1.5">
-                    <span className="shrink-0 text-[10px] text-gray-600 pb-0.5">
+                    <span className={`${styles.previewTime} shrink-0 text-gray-600 pb-0.5`}>
                       {today.toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit", hour12: true })}
                     </span>
                     <div className="relative w-[80%] min-w-0 bg-[#fee500] rounded-xl rounded-tr-sm px-3 py-3 shadow-sm before:absolute before:-right-1.5 before:top-0 before:border-t-[8px] before:border-t-[#fee500] before:border-r-[8px] before:border-r-transparent">
@@ -367,6 +378,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
         </button>
 
 
+    </div>
     </div>
     </div>
   </div>

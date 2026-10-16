@@ -1,5 +1,7 @@
 "use client";
 
+import AuthNotice from "@/components/AuthNotice";
+import { authErrorMessage } from "@/lib/auth/error-message";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -12,20 +14,22 @@ export default function ResetPasswordPage() {
     useState("");
 
   const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState("");
+  const [done, setDone] = useState(false);
 
   const handleResetPassword = async () => {
     if (!password.trim()) {
-      alert("새 비밀번호를 입력해주세요.");
+      setNotice("새 비밀번호를 입력해주세요.");
       return;
     }
 
     if (password.length < 6) {
-      alert("비밀번호는 6자 이상 입력해주세요.");
+      setNotice("비밀번호는 6자 이상 입력해주세요.");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("비밀번호가 일치하지 않습니다.");
+      setNotice("비밀번호가 일치하지 않습니다.");
       return;
     }
 
@@ -38,13 +42,13 @@ export default function ResetPasswordPage() {
     setLoading(false);
 
     if (error) {
-      alert("비밀번호 변경에 실패했습니다.");
+      setNotice(authErrorMessage(error, "비밀번호 변경에 실패했습니다."));
       return;
     }
 
-    alert("비밀번호가 변경되었습니다.");
+    setNotice("비밀번호가 변경되었습니다.");
 
-    router.push("/");
+    setDone(true);
   };
 
   return (
@@ -90,6 +94,7 @@ export default function ResetPasswordPage() {
           </button>
         </div>
       </div>
+      {notice && <AuthNotice message={notice} onClose={() => { setNotice(""); if (done) router.push("/"); }} />}
     </main>
   );
 }

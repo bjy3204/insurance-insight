@@ -505,6 +505,7 @@ const hasMenuManageChanges = () => {
     JSON.stringify(normalizePersonalMenus(committedPersonalMenus)) !==
       JSON.stringify(normalizePersonalMenus(personalMenus)) ||
     JSON.stringify(tempQuickMenuKeys) !== JSON.stringify(quickMenuKeys) ||
+    JSON.stringify([...tempHiddenMenuIds].sort()) !== JSON.stringify([...hiddenMenuIds].sort()) ||
     JSON.stringify(tempMenus.map((menu) => menu.id)) !==
       JSON.stringify(menus.map((menu) => menu.id))
   );

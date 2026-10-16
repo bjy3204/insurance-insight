@@ -1,0 +1,1 @@
+const fs=require('fs'),vm=require('vm');let s=fs.readFileSync('Code-CRM-calendar-grouped.txt','utf8').replaceAll("'R3'","'U3'");new vm.Script(s);fs.writeFileSync('Code-CRM-calendar-U3.txt',s);console.log('PASS: full script syntax, U3 date selection');

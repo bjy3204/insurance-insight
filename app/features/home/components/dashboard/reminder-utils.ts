@@ -1,4 +1,4 @@
-export type CalendarEvent = { id: string; title: string; content: string; date: string; time: string | null; place: string | null; memo: string | null; icon: string; color: string };
+export type CalendarEvent = { id: string; title: string; content: string; date: string; time: string | null; place: string | null; memo: string | null; icon: string; color: string; category?: string };
 export type LeadDays = 0 | 1 | 3 | 7;
 export type CalendarReminder = { event_id: string; user_id?: string; lead_days: LeadDays; notification_date: string; acknowledged_at: string | null };
 export const REMINDER_CHOICES: { value: LeadDays; label: string }[] = [{ value: 0, label: "당일" }, { value: 1, label: "하루 전" }, { value: 3, label: "3일 전" }, { value: 7, label: "7일 전" }];
@@ -26,4 +26,8 @@ export function dueReminders(events: CalendarEvent[], reminders: CalendarReminde
     if (!event || reminder.acknowledged_at || reminder.notification_date !== today || reminderDate(event.date, reminder.lead_days) !== today) return [];
     return [{ event, reminder, key: `${event.id}:${reminder.notification_date}:${reminder.lead_days}` }];
   }).sort((a, b) => a.event.date.localeCompare(b.event.date) || (a.event.time || "").localeCompare(b.event.time || ""));
+}
+export function calendarBannerReminders(events:CalendarEvent[],reminders:CalendarReminder[],today=koreaDate()) {
+  const enabled=new Set(reminders.filter(reminder=>!reminder.acknowledged_at).map(reminder=>reminder.event_id));
+  return events.filter(event=>enabled.has(event.id)&&event.date===today).sort((a,b)=>a.date.localeCompare(b.date)||(a.time||"").localeCompare(b.time||""));
 }

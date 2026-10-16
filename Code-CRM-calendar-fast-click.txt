@@ -1,0 +1,1195 @@
+/** @OnlyCurrentDoc */
+// 이 스프레드시트의 확장 프로그램 > Apps Script에 추가하고 저장하세요.
+// 기존 Code.gs 전체를 이 파일로 교체하세요.
+const CUSTOMER_FIELDS = {
+  C6:2, F6:3, I6:4, C8:5, C10:6, F8:7, C12:8,
+  C16:10, F16:11, I16:12, C18:13, F18:14, I18:15,
+  C22:17, F22:18, I22:19, C24:20,
+  C28:22, F28:23, I28:24, C30:25, F30:26, I30:27, I8:28
+};
+
+function onOpen(e) {
+  refreshCrmCalendar();
+  refreshMobileRegistrationNotes_();
+  SpreadsheetApp.getUi().createMenu('고객 관리')
+    .addItem('고객등록', 'openCustomerRegistration')
+    .addItem('계약추가', 'activateContractInput')
+    .addToUi();
+  refreshCustomerCard();
+  refreshAllContractCustomerInfo();
+  refreshCustomerListLayout();
+  refreshOperationalViews();
+}
+
+function onEdit(e) {
+  if(handleCrmCalendarEdit(e))return;
+  refreshMobileRegistrationNotes_(e && e.source);
+  if(handleContractEdit(e))return;
+  if(e && e.range && crmSheetRole_(e.range.getSheet())==='고객 관리 카드') {
+    refreshCustomerCard(e.source);
+    return;
+  }
+  if(e && e.range && crmSheetRole_(e.range.getSheet())==='고객 등록' && e.range.getA1Notation()==='E32' && e.value==='TRUE') {
+    try { registerCustomer(e.source); }
+    finally { e.range.setValue(false); }
+    return;
+  }
+  handleContactFormatEdit(e);
+  handleRenewalEdit(e);
+  handleCustomerEdit(e);
+  if(e && e.range && crmSheetRole_(e.range.getSheet())==='고객 LIST'){
+    refreshCustomerListLayout(e.source);
+    refreshCustomerCard(e.source);
+    refreshAllContractCustomerInfo(e.source);
+    refreshOperationalViews(e.source);
+    refreshCrmCalendar(e.source);
+  }
+}
+
+function selectCustomerCardRows(rows,name,birth) {
+  const key=String(name).trim();
+  const dob=String(birth).replace(/\D/g,'').slice(-6).padStart(6,'0');
+  if(!key)return [];
+  return rows.map((row,index)=>({row,index})).filter(item=>
+    String(item.row[2]).trim()===key && (!birth || String(item.row[3]).replace(/\D/g,'').slice(0,6)===dob));
+}
+
+function refreshCustomerCard(source) {
+  const ss=source && typeof source.getSheetByName==='function'?source:SpreadsheetApp.getActiveSpreadsheet();
+  const card=crmSheet_(ss,'고객 관리 카드'),list=crmSheet_(ss,'고객 LIST');
+  if(!card||!list)return;
+  clearCustomerCardContracts_(card);
+  const mapping={E6:2,C8:4,C9:5,E10:28,C10:7,C11:6,C12:8,H8:22,J8:23,H9:25,J9:24,H10:26,J10:27,C15:10,E15:11,H15:17,J15:18,C16:13,E16:12,H16:19,J16:20,C17:14,E17:15};
+  const targets=Object.keys(mapping).concat(['B1','E5','E8','E9','J4','H4','AH1','AH2','AH3']);
+  card.getRangeList(targets).clearContent();
+  const name=card.getRange('C4').getDisplayValue().trim();
+  if(!name)return;
+  const birth=card.getRange('C5').getDisplayValue().trim();
+  const range=list.getRange(6,1,Math.max(1,list.getLastRow()-5),28);
+  const display=range.getDisplayValues(),raw=range.getValues();
+  const found=selectCustomerCardRows(display,name,birth);
+  card.getRange('AH2').setValue(found.length);
+  if(found.length!==1){
+    card.getRange('B1').setValue(found.length===0?'검색 결과가 없습니다. 이름·생년월일을 확인하세요.':birth?'이름과 생년월일이 같은 고객이 여러 명입니다. 고객 LIST를 확인하세요.':'동명이인이 있습니다. 생년월일도 입력하세요.');
+    return;
+  }
+  const item=found[0],row=item.row;
+  refreshCustomerCardContracts_(ss,card,name,row[3]);
+  Object.entries(mapping).forEach(([address,col])=>{
+    const cell=card.getRange(address);
+    if(address==='J9')cell.setNumberFormat('m"월 "d"일"').setValue(raw[item.index][col-1]);
+    else if(address==='C15')cell.setNumberFormat('0"일"').setValue(raw[item.index][col-1]);
+    else cell.setNumberFormat('@').setValue(literalText(row[col-1]));
+  });
+  card.getRange('AH3').setValue(item.index+6);
+  const digits=row[3].replace(/\D/g,'');
+  if(!birthFromResidentNumber(digits))return;
+  const todayText=Utilities.formatDate(new Date(),ss.getSpreadsheetTimeZone(),'yyyy-MM-dd');
+  const parts=todayText.split('-').map(Number),today=new Date(Date.UTC(parts[0],parts[1]-1,parts[2]));
+  const yy=Number(digits.slice(0,2)),month=Number(digits.slice(2,4)),day=Number(digits.slice(4,6));
+  const century=digits.length===6?(yy<=parts[0]%100?2000:1900):'3478'.includes(digits[6])?2000:'1256'.includes(digits[6])?1900:1800;
+  const year=century+yy;
+  const age=parts[0]-year-((parts[1]<month||(parts[1]===month&&parts[2]<day))?1:0);
+  card.getRange('E8').setValue(age).setNumberFormat('0"세"');
+  card.getRange('E9').setValue(digits.length===13?(/[13579]/.test(digits[6])?'남':'여'):'');
+  card.getRange('J8').setNumberFormat('@');
+  card.getRange('J9').setNumberFormat('m"월 "d"일"');
+  card.getRange('C15').setNumberFormat('0"일"');
+  function shifted(y,m,d,offset){const base=new Date(Date.UTC(y,m-1+offset,1));const last=new Date(Date.UTC(base.getUTCFullYear(),base.getUTCMonth()+1,0)).getUTCDate();base.setUTCDate(Math.min(d,last));return base;}
+  const base=shifted(year,month,day,6);
+  let upper=new Date(Date.UTC(parts[0],base.getUTCMonth(),base.getUTCDate()));
+  if(upper<today)upper=new Date(Date.UTC(parts[0]+1,base.getUTCMonth(),base.getUTCDate()));
+  const serial=Math.round((upper.getTime()-Date.UTC(1899,11,30))/86400000),distance=Math.round((upper-today)/86400000);
+  card.getRange('J4').setValue(serial).setNumberFormat('yyyy-mm-dd');
+  card.getRange('H4').setValue(distance===0?'D-Day':'D-'+distance);
+  card.getRange('AH1').setValue(age+(today>=shifted(year+age,month,day,6)?1:0));
+}
+
+function formatPhoneNumber(value) {
+  const original=String(value).trim();
+  if(!/^[0-9\s-]+$/.test(original))return original;
+  const s=original.replace(/\D/g,'');
+  if(/^02\d{7,8}$/.test(s))return s.slice(0,2)+'-'+s.slice(2,-4)+'-'+s.slice(-4);
+  if(/^050[0-9]\d{8}$/.test(s))return s.slice(0,4)+'-'+s.slice(4,8)+'-'+s.slice(8);
+  if(/^0\d{9,10}$/.test(s))return s.slice(0,3)+'-'+s.slice(3,-4)+'-'+s.slice(-4);
+  if(/^1\d{7}$/.test(s))return s.slice(0,4)+'-'+s.slice(4);
+  return original;
+}
+
+function formatCardExpiry(value) {
+  const s=String(value).trim();
+  if(!s)return '';
+  if(!/^\d{2}\/?(0[1-9]|1[0-2])$/.test(s))throw new Error('유효기간은 YYMM 숫자 4자리로 입력하세요. 예: 2801 → 28/01');
+  const digits=s.replace('/','');
+  return digits.slice(0,2)+'/'+digits.slice(2);
+}
+
+function handleContactFormatEdit(e) {
+  if(!e||!e.range)return;
+  const sheet=e.range.getSheet(),name=crmSheetRole_(sheet);
+  const configs=name==='고객 등록'?[{row:8,col:3,fn:formatPhoneNumber},{row:18,col:9,fn:formatCardExpiry}]:name==='고객 LIST'?[{row:null,col:5,fn:formatPhoneNumber},{row:null,col:15,fn:formatCardExpiry}]:[];
+  configs.forEach(config=>{
+    if(e.range.getColumn()>config.col||e.range.getLastColumn()<config.col)return;
+    if(config.row!==null&&(e.range.getRow()>config.row||e.range.getLastRow()<config.row))return;
+    const start=config.row===null?Math.max(6,e.range.getRow()):config.row,end=config.row===null?e.range.getLastRow():config.row;
+    if(start>end)return;
+    const range=sheet.getRange(start,config.col,end-start+1,1),values=range.getDisplayValues(),formulas=range.getFormulas();
+    values.forEach((row,i)=>{
+      if(!row[0]||formulas[i][0])return;
+      const cell=sheet.getRange(start+i,config.col);
+      try{cell.setNumberFormat('@').setValue(config.fn(row[0])).clearNote();}
+      catch(error){cell.setNote(error.message);if(name==='고객 등록')sheet.getRange('B1').setValue(error.message);else e.source.toast(error.message,'유효기간',8);}
+    });
+  });
+}
+
+function handleRenewalEdit(e) {
+  if (!e || !e.range) return;
+  const sheet=e.range.getSheet(),name=crmSheetRole_(sheet);
+  let column,start,end;
+  if(name==='고객 등록' && e.range.getRow()<=28 && e.range.getLastRow()>=28 && e.range.getColumn()<=9 && e.range.getLastColumn()>=9){column=9;start=end=28;}
+  else if(name==='고객 LIST' && e.range.getColumn()<=24 && e.range.getLastColumn()>=24 && e.range.getLastRow()>=6){column=24;start=Math.max(6,e.range.getRow());end=e.range.getLastRow();}
+  else return;
+  const range=sheet.getRange(start,column,end-start+1,1);
+  const values=range.getValues(),formulas=range.getFormulas();
+  values.forEach((row,i)=>{
+    if(formulas[i][0] || row[0]==='' || row[0]===null)return;
+    const cell=sheet.getRange(start+i,column);
+    try {
+      const value=row[0] instanceof Date
+        ? Utilities.formatDate(row[0],e.source.getSpreadsheetTimeZone(),'yyyy-MM-dd')
+        : row[0];
+      cell.setValue(parseRenewalDate(value)).setNumberFormat('m"월 "d"일"');
+      if(name==='고객 등록')cell.setNote('갱신일의 월·일을 확인하세요.\n예시 : 260901, 20260901, 26-09-01');
+      else cell.clearNote();
+    } catch(error) {
+      cell.setNumberFormat('@').setNote(name==='고객 등록'
+        ? error.message+'\n예시 : 260901, 20260901, 26-09-01'
+        : error.message);
+      if(name==='고객 등록')sheet.getRange('B1').setValue(error.message);
+      else e.source.toast(error.message,'갱신일',8);
+    }
+  });
+}
+
+function handleCustomerEdit(e) {
+  if (!e || !e.range) return;
+  const sheet = e.range.getSheet();
+  if (crmSheetRole_(sheet) === '고객 등록' && e.range.getRow() <= 6 && e.range.getLastRow() >= 6 && e.range.getColumn() <= 9 && e.range.getLastColumn() >= 9) {
+    const cell = sheet.getRange('I6');
+    if (!cell.getFormula()) {
+      const current = cell.getDisplayValue();
+      const formatted = formatResidentNumber(current);
+      if (formatted !== current) cell.setNumberFormat('@').setValue(formatted);
+    }
+    return;
+  }
+  if (crmSheetRole_(sheet) !== '고객 LIST' || e.range.getLastRow() < 6) return;
+  // 이름/주민번호/카드 및 청구 생년월일 입력·붙여넣기·지우기 모두 지원.
+  const startCol = e.range.getColumn(), endCol = e.range.getLastColumn();
+  if (![3,4,12,18].some(col => startCol <= col && col <= endCol)) return;
+  const lock = LockService.getDocumentLock();
+  if (!lock.tryLock(5000)) {
+    e.source.toast('다른 등록 작업 중입니다. 주민번호 셀을 다시 편집해 주세요.', '고객 관리');
+    return;
+  }
+  try {
+    const start = Math.max(6, e.range.getRow()), end = e.range.getLastRow();
+    const values = sheet.getRange(start,3,end-start+1,16).getDisplayValues();
+    const formulas = sheet.getRange(start,3,end-start+1,16).getFormulas();
+    values.forEach((row,i) => {
+      if (startCol <= 4 && endCol >= 4 && !formulas[i][1]) {
+        const formatted = formatResidentNumber(row[1]);
+        if (formatted !== row[1]) sheet.getRange(start+i,4).setNumberFormat('@').setValue(formatted);
+      }
+      if (!row[0].trim()) return;
+      const dob = birthFromResidentNumber(row[1]);
+      if (!dob) return;
+      [12,18].forEach(col => {
+        const idx = col-3;
+        // 직접 입력한 값이나 기존 수식을 덮어쓰지 않습니다.
+        if (!row[idx].trim() && !formulas[i][idx])
+          sheet.getRange(start+i,col).setNumberFormat('@').setValue(dob);
+      });
+    });
+  } finally { lock.releaseLock(); }
+}
+
+function setupCustomerRegistration() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const form = crmSheet_(ss,'고객 등록');
+  if (!form || !crmSheet_(ss,'고객 LIST')) throw new Error('고객등록 또는 고객 LIST 시트를 찾지 못했습니다.');
+  setupCustomerButton();
+  const list = crmSheet_(ss,'고객 LIST');
+  if (list.getLastRow() >= 6) {
+    handleCustomerEdit({source:ss,range:list.getRange(6,3,list.getLastRow()-5,16)});
+  }
+  form.getRange('I6').setNumberFormat('@');
+  list.getRange(6,4,list.getMaxRows()-5,1).setNumberFormat('@');
+  form.getRangeList(['B1','K4','K6','B36']).clearContent();
+  ss.toast('등록 기능 연결 완료', '고객 관리');
+}
+
+function registerCustomer(source) {
+  const ss = source && typeof source.getSheetByName === 'function'
+    ? source : SpreadsheetApp.getActiveSpreadsheet();
+  const form = crmSheet_(ss,'고객 등록');
+  const list = crmSheet_(ss,'고객 LIST');
+  if (!form || !list) throw new Error('고객등록 또는 고객 LIST 시트를 찾지 못했습니다.');
+  const lock = LockService.getDocumentLock();
+  if (!lock.tryLock(5000)) {
+    form.getRange('B1').setValue('다른 등록 작업 중입니다. 잠시 후 다시 등록하세요.');
+    return;
+  }
+  let committed = false;
+  try {
+    form.getRangeList(['B1','K4','K6','B36']).clearContent();
+    const grid = form.getRange('A1:J32').getDisplayValues();
+    const input = {};
+    Object.keys(CUSTOMER_FIELDS).forEach(a => {
+      const m = /^([A-Z])(\d+)$/.exec(a);
+      input[a] = grid[Number(m[2])-1][m[1].charCodeAt(0)-65].trim();
+    });
+    const digits = input.I6.replace(/\D/g,'');
+    const missingName = !input.F6;
+    const invalidBirth = ![6,13].includes(digits.length) || !birthFromResidentNumber(digits);
+    if (missingName) throw new Error('고객 이름을 입력하세요.');
+    if (invalidBirth) throw new Error('주민번호와 생년월일을 확인하세요.');
+    input.I6 = digits.length === 6 ? digits : digits.slice(0,6)+'-'+digits.slice(6);
+    const dob = birthFromResidentNumber(digits);
+    input.F16 = input.F16 || input.F6;
+    input.C22 = input.C22 || input.F6;
+    input.I16 = input.I16 ? normalizeBirth(input.I16) : dob;
+    input.F22 = input.F22 ? normalizeBirth(input.F22) : dob;
+    input.C8 = formatPhoneNumber(input.C8);
+    input.I18 = formatCardExpiry(input.I18);
+    const last = Math.max(6,list.getLastRow());
+    const existing = list.getRange(6,3,last-5,2).getDisplayValues();
+    if (existing.some(row => row[0].trim() === input.F6 && row[1].replace(/\D/g,'').slice(0,6) === dob))
+      throw new Error('같은 이름·생년월일의 고객이 있습니다. 고객 LIST에서 확인하고 수정하세요.');
+    let rowNumber = 6;
+    existing.forEach((row,i) => { if (row.some(value => value.trim())) rowNumber = i+7; });
+    // 다른 열에만 입력된 미완성 행도 덮어쓰지 않습니다.
+    while (rowNumber <= list.getMaxRows() && list.getRange(rowNumber,2,1,27).getDisplayValues()[0].some(v => v.trim())) rowNumber++;
+    if (rowNumber > list.getMaxRows()) list.insertRowsAfter(list.getMaxRows(),rowNumber-list.getMaxRows());
+    const output = Array(27).fill('');
+    Object.entries(CUSTOMER_FIELDS).forEach(([address,col]) => {
+      output[col-2] = literalText(input[address]);
+    });
+    if (input.C16) {
+      const day = parseCustomerPayday(input.C16);
+      output[8] = day;
+    }
+    if (input.I28) {
+      const renewalRaw=form.getRange('I28').getValue();
+      output[22]=parseRenewalDate(renewalRaw instanceof Date
+        ? Utilities.formatDate(renewalRaw,ss.getSpreadsheetTimeZone(),'yyyy-MM-dd')
+        : renewalRaw);
+    }
+    [[2,'C6'],[13,'C18'],[19,'I22'],[25,'C30']].forEach(([col,address]) => {
+      assertDropdownValue(list.getRange(6,col).getDataValidation(), input[address]);
+    });
+    if (rowNumber !== 6) {
+      const template = list.getRange(6,2,1,27), target = list.getRange(rowNumber,2,1,27);
+      template.copyTo(target,SpreadsheetApp.CopyPasteType.PASTE_FORMAT,false);
+      template.copyTo(target,SpreadsheetApp.CopyPasteType.PASTE_DATA_VALIDATION,false);
+    }
+    [4,5,12,14,15,18,20,22,28].forEach(col => list.getRange(rowNumber,col).setNumberFormat('@'));
+    list.getRange(rowNumber,10).setNumberFormat('0"일"');
+    list.getRange(rowNumber,24).setNumberFormat('m"월 "d"일"');
+    list.getRange(rowNumber,2,1,27).setValues([output]);
+    committed = true;
+    refreshCustomerListLayout(ss);
+    refreshOperationalViews(ss);
+    refreshCrmCalendar(ss);
+    form.getRangeList(['B1','K4','K6','B36']).clearContent();
+    form.getRangeList(Object.keys(CUSTOMER_FIELDS)).clearContent();
+    ss.toast('고객 LIST에 등록했습니다.', '고객 등록');
+  } catch (err) {
+    const message = committed ? '저장은 완료됐으나 입력칸 정리에 실패했습니다. LIST를 먼저 확인하세요.' : err.message;
+    // 먼저 발견한 오류 하나만 B1에 표시합니다.
+    form.getRange('B1').setValue(message);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function parseCustomerPayday(value) {
+  const text=String(value).trim();
+  const day=Number(text);
+  if(!/^[0-9]{1,2}$/.test(text)||!Number.isInteger(day)||day<1||day>31)
+    throw new Error('카드 결제일은 1~31 사이의 숫자로 입력해 주세요.');
+  return day;
+}
+
+function literalText(value) {
+  // 사용자 텍스트가 수식으로 실행되지 않도록 처리합니다.
+  return /^[=+\-@]/.test(value) ? "'"+value : value;
+}
+
+function setupCustomerButton() {
+  const sheet = crmSheet_(SpreadsheetApp.getActiveSpreadsheet(),'고객 등록');
+  const drawings = sheet.getDrawings();
+  const assigned = drawings.filter(d => d.getOnAction() === 'registerCustomer');
+  const button = assigned.length === 1 ? assigned[0] : drawings.length === 1 ? drawings[0] : null;
+  if (!button) throw new Error('고객등록 그림이 하나인지 확인하거나 등록 그림에 registerCustomer를 할당해주세요.');
+  button.setPosition(31,5,0,0).setWidth(220).setHeight(46).setOnAction('registerCustomer');
+}
+
+function formatResidentNumber(value) {
+  const original = String(value);
+  const s = original.trim();
+  // 잘못된 문자나 길이를 조용히 삭제하지 않고 그대로 남깁니다.
+  if (!/^\d{6}(?:-?\d{0,7})$/.test(s)) return original;
+  const digits = s.replace('-','');
+  return digits.slice(0,6)+'-'+digits.slice(6);
+}
+
+function birthFromResidentNumber(value) {
+  const s = String(value).replace(/\D/g,'');
+  if (![6,13].includes(s.length)) return '';
+  const g = s[6];
+  const century = s.length === 6
+    ? (Number(s.slice(0,2)) <= new Date().getFullYear()%100 ? 2000 : 1900)
+    : '3478'.includes(g) ? 2000 : '1256'.includes(g) ? 1900 : 1800;
+  const year = century+Number(s.slice(0,2)), month = Number(s.slice(2,4)), day = Number(s.slice(4,6));
+  const date = new Date(year,month-1,day);
+  if (date.getFullYear() !== year || date.getMonth() !== month-1 || date.getDate() !== day || date > new Date()) return '';
+  return s.slice(0,6);
+}
+
+function normalizeBirth(value) {
+  const s = String(value).replace(/\D/g,'');
+  if (s.length !== 6 && s.length !== 8) throw new Error('생년월일은 YYMMDD 6자리 또는 YYYYMMDD 8자리로 입력하세요.');
+  const ymd = s.slice(-6), month = Number(ymd.slice(2,4)), day = Number(ymd.slice(4,6));
+  const year = s.length === 8 ? Number(s.slice(0,4)) : 2000+Number(ymd.slice(0,2));
+  const date = new Date(year,month-1,day);
+  if (date.getFullYear() !== year || date.getMonth() !== month-1 || date.getDate() !== day)
+    throw new Error('생년월일의 월·일을 확인하세요.');
+  return ymd;
+}
+
+function parseRenewalDate(value) {
+  let text;
+  if(value instanceof Date){
+    text=Utilities.formatDate(value,SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(),'yyyy-MM-dd');
+  } else {
+    text=String(value).trim();
+  }
+  let month,day,m;
+  if(/^\d{8}$/.test(text)){month=Number(text.slice(4,6));day=Number(text.slice(6));}
+  else if(/^\d{6}$/.test(text)){month=Number(text.slice(2,4));day=Number(text.slice(4));}
+  else if(/^\d{3,4}$/.test(text)){month=Number(text.slice(0,-2));day=Number(text.slice(-2));}
+  else if((m=/^(?:\d{2}|\d{4})\s*[-./]\s*(\d{1,2})\s*[-./]\s*(\d{1,2})$/.exec(text))){month=Number(m[1]);day=Number(m[2]);}
+  else if((m=/^(?:\d{2,4}\s*년\s*)?(\d{1,2})\s*월\s*(\d{1,2})\s*일?$/.exec(text))){month=Number(m[1]);day=Number(m[2]);}
+  else if((m=/^(\d{1,2})\s*[-./]\s*(\d{1,2})$/.exec(text))){month=Number(m[1]);day=Number(m[2]);}
+  else throw new Error('갱신일의 월·일을 확인하세요. 예: 9월1일, 09-01, 20260901');
+  const date=new Date(Date.UTC(2000,month-1,day));
+  if(date.getUTCMonth()!==month-1||date.getUTCDate()!==day)throw new Error('갱신일의 월·일을 확인하세요.');
+  return renewalDateFormula(month,day);
+}
+
+function renewalDateFormula(month,day) {
+  return '=DATE(YEAR(TODAY())+IF(DATE(YEAR(TODAY()),'+month+','+day+')<TODAY(),1,0),'+month+','+day+')';
+}
+
+function nextRenewalSerial(month,day,todayText) {
+  if(!todayText){
+    const timezone=SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+    todayText=Utilities.formatDate(new Date(),timezone,'yyyy-MM-dd');
+  }
+  const parts=todayText.split('-').map(Number);
+  const passed=month<parts[1] || (month===parts[1] && day<parts[2]);
+  const year=parts[0]+(passed?1:0);
+  const next=new Date(Date.UTC(year,month-1,day));
+  if(next.getUTCMonth()!==month-1 || next.getUTCDate()!==day)
+    throw new Error('다음 갱신 연도에 존재하지 않는 날짜입니다. 월·일을 확인하세요.');
+  return Math.round((next.getTime()-Date.UTC(1899,11,30))/86400000);
+}
+
+function assertDropdownValue(rule,value) {
+  if (!value || !rule || rule.getAllowInvalid()) return;
+  const type = rule.getCriteriaType(), args = rule.getCriteriaValues();
+  let allowed = null;
+  if (type === SpreadsheetApp.DataValidationCriteria.VALUE_IN_RANGE)
+    allowed = args[0].getDisplayValues().flat().filter(Boolean);
+  else if (type === SpreadsheetApp.DataValidationCriteria.VALUE_IN_LIST) allowed = args[0];
+  if (allowed && !allowed.includes(value)) throw new Error('목록에서 카드사·은행·보험사를 선택하세요.');
+}
+
+
+function customerDialogHtml2_(){return "<!doctype html>\n<html lang=\"ko\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<style>\n*{box-sizing:border-box}body{margin:0;padding:24px;font:14px Arial,'Malgun Gothic',sans-serif;background:#f5f7fb;color:#203047}h1{margin:0 0 6px;font-size:24px}.sub{color:#657388;margin:0 0 20px}.section{background:white;border:1px solid #e0e6ee;border-radius:12px;padding:18px;margin-bottom:14px}.section h2{font-size:15px;margin:0 0 16px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}label{display:block;font-size:12px;font-weight:600;color:#536177}input,select,textarea{width:100%;margin-top:7px;border:1px solid #ccd6e3;border-radius:7px;padding:10px;background:#fff;font:14px Arial,'Malgun Gothic',sans-serif;color:#203047}input:focus,select:focus,textarea:focus{outline:2px solid #79a8e6;outline-offset:1px}textarea{resize:vertical;min-height:64px}.wide{grid-column:1/-1}.foot{position:sticky;bottom:0;padding:14px 0 0;background:#f5f7fb;display:flex;align-items:center;gap:12px}button{border:0;border-radius:8px;padding:12px 22px;font-weight:bold;font-size:14px;cursor:pointer}.primary{background:#155b9e;color:white}.secondary{background:#e6ebf2;color:#334155}#status{flex:1;font-size:13px;color:#b42318}button:disabled{opacity:.5;cursor:wait}.ok{color:#167443!important}@media(max-width:560px){.grid{grid-template-columns:1fr 1fr}}\n</style></head><body>\n<h1>고객 등록</h1><p class=\"sub\">Tab은 다음 항목으로, Enter는 다음 줄로 이동합니다.</p>\n<form id=\"form\" novalidate><div id=\"sections\"></div><div class=\"foot\"><span id=\"status\" role=\"status\" aria-live=\"polite\"></span><button class=\"secondary\" type=\"button\" id=\"close\">닫기</button><button class=\"primary\" id=\"submit\" type=\"submit\">고객 등록</button></div></form>\n<script>\nconst groups=[\n['고객정보',[\n['category','구분','select'],['name','이름','text'],['resident','주민번호 / 생년월일','text'],\n['phone','전화번호','tel'],['job','직업','text'],['email','E-Mail','email'],\n['address','주소','text','wide'],['memo','메모','textarea','wide']]],\n['카드결제',[\n['payday','결제일','text'],['cardOwner','명의자','text'],['cardBirth','생년월일','text'],\n['cardCompany','카드사','select'],['cardNumber','카드번호','text'],['cardExpiry','유효기간','text']]],\n['보험금 청구',[\n['accountOwner','예금주','text'],['accountBirth','생년월일','text'],['bank','은행','select'],\n['accountNumber','계좌번호','text','wide']]],\n['차량정보',[\n['vehicleNumber','차량번호','text'],['vehicleType','차종','text'],['renewal','갱신일','text'],\n['insurer','보험사','select'],['driver','운전자지정','text'],['discount','할인','text']]]];\nconst form=document.getElementById('form'),status=document.getElementById('status'),submit=document.getElementById('submit');\nconst order=[],vertical={category:'phone',name:'job',resident:'email',phone:'address',job:'address',email:'address',address:'memo',memo:'payday',payday:'cardCompany',cardOwner:'cardNumber',cardBirth:'cardExpiry',cardCompany:'accountOwner',cardNumber:'accountBirth',cardExpiry:'bank',accountOwner:'accountNumber',accountBirth:'accountNumber',bank:'accountNumber',accountNumber:'vehicleNumber',vehicleNumber:'insurer',vehicleType:'driver',renewal:'discount'};\ngroups.forEach(([title,fields])=>{const section=document.createElement('section');section.className='section';const h=document.createElement('h2');h.textContent=title;section.append(h);const grid=document.createElement('div');grid.className='grid';fields.forEach(([id,title,type,cls])=>{order.push(id);const label=document.createElement('label');label.textContent=title;if(cls)label.className=cls;const el=document.createElement(type==='textarea'?'textarea':type==='select'?'select':'input');el.id=id;el.name=id;if(el.tagName==='INPUT')el.type=type;el.autocomplete='off';if(type==='select'){const o=document.createElement('option');o.value='';o.textContent='선택';el.append(o);}if(id==='resident')el.placeholder='YYMMDD 또는 주민번호';if(id==='payday'){el.placeholder='1~31';el.inputMode='numeric';el.maxLength=2;el.pattern='([1-9]|[12][0-9]|3[01])';el.addEventListener('input',()=>{el.value=el.value.replace(/[^0-9]/g,'').slice(0,2);});}label.append(el);grid.append(label);});section.append(grid);document.getElementById('sections').append(section);});\nfunction options(id,values){const el=document.getElementById(id);values.forEach(value=>{const o=document.createElement('option');o.value=value;o.textContent=value;el.append(o);});}\noptions('category',['지인','소개','가족','DB','인하우스','산모교실']);\nform.addEventListener('keydown',e=>{if(e.isComposing||e.target.tagName==='BUTTON')return;const id=e.target.id;if(!order.includes(id))return;let next;if(e.key==='Tab'){const index=order.indexOf(id)+(e.shiftKey?-1:1);if(index<0)return;next=order[index]||'submit';}else if(e.key==='Enter'&&!(e.target.tagName==='TEXTAREA'&&e.shiftKey)){next=vertical[id]||order[order.indexOf(id)+1]||'submit';}else return;e.preventDefault();document.getElementById(next).focus();});\ndocument.getElementById('resident').addEventListener('input',e=>{const value=e.target.value;if(/^\\d{6,13}$/.test(value))e.target.value=value.slice(0,6)+'-'+value.slice(6);});\nconst expiryInput=document.getElementById('cardExpiry');expiryInput.inputMode='numeric';expiryInput.maxLength=5;expiryInput.placeholder='2801 → 28/01';\nexpiryInput.addEventListener('input',e=>{const digits=e.target.value.replace(/\\D/g,'').slice(0,4);e.target.value=digits.length>2?digits.slice(0,2)+'/'+digits.slice(2):digits;});\ndocument.getElementById('phone').addEventListener('blur',e=>{const s=e.target.value.replace(/[\\s-]/g,'');if(/^02\\d{7,8}$/.test(s))e.target.value=s.slice(0,2)+'-'+s.slice(2,-4)+'-'+s.slice(-4);else if(/^050[0-9]\\d{8}$/.test(s))e.target.value=s.slice(0,4)+'-'+s.slice(4,8)+'-'+s.slice(8);else if(/^0\\d{9,10}$/.test(s))e.target.value=s.slice(0,3)+'-'+s.slice(3,-4)+'-'+s.slice(-4);});\nfunction formatRenewalInput2(value){const s=String(value).trim();if(!/^[0-9-]*$/.test(s))return value;const digits=s.replace(/-/g,'');if(digits.length>8)return value;if(digits.length<=4)return digits;return digits.slice(0,4)+'-'+digits.slice(4,6)+(digits.length>6?'-'+digits.slice(6):'');}\nconst renewalInput=document.getElementById('renewal');\nrenewalInput.placeholder='20260901 또는 2026-09-01';\nrenewalInput.inputMode='numeric';\nrenewalInput.addEventListener('input',e=>{const input=e.target,position=input.selectionStart,old=input.value,digitPosition=old.slice(0,position==null?old.length:position).replace(/-/g,'').length;input.value=formatRenewalInput2(old);if(position!=null){let count=0,index=0;while(index<input.value.length&&count<digitPosition){if(input.value[index]!=='-')count++;index++;}input.setSelectionRange(index,index);}});\nconst renewalPicker=document.createElement('input');renewalPicker.type='date';renewalPicker.id='renewalPicker';renewalPicker.tabIndex=-1;renewalPicker.style.position='absolute';renewalPicker.style.opacity='0';renewalPicker.style.pointerEvents='none';renewalPicker.style.width='1px';renewalPicker.style.height='1px';\nconst calendarButton=document.createElement('button');calendarButton.type='button';calendarButton.id='calendarButton';calendarButton.textContent='달력 선택';calendarButton.className='secondary';calendarButton.style.padding='5px 10px';calendarButton.style.fontSize='12px';calendarButton.style.marginTop='6px';\ncalendarButton.onclick=()=>{const normalized=formatRenewalInput2(renewalInput.value);renewalPicker.value=/^\\d{4}-\\d{2}-\\d{2}$/.test(normalized)?normalized:'';if(typeof renewalPicker.showPicker==='function')renewalPicker.showPicker();else{renewalPicker.focus();renewalPicker.click();}};\nrenewalPicker.addEventListener('change',()=>{renewalInput.value=renewalPicker.value;renewalInput.focus();});\nrenewalInput.parentElement.append(calendarButton,renewalPicker);\ndocument.getElementById('close').onclick=()=>{if(window.google&&google.script)google.script.host.close();else window.close();};\nform.onsubmit=e=>{e.preventDefault();status.className='';status.textContent='';const payload=Object.fromEntries(new FormData(form));if(!payload.name.trim()){status.textContent='고객 이름을 입력하세요.';document.getElementById('name').focus();return;}if(![6,13].includes(payload.resident.replace(/\\D/g,'').length)){status.textContent='주민번호와 생년월일을 확인하세요.';document.getElementById('resident').focus();return;}if(!window.google||!google.script){status.textContent='미리보기입니다. 실제 저장은 Google 시트 입력창에서 가능합니다.';return;}submit.disabled=true;status.textContent='등록 중…';google.script.run.withSuccessHandler(result=>{form.reset();status.className='ok';status.textContent=result.message;submit.disabled=false;document.getElementById('category').focus();}).withFailureHandler(error=>{status.textContent=error.message||'등록하지 못했습니다.';submit.disabled=false;}).submitCustomerDialog2(payload);};\nif(window.google&&google.script){submit.disabled=true;google.script.run.withSuccessHandler(data=>{options('cardCompany',data.cards);options('bank',data.banks);options('insurer',data.insurers);submit.disabled=false;}).withFailureHandler(error=>{status.textContent='목록을 불러오지 못했습니다. 입력창을 다시 열어주세요.';}).getCustomerDialogOptions2();}\ndocument.getElementById('category').focus();\n</script></body></html>\n";}
+// 고객 LIST에서 여는 고객등록 입력창입니다.
+function openCustomerRegistration() {
+  openCustomerDialog2();
+}
+
+function openCustomerDialog2() {
+  const html = HtmlService.createHtmlOutput(customerDialogHtml2_())
+    .setWidth(820).setHeight(720);
+  SpreadsheetApp.getUi().showModalDialog(html, '고객등록');
+}
+
+function setupCustomerListButton() {
+  const sheet = crmSheet_(SpreadsheetApp.getActiveSpreadsheet(),'고객 LIST');
+  if (!sheet) throw new Error('고객 LIST 시트를 찾지 못했습니다.');
+  const drawings = sheet.getDrawings();
+  const assigned = drawings.filter(d => ['openCustomerRegistration','openCustomerDialog2'].includes(d.getOnAction()));
+  const button = assigned.length === 1 ? assigned[0] : drawings.length === 1 ? drawings[0] : null;
+  if (!button) throw new Error('고객 LIST에 고객등록 그림을 만들고 openCustomerRegistration을 할당해주세요.');
+  button.setPosition(2,17,0,0).setWidth(160).setHeight(38).setOnAction('openCustomerRegistration');
+}
+
+function getCustomerDialogOptions2() {
+  const menu = crmSheet_(SpreadsheetApp.getActiveSpreadsheet(),'메뉴 추가');
+  if (!menu) throw new Error('메뉴 추가 시트를 찾지 못했습니다.');
+  const rows = menu.getRange(3,2,Math.max(1,menu.getLastRow()-2),3).getDisplayValues();
+  const unique = index => [...new Set(rows.map(row=>row[index].trim()).filter(Boolean))];
+  return {cards:unique(0),banks:unique(1),insurers:unique(2)};
+}
+
+function submitCustomerDialog2(data) {
+  if (!data || typeof data !== 'object') throw new Error('입력값을 확인하세요.');
+  const fields = {category:2,name:3,resident:4,phone:5,address:6,job:7,memo:8,payday:10,cardOwner:11,cardBirth:12,cardCompany:13,cardNumber:14,cardExpiry:15,accountOwner:17,accountBirth:18,bank:19,accountNumber:20,vehicleNumber:22,vehicleType:23,renewal:24,insurer:25,driver:26,discount:27,email:28};
+  const input = {};
+  Object.keys(fields).forEach(key=>{ input[key]=String(data[key]||'').trim(); });
+  if (!input.name) throw new Error('고객 이름을 입력하세요.');
+  const digits=input.resident.replace(/\D/g,'');
+  const birth=birthFromResidentNumber(digits);
+  if (!birth) throw new Error('주민번호와 생년월일을 확인하세요.');
+  input.resident=digits.length===6?digits:digits.slice(0,6)+'-'+digits.slice(6);
+  input.cardOwner=input.cardOwner||input.name;
+  input.accountOwner=input.accountOwner||input.name;
+  input.cardBirth=input.cardBirth?normalizeBirth(input.cardBirth):birth;
+  input.accountBirth=input.accountBirth?normalizeBirth(input.accountBirth):birth;
+  input.phone=formatPhoneNumber(input.phone);
+  input.cardExpiry=formatCardExpiry(input.cardExpiry);
+  const opts=getCustomerDialogOptions2();
+  const choices={category:['지인','소개','가족','DB','인하우스','산모교실'],cardCompany:opts.cards,bank:opts.banks,insurer:opts.insurers};
+  Object.entries(choices).forEach(([key,values])=>{if(input[key]&&!values.includes(input[key]))throw new Error('구분·카드사·은행·보험사 목록을 확인하세요.');});
+  const output=Array(27).fill('');
+  Object.entries(fields).forEach(([key,col])=>{output[col-2]=literalText(input[key]);});
+  if(input.payday)output[8]=parseCustomerPayday(input.payday);
+  if(input.renewal)output[22]=parseRenewalDate(normalizeRenewalDialog2(input.renewal));
+  const lock=LockService.getDocumentLock();
+  if(!lock.tryLock(5000))throw new Error('다른 등록 작업 중입니다. 잠시 후 다시 등록하세요.');
+  try {
+    const list=crmSheet_(SpreadsheetApp.getActiveSpreadsheet(),'고객 LIST');
+    if(!list)throw new Error('고객 LIST 시트를 찾지 못했습니다.');
+    const rows=list.getRange(6,2,Math.max(1,list.getLastRow()-5),27).getDisplayValues();
+    if(rows.some(row=>row[1].trim()===input.name&&row[2].replace(/\D/g,'').slice(0,6)===birth))throw new Error('같은 이름·생년월일의 고객이 있습니다. 고객 LIST에서 확인하고 수정하세요.');
+    let dest=6;rows.forEach((row,i)=>{if(row.some(v=>v.trim()))dest=i+7;});
+    if(dest>list.getMaxRows())list.insertRowsAfter(list.getMaxRows(),dest-list.getMaxRows());
+    if(dest!==6){const base=list.getRange(6,2,1,27),target=list.getRange(dest,2,1,27);base.copyTo(target,SpreadsheetApp.CopyPasteType.PASTE_FORMAT,false);base.copyTo(target,SpreadsheetApp.CopyPasteType.PASTE_DATA_VALIDATION,false);}
+    [4,5,12,14,15,18,20,22,28].forEach(col=>list.getRange(dest,col).setNumberFormat('@'));
+    list.getRange(dest,10).setNumberFormat('0"일"');
+    list.getRange(dest,24).setNumberFormat('m"월 "d"일"');
+    list.getRange(dest,2,1,27).setValues([output]);
+    refreshCustomerListLayout();
+    refreshOperationalViews();
+    refreshCrmCalendar();
+    return {message:'등록 완료 · 고객 LIST '+dest+'행'};
+  } finally {lock.releaseLock();}
+}
+
+function normalizeRenewalDialog2(value) {
+  const text=String(value).trim();
+  return /^\d{8}$/.test(text)?text.slice(0,4)+'-'+text.slice(4,6)+'-'+text.slice(6):text;
+}
+
+// 계약 입력: C4 계약일, C6 계약자, G6 생년월일, C8 피보험자, G8 생년월일
+// C10 보험사, G10 보험료, C12 상품명, C14 메모, C16 면책, G16 감액, F18 등록
+function contractTodayText(ss) {
+  return Utilities.formatDate(new Date(),ss.getSpreadsheetTimeZone(),'yyyy-MM-dd');
+}
+
+function parseContractDate(value,todayText) {
+  const today=(todayText||contractTodayText(SpreadsheetApp.getActiveSpreadsheet())).split('-').map(Number);
+  let text=value instanceof Date?Utilities.formatDate(value,SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(),'yyyy-MM-dd'):String(value==null?'':value).trim();
+  let year=today[0],month,day,match;
+  if(!text){month=today[1];day=today[2];}
+  else if(/^\d{8}$/.test(text)){year=Number(text.slice(0,4));month=Number(text.slice(4,6));day=Number(text.slice(6));}
+  else if(/^\d{6}$/.test(text)){year=2000+Number(text.slice(0,2));month=Number(text.slice(2,4));day=Number(text.slice(4));}
+  else if(/^\d{3,4}$/.test(text)){month=Number(text.slice(0,-2));day=Number(text.slice(-2));}
+  else if((match=/^(\d{2}|\d{4})\s*[-./,]\s*(\d{1,2})\s*[-./,]\s*(\d{1,2})$/.exec(text))){year=match[1].length===2?2000+Number(match[1]):Number(match[1]);month=Number(match[2]);day=Number(match[3]);}
+  else if((match=/^(?:(\d{2}|\d{4})\s*년\s*)?(\d{1,2})\s*월\s*(\d{1,2})\s*일?$/.exec(text))){if(match[1])year=match[1].length===2?2000+Number(match[1]):Number(match[1]);month=Number(match[2]);day=Number(match[3]);}
+  else if((match=/^(\d{1,2})\s*[-./,]\s*(\d{1,2})$/.exec(text))){month=Number(match[1]);day=Number(match[2]);}
+  else throw new Error('계약일을 확인하세요. 예: 20260901, 260901, 9월1일, 09-01');
+  const date=new Date(Date.UTC(year,month-1,day));
+  if(year<1900||year>2199||date.getUTCFullYear()!==year||date.getUTCMonth()!==month-1||date.getUTCDate()!==day)throw new Error('계약일의 월·일을 확인하세요.');
+  return Math.round((date.getTime()-Date.UTC(1899,11,30))/86400000);
+}
+
+function normalizeContractBirth(value) {
+  let text=String(value==null?'':value).trim();
+  if(!text)return '';
+  let digits=text.replace(/\D/g,'');
+  if(typeof value==='number'&&digits.length<6)digits=digits.padStart(6,'0');
+  if(digits.length===13)digits=digits.slice(0,6);
+  else if(digits.length===8)digits=digits.slice(-6);
+  if(digits.length!==6||!birthFromResidentNumber(digits))throw new Error('생년월일을 6자리로 확인하세요. 예: 000101');
+  return digits;
+}
+
+function parseContractMonths(value,label) {
+  if(value===''||value==null)return 0;
+  if(typeof value==='boolean')throw new Error('면책·감액은 숫자(개월 수)로 입력해 주세요');
+  const text=String(value).trim().replace(/\s*개월$/,'');
+  if(!/^\d+$/.test(text))throw new Error('면책·감액은 숫자(개월 수)로 입력해 주세요');
+  const months=Number(text);
+  if(!Number.isSafeInteger(months))throw new Error('면책·감액은 숫자(개월 수)로 입력해 주세요');
+  return months;
+}
+
+function contractFindCustomer(customers,name,birth,label) {
+  const key=String(name||'').trim();
+  if(!key)throw new Error(label+' 이름을 입력하세요.');
+  const dob=normalizeContractBirth(birth);
+  const found=customers.filter(row=>String(row[1]||'').trim()===key&&(!dob||String(row[2]||'').replace(/\D/g,'').slice(0,6)===dob));
+  if(!found.length)throw new Error(label+'을 고객 LIST에서 찾지 못했습니다. 이름·생년월일을 확인하세요.');
+  if(found.length>1)throw new Error(label+' 동명이인이 있습니다. 생년월일도 입력하세요.');
+  const row=found[0];
+  return {name:key,birth:normalizeContractBirth(String(row[2]).replace(/\D/g,'').slice(0,6)),category:String(row[0]||''),phone:formatPhoneNumber(String(row[3]||''))};
+}
+
+function contractCustomerRows(ss) {
+  const sheet=crmSheet_(ss,'고객 LIST');
+  if(!sheet)throw new Error('고객 LIST 시트를 찾지 못했습니다.');
+  return sheet.getRange(6,2,Math.max(1,sheet.getLastRow()-5),4).getDisplayValues();
+}
+
+function buildContractRecord(data,customers,todayText) {
+  if(!String(data.ownerBirth||'').trim())throw new Error('계약자 생년월일을 입력하세요.');
+  const owner=contractFindCustomer(customers,data.owner,data.ownerBirth,'계약자');
+  const insured={name:String(data.insured||'').trim(),birth:normalizeContractBirth(data.insuredBirth),category:'',phone:''};
+  const premiumText=String(data.premium==null?'':data.premium).replace(/[\s,원]/g,'');
+  const premium=premiumText===''?'':Number(premiumText);
+  if(premium!==''&&(!Number.isFinite(premium)||premium<0))throw new Error('보험료는 0 이상의 숫자로 입력하세요.');
+  return ['',literalText(owner.category),parseContractDate(data.date,todayText),literalText(owner.name),owner.birth,literalText(owner.phone),literalText(insured.name),insured.birth,literalText(String(data.insurer||'').trim()),literalText(String(data.product||'').trim()),premium,parseContractMonths(data.immunity,'면책'),parseContractMonths(data.reduction,'감액'),literalText(String(data.memo||'').trim()),literalText(insured.category),literalText(insured.phone)];
+}
+
+function registerContract(source) {
+  const ss=source&&typeof source.getSheetByName==='function'?source:SpreadsheetApp.getActiveSpreadsheet();
+  const form=crmSheet_(ss,'계약 입력'),list=crmSheet_(ss,'계약 목록');
+  if(!form||!list)throw new Error('계약 입력 또는 계약 목록 시트를 찾지 못했습니다.');
+  const lock=LockService.getDocumentLock();
+  if(!lock.tryLock(5000)){form.getRange('B1').setValue('다른 등록 작업 중입니다. 잠시 후 다시 등록하세요.');return;}
+  let saved=false;
+  try {
+    form.getRange('B1').clearContent();
+    const addresses={date:'C4',owner:'C6',ownerBirth:'G6',insured:'C8',insuredBirth:'G8',insurer:'C10',premium:'G10',product:'C12',memo:'C14',immunity:'C16',reduction:'G16'};
+    const data={};Object.entries(addresses).forEach(([key,address])=>{data[key]=form.getRange(address).getValue();});
+    const record=buildContractRecord(data,contractCustomerRows(ss),contractTodayText(ss));
+    const rows=list.getRange(5,1,Math.max(1,list.getLastRow()-4),16).getDisplayValues();
+    let destination=5;
+    rows.forEach((row,index)=>{if([2,3,6,8,9,10,11,12,13].some(col=>String(row[col]||'').trim()))destination=index+6;});
+    if(destination>list.getMaxRows())list.insertRowsAfter(list.getMaxRows(),destination-list.getMaxRows());
+    const target=list.getRange(destination,2,1,15);
+    if(destination!==5){const base=list.getRange(5,2,1,15);base.copyTo(target,SpreadsheetApp.CopyPasteType.PASTE_FORMAT,false);base.copyTo(target,SpreadsheetApp.CopyPasteType.PASTE_DATA_VALIDATION,false);}
+    [4,5,6,7,8,9,10,14,15,16].forEach(col=>list.getRange(destination,col).setNumberFormat('@'));
+    list.getRange(destination,3).setNumberFormat('yyyy-mm-dd');
+    list.getRange(destination,11).setNumberFormat('#,##0"원"');
+    list.getRange(destination,12,1,2).setNumberFormat('0"개월"');
+    target.setValues([record.slice(1)]);saved=true;
+    refreshCustomerCard(ss);
+    refreshCrmCalendar(ss);
+    form.getRangeList(Object.values(addresses)).clearContent();
+    ss.toast('계약 목록 '+destination+'행에 등록했습니다.','계약 추가');
+  } catch(error){form.getRange('B1').setValue(saved?'저장은 완료됐습니다. 입력칸을 정리하기 전에 계약 목록을 확인하세요.':error.message);}
+  finally{form.getRange('F18').setValue(false);lock.releaseLock();}
+}
+
+function refreshContractRowCustomers(ss,sheet,row,customers) {
+  const values=sheet.getRange(row,1,1,16).getDisplayValues()[0];
+  [{name:4,birth:5,category:2,phone:6,label:'계약자'}].forEach(role=>{
+    const cell=sheet.getRange(row,role.name);
+    if(!values[role.name-1].trim()){sheet.getRange(row,role.category).clearContent();sheet.getRange(row,role.phone).clearContent();cell.clearNote();return;}
+    try {
+      const person=contractFindCustomer(customers,values[role.name-1],values[role.birth-1],role.label);
+      if(role.label==='계약자')sheet.getRange(row,role.birth).setNumberFormat('@').setValue(person.birth);
+      sheet.getRange(row,role.category).setNumberFormat('@').setValue(literalText(person.category));
+      sheet.getRange(row,role.phone).setNumberFormat('@').setValue(literalText(person.phone));cell.clearNote();
+    } catch(error){sheet.getRange(row,role.category).clearContent();sheet.getRange(row,role.phone).clearContent();cell.setNote(error.message);}
+  });
+}
+
+function refreshAllContractCustomerInfo(source) {
+  const ss=source&&typeof source.getSheetByName==='function'?source:SpreadsheetApp.getActiveSpreadsheet();
+  const list=crmSheet_(ss,'계약 목록');if(!list)return;
+  const rows=list.getRange(5,4,Math.max(1,list.getLastRow()-4),4).getDisplayValues();
+  const customers=contractCustomerRows(ss);
+  rows.forEach((row,index)=>{if(row[0].trim()||row[3].trim())refreshContractRowCustomers(ss,list,index+5,customers);});
+}
+
+function handleContractEdit(e) {
+  if(!e||!e.range)return false;
+  const sheet=e.range.getSheet(),name=crmSheetRole_(sheet);
+  if(name!=='계약 입력'&&name!=='계약 목록')return false;
+  if(name==='계약 입력'&&e.range.getA1Notation()==='F18'&&e.value==='TRUE'){try{registerContract(e.source);}finally{e.range.setValue(false);}return true;}
+  const today=contractTodayText(e.source);
+  const configs=name==='계약 입력'?[{row:4,col:3,date:true},{row:6,col:7,birth:true},{row:8,col:7,birth:true},{row:16,col:3,label:'면책'},{row:16,col:7,label:'감액'}]:[{row:null,col:3,date:true},{row:null,col:5,birth:true},{row:null,col:8,birth:true},{row:null,col:12,label:'면책'},{row:null,col:13,label:'감액'}];
+  configs.forEach(config=>{
+    if(e.range.getColumn()>config.col||e.range.getLastColumn()<config.col)return;
+    if(config.row!==null&&(e.range.getRow()>config.row||e.range.getLastRow()<config.row))return;
+    const start=config.row===null?Math.max(5,e.range.getRow()):config.row,end=config.row===null?e.range.getLastRow():config.row;
+    if(start>end)return;
+    const range=sheet.getRange(start,config.col,end-start+1,1),values=range.getValues(),formulas=range.getFormulas();
+    values.forEach((row,index)=>{
+      if(formulas[index][0]||row[0]===''||row[0]===null)return;
+      const cell=sheet.getRange(start+index,config.col);
+      try {const value=config.date?parseContractDate(row[0],today):config.birth?normalizeContractBirth(row[0]):parseContractMonths(row[0],config.label);cell.setNumberFormat(config.date?'yyyy-mm-dd':config.birth?'@':'0"개월"').setValue(value).clearNote();}
+      catch(error){cell.setNote(error.message);if(name==='계약 입력')sheet.getRange('B1').setValue(error.message);else e.source.toast(error.message,'계약 입력',8);}
+    });
+  });
+  if(name==='계약 목록'&&e.range.getLastRow()>=5){
+    const start=e.range.getColumn(),end=e.range.getLastColumn();
+    if([4,5,7,8].some(col=>start<=col&&col<=end)){
+      const customers=contractCustomerRows(e.source);
+      for(let row=Math.max(5,e.range.getRow());row<=e.range.getLastRow();row++){
+        refreshContractRowCustomers(e.source,sheet,row,customers);
+        if(sheet.getRange(row,4).getDisplayValue().trim()&&sheet.getRange(row,3).getValue()==='')sheet.getRange(row,3).setNumberFormat('yyyy-mm-dd').setValue(parseContractDate('',today));
+      }
+    }
+  }
+  if(name==='계약 목록'){refreshCustomerCard(e.source);refreshCrmCalendar(e.source);}
+  return true;
+}
+
+function activateContractInput() {
+  const ss=SpreadsheetApp.getActiveSpreadsheet();ss.setActiveSheet(crmSheet_(ss,'계약 입력'));
+}
+
+function setupContractInputButton() {
+  const sheet=crmSheet_(SpreadsheetApp.getActiveSpreadsheet(),'계약 입력');
+  const drawings=sheet.getDrawings(),assigned=drawings.filter(d=>d.getOnAction()==='registerContract');
+  const button=assigned.length===1?assigned[0]:drawings.length===1?drawings[0]:null;
+  if(!button)throw new Error('계약 입력에 계약추가 그림을 만들고 registerContract를 할당하세요.');
+  button.setPosition(2,8,0,0).setWidth(160).setHeight(38).setOnAction('registerContract');
+}
+
+// 행 높이는 최초 시트 정리 때만 적용하며, 자동 서식에서는 사용자가 바꾼 높이를 유지합니다.
+function customerListDropdownRules_(ss) {
+  const menu=crmSheet_(ss,'메뉴 추가');
+  const rules=[{column:2,rule:SpreadsheetApp.newDataValidation()
+    .requireValueInList(['지인','소개','가족','DB','인하우스','산모교실'],true)
+    .setAllowInvalid(false).build()}];
+  if(menu)[[13,2],[19,3],[25,4]].forEach(([column,sourceColumn])=>{
+    rules.push({column,rule:SpreadsheetApp.newDataValidation()
+      .requireValueInRange(menu.getRange(3,sourceColumn,Math.max(1,menu.getMaxRows()-2),1),true)
+      .setAllowInvalid(false).build()});
+  });
+  return rules;
+}
+
+function customerListLayoutPlan_(rows) {
+  const used=[];
+  rows.forEach((row,index)=>{if(row.some(value=>String(value==null?'':value).trim()))used.push(index+6);});
+  const segments=[];
+  used.forEach(row=>{
+    const segment=segments[segments.length-1];
+    if(segment&&segment.end===row-1)segment.end=row;
+    else segments.push({start:row,end:row});
+  });
+  return {endRow:used.length?used[used.length-1]+1:6,segments};
+}
+
+function refreshCustomerListLayout(source) {
+  const ss=source&&typeof source.getSheetByName==='function'?source:SpreadsheetApp.getActiveSpreadsheet();
+  const list=crmSheet_(ss,'고객 LIST');if(!list)return;
+  const rows=list.getRange(6,2,Math.max(1,list.getLastRow()-5),27).getDisplayValues();
+  const plan=customerListLayoutPlan_(rows);
+  if(plan.endRow>list.getMaxRows()){
+    list.insertRowsAfter(list.getMaxRows(),plan.endRow-list.getMaxRows());
+    list.setRowHeight(plan.endRow,28);
+  }
+  const height=list.getMaxRows()-5;
+  list.getRange(6,10,height,1).setDataValidation(SpreadsheetApp.newDataValidation()
+    .requireFormulaSatisfied('=OR(J6="",AND(ISNUMBER(J6),J6=INT(J6),J6>=1,J6<=31))')
+    .setAllowInvalid(false).setHelpText('카드 결제일은 1~31 사이의 숫자로 입력해 주세요.').build());
+  // 기존 선은 그대로 유지합니다. 양옆 테두리를 추가하거나 선을 다시 그리지 않습니다.
+  customerListDropdownRules_(ss).forEach(({column,rule})=>{
+    list.getRange(6,column,height,1).clearDataValidations();
+    plan.segments.forEach(segment=>list.getRange(segment.start,column,segment.end-segment.start+1,1).setDataValidation(rule));
+  });
+}
+
+// 이름 대신 고유 ID로 시트를 연결합니다. 탭 이름과 열 제목 문구는 변경할 수 있습니다.
+const CRM_SHEET_IDS = Object.freeze({
+  '고객 등록':1922160955,
+  '고객 LIST':254139861,
+  '고객 관리 카드':284886991,
+  '계약 입력':1724999388,
+  '계약 목록':1396871157,
+  '메뉴 추가':1057313260,
+  '자동차보험':681395888,
+  '카드수납':862162969,
+  '캘린더':1276771145
+});
+
+function crmSheet_(ss,role) {
+  const sheets=typeof ss.getSheets==='function'?ss.getSheets():[];
+  const found=sheets.find(sheet=>sheet.getSheetId()===CRM_SHEET_IDS[role]);
+  return found||ss.getSheetByName(role);
+}
+
+function crmSheetRole_(sheet) {
+  if(typeof sheet.getSheetId==='function'){
+    const id=sheet.getSheetId();
+    const role=Object.keys(CRM_SHEET_IDS).find(key=>CRM_SHEET_IDS[key]===id);
+    if(role)return role;
+  }
+  return sheet.getName();
+}
+
+// 실제 탭 이름으로 모바일 등록 안내를 갱신합니다.
+function refreshMobileRegistrationNotes_(source) {
+  const ss=source||SpreadsheetApp.getActiveSpreadsheet();
+  [['고객 등록','고객 LIST','E32','F32','고객 등록'],['계약 입력','계약 목록','F18','D18','계약 추가']].forEach(function(item){
+    const form=crmSheet_(ss,item[0]),list=crmSheet_(ss,item[1]);
+    if(!form||!list)return;
+    const note='모바일에서는 상단 '+item[4]+' 버튼이 작동하지 않습니다.\n이 체크박스를 선택하면 ‘'+list.getName()+'’ 시트에 추가됩니다.\nPC에서도 체크박스로 등록할 수 있습니다.';
+    const right=item[0]==='고객 등록'?item[3]:item[2];
+    const left=item[0]==='고객 등록'?item[2]:item[3];
+    form.getRange(left).clearNote();form.getRange(right).setNote(note);
+  });
+}
+
+
+// 고객 LIST 변경은 배열 수식의 참조를 통해 즉시 반영됩니다.
+// 스프레드시트 계산 설정은 매분 재계산이며, 자정 이후 TODAY()가 갱신됩니다.
+function operationalViewFormulas_(sourceName) {
+  const q="'"+sourceName.replace(/'/g,"''")+"'!";
+  return {
+    auto:'=IFNA(SORT(FILTER({'+q+'X6:X,'+q+'C6:G,'+q+'V6:W,'+q+'Y6:AB},'+q+'C6:C<>"",ISNUMBER('+q+'X6:X),'+q+'X6:X>=TODAY(),'+q+'X6:X<=TODAY()+30),1,TRUE),"")',
+    card:'=IFNA(FILTER({'+q+'J6:J,'+q+'C6:E,'+q+'K6:O},'+q+'C6:C<>"",IFERROR(VALUE('+q+'J6:J),0)=DAY(TODAY())),"")'
+  };
+}
+
+function refreshOperationalViews(source) {
+  const ss=source&&typeof source.getSheetByName==='function'?source:SpreadsheetApp.getActiveSpreadsheet();
+  const list=crmSheet_(ss,'고객 LIST');if(!list)return;
+  const formulas=operationalViewFormulas_(list.getName());
+  [['자동차보험',formulas.auto],['카드수납',formulas.card]].forEach(([role,formula])=>{
+    const sheet=crmSheet_(ss,role);if(!sheet)return;
+    const filter=sheet.getFilter();if(filter)filter.remove();
+    const cell=sheet.getRange('B5');if(cell.getFormula()!==formula)cell.setFormula(formula);
+  });
+  SpreadsheetApp.flush();
+  updateOperationalVisibility_(ss);
+}
+
+function operationalLastVisibleRow_(rows) {
+  let last=4;
+  rows.forEach((row,index)=>{if(row.some(value=>String(value==null?'':value).trim()))last=index+5;});
+  return last;
+}
+
+function updateOperationalVisibility_(ss) {
+  ['자동차보험','카드수납'].forEach(role=>{
+    const sheet=crmSheet_(ss,role);if(!sheet)return;
+    const count=Math.max(1,sheet.getLastRow()-4);
+    const rows=sheet.getRange(5,2,count,role==='자동차보험'?12:9).getDisplayValues();
+    const last=operationalLastVisibleRow_(rows),max=sheet.getMaxRows();
+    sheet.showRows(1,last);
+    if(last<max)sheet.hideRows(last+1,max-last);
+  });
+}
+
+// Apps Script에서 한 번 실행하면, 시트가 닫혀 있을 때도 분 단위로 보이는 행 수를 갱신합니다.
+function setupViewAutoRefresh() {
+  const ss=SpreadsheetApp.getActiveSpreadsheet();
+  PropertiesService.getScriptProperties().setProperty('CRM_VIEW_SPREADSHEET_ID',ss.getId());
+  ScriptApp.getProjectTriggers().filter(trigger=>trigger.getHandlerFunction()==='scheduledViewAutoRefresh')
+    .forEach(trigger=>ScriptApp.deleteTrigger(trigger));
+  ScriptApp.newTrigger('scheduledViewAutoRefresh').timeBased().everyMinutes(1).create();
+  refreshOperationalViews(ss);
+  ss.toast('자동차보험·카드수납의 보이는 행 수를 자동으로 맞춥니다.','자동 갱신 설정 완료');
+}
+
+function scheduledViewAutoRefresh() {
+  const id=PropertiesService.getScriptProperties().getProperty('CRM_VIEW_SPREADSHEET_ID');
+  if(!id)return;
+  const lock=LockService.getScriptLock();if(!lock.tryLock(1000))return;
+  try{const ss=SpreadsheetApp.openById(id);refreshOperationalViews(ss);refreshCrmHolidayDataIfNeeded_(ss);refreshCrmCalendar(ss,true);}
+  finally{lock.releaseLock();}
+}
+
+// 고객카드 M:T: 계약일, 피보험자, 보험사, 상품명, 보험료, 면책만료, 감액만료, 계약 메모
+function clearCustomerCardContracts_(card) {
+  card.getRange(5,13,Math.max(1,card.getMaxRows()-4),9).clearContent()
+    .setBorder(false,false,false,false,false,false).setBackground(null);
+}
+
+function customerContractBirthKey_(value) {
+  let digits=String(value==null?'':value).replace(/\D/g,'');
+  if(!digits)return '';
+  if(digits.length===13)return digits.slice(0,6);
+  if(digits.length===8)return digits.slice(-6);
+  return digits.length<6?digits.padStart(6,'0'):digits;
+}
+
+function selectCustomerContractRows_(rows,name,birth) {
+  const key=String(name||'').trim(),dob=customerContractBirthKey_(birth);
+  if(!key||!dob)return [];
+  return rows.map((row,index)=>({row,index})).filter(item=>
+    String(item.row[3]||'').trim()===key&&customerContractBirthKey_(item.row[4])===dob);
+}
+
+function refreshCustomerCardContracts_(ss,card,name,birth) {
+  const list=crmSheet_(ss,'계약 목록');if(!list)return;
+  const range=list.getRange(5,1,Math.max(1,list.getLastRow()-4),14);
+  const display=range.getDisplayValues(),raw=range.getValues();
+  const found=selectCustomerContractRows_(display,name,birth);
+  if(!found.length)return;
+  const output=found.map(item=>{
+    const r=raw[item.index],d=item.row;
+    return [r[2],literalText(d[6]),literalText(d[8]),literalText(d[9]),r[10],contractExpirySerial_(r[2],r[11]),contractExpirySerial_(r[2],r[12]),literalText(d[13])];
+  });
+  if(output.length+4>card.getMaxRows())card.insertRowsAfter(card.getMaxRows(),output.length+4-card.getMaxRows());
+  const formats=['yyyy-mm-dd','@','@','@','#,##0"원"','yyyy-mm-dd','yyyy-mm-dd','@'];
+  const target=card.getRange(5,13,output.length,8);
+  target.setNumberFormats(output.map(()=>formats.slice())).setValues(output);
+  target.setBackground(null)
+    .setBorder(true,true,true,true,null,true,'#b7b7b7',SpreadsheetApp.BorderStyle.SOLID)
+    .setBorder(null,null,null,null,true,null,'#b7b7b7',SpreadsheetApp.BorderStyle.DOTTED);
+}
+
+function contractExpirySerial_(date,months) {
+  if(date===''||date==null||months===''||months==null||Number(months)===0)return '';
+  const count=parseContractMonths(months);
+  const serial=typeof date==='number'?date:parseContractDate(date);
+  const epoch=Date.UTC(1899,11,30),base=new Date(epoch+serial*86400000);
+  const target=new Date(Date.UTC(base.getUTCFullYear(),base.getUTCMonth()+count,1));
+  const last=new Date(Date.UTC(target.getUTCFullYear(),target.getUTCMonth()+1,0)).getUTCDate();
+  target.setUTCDate(Math.min(base.getUTCDate(),last));
+  return Math.round((target.getTime()-epoch)/86400000);
+}
+
+const CRM_CALENDAR_VIEWS=['캘린더','카드수납','자동차보험 갱신','면책·감액 종료'];
+function parseCrmCalendarPeriod_(value) {
+  const text=String(value==null?'':value).trim();let year,month,match;
+  if((match=/^(\d{4})\s*년\s*(\d{1,2})\s*월$/.exec(text))){year=Number(match[1]);month=Number(match[2]);}
+  else if((match=/^(\d{4})\s*[-./]\s*(\d{1,2})$/.exec(text))){year=Number(match[1]);month=Number(match[2]);}
+  else if(/^\d{5,6}$/.test(text)){year=Number(text.slice(0,4));month=Number(text.slice(4));}
+  else if(/^\d{8}$/.test(text)){year=Number(text.slice(0,4));month=Number(text.slice(4,6));}
+  else if(/^\d{4}$/.test(text)){year=2000+Number(text.slice(0,2));month=Number(text.slice(2));}
+  else throw new Error('월을 확인하세요. 예: 2026년 10월, 202610');
+  if(year<1900||year>2199||month<1||month>12)throw new Error('월을 확인하세요. 예: 2026년 10월, 202610');
+  return {year,month,label:year+'년'+month+'월'};
+}
+function crmCalendarSerial_(year,month,day) {return Math.round((Date.UTC(year,month-1,day)-Date.UTC(1899,11,30))/86400000);}
+function crmCalendarDate_(serial) {return new Date(Date.UTC(1899,11,30)+Number(serial)*86400000);}
+function crmCalendarInputDate_(value,ss) {
+  if(value===''||value==null)return '';
+  if(value instanceof Date){
+    const formatted=Utilities.formatDate(value,ss.getSpreadsheetTimeZone(),'yyyy-MM-dd');
+    value=Number(formatted.split('-')[0])>2199?Math.round((value.getTime()-Date.UTC(1899,11,30))/86400000):formatted;
+  }
+  if(typeof value==='number'&&value>0&&value<110000)return Math.floor(value);
+  return parseContractDate(value,contractTodayText(ss));
+}
+
+function buildCrmCalendarModel_(year,month,today,customers,contracts,personal) {
+  const first=crmCalendarSerial_(year,month,1),next=crmCalendarSerial_(year,month+1,1);
+  const start=first-crmCalendarDate_(first).getUTCDay(),end=next-1;
+  const events=[],texts={};
+  const add=(date,view,type,text,name,birth)=>{if(date>=first&&date<=end&&(view===CRM_CALENDAR_VIEWS[0]||date>=today))events.push({date,view,type,text,name:name||'',birth:birth||''});};
+  const clamp=(m,d)=>crmCalendarSerial_(year,m,Math.min(d,crmCalendarDate_(crmCalendarSerial_(year,m+1,1)-1).getUTCDate()));
+  personal.forEach(row=>{const date=Number(row[0]),text=String(row[2]||'').trim();if(!date||!text||date<first||date>end)return;
+    const displayed=(row[3]==='완료'?'✓ ':'')+text;
+    texts[date]=(texts[date]?texts[date]+'\n':'')+displayed;
+    add(date,CRM_CALENDAR_VIEWS[0],'개인일정',displayed);
+  });
+  const todayYear=crmCalendarDate_(today).getUTCFullYear();
+  customers.forEach(row=>{
+    const name=String(row[1]||'').trim();if(!name)return;
+    let rrn=String(row[2]||'').replace(/\D/g,'');if(rrn.length<6&&rrn)rrn=rrn.padStart(6,'0');
+    const birth=birthFromResidentNumber(rrn);
+    if(birth){const yy=Number(birth.slice(0,2)),bm=Number(birth.slice(2,4)),bd=Number(birth.slice(4));
+      const century=rrn.length===13?('3478'.includes(rrn[6])?2000:'1256'.includes(rrn[6])?1900:1800):(yy<=todayYear%100?2000:1900);
+      if(year>=century+yy)add(clamp(bm,bd),CRM_CALENDAR_VIEWS[0],'고객생일','생일',name,birth);
+    }
+    const payday=Number(String(row[8]||'').replace(/일$/,''));
+    const lastDay=crmCalendarDate_(end).getUTCDate();
+    if(Number.isInteger(payday)&&payday>=1&&payday<=lastDay)add(crmCalendarSerial_(year,month,payday),CRM_CALENDAR_VIEWS[1],'카드수납',[row[11],row[12],row[13]].map(v=>String(v==null?'':v).trim()).join(' / '),name,birth);
+    const renewal=Number(row[22]);if(renewal>0){const date=crmCalendarDate_(renewal),day=clamp(date.getUTCMonth()+1,date.getUTCDate());add(day,CRM_CALENDAR_VIEWS[2],'자동차보험 갱신',[row[23],row[20]].map(v=>String(v==null?'':v).trim()).join(' / '),name,birth);}
+  });
+  contracts.forEach(row=>{
+    const date=Number(row[2]),name=String(row[3]||'').trim();if(!date||!name)return;
+    [[11,'면책 종료'],[12,'감액 종료']].forEach(([col,type])=>{const months=Number(row[col]);if(Number.isInteger(months)&&months>0){const expiry=contractExpirySerial_(date,months);const birth=String(row[4]||'').replace(/\D/g,'').padStart(6,'0');add(expiry,CRM_CALENDAR_VIEWS[3],type,String(row[9]||''),name,birth);}});
+  });
+  const weeks=Array.from({length:6},(_,index)=>{const a=Math.max(first,start+index*7),b=Math.min(end,start+index*7+6);return {start:a,end:b,valid:a<=b};});
+  events.sort((a,b)=>a.date-b.date||a.type.localeCompare(b.type,'ko'));
+  return {first,end,start,today,weeks,events,personal:texts};
+}
+
+function refreshCrmCalendar(source,dailyOnly,useCached) {
+  const lock=LockService.getDocumentLock();if(!lock.tryLock(100))return;
+  try{return refreshCrmCalendarUnlocked_(source,dailyOnly,useCached);}finally{lock.releaseLock();}
+}
+function refreshCrmCalendarUnlocked_(source,dailyOnly,useCached) {
+  const ss=source&&typeof source.getSheetByName==='function'?source:SpreadsheetApp.getActiveSpreadsheet();
+  const sheet=crmSheet_(ss,'캘린더');if(!sheet)return;
+  ensureCrmCalendarStorage_(sheet);
+  const todayText=contractTodayText(ss);if(dailyOnly&&sheet.getRange('AY1').getDisplayValue()===todayText)return;
+  const current=todayText.split('-').map(Number),year=Number(sheet.getRange('O2').getValue())||current[0],month=Number(sheet.getRange('S2').getValue())||current[1];
+  if(!Number.isInteger(year)||year<1900||year>2199||!Number.isInteger(month)||month<1||month>12){sheet.getRange('B1').setValue('연도와 월을 숫자로 확인하세요.');return;}
+  sheet.getRange('O2').setNumberFormat('0"년"').setValue(year);sheet.getRange('S2').setNumberFormat('0"월"').setValue(month);
+  const view=CRM_CALENDAR_VIEWS[0],key=year+'-'+month;
+  const sourceData=crmCalendarSourceData_(ss,useCached);
+  const customers=sourceData.customers,contracts=sourceData.contracts;
+  const personal=sheet.getRange(5,45,Math.max(1,sheet.getLastRow()-4),4).getValues();
+  personal.forEach(row=>{try{row[0]=crmCalendarInputDate_(row[0],ss);}catch(error){row[0]='';}});
+  const model=buildCrmCalendarModel_(year,month,parseContractDate(todayText,todayText),customers,contracts,personal);
+  model.holidays=crmCalendarHolidays_(sheet);
+  renderCrmCalendar_(sheet,model,view);
+  if(!Object.keys(model.holidays).some(date=>crmCalendarDate_(Number(date)).getUTCFullYear()===year)){
+    const prefix=view===CRM_CALENDAR_VIEWS[0]?'':'오늘 이후 일정만 표시합니다. ';
+    sheet.getRange('B1').setValue(prefix+'해당 연도의 공휴일 정보가 아직 없습니다.');
+  }
+  sheet.getRange('AY1').setNumberFormat('@').setValue(todayText);sheet.getRange('AY2').setNumberFormat('@').setValue(key);
+}
+
+
+function crmCalendarSourceData_(ss,useCached) {
+  const cache=CacheService.getDocumentCache(),key='CRM_CALENDAR_SOURCE_V1';
+  if(useCached){const saved=cache.get(key);if(saved){try{return JSON.parse(saved);}catch(error){}}}
+  else cache.remove(key);
+  const list=crmSheet_(ss,'고객 LIST'),contractsSheet=crmSheet_(ss,'계약 목록');
+  const customers=list?list.getRange(6,2,Math.max(1,list.getLastRow()-5),27).getValues().filter(r=>String(r[1]||'').trim()):[];
+  const contracts=contractsSheet?contractsSheet.getRange(5,1,Math.max(1,contractsSheet.getLastRow()-4),14).getValues().filter(r=>String(r[3]||'').trim()):[];
+  customers.forEach(r=>{if(r[22] instanceof Date)r[22]=crmCalendarInputDate_(r[22],ss);});
+  contracts.forEach(r=>{if(r[2] instanceof Date)r[2]=crmCalendarInputDate_(r[2],ss);});
+  const data={customers,contracts},encoded=JSON.stringify(data);if(encoded.length<30000)cache.put(key,encoded,600);
+  return data;
+}
+
+function ensureCrmCalendarStorage_(sheet) {
+  if(sheet.getMaxColumns()<58)sheet.insertColumnsAfter(sheet.getMaxColumns(),58-sheet.getMaxColumns());
+  if(sheet.getRange('AY5').getValue()==='v3')return;
+  if(sheet.getRange('AK5').getValue()==='v2'){
+    sheet.getRange(5,31,sheet.getMaxRows()-4,4).copyTo(sheet.getRange(5,45),{contentsOnly:true});
+    sheet.getRange(5,35,sheet.getMaxRows()-4,2).copyTo(sheet.getRange(5,49),{contentsOnly:true});
+  }
+  sheet.getRange('AY5').setValue('v3');
+}
+function crmCalendarIcons_(events) {
+  const types=new Set(events.map(e=>e.type)),icons=[];
+  if(types.has('고객생일'))icons.push('🎂');
+  if(types.has('카드수납'))icons.push('💳');
+  if(types.has('자동차보험 갱신'))icons.push('🚗');
+  if(types.has('면책 종료')||types.has('감액 종료'))icons.push('🔒');
+  return Array(4-icons.length).fill('').concat(icons);
+}
+function renderCrmCalendar_(sheet,model) {
+  sheet.getRange('B1').clearContent();
+  const values=Array.from({length:30},()=>Array(35).fill('')),colors=Array.from({length:30},()=>Array(35).fill('#202124')),targets={};
+  for(let week=0;week<6;week++)for(let day=0;day<7;day++){
+    const date=model.start+week*7+day,row=5+week*5,col=2+day*5,inMonth=date>=model.first&&date<=model.end;
+    values[week*5][day*5]=crmCalendarDate_(date).getUTCDate();
+    values[week*5][day*5+1]=(model.holidays||{})[date]||'';
+    colors[week*5][day*5]=!inMonth?'#b7b7b7':day===0||(model.holidays||{})[date]?'#d93025':day===6?'#1a73e8':'#202124';
+    for(let k=0;k<5;k++)for(let c=0;c<5;c++)targets[(row+k)+':'+(col+c)]=date;
+    if(!inMonth)continue;
+    const lines=String(model.personal[date]||'').split('\n');
+    for(let k=0;k<3;k++)values[week*5+1+k][day*5]=literalText(k===2?lines.slice(k).join('\n'):(lines[k]||''));
+    const icons=crmCalendarIcons_(model.events.filter(e=>e.date===date));
+    for(let k=0;k<4;k++)values[week*5+4][day*5+1+k]=icons[k];
+  }
+  sheet.getRange('B5:AJ34').setValues(values).setFontColors(colors);
+  PropertiesService.getDocumentProperties().setProperty('CRM_CALENDAR_DATE_MAP',JSON.stringify(targets));
+  sheet.getRange(5,52,sheet.getMaxRows()-4,7).clearContent();
+  if(model.events.length)sheet.getRange(5,52,model.events.length,7).setValues(model.events.map(e=>[e.date,e.type,literalText(e.name),literalText(e.birth),literalText(e.text),e.view,'']));
+  let selected;try{selected=crmCalendarInputDate_(sheet.getRange('AO3').getValue(),sheet.getParent());}catch(error){}
+  if(!selected||selected<model.first||selected>model.end)selected=model.today>=model.first&&model.today<=model.end?model.today:model.first;
+  prepareCalendarDetailTemplates_(sheet,model);
+  renderCrmCalendarDetails_(sheet,selected);
+}
+
+// 목록은 월 갱신 시 숨겨진 시트에 완성해 둡니다. 클릭 시에는 완성된 범위만 복사합니다.
+function calendarDetailHash_(value) {
+  const text=JSON.stringify(value);let hash=2166136261;
+  for(let i=0;i<text.length;i++){hash^=text.charCodeAt(i);hash=Math.imul(hash,16777619);}
+  return text.length+':'+(hash>>>0);
+}
+function calendarDetailMeta_() {
+  const cache=CacheService.getDocumentCache(),saved=cache.get('CRM_DETAIL_TEMPLATE_META')||PropertiesService.getDocumentProperties().getProperty('CRM_DETAIL_TEMPLATE_META');
+  if(!saved)return null;try{return JSON.parse(saved);}catch(error){return null;}
+}
+function prepareCalendarDetailTemplates_(sheet,model) {
+  const order=['고객생일','카드수납','자동차보험 갱신','면책 종료','감액 종료'];
+  const events=model.events.filter(e=>e.type!=='개인일정').slice().sort((a,b)=>a.date-b.date||order.indexOf(a.type)-order.indexOf(b.type)||String(a.name).localeCompare(String(b.name),'ko'));
+  const signature=calendarDetailHash_([model.first,model.end,events]);
+  const ss=sheet.getParent(),old=calendarDetailMeta_();
+  if(old&&old.signature===signature&&ss.getSheetById(old.sheetId))return old;
+  const props=PropertiesService.getDocumentProperties();
+  let template=old&&ss.getSheetById(old.sheetId);
+  if(!template){template=ss.insertSheet('캘린더_목록캐시_'+Date.now());template.hideSheet();}
+  const groups={};events.forEach(e=>{(groups[e.date]||(groups[e.date]=[])).push(e);});
+  const dates=Object.keys(groups).map(Number).sort((a,b)=>a-b),height=Math.max(1,...dates.map(d=>groups[d].length));
+  const total=(1+dates.length)*height;
+  if(template.getMaxRows()<total)template.insertRowsAfter(template.getMaxRows(),total-template.getMaxRows());
+  const range=template.getRange(1,1,total,5);range.breakApart().clear().setNumberFormat('@');
+  const values=Array.from({length:total},()=>Array(5).fill('')),validations=Array.from({length:total},()=>Array(5).fill(null)),plans={};
+  const rule=SpreadsheetApp.newDataValidation().requireCheckbox().build();
+  dates.forEach((date,i)=>{
+    const start=1+(i+1)*height,rows=groups[date];plans[date]={row:start,count:rows.length};
+    rows.forEach((e,k)=>{
+      values[start-1+k]=[k&&e.type===rows[k-1].type?'':literalText(e.type),literalText(e.name),literalText(String(e.birth||'')),literalText(e.text),e.name?false:''];
+      if(e.name)validations[start-1+k][4]=rule;
+    });
+  });
+  range.setValues(values).setDataValidations(validations);
+  template.getRange(1,1,1,5).setBorder(true,false,false,false,false,false,'#b7b7b7',SpreadsheetApp.BorderStyle.SOLID);
+  dates.forEach(date=>{
+    const plan=plans[date],rows=groups[date];
+    template.getRange(plan.row,1,rows.length,5).setBorder(true,true,true,true,true,true,'#b7b7b7',SpreadsheetApp.BorderStyle.SOLID);
+    for(let i=0;i<rows.length;){let end=i+1;while(end<rows.length&&rows[end].type===rows[i].type)end++;
+      if(end-i>1)template.getRange(plan.row+i,1,end-i,1).merge();i=end;}
+    template.getRange(plan.row,1,rows.length,1).setVerticalAlignment('middle');
+  });
+  const meta={sheetId:template.getSheetId(),signature,height,plans,calendarStart:model.start,first:model.first,end:model.end};
+  const encoded=JSON.stringify(meta);props.setProperty('CRM_DETAIL_TEMPLATE_META',encoded);CacheService.getDocumentCache().put('CRM_DETAIL_TEMPLATE_META',encoded,21600);
+  CacheService.getDocumentCache().remove('CRM_DETAIL_LAST_SHOWN');
+  return meta;
+}
+function renderCrmCalendarDetails_(sheet,date) {
+  let meta=calendarDetailMeta_();
+  if(!meta){
+    const year=Number(sheet.getRange('O2').getValue()),month=Number(sheet.getRange('S2').getValue());
+    const first=crmCalendarSerial_(year,month,1),end=crmCalendarSerial_(year,month+1,1)-1;
+    const rows=sheet.getRange(5,52,Math.max(1,sheet.getLastRow()-4),7).getValues();
+    meta=prepareCalendarDetailTemplates_(sheet,{first,end,start:first-crmCalendarDate_(first).getUTCDay(),events:rows.filter(r=>r[0]&&r[1]&&r[1]!=='개인일정').map(r=>({date:Number(r[0]),type:r[1],name:r[2],birth:r[3],text:r[4]}))});
+  }
+  const cache=CacheService.getDocumentCache(),key=meta.signature+':'+date;
+  if(cache.get('CRM_DETAIL_LAST_SHOWN')===key)return;
+  const template=sheet.getParent().getSheetById(meta.sheetId);if(!template)return;
+  const props=PropertiesService.getDocumentProperties(),previous=Number(cache.get('CRM_DETAIL_COPY_HEIGHT'))||Number(props.getProperty('CRM_DETAIL_COPY_HEIGHT'))||Number(props.getProperty('CRM_CALENDAR_DETAIL_COUNT'))||Math.max(1,sheet.getLastRow()-4);
+  const destination=sheet.getRange(5,38,Math.max(meta.height,previous),5);destination.breakApart();
+  if(previous>meta.height)destination.clearContent().clearDataValidations().setBorder(false,false,false,false,false,false);
+  const plan=meta.plans[date];
+  template.getRange(plan?plan.row:1,1,meta.height,5).copyTo(sheet.getRange(5,38,meta.height,5),SpreadsheetApp.CopyPasteType.PASTE_NORMAL,false);
+  sheet.getRange('AO3').setValue(date);
+  if(previous!==meta.height)props.setProperty('CRM_DETAIL_COPY_HEIGHT',String(meta.height));cache.put('CRM_DETAIL_COPY_HEIGHT',String(meta.height),21600);
+  const visible=Math.max(34,4+meta.height);
+  if(visible>34||Number(props.getProperty('CRM_DETAIL_VISIBLE_END'))>34){sheet.showRows(1,visible);if(visible<sheet.getMaxRows())sheet.hideRows(visible+1,sheet.getMaxRows()-visible);props.setProperty('CRM_DETAIL_VISIBLE_END',String(visible));}
+  cache.put('CRM_DETAIL_LAST_SHOWN',key,21600);
+}
+
+function saveCalendarPersonalDay_(sheet,date,text) {
+  const data=sheet.getRange(5,45,sheet.getMaxRows()-4,4).getValues();let empty=-1;const matches=[];
+  data.forEach((r,i)=>{if(!r[0]&&empty<0)empty=i;try{if(crmCalendarInputDate_(r[0],sheet.getParent())===date)matches.push(i);}catch(error){}});
+  matches.forEach(i=>sheet.getRange(i+5,45,1,4).clearContent());
+  if(!String(text||'').trim())return;
+  const dest=matches.length?matches[0]:empty;
+  if(dest<0)throw new Error('개인일정 저장 공간이 부족합니다.');
+  sheet.getRange(dest+5,45,1,4).setValues([[date,'개인일정',literalText(String(text).trim()),'예정']]);
+}
+function openCalendarCustomer_(ss,name,birth) {
+  if(!name)return;const card=crmSheet_(ss,'고객 관리 카드');
+  card.getRange('C4').setValue(name);card.getRange('C5').setNumberFormat('@').setValue(String(birth));
+  refreshCustomerCard(ss);ss.setActiveSheet(card);card.getRange('C4').activate();
+}
+function onSelectionChange(e) {
+  if(!e||!e.range||crmSheetRole_(e.range.getSheet())!=='캘린더')return;
+  const sheet=e.range.getSheet(),row=e.range.getRow(),col=e.range.getColumn();
+  if(row>=5&&row<=34&&col>=2&&col<=36&&e.range.getNumRows()===1&&e.range.getNumColumns()<=5){
+    const meta=calendarDetailMeta_();let start;
+    if(meta)start=meta.calendarStart;else{const period=sheet.getRange('O2:S2').getValues()[0],year=Number(period[0]),month=Number(period[4]);if(!Number.isInteger(year)||!Number.isInteger(month)||month<1||month>12)return;const first=crmCalendarSerial_(year,month,1);start=first-crmCalendarDate_(first).getUTCDay();}
+    const week=Math.floor((row-5)/5),day=Math.floor((col-2)/5),date=start+week*7+day;
+    renderCrmCalendarDetails_(sheet,date);
+  }else if(row>=5&&(col===39||col===40)&&e.range.getNumRows()===1){
+    const r=sheet.getRange(row,39,1,2).getDisplayValues()[0];openCalendarCustomer_(e.source,r[0],r[1]);
+  }
+}
+
+function handleCrmCalendarEdit(e) {
+  if(!e||!e.range||crmSheetRole_(e.range.getSheet())!=='캘린더')return false;
+  const sheet=e.range.getSheet(),ss=e.source;
+  try{
+    if(e.range.getColumn()===42&&e.range.getRow()>=5&&e.value==='TRUE'){
+      const r=sheet.getRange(e.range.getRow(),39,1,2).getDisplayValues()[0];e.range.setValue(false);openCalendarCustomer_(ss,r[0],r[1]);return true;
+    }
+    if(e.range.getRow()===3&&e.range.getColumn()>=41&&e.range.getColumn()<=42){const date=crmCalendarInputDate_(e.range.getValue(),ss);e.range.setValue(date).setNumberFormat('yyyy-mm-dd');renderCrmCalendarDetails_(sheet,date);return true;}
+    const targets=JSON.parse(PropertiesService.getDocumentProperties().getProperty('CRM_CALENDAR_DATE_MAP')||'{}');
+    for(let w=0;w<6;w++){
+      const header=5+w*5,first=header+1,last=header+3;
+      if(e.range.getRow()>last||e.range.getLastRow()<first)continue;
+      for(let col=Math.max(2,e.range.getColumn());col<=Math.min(36,e.range.getLastColumn());col++){
+        const inputCol=2+Math.floor((col-2)/5)*5;const date=targets[header+':'+inputCol];if(!date)continue;
+        const text=sheet.getRange(first,inputCol,3,1).getDisplayValues().map(r=>r[0]).filter(t=>t.trim()).join('\n');
+        saveCalendarPersonalDay_(sheet,date,text);
+      }
+    }
+    refreshCrmCalendar(ss,false,true);
+  }catch(error){sheet.getRange('B1').setValue(error.message);}
+  return true;
+}
+
+
+// 한국천문연구원의 2026 월력요항을 기본 자료로 사용하고 Google 공개 공휴일 달력으로 갱신합니다.
+const CRM_KOREAN_HOLIDAYS_2026=[
+ ['20260101','신정'],['20260216','설날 연휴'],['20260217','설날'],['20260218','설날 연휴'],
+ ['20260301','삼일절'],['20260302','대체공휴일'],['20260501','노동절'],['20260505','어린이날'],
+ ['20260524','부처님오신날'],['20260525','대체공휴일'],['20260603','전국동시지방선거'],['20260606','현충일'],
+ ['20260717','제헌절'],['20260815','광복절'],['20260817','대체공휴일'],['20260924','추석 연휴'],['20260925','추석'],['20260926','추석 연휴'],
+ ['20261003','개천절'],['20261005','대체공휴일'],['20261009','한글날'],['20261225','성탄절']
+];
+function parseCrmHolidayIcs_(text,official) {
+  const unfolded=String(text).replace(/\r?\n[ \t]/g,'');
+  const events=[],blocks=unfolded.split('BEGIN:VEVENT').slice(1);
+  blocks.forEach(block=>{
+    const date=/^DTSTART(?:;[^:\r\n]*)?:(\d{8})/m.exec(block),name=/^SUMMARY(?:;[^:\r\n]*)?:(.+)$/m.exec(block);
+    if(!date||!name)return;
+    const label=name[1].trim().replace(/\\n/g,' ').replace(/\\,/g,',').replace(/\\;/g,';');
+    const newHoliday=Number(date[1].slice(0,4))>=2026&&/노동절|근로자의날|근로자의 날|제헌절/.test(label);
+    if(!official&&!newHoliday&&!/신정|새해|설날|설연휴|삼일절|3[·.\s]*1절|어린이날|부처님|석가탄신일|현충일|광복절|추석|개천절|한글날|성탄절|기독탄신일|크리스마스|대체.*공휴일|임시.*공휴일|선거/.test(label))return;
+    events.push([crmCalendarSerial_(Number(date[1].slice(0,4)),Number(date[1].slice(4,6)),Number(date[1].slice(6))),label]);
+  });
+  return events;
+}
+function crmCalendarHolidays_(sheet) {
+  const result={};
+  CRM_KOREAN_HOLIDAYS_2026.forEach(([date,label])=>{result[crmCalendarSerial_(Number(date.slice(0,4)),Number(date.slice(4,6)),Number(date.slice(6)))]=label;});
+  const rows=sheet.getRange(5,49,Math.max(1,sheet.getLastRow()-4),2).getValues();
+  rows.forEach(row=>{if(row[0]&&row[1]){
+    const date=row[0] instanceof Date?crmCalendarInputDate_(row[0],sheet.getParent()):Number(row[0]);
+    result[date]=String(row[1]);
+  }});
+  return result;
+}
+function updateCrmHolidayData_(ss) {
+  const sheet=crmSheet_(ss,'캘린더');if(!sheet)return;
+  let events=[];
+  for(const official of [true,false]){
+    const calendar=official?'ko.south_korea.official':'ko.south_korea';
+    try{
+      const response=UrlFetchApp.fetch('https://calendar.google.com/calendar/ical/'+calendar+'%23holiday%40group.v.calendar.google.com/public/basic.ics',{muteHttpExceptions:true});
+      if(response.getResponseCode()===200){events=parseCrmHolidayIcs_(response.getContentText(),official);if(events.length)break;}
+    }catch(error){}
+  }
+  if(!events.length)throw new Error('공휴일 자료를 불러오지 못했습니다. 2026년 기본 공휴일 자료는 유지됩니다.');
+  const unique={};events.forEach(([date,name])=>{unique[date]=name;});
+  const rows=Object.keys(unique).map(Number).sort((a,b)=>a-b).map(date=>[date,unique[date]]);
+  if(rows.length+4>sheet.getMaxRows())sheet.insertRowsAfter(sheet.getMaxRows(),rows.length+4-sheet.getMaxRows());
+  sheet.getRange(5,49,sheet.getMaxRows()-4,2).clearContent();
+  sheet.getRange(5,49,rows.length,2).setValues(rows);
+  sheet.getRange('AY3').setNumberFormat('@').setValue(contractTodayText(ss));
+}
+function setupCrmCalendar() {
+  const ss=SpreadsheetApp.getActiveSpreadsheet();
+  ensureCrmCalendarStorage_(crmSheet_(ss,'캘린더'));
+  try{updateCrmHolidayData_(ss);}catch(error){ss.toast(error.message,'공휴일 자료');}
+  refreshCrmCalendar(ss);
+  setupViewAutoRefresh();
+}
+
+function refreshCrmHolidayDataIfNeeded_(ss) {
+  const sheet=crmSheet_(ss,'캘린더');if(!sheet)return;
+  const todayText=contractTodayText(ss),last=sheet.getRange('AY3').getDisplayValue(),attempt=sheet.getRange('AY4').getDisplayValue();
+  if(attempt===todayText)return;
+  if(last&&parseContractDate(todayText)-parseContractDate(last)<30)return;
+  sheet.getRange('AY4').setNumberFormat('@').setValue(todayText);
+  try{updateCrmHolidayData_(ss);}catch(error){}
+}
+

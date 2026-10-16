@@ -100,6 +100,7 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
     return () => observer.disconnect();
   }, []);
   const [noticeType, setNoticeType] = useState<NoticeType>("claim");
+  const selectionRevision = useRef(0);
   const [claimContents, setClaimContents] = useState<Record<ClaimKind, string>>(() => Object.fromEntries(claimNotices.map(item => [item.id, readClaimContent(item.id, null)])) as Record<ClaimKind, string>);
   useEffect(() => { setClaimContents(previous => Object.fromEntries(Object.entries(previous).map(([kind, value]) => [kind, readClaimContent(kind, JSON.stringify({version:2,content:value}))])) as Record<ClaimKind, string>); }, []);
   const [claimKind, setClaimKind] = useState<ClaimKind>("hospital");
@@ -127,19 +128,31 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
   const bgUrl = `/card-templates/${noticeType}/${month}.png`;
   const pos = textPositions[noticeType === "reduction" ? "reduction" : "exemption"];
   const selectNoticeType = (type: NoticeType) => {
+    selectionRevision.current++;
+    try { localStorage.setItem(`notice-last-type:${authUser?.id || "local"}`, type); } catch {}
     setNoticeType(type); setSaveMsg("");
     if (type === "claim") { setSignature("든든한 설계사"); setFontFamily("sans-serif"); setSignatureColor("#4a4a4a"); }
     else if (type === "exemption" || type === "reduction") { setContent(defaultContents[type].content); setSignature(defaultContents[type].signature); }
   };
   useEffect(() => {
+    let remembered: NoticeType | null = null;
+    try {
+      const saved = localStorage.getItem(`notice-last-type:${authUser?.id || "local"}`);
+      if (noticeTypes.some(type => type.id === saved)) remembered = saved as NoticeType;
+    } catch {}
+    setNoticeType(remembered || "claim");
+    if (remembered === "exemption" || remembered === "reduction") { setContent(defaultContents[remembered].content); setSignature(defaultContents[remembered].signature); }
+    const revision = ++selectionRevision.current;
     if (!authUser) return;
     let active = true;
     const loadNotice = async () => {
+      let latest = supabase.from("notice_settings").select("*").eq("user_id", authUser.id);
+      if (remembered) latest = latest.eq("notice_type", remembered);
       const [{ data }, { data: savedClaims }] = await Promise.all([
-        supabase.from("notice_settings").select("*").eq("user_id", authUser.id).order("updated_at", { ascending: false }).limit(1).maybeSingle(),
+        latest.order("updated_at", { ascending: false }).limit(1).maybeSingle(),
         supabase.from("notice_settings").select("month,content").eq("user_id", authUser.id).eq("notice_type", "claim"),
       ]);
-      if (!active) return;
+      if (!active || selectionRevision.current !== revision) return;
       const drafts = Object.fromEntries(claimNotices.map(item => [item.id, readClaimContent(item.id, null)])) as Record<ClaimKind, string>;
       for (const saved of savedClaims ?? []) { const kind = claimNotices.find(item => item.id === saved.month)?.id; if (kind) drafts[kind] = readClaimContent(kind, saved.content); }
       if (data?.notice_type === "claim") drafts[getClaimNotice(data.month).id] = readClaimContent(data.month, data.content);

@@ -5,6 +5,7 @@ import ResourceExplorer from "@/app/components/ResourceExplorer";
 import { useSharedHomeController } from "./HomeControllerProvider";
 import FortuneWidget from "./components/FortuneWidget";
 import MainHeader from "./components/MainHeader";
+import CustomerReminderNotice from "./components/CustomerReminderNotice";
 import DashboardCards from "./components/dashboard/DashboardCards";
 import MainMenuGrid from "./components/MainMenuGrid";
 import ProfileSettingsDialog from "./components/ProfileSettingsDialog";
@@ -36,6 +37,7 @@ return ((
       
       {/* 헤더 */}
       <MainHeader controller={controller} />
+      <CustomerReminderNotice />
       
             {/* 메인 */}
       <MainMenuGrid controller={controller} />

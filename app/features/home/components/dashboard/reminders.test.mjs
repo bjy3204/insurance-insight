@@ -66,3 +66,13 @@ test('Deleting an event removes its local reminder',()=>{
  f.storage.saveLocalEvents([]);
  assert.equal(f.storage.readLocalReminders().length,0);
 });
+
+test('banner is opt-in, includes enabled upcoming schedules and removes disabled or expired entries',()=>{
+ const tomorrow={...event,id:'future',date:'2026-10-02'};
+ assert.equal(utils.calendarBannerReminders([event,tomorrow],[],'2026-10-01').length,0);
+ const enabled=[reminder,{...reminder,event_id:tomorrow.id,notification_date:tomorrow.date}];
+ assert.equal(utils.calendarBannerReminders([event,tomorrow],enabled,'2026-10-01').length,1);
+ assert.equal(utils.calendarBannerReminders([event,tomorrow],enabled,'2026-10-02').length,1);
+ assert.equal(utils.calendarBannerReminders([event],[{...reminder,acknowledged_at:'confirmed'}],'2026-10-01').length,0);
+ assert.equal(utils.calendarBannerReminders([event],[],'2026-10-01').length,0);
+});

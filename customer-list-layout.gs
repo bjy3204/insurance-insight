@@ -34,6 +34,9 @@ function refreshCustomerListLayout(source) {
     list.setRowHeight(plan.endRow,28);
   }
   const height=list.getMaxRows()-5;
+  list.getRange(6,10,height,1).setDataValidation(SpreadsheetApp.newDataValidation()
+    .requireFormulaSatisfied('=OR(J6="",AND(ISNUMBER(J6),J6=INT(J6),J6>=1,J6<=31))')
+    .setAllowInvalid(false).setHelpText('카드 결제일은 1~31 사이의 숫자로 입력해 주세요.').build());
   // 기존 선은 그대로 유지합니다. 양옆 테두리를 추가하거나 선을 다시 그리지 않습니다.
   customerListDropdownRules_(ss).forEach(({column,rule})=>{
     list.getRange(6,column,height,1).clearDataValidations();

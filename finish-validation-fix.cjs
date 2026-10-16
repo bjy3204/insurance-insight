@@ -1,0 +1,1 @@
+const fs=require('fs'),vm=require('vm');for(const p of ['Code-CRM-calendar-validation-fixed.txt','crm-calendar.gs']){let s=fs.readFileSync(p,'utf8');s=s.replace(/^\s*sheet\.setRowHeights\(6,31,28\);\r?\n/m,'').replace(/^\s*sheet\.getRange\(row,2,5,7\)\.setBorder\([^\n]+\r?\n/m,'');new vm.Script(s);fs.writeFileSync(p,s);}

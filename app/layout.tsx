@@ -4,6 +4,7 @@ import "./globals.css";
 import GlobalWidgets from "./components/GlobalWidgets";
 import PopupInteractions from "./components/PopupInteractions";
 import AuthProvider from "./components/AuthProvider";
+import PayappClaim from "./components/PayappClaim";
 import HomeControllerProvider from "./features/home/HomeControllerProvider";
 
 
@@ -72,6 +73,7 @@ export default function RootLayout({
     >
             <body className="min-h-full flex flex-col">
   <AuthProvider>
+<PayappClaim />
 <HomeControllerProvider>
 {children}
 <GlobalWidgets />

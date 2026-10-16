@@ -1,0 +1,1 @@
+const fs=require('fs'),vm=require('vm');let s=fs.readFileSync('Code-CRM-calendar-detail-fields.txt','utf8');const a=s.indexOf('const CRM_CALENDAR_VIEWS');s=s.slice(0,a)+s.slice(a).replaceAll("'G2'","'O2'").replaceAll("'I2'","'S2'");new vm.Script(s);fs.writeFileSync('Code-CRM-calendar-O2-S2.txt',s);console.log('PASS: full script syntax, calendar year O2 and month S2');
