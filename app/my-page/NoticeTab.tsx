@@ -1,8 +1,9 @@
 "use client";
+import styles from "./NoticeTab.module.css";
 import ClaimNoticePaper from "./ClaimNoticePaper";
 import { claimNotices, getClaimNotice, readClaimContent, parseClaimContent, type ClaimKind } from "./claim-notices";
 import ColorSelectButton from "@/app/components/memos/ColorSelectButton";
-import { ChevronDown, Download, Save, X, FileText, MessageCircle } from "lucide-react";
+import { ChevronDown, Download, RotateCcw, X, FileText, MessageCircle } from "lucide-react";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -91,7 +92,9 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
   const [fontOpen, setFontOpen] = useState(false);
   const [mobileDesignOpen, setMobileDesignOpen] = useState(false);
   useEffect(() => { if (active) { setMobileDesignOpen(false); setFontOpen(false); } }, [active]);
-  const [saving, setSaving] = useState(false);
+  const [noticeLoaded, setNoticeLoaded] = useState(false);
+  const lastDraft = useRef("");
+  const saveQueue = useRef(Promise.resolve());
   useEffect(() => {
     const element = previewContainerRef.current;
     if (!element) return;
@@ -135,6 +138,7 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
     else if (type === "exemption" || type === "reduction") { setContent(defaultContents[type].content); setSignature(defaultContents[type].signature); }
   };
   useEffect(() => {
+    setNoticeLoaded(false); lastDraft.current = "";
     let remembered: NoticeType | null = null;
     try {
       const saved = localStorage.getItem(`notice-last-type:${authUser?.id || "local"}`);
@@ -148,10 +152,12 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
     const loadNotice = async () => {
       let latest = supabase.from("notice_settings").select("*").eq("user_id", authUser.id);
       if (remembered) latest = latest.eq("notice_type", remembered);
-      const [{ data }, { data: savedClaims }] = await Promise.all([
+      const [latestResult, claimsResult] = await Promise.all([
         latest.order("updated_at", { ascending: false }).limit(1).maybeSingle(),
         supabase.from("notice_settings").select("month,content").eq("user_id", authUser.id).eq("notice_type", "claim"),
       ]);
+      if (latestResult.error || claimsResult.error) throw new Error("load_failed");
+      const data = latestResult.data, savedClaims = claimsResult.data;
       if (!active || selectionRevision.current !== revision) return;
       const drafts = Object.fromEntries(claimNotices.map(item => [item.id, readClaimContent(item.id, null)])) as Record<ClaimKind, string>;
       for (const saved of savedClaims ?? []) { const kind = claimNotices.find(item => item.id === saved.month)?.id; if (kind) drafts[kind] = readClaimContent(kind, saved.content); }
@@ -167,16 +173,22 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
       setSignature(data.signature ?? "든든한 보험 파트너");
       setFontFamily(data.font_family || "serif"); setTextColor(data.text_color || "#4a4a4a"); setSignatureColor(data.signature_color || "#9a7a3a");
     };
-    void loadNotice(); return () => { active = false; };
+    void loadNotice().then(() => { if (active && selectionRevision.current === revision) setNoticeLoaded(true); }).catch(() => { if (active) setSaveMsg("저장된 안내장을 불러오지 못했습니다. 새로고침해 주세요."); }); return () => { active = false; };
   }, [authUser?.id]);
-  const handleSave = async () => {
-    if (!authUser || saving) return;
-    setSaving(true);
-    try {
-      const { error } = await supabase.from("notice_settings").upsert({ user_id: authUser.id, notice_type: noticeType, month: noticeType === "claim" ? claimKind : month, customer_name: customerName, content: noticeType === "claim" ? JSON.stringify({ version: 2, content: claimContents[claimKind] }) : content, signature, font_family: fontFamily, text_color: textColor, signature_color: signatureColor, updated_at: new Date().toISOString() }, { onConflict: "user_id,notice_type,month" });
-      setSaveMsg(error ? "저장 실패" : "저장되었습니다");
-    } catch { setSaveMsg("저장 실패"); } finally { setSaving(false); }
-  };
+  const draft = JSON.stringify({ user_id: authUser?.id, notice_type: noticeType, month: noticeType === "claim" ? claimKind : month, customer_name: customerName, content: noticeType === "claim" ? JSON.stringify({ version: 2, content: claimContents[claimKind] }) : content, signature, font_family: fontFamily, text_color: textColor, signature_color: signatureColor });
+  useEffect(() => {
+    if (!noticeLoaded || !authUser?.id) return;
+    if (!lastDraft.current) { lastDraft.current = draft; return; }
+    if (lastDraft.current === draft) return;
+    lastDraft.current = draft;
+    const record = JSON.parse(draft);
+    saveQueue.current = saveQueue.current.then(async () => {
+      try {
+        const { error } = await supabase.from("notice_settings").upsert({ ...record, updated_at: new Date().toISOString() }, { onConflict: "user_id,notice_type,month" });
+        if (error) throw error;
+      } catch { setSaveMsg("자동 저장하지 못했습니다. 내용을 다시 수정해 주세요."); }
+    });
+  }, [draft, noticeLoaded, authUser?.id]);
   const captureNotice = useCallback(async () => {
     if (!previewRef.current) throw new Error("안내장 미리보기를 확인해 주세요.");
     return captureNoticeImage(previewRef.current);
@@ -233,37 +245,20 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
       <div className="flex flex-wrap items-center justify-end gap-3">
         <h2 className="mr-auto flex items-center gap-3 text-xl font-bold"><FileText className="w-7 h-7 text-violet-500" />안내장</h2>
         {saveMsg && <p role="status" className="text-sm text-gray-600">{saveMsg}</p>}
-        <button type="button" aria-label="내용 저장" title="내용 저장" onClick={handleSave} disabled={!authUser || saving} className="flex items-center justify-center gap-2 h-11 w-11 sm:w-auto sm:px-5 shrink-0 rounded-xl border border-gray-200 bg-white text-sm font-bold cursor-pointer disabled:opacity-50"><Save className="w-4 h-4" /><span className="hidden sm:inline whitespace-nowrap">{saving ? "저장 중..." : "내용 저장"}</span></button>
-        <button type="button" aria-label="이미지 저장" title="이미지 저장" onClick={handleDownload} disabled={isCapturing || preparingShare} className="flex items-center justify-center gap-2 h-11 w-11 sm:w-auto sm:px-5 shrink-0 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer disabled:opacity-50"><Download className="w-4 h-4" /><span className="hidden sm:inline whitespace-nowrap">{isCapturing ? "저장 중..." : "이미지 저장"}</span></button>
-        <button type="button" aria-label="카톡 공유하기" title="카톡 공유하기" onClick={handleKakaoShare} disabled={preparingShare || sharing} className="flex items-center justify-center gap-2 h-11 w-11 sm:w-auto sm:px-5 shrink-0 rounded-xl bg-[#fee500] text-gray-900 text-sm font-bold cursor-pointer disabled:opacity-50"><MessageCircle className="w-4 h-4" /><span className="hidden sm:inline whitespace-nowrap">{preparingShare ? "이미지 준비 중..." : "카톡 공유하기"}</span></button>
+        <button data-action-height="44" type="button" aria-label="내용 초기화" title="내용 초기화" disabled={!noticeLoaded} onClick={() => { if (noticeType === "claim") setClaimContents(previous => ({ ...previous, [claimKind]: readClaimContent(claimKind, null) })); else setContent(defaultContents[noticeType].content); setSaveMsg(""); }} className="flex items-center justify-center gap-2 h-11 w-11 sm:w-auto sm:px-5 shrink-0 rounded-xl border border-gray-200 bg-white text-sm font-bold cursor-pointer hover:bg-gray-50 disabled:opacity-50"><RotateCcw className="w-5 h-5"/><span className="hidden sm:inline whitespace-nowrap">내용 초기화</span></button>
+        <button data-action-height="44" type="button" aria-label="이미지 저장" title="이미지 저장" onClick={handleDownload} disabled={isCapturing || preparingShare} className="flex items-center justify-center gap-2 h-11 w-11 shrink-0 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer disabled:opacity-50"><Download className="w-5 h-5" /></button>
+        <button data-action-height="44" type="button" aria-label="카톡 공유하기" title="카톡 공유하기" onClick={handleKakaoShare} disabled={preparingShare || sharing} className="flex items-center justify-center gap-2 h-11 w-11 shrink-0 rounded-xl bg-[#fee500] text-gray-900 text-sm font-bold cursor-pointer disabled:opacity-50"><MessageCircle className="w-5 h-5" /></button>
       </div>
-      <div data-tab-style="rounded" aria-label="안내장 종류" className="grid grid-cols-3 rounded-2xl border border-gray-200 bg-white p-1.5 gap-1">
+      <div className={styles.workspace}>
+      <nav aria-label="안내장 종류" className={styles.menu}>
         {noticeTypes.map(type => (
-          <button type="button" key={type.id} aria-pressed={noticeType === type.id} disabled={!type.ready} title={type.ready ? undefined : "디자인 준비 중"} onClick={() => selectNoticeType(type.id)} className={`h-11 sm:h-12 rounded-xl text-sm sm:text-base font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-default ${noticeType === type.id ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-blue-50 hover:text-blue-600"}`}>
+          <button data-action-height="44" type="button" key={type.id} aria-pressed={noticeType === type.id} disabled={!type.ready} title={type.ready ? undefined : "디자인 준비 중"} onClick={() => selectNoticeType(type.id)} className={`h-11 rounded-xl text-sm font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-default ${noticeType === type.id ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-blue-50 hover:text-blue-600"}`}>
             {type.label}
           </button>
         ))}
-      </div>
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 items-stretch">
-        <div className="personal-grid flex flex-col min-w-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 gap-5">
-        {noticeType === "claim" ? <div className="space-y-2"><p className="text-sm font-bold">청구 종류</p><div className="grid grid-cols-3 gap-2">{claimNotices.map(item => <button type="button" key={item.id} onClick={() => { setClaimKind(item.id); setSaveMsg(""); }} className={`h-11 rounded-xl text-sm font-semibold cursor-pointer ${claimKind === item.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600"}`}>{item.label}</button>)}</div></div> : (<div className="space-y-2"><p className="text-sm font-bold">월 선택</p><div className="grid grid-cols-3 lg:grid-cols-3 gap-2 max-w-[800px]">{monthTabs.map(item => <button type="button" key={item.id} onClick={() => setMonth(item.id)} className={`h-11 rounded-xl text-sm font-semibold cursor-pointer ${month === item.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600"}`}>{item.label}</button>)}</div></div>)}
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div><label htmlFor="notice-customer" className="block text-sm font-bold mb-2">고객명</label><div className="relative"><input data-ui-field="true" id="notice-customer" value={customerName} onChange={event => setCustomerName(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" aria-label="고객명 지우기" onClick={() => setCustomerName("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
-          <div><label htmlFor="notice-signature" className="block text-sm font-bold mb-2">설계사</label><div className="relative"><input data-ui-field="true" id="notice-signature" value={signature} onChange={event => setSignature(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" aria-label="설계사 지우기" onClick={() => setSignature("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
-        </div>
-          <div className="flex flex-col flex-1"><label htmlFor="notice-content" className="block text-sm font-bold mb-3">안내 내용</label><textarea data-ui-field="true" id="notice-content" value={noticeType === "claim" ? claimContents[claimKind] : content} onChange={event => { const value = event.target.value; if (noticeType === "claim") setClaimContents(previous => ({ ...previous, [claimKind]: value })); else setContent(value); setSaveMsg(""); }} rows={6} className="block w-full flex-1 min-h-[180px] p-4 rounded-xl border border-gray-200 text-sm leading-7 outline-none resize-none focus:border-blue-400" /></div>
-          <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
-            <h3 className="hidden md:block text-sm font-bold">디자인 설정</h3>
-            <button type="button" aria-expanded={mobileDesignOpen} aria-controls="notice-design-settings" onClick={() => { setMobileDesignOpen(previous => !previous); setFontOpen(false); }} className="flex md:hidden w-full items-center justify-between text-sm font-bold cursor-pointer">디자인 설정<ChevronDown className={`w-4 h-4 transition-transform ${mobileDesignOpen ? "rotate-180" : ""}`} /></button>
-            <div id="notice-design-settings" className={`${mobileDesignOpen ? "grid" : "hidden"} md:grid sm:grid-cols-3 gap-3 mt-4`}>
-              <div className="relative"><p className="text-xs font-semibold text-gray-600 mb-2">글자 폰트</p><button type="button" aria-expanded={fontOpen} onClick={() => setFontOpen(previous => !previous)} className="w-full h-12 flex items-center justify-between gap-2 px-3 rounded-xl bg-white border border-gray-200 text-sm cursor-pointer">{fontOptions.find(font => font.value === fontFamily)?.label}<ChevronDown className="w-4 h-4 text-gray-400" /></button>{fontOpen && <><button type="button" aria-label="폰트 선택 닫기" onClick={() => setFontOpen(false)} className="fixed inset-0 z-10 cursor-default" /><div className="absolute top-full mt-1 w-full z-20 bg-white border border-gray-200 rounded-xl shadow-lg p-1">{fontOptions.map(font => <button type="button" key={font.value} onClick={() => { setFontFamily(font.value); setFontOpen(false); }} className={`block w-full text-left text-sm px-3 py-2 rounded-lg cursor-pointer ${fontFamily === font.value ? "bg-gray-100 font-semibold" : "hover:bg-gray-50"}`}>{font.label}</button>)}</div></>}</div>
-              <div><p className="text-xs font-semibold text-gray-600 mb-2">본문 색상</p><ColorSelectButton label="본문 색상 선택" value={textColor} onChange={setTextColor} /></div>
-              <div><p className="text-xs font-semibold text-gray-600 mb-2">서명 색상</p><ColorSelectButton label="서명 색상 선택" value={signatureColor} onChange={setSignatureColor} /></div>
-            </div>
-          </div>
-        </div>
-        <div className="personal-grid min-w-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-          <h3 className="text-sm font-bold mb-4">미리보기</h3>
+      </nav>
+        <div className={`${styles.preview} personal-grid min-w-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-5`}>
+          <h3 className="text-base font-bold mb-4">미리보기</h3>
           <div ref={previewContainerRef} className="relative w-full max-w-[720px] mx-auto aspect-square overflow-hidden">
     <div
       ref={previewRef}
@@ -323,6 +318,23 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
           </div>
           </>}
              </div>
+          </div>
+        </div>
+        <div className={`${styles.controls} personal-grid flex flex-col min-w-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 gap-5`}>
+        {noticeType === "claim" ? <div className="space-y-2"><p className="text-base font-bold">청구 종류</p><div className="grid grid-cols-3 gap-2">{claimNotices.map(item => <button data-action-height="44" type="button" key={item.id} onClick={() => { setClaimKind(item.id); setSaveMsg(""); }} className={`h-11 rounded-xl text-sm font-semibold cursor-pointer ${claimKind === item.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600"}`}>{item.label}</button>)}</div></div> : (<div className="space-y-2"><p className="text-base font-bold">월 선택</p><div className="grid grid-cols-3 lg:grid-cols-3 gap-2 max-w-[800px]">{monthTabs.map(item => <button data-action-height="44" type="button" key={item.id} onClick={() => setMonth(item.id)} className={`h-11 rounded-xl text-sm font-semibold cursor-pointer ${month === item.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600"}`}>{item.label}</button>)}</div></div>)}
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div><label htmlFor="notice-customer" className="block text-base font-bold mb-2">고객명</label><div className="relative"><input data-ui-field="true" id="notice-customer" value={customerName} onChange={event => setCustomerName(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" aria-label="고객명 지우기" onClick={() => setCustomerName("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
+          <div><label htmlFor="notice-signature" className="block text-base font-bold mb-2">설계사</label><div className="relative"><input data-ui-field="true" id="notice-signature" value={signature} onChange={event => setSignature(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" aria-label="설계사 지우기" onClick={() => setSignature("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
+        </div>
+          <div className="flex flex-col flex-1"><label htmlFor="notice-content" className="block text-base font-bold mb-3">안내 내용</label><textarea data-ui-field="true" id="notice-content" value={noticeType === "claim" ? claimContents[claimKind] : content} onChange={event => { const value = event.target.value; if (noticeType === "claim") setClaimContents(previous => ({ ...previous, [claimKind]: value })); else setContent(value); setSaveMsg(""); }} rows={6} className="block w-full flex-1 min-h-[180px] p-4 rounded-xl border border-gray-200 text-sm leading-7 outline-none resize-none focus:border-blue-400" /></div>
+          <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
+            <h3 className="hidden md:block text-base font-bold">디자인 설정</h3>
+            <button data-action-height="44" type="button" aria-expanded={mobileDesignOpen} aria-controls="notice-design-settings" onClick={() => { setMobileDesignOpen(previous => !previous); setFontOpen(false); }} className="flex md:hidden w-full items-center justify-between text-base font-bold cursor-pointer">디자인 설정<ChevronDown className={`w-4 h-4 transition-transform ${mobileDesignOpen ? "rotate-180" : ""}`} /></button>
+            <div id="notice-design-settings" className={`${mobileDesignOpen ? "grid" : "hidden"} md:grid sm:grid-cols-3 gap-3 mt-4`}>
+              <div className="relative"><p className="text-xs font-semibold text-gray-600 mb-2">글자 폰트</p><button data-action-height="44" type="button" aria-expanded={fontOpen} onClick={() => setFontOpen(previous => !previous)} className="w-full h-12 flex items-center justify-between gap-2 px-3 rounded-xl bg-white border border-gray-200 text-sm cursor-pointer">{fontOptions.find(font => font.value === fontFamily)?.label}<ChevronDown className="w-4 h-4 text-gray-400" /></button>{fontOpen && <><button type="button" aria-label="폰트 선택 닫기" onClick={() => setFontOpen(false)} className="fixed inset-0 z-10 cursor-default" /><div className="absolute top-full mt-1 w-full z-20 bg-white border border-gray-200 rounded-xl shadow-lg p-1">{fontOptions.map(font => <button data-action-height="44" type="button" key={font.value} onClick={() => { setFontFamily(font.value); setFontOpen(false); }} className={`block w-full text-left text-sm px-3 py-2 rounded-lg cursor-pointer ${fontFamily === font.value ? "bg-gray-100 font-semibold" : "hover:bg-gray-50"}`}>{font.label}</button>)}</div></>}</div>
+              <div><p className="text-xs font-semibold text-gray-600 mb-2">본문 색상</p><ColorSelectButton label="본문 색상 선택" value={textColor} onChange={setTextColor} /></div>
+              <div><p className="text-xs font-semibold text-gray-600 mb-2">서명 색상</p><ColorSelectButton label="서명 색상 선택" value={signatureColor} onChange={setSignatureColor} /></div>
+            </div>
           </div>
         </div>
       </div>

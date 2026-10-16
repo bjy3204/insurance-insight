@@ -1282,7 +1282,7 @@ const pagedMemos = filteredMemos.slice(
       ) : (
         <>
           <div className="flex-1 overflow-y-auto px-6 py-5">
-  <h2 className="text-2xl font-black text-gray-900 break-keep leading-snug">
+  <h2 data-popup-heading="true" className="text-2xl font-black text-gray-900 break-keep leading-snug">
     {selectedPress.title}
   </h2>
 

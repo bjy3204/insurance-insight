@@ -43,11 +43,19 @@ return (<><div className={`${styles.menuSection} max-w-[1500px] mx-auto px-5 py-
   });
 }}
 href={
-  menu.id === "customer-manage" || menu.id === "sales-book"
+  menu.id === "customer-manage" || menu.id === "sales-book" || menu.id === "policy-inserts"
     ? undefined
     : menu.link
 }
 onClick={(e) => {
+  if (menu.id === "policy-inserts") {
+    e.preventDefault();
+    if (!authUser || authStatus !== "approved") {
+      setCmPinState("not-approved");
+      setCmPinOpen(true);
+    } else window.location.assign("/policy-inserts");
+    return;
+  }
   if (menu.id === "customer-manage") {
     e.preventDefault();
     openCmPinPopup();

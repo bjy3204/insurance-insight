@@ -303,7 +303,7 @@ const findInstructor = (name: string) =>
                 </span>
               </div>
 
-              <h2 className="text-[26px] leading-tight font-black text-gray-900 mb-4 break-all">
+              <h2 data-popup-heading="true" className="text-[26px] leading-tight font-black text-gray-900 mb-4 break-all">
                 {selectedLecture.title}
               </h2>
 
@@ -439,7 +439,7 @@ const findInstructor = (name: string) =>
           </div>
 
           <div className="flex-1">
-            <h2 className="text-2xl font-black text-gray-900 mb-2">
+            <h2 data-popup-heading="true" className="text-2xl font-black text-gray-900 mb-2">
               {selectedInstructor.name}
             </h2>
 

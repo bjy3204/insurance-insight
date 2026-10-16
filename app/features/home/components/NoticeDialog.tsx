@@ -11,7 +11,7 @@ return (<>{noticeOpen && (
   onClick={() => setNoticeOpen(false)}
   className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
 >
-         <div data-popup-frame="true"
+         <div data-popup-frame="true" data-hide-popup-scrollbar="true"
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("notice")}
   className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[80vh] flex flex-col"
@@ -214,7 +214,7 @@ setNoticeImageIndex(0);
               <div className="px-6 md:px-10 pt-4 pb-6 flex-1 min-h-0 flex flex-col">
 
   <div className="overflow-y-auto overflow-x-hidden flex-1">
-    <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep">
+    <h2 data-popup-heading="true" className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep">
       {selectedNotice.title}
     </h2>
 

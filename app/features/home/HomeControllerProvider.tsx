@@ -14,6 +14,7 @@ import BankRatesDialog from "./components/BankRatesDialog";
 import LifeExpectancyDialog from "./components/LifeExpectancyDialog";
 import PressDialog from "./components/PressDialog";
 import ProfileSettingsDialog from "./components/ProfileSettingsDialog";
+import PersonalSpacePinDialog from "./components/PersonalSpacePinDialog";
 import PasswordResultDialog from "./components/PasswordResultDialog";
 
 const HomeControllerContext = createContext<HomeController | null>(null);
@@ -29,6 +30,7 @@ export default function HomeControllerProvider({ children }: { children: ReactNo
   return (
     <HomeControllerContext.Provider value={controller}>
       {children}
+      <PersonalSpacePinDialog controller={controller} />
       <ProfileSettingsDialog controller={controller} />
       <PasswordResultDialog controller={controller} />
       <MenuContextMenu controller={controller} />

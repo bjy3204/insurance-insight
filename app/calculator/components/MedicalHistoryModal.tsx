@@ -37,7 +37,7 @@ export default function MedicalHistoryModal({ onClose }: { onClose: () => void }
   }, [onClose]);
   return <div className={styles.overlay}>
     <div ref={dialogRef} className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="medical-history-title" data-popup-frame="true">
-      <div data-popup-drag-handle="true" className={styles.header}><h2 id="medical-history-title"><BookOpen size={20} />실손백과</h2><button ref={closeRef} onClick={onClose} className={styles.close} aria-label="닫기" data-popup-close="true"><X size={20} /></button></div>
+      <div data-popup-drag-handle="true" className={styles.header}><h2 data-popup-heading="true" id="medical-history-title"><BookOpen size={20} />실손백과</h2><button ref={closeRef} onClick={onClose} className={styles.close} aria-label="닫기" data-popup-close="true"><X size={20} /></button></div>
       <div className={styles.body}>
         <nav className={`${styles.sidebar} ${collapsed ? styles.collapsed : ''}`} aria-label="실손 정보 선택">
           <button className={styles.collapseButton} onClick={() => setCollapsed(value => !value)} aria-label={collapsed ? '왼쪽 메뉴 펼치기' : '왼쪽 메뉴 접기'} aria-expanded={!collapsed}>{collapsed ? <ChevronRight size={18}/> : <ChevronLeft size={18}/>}</button>

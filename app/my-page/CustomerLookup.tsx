@@ -122,7 +122,7 @@ export default function CustomerLookup({ customers = [], contracts = [], onEdit,
         {cell("차량번호", vehicle.vehicleNumber)}{cell("차종", vehicle.vehicleType)}
         {cell("보험사", vehicle.insurer)}{cell("갱신일", <span className={renewalDays!==null&&renewalDays<=30?styles.due:undefined}>{vehicle.renewal}</span>)}
         {cell("운전자지정", vehicle.driver)}{cell("할인", vehicle.discount)}
-      </>, vehicles.length > 1 && <div className={styles.vehicleTabs} aria-label="차량 선택">{vehicles.map((_, index) => <button type="button" key={index} aria-pressed={activeVehicle === index} onClick={() => setActiveVehicle(index)}>차량{index + 1}</button>)}</div>)}
+      </>, vehicles.length > 1 && <div className={styles.vehicleTabs} aria-label="차량 선택">{vehicles.map((_, index) => <button data-action-height="44" type="button" key={index} aria-pressed={activeVehicle === index} onClick={() => setActiveVehicle(index)}>차량{index + 1}</button>)}</div>)}
       <div className={styles.medicalBlock}>{card("실손의료비", <HeartPulse size={19} />, styles.medicalTone, <>
         {cell("보험사", value("medicalInsurer"))}{cell("가입일", value("medicalJoined"))}
         {cell("세대", values.medicalGeneration ? `${values.medicalGeneration}세대` : "")}{cell("만기일", values.medicalMaturity !== undefined ? values.medicalMaturity : maturity ? <span className={maturity.soon ? styles.due : undefined}>{maturity.text}</span> : "")}
@@ -143,7 +143,7 @@ export default function CustomerLookup({ customers = [], contracts = [], onEdit,
     </div>
     <div className={styles.detailArea}>
     <div className={styles.detailTabs} role="tablist" aria-label="고객 상세정보">
-      {customerTabs.map((tab, index) => <button key={tab.id} id={`${prefix}-tab-${tab.id}`} type="button" role="tab" aria-selected={activeDetailTab === tab.id} aria-controls={`${prefix}-panel-${tab.id}`} tabIndex={activeDetailTab === tab.id ? 0 : -1} onClick={() => selectDetailTab(tab.id)} onKeyDown={event => {
+      {customerTabs.map((tab, index) => <button data-action-height="44" key={tab.id} id={`${prefix}-tab-${tab.id}`} type="button" role="tab" aria-selected={activeDetailTab === tab.id} aria-controls={`${prefix}-panel-${tab.id}`} tabIndex={activeDetailTab === tab.id ? 0 : -1} onClick={() => selectDetailTab(tab.id)} onKeyDown={event => {
         let next = index;
         if (event.key === "ArrowRight") next = (index + 1) % customerTabs.length;
         else if (event.key === "ArrowLeft") next = (index + customerTabs.length - 1) % customerTabs.length;

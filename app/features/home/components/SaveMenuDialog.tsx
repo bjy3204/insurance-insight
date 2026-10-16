@@ -6,7 +6,7 @@ const { saveConfirmOpen, setSaveConfirmOpen, saveConfirmType, saveConfirmMessage
 return (<>{saveConfirmOpen && (
   <div className="fixed inset-0 z-[2100] bg-black/40 flex items-center justify-center p-5">
     <div data-popup-small="true" className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-      <h2 className="text-xl font-black text-gray-900">
+      <h2 data-popup-heading="true" className="text-xl font-black text-gray-900">
         저장 완료
       </h2>
 
@@ -15,7 +15,7 @@ return (<>{saveConfirmOpen && (
       </p>
 
       <div className="flex justify-center mt-6">
-        <button
+        <button data-popup-action="true" data-action-height="48"
           onClick={() => setSaveConfirmOpen(false)}
           className={`
             w-32

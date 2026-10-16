@@ -10,7 +10,7 @@ return (<>{pressOpen && (
   <div
   className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
 >
-    <div data-popup-frame="true" data-press-resizable="true"
+    <div data-popup-frame="true" data-account-inputs="true" data-press-resizable="true"
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("press")}
   className="bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden h-[92vh] flex flex-col"
@@ -162,7 +162,7 @@ return (<>{pressOpen && (
       ) : (
         <>
           <div className="flex-1 overflow-y-auto px-6 py-5">
-            <h2 className="text-2xl font-black text-gray-900 break-keep leading-snug">
+            <h2 data-popup-heading="true" className="text-2xl font-black text-gray-900 break-keep leading-snug">
               {selectedPress.title}
             </h2>
 

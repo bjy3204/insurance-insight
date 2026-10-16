@@ -403,7 +403,7 @@ const handleOpen = () => {
           className="fixed inset-0 z-[1500] bg-black/40 flex items-center justify-center p-3 md:p-4"
           onClick={() => { if (!editMode) setOpen(false); }}
         >
-          <div data-popup-frame="true"
+          <div data-popup-frame="true" data-hide-popup-scrollbar="true"
             style={{ transform: `translate(${popupPos.x}px, ${popupPos.y}px)` }}
             className="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
@@ -423,7 +423,7 @@ const handleOpen = () => {
               <div className="flex items-center gap-2">
                 {editMode || rowEditMode ? (
                   <>
-                    <button
+                    <button 
                       onMouseDown={(e) => e.stopPropagation()}
                       onClick={() => {
   cancelEdit();
@@ -433,7 +433,7 @@ const handleOpen = () => {
                     >
                       취소
                     </button>
-                    <button
+                    <button 
                       onMouseDown={(e) => e.stopPropagation()}
                       onClick={() => {
   save();
@@ -495,7 +495,7 @@ const handleOpen = () => {
                   onChange={(e) => setSearch(e.target.value)}
                   onPointerDown={(e) => e.stopPropagation()}
                   placeholder="보험사 검색"
-                  className="w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm outline-none focus:border-gray-400"
+                  className="w-full h-11 rounded-xl border border-gray-200 pl-11 pr-4 text-sm outline-none focus:border-gray-400"
                 />
               </div>
             </div>

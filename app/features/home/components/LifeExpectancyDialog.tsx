@@ -6,7 +6,7 @@ export default function LifeExpectancyDialog({ controller }: { controller: HomeC
 const { startPopupDrag, getPopupStyle, lifeOpen, setLifeOpen, lifeGender, setLifeGender, lifeAge, setLifeAge, selectedLife, expectYears, sickYears, healthyYears, expectAge, sickStartAge } = controller;
 return (<>{lifeOpen && (
   <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-    <div data-popup-frame="true"
+    <div data-popup-frame="true" data-account-inputs="true"
   style={getPopupStyle("life")}
   className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
 >
@@ -83,8 +83,9 @@ return (<>{lifeOpen && (
             </span>
           </div>
         </div>
+<div className="relative">
 {!selectedLife && (
-  <div className="bg-blue-50 rounded-3xl p-8 text-center mb-3">
+  <div className="absolute inset-0 bg-blue-50 rounded-3xl p-8 text-center flex flex-col items-center justify-center">
     <img
       src={`/icons/pension/${lifeGender === "남성" ? "male" : "female"}.png`}
       alt={lifeGender}
@@ -98,8 +99,7 @@ return (<>{lifeOpen && (
   </div>
   
 )}
-        {selectedLife && (
-  <>
+        <div aria-hidden={!selectedLife} style={{ visibility: selectedLife ? "visible" : "hidden" }}>
     <div className="bg-blue-50 rounded-3xl p-6 text-center mb-3">
       <img
         src={`/icons/pension/${lifeGender === "남성" ? "male" : "female"}.png`}
@@ -180,8 +180,8 @@ return (<>{lifeOpen && (
   동안 유병기간이 이어질 수 있습니다.
 </p>
     </div>
-  </>
-)}
+  </div>
+</div>
 <p className="text-xs text-gray-500 leading-relaxed mt-3 px-1">
   본 자료는 통계청 「2024년 생명표」 및
   유병기간 제외 기대수명(건강수명) 통계를 참고하여 계산한 추정값이며,

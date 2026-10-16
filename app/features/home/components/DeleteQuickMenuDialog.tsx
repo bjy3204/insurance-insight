@@ -6,7 +6,7 @@ const { setQuickMenuKeys, setTempQuickMenuKeys, quickDeleteConfirmOpen, setQuick
 return (<>{quickDeleteConfirmOpen && (
   <div className="fixed inset-0 z-[10001] bg-black/40 flex items-center justify-center p-5">
     <div data-confirm-dialog="true" data-popup-small="true" className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-      <h2 className="text-xl font-black text-gray-900">
+      <h2 data-popup-heading="true" className="text-xl font-black text-gray-900">
         빠른메뉴 삭제
       </h2>
 
@@ -15,7 +15,7 @@ return (<>{quickDeleteConfirmOpen && (
       </p>
 
       <div className="flex gap-3 mt-6">
-        <button
+        <button data-popup-action="true" data-action-height="48"
           onClick={() => setQuickDeleteConfirmOpen(false)}
           className="
             flex-1
@@ -33,7 +33,7 @@ return (<>{quickDeleteConfirmOpen && (
           취소
         </button>
 
-        <button
+        <button data-action-height="48"
           onClick={() => {
   if (!quickDeleteKey) return;
 

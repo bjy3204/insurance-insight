@@ -635,7 +635,7 @@ const currentReviews = selectedReviews.slice(
               </span>
             </div>
 
-            <h2 className="text-[26px] leading-tight font-black text-gray-900 mb-4 break-keep">
+            <h2 data-popup-heading="true" className="text-[26px] leading-tight font-black text-gray-900 mb-4 break-keep">
               {selectedLectureInfo.title}
             </h2>
 
@@ -719,7 +719,7 @@ const currentReviews = selectedReviews.slice(
 
       {/* 오른쪽 강사정보 */}
       <div className="flex-1">
-        <h2 className="text-2xl font-black text-gray-900 mb-2">
+        <h2 data-popup-heading="true" className="text-2xl font-black text-gray-900 mb-2">
           {selectedInstructorInfo.name}
         </h2>
 

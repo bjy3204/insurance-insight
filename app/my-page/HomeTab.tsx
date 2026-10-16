@@ -820,7 +820,7 @@ const diaryEndPage = Math.min(
                 />
               </div>
               {diaryError && <p className="text-xs text-red-500">{diaryError}</p>}
-              <button
+              <button data-popup-action="true"
                 onClick={handleSaveDiary}
                 className="w-full h-12 bg-blue-600 text-white text-base font-black rounded-2xl hover:bg-blue-500 transition shadow-sm hover:shadow-md cursor-pointer"
               >
@@ -880,7 +880,7 @@ const diaryEndPage = Math.min(
       <p className="font-bold text-gray-900 text-base">정말 삭제할까요?</p>
       <p className="text-sm text-gray-400">삭제하면 복구할 수 없습니다.</p>
       <div className="flex gap-2">
-        <button
+        <button data-popup-action="true"
           onClick={() => setConfirmDelete(null)}
           className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition"
         >

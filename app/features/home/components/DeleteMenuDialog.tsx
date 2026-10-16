@@ -6,7 +6,7 @@ const { deleteConfirmOpen, setDeleteConfirmOpen, deletePersonalMenu } = controll
 return (<>{deleteConfirmOpen && (
   <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">
     <div data-confirm-dialog="true" data-popup-small="true" className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-      <h2 className="text-xl font-black text-gray-900">
+      <h2 data-popup-heading="true" className="text-xl font-black text-gray-900">
         메뉴 삭제
       </h2>
 
@@ -15,7 +15,7 @@ return (<>{deleteConfirmOpen && (
       </p>
 
       <div className="flex gap-3 mt-6">
-        <button
+        <button data-popup-action="true" data-action-height="48"
           onClick={() => setDeleteConfirmOpen(false)}
           className="
             flex-1
@@ -33,7 +33,7 @@ return (<>{deleteConfirmOpen && (
           취소
         </button>
 
-        <button
+        <button data-action-height="48"
           onClick={deletePersonalMenu}
           className="
             flex-1

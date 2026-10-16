@@ -2034,7 +2034,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
     >
       <div className="p-5 border-b border-gray-100 flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-black text-gray-900">
+          <h2 data-popup-heading="true" className="text-lg font-black text-gray-900">
             구독자 연결
           </h2>
 <p className="text-xs text-gray-400 mt-1">
@@ -2207,7 +2207,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
         <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4" onClick={() => setIsSelectPopupOpen(false)}>
           <div data-popup-frame="true" onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl flex flex-col max-h-[80vh]">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900">이번 달 명단에 추가</h2>
+              <h2 data-popup-heading="true" className="text-lg font-bold text-gray-900">이번 달 명단에 추가</h2>
               <button data-popup-close="true" onClick={() => setIsSelectPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
@@ -2250,7 +2250,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
         <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4" onClick={() => setIsSubPopupOpen(false)}>
           <div ref={subscriberKeyboard.editorRef} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900">{subForm.id ? "구독자 정보 수정" : "새 구독자 마스터 등록"}</h2>
+              <h2 data-popup-heading="true" className="text-lg font-bold text-gray-900">{subForm.id ? "구독자 정보 수정" : "새 구독자 마스터 등록"}</h2>
               <button data-popup-close="true" onClick={() => setIsSubPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
@@ -2304,7 +2304,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                 <textarea data-ui-field="true" value={subForm.memo} onChange={(e) => setSubForm({...subForm, memo: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 resize-none h-24" placeholder="메모를 입력하세요" />
               </div>
 
-              <button ref={subscriberSaveButton} onClick={saveSubscriber} disabled={subscriberSaving} className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-sm disabled:cursor-wait disabled:opacity-60">
+              <button data-popup-action="true" ref={subscriberSaveButton} onClick={saveSubscriber} disabled={subscriberSaving} className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-sm disabled:cursor-wait disabled:opacity-60">
                 {subscriberSaving ? "저장 중…" : "저장하기"}
               </button>
             </div>
@@ -2331,7 +2331,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 >
               <div className="flex items-center gap-2">
                 <List className="w-5 h-5 text-gray-700" />
-                <h2 className="text-base md:text-lg font-bold text-gray-900 truncate">
+                <h2 data-popup-heading="true" className="text-base md:text-lg font-bold text-gray-900 truncate">
   구독자 전체 목록 (마스터)
 </h2>
               </div>
@@ -2362,7 +2362,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
     ))}
   </select>
 
-  <button
+  <button data-popup-action="true"
     onClick={saveActiveSubscribersToMonth}
     disabled={savingMonthly}
     className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-green-700 transition disabled:opacity-50"
@@ -2517,7 +2517,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
       {deleteConfirmOpen && (
         <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-5">
           <div data-confirm-dialog="true" data-popup-small="true" className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200">
-            <h2 className="text-xl font-black text-gray-900">
+            <h2 data-popup-heading="true" className="text-xl font-black text-gray-900">
               구독자 삭제
             </h2>
 
@@ -2528,7 +2528,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
             </p>
 
             <div className="flex gap-3 mt-6">
-              <button
+              <button data-popup-action="true"
                 autoFocus
                 onClick={() => {
                   setDeleteConfirmOpen(false);

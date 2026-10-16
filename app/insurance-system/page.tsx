@@ -1141,7 +1141,7 @@ const pagedMemos = filteredMemos.slice(
             </div>
 
             <div className="border-t border-gray-100 bg-white p-4 flex gap-3 justify-center">
-              <button
+              <button data-popup-action="true"
                 onClick={cancelManageChanges}
                 className="
                   w-32 h-12 rounded-2xl bg-gray-100 text-gray-700 text-sm
@@ -1151,7 +1151,7 @@ const pagedMemos = filteredMemos.slice(
                 취소
               </button>
 
-              <button
+              <button data-popup-action="true"
                 onClick={saveManageChanges}
                 className="
                   w-32 h-12 rounded-2xl bg-blue-600 text-white text-sm
@@ -1168,14 +1168,14 @@ const pagedMemos = filteredMemos.slice(
       {manageSaveConfirmOpen && (
   <div className="fixed inset-0 z-[2100] bg-black/40 flex items-center justify-center p-5">
     <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-      <h2 className="text-xl font-black text-gray-900">저장 완료</h2>
+      <h2 data-popup-heading="true" className="text-xl font-black text-gray-900">저장 완료</h2>
 
       <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
         변경한 설정이 저장되었습니다.
       </p>
 
       <div className="flex justify-center mt-6">
-        <button
+        <button data-popup-action="true"
           onClick={() => {
             setManageSaveConfirmOpen(false);
             setManageOpen(false);

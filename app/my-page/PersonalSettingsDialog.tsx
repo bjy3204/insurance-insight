@@ -28,10 +28,10 @@ export default function PersonalSettingsDialog({ title, onClose, children }: { t
       else document.querySelector<HTMLElement>('[data-header-control="true"][aria-label="설정"]')?.focus();
     };
   }, []);
-  return createPortal(<div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/40 p-3 md:p-5" onClick={onClose}>
-    <div ref={panel} role="dialog" aria-modal="true" aria-labelledby={id} data-popup-frame="true" data-popup-resize="false" className="personal-settings-dialog flex w-full max-w-sm flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" style={{ maxHeight:"calc(100dvh - 40px)", minHeight:0 }} onClick={event => event.stopPropagation()}>
-      <header data-popup-header="true" className="flex shrink-0 items-center justify-between border-b border-gray-100 px-5 py-3"><h2 id={id} className="text-lg font-bold text-slate-900">{title}</h2><button data-popup-close="true" type="button" aria-label={`${title} 닫기`} onClick={onClose} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100"><X size={20}/></button></header>
-      <div className="min-h-0 flex-1 overflow-y-auto p-5">{children}</div>
+  return createPortal(<div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+    <div ref={panel} role="dialog" aria-modal="true" aria-labelledby={id} data-popup-small="true" data-account-inputs="true" data-popup-resize="false" className="personal-settings-dialog flex w-full max-w-sm flex-col overflow-hidden rounded-3xl bg-white p-6 shadow-xl" style={{ maxHeight:"calc(100dvh - 32px)", minHeight:0 }} onClick={event => event.stopPropagation()}>
+      <header className="mb-5 flex shrink-0 items-center justify-between"><h2 data-popup-heading="true" id={id} className="text-lg font-bold text-gray-900">{title}</h2><button data-popup-close="true" type="button" aria-label={`${title} 닫기`} onClick={onClose} className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-gray-600"><X size={16}/></button></header>
+      <div className="min-h-0 overflow-y-auto">{children}</div>
     </div>
   </div>, document.body);
 }

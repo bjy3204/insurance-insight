@@ -35,10 +35,10 @@ function ReminderPopup({ items, desktop, onConfirm, busy, error }: { items: Due;
     return () => { document.removeEventListener("keydown", trap); unlock(); previous?.focus(); };
   }, [desktop]);
   return createPortal(<div className={styles.reminderOverlay}><div ref={panel} className={styles.reminderPanel} style={position} role="dialog" aria-modal="true" aria-label="일정 알림">
-    <h2 className={styles.reminderHeader}><Bell />일정 알림</h2>
+    <h2 data-popup-heading="true" className={styles.reminderHeader}><Bell />일정 알림</h2>
     <div className={`${styles.reminderList} ${styles.scroll}`}>{items.map(({ event, reminder, key }) => <div key={key} className={styles.reminderItem}><strong>{event.icon} {event.title}</strong><p>{event.date} {event.time || "종일"}</p><p className={styles.muted}>{reminder.lead_days === 0 ? "오늘 일정이에요." : `${reminder.lead_days}일 후 일정이에요.`}</p></div>)}</div>
     {error && <p className={styles.error} role="alert">{error}</p>}
-    <button className={`${styles.primary} ${styles.confirmReminder}`} disabled={busy} onClick={onConfirm}>{busy ? "확인 중" : "확인"}</button>
+    <button data-popup-action="true" className={`${styles.primary} ${styles.confirmReminder}`} disabled={busy} onClick={onConfirm}>{busy ? "확인 중" : "확인"}</button>
   </div></div>, document.body);
 }
 

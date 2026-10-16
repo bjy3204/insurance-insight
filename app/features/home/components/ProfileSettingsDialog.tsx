@@ -29,7 +29,7 @@ return (<>{profileSettingOpen && (
       "
     >
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-gray-900">
+        <h2 data-popup-heading="true" className="text-lg font-bold text-gray-900">
           계정설정
         </h2>
 
@@ -55,7 +55,7 @@ return (<>{profileSettingOpen && (
 
       <div className="mb-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
   <div className="flex items-center gap-3">
-    <p className="shrink-0 text-[11px] font-bold text-gray-400">
+    <p className="shrink-0 text-sm font-bold text-gray-400">
       현재 이메일
     </p>
 
@@ -86,7 +86,7 @@ return (<>{profileSettingOpen && (
         <AccountPinCheck controller={controller}/>
 
         <div className="pt-3 border-t border-gray-100">
-          <p className="mb-2 text-xs font-bold text-gray-500">
+          <p className="mb-2 text-sm font-bold text-gray-500">
             비밀번호 변경
 
           </p>
@@ -165,7 +165,7 @@ return (<>{profileSettingOpen && (
 )}
 </div>
 
-        <button
+        <button data-popup-action="true" data-action-height="48"
           onClick={saveProfileSettings}
           className="h-11 w-full rounded-xl bg-gray-900 text-sm font-bold text-white hover:bg-gray-800 cursor-pointer"
         >

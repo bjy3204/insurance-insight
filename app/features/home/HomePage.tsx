@@ -24,7 +24,6 @@ import MenuAddDialog from "./components/MenuAddDialog";
 
 
 
-import PersonalSpacePinDialog from "./components/PersonalSpacePinDialog";
 export default function HomePage() {
 const controller = useSharedHomeController();
 const { authStatus, authRole, resourceOpen, setResourceOpen } = controller;
@@ -120,7 +119,7 @@ return ((
 
 
       {/* 개인공간 PIN 팝업 */}
-      <PersonalSpacePinDialog controller={controller} />
+
 
                                         </main>
 

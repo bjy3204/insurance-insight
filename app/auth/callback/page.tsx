@@ -52,9 +52,9 @@ export default function AuthCallbackPage() {
   }, [router]);
   return <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
     {signupRequired ? <div data-popup-small="true" role="dialog" aria-modal="true" className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-      <h1 className="text-lg font-bold text-gray-900">회원가입 안내</h1>
+      <h1 data-popup-heading="true" className="text-lg font-bold text-gray-900">회원가입 안내</h1>
       <p className="mt-3 text-sm text-gray-600">회원가입을 진행해 주세요.</p>
-      <button className="mt-5 h-11 w-full rounded-xl bg-blue-600 text-white font-bold cursor-pointer" onClick={() => router.replace("/?complete_signup=1")}>확인</button>
+      <button data-popup-action="true" className="mt-5 h-11 w-full rounded-xl bg-blue-600 text-white font-bold cursor-pointer" onClick={() => router.replace("/?complete_signup=1")}>확인</button>
     </div> : message ? <div className="text-center"><p className="text-sm text-gray-600">{message}</p><button className="mt-4 text-blue-600 cursor-pointer" onClick={() => router.replace("/")}>돌아가기</button></div> : <p className="text-sm text-gray-500">로그인 처리중...</p>}
   </div>;
 }

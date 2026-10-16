@@ -966,7 +966,7 @@ export default function CalendarPage() {
                   삭제
                 </button>
               )}
-              <button
+              <button data-popup-action="true"
                 onClick={() => { setShowEventModal(false); resetForm(); }}
                 className="flex-1 py-2.5 border border-gray-200 text-gray-600 rounded-2xl text-sm font-bold hover:bg-gray-50 transition"
               >

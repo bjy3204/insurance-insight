@@ -358,7 +358,7 @@ export default function MemoManager({ open, onClose }: Props) {
     <>
       {open && (
         <div className="fixed inset-0 z-[1200] bg-black/40 flex items-center justify-center p-4">
-          <div data-popup-frame="true" style={{transform:`translate(${popupPosition.x}px, ${popupPosition.y}px)`}} className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
+          <div data-popup-frame="true" data-memo-manager="true" style={{transform:`translate(${popupPosition.x}px, ${popupPosition.y}px)`}} className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
             <div data-popup-header="true" className="bg-blue-600 text-white px-5 py-3 flex items-center justify-between touch-none select-none cursor-default" onPointerDown={e=>{
  if(e.button!==0||(e.target as HTMLElement).closest("button"))return;
  const rect=e.currentTarget.parentElement!.getBoundingClientRect(),left=rect.left-popupPosition.x,top=rect.top-popupPosition.y;
@@ -397,10 +397,9 @@ export default function MemoManager({ open, onClose }: Props) {
                   stopMemoPopupMove();
                   setSelectedMemo(null); setMemoAddOpen(true);
                 }}
-                className="h-12 px-5 rounded-2xl bg-blue-600 text-white text-sm font-bold flex items-center gap-2 cursor-pointer hover:bg-blue-700 transition-colors disabled:cursor-default disabled:opacity-50"
+                aria-label="메모 추가" title="메모 추가" className="h-11 w-11 shrink-0 rounded-xl bg-blue-600 text-white flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-colors disabled:cursor-default disabled:opacity-50"
               >
-                <Plus className="w-4 h-4" />
-                추가
+                <Plus className="w-5 h-5" />
               </button>
             </div>
 
@@ -539,7 +538,7 @@ export default function MemoManager({ open, onClose }: Props) {
             수정
           </button>
 
-          <button
+          <button data-action-height="48"
             onClick={() => {
               deleteMemo(contextMenu.id);
               setContextMenu(null);
@@ -554,14 +553,14 @@ export default function MemoManager({ open, onClose }: Props) {
       {deleteMemoConfirmOpen && (
         <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">
           <div data-confirm-dialog="true" data-popup-small="true" className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-            <h2 className="text-xl font-black text-gray-900">메모 삭제</h2>
+            <h2 data-popup-heading="true" className="text-xl font-black text-gray-900">메모 삭제</h2>
 
             <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
               선택한 메모를 삭제하시겠습니까?
             </p>
 
             <div className="flex gap-3 mt-6">
-              <button
+              <button data-popup-action="true" data-action-height="48"
                 onClick={() => {
                   setDeleteMemoId(null);
                   setDeleteMemoConfirmOpen(false);
@@ -571,7 +570,7 @@ export default function MemoManager({ open, onClose }: Props) {
                 취소
               </button>
 
-              <button
+              <button data-action-height="48"
                 onClick={confirmDeleteMemo}
                 className="flex-1 h-12 rounded-2xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition cursor-default"
               >

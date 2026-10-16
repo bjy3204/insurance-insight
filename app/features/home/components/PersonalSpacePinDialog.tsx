@@ -19,9 +19,9 @@ return (<>{cmPinOpen && (
                 <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
                   <Users className="w-8 h-8 text-gray-400" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800 mb-2">{authStatus === "payment_error" ? "결제오류" : "승인 회원 전용"}</h2>
+                <h2 data-popup-heading="true" className="text-xl font-bold text-gray-800 mb-2">{authStatus === "payment_error" ? "결제오류" : "승인 회원 전용"}</h2>
                 <p className="text-sm text-gray-500 mb-6">{authStatus === "payment_error" ? <>정기결제에 오류가 발생했습니다.<br />결제 상태를 확인하거나 관리자에게 문의해 주세요.</> : <>개인공간 기능은 승인된 회원만 이용 가능합니다.<br />로그인 후 승인을 받으세요.</>}</p>
-                <button onClick={() => setCmPinOpen(false)}
+                <button data-popup-action="true" data-action-height="48" onClick={() => setCmPinOpen(false)}
                   className="w-full py-3 rounded-2xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition cursor-pointer">확인</button>
               </div>
             )}
@@ -33,7 +33,7 @@ return (<>{cmPinOpen && (
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
-                <h2 className="text-xl font-bold text-gray-800 mb-1">{cmPinStep === "enter" ? "PIN 설정" : "PIN 확인"}</h2>
+                <h2 data-popup-heading="true" className="text-xl font-bold text-gray-800 mb-1">{cmPinStep === "enter" ? "PIN 설정" : "PIN 확인"}</h2>
                 <p className="text-sm text-gray-500 mb-5">{cmPinStep === "enter" ? "개인공간 전용 4자리 PIN을 설정해주세요." : "PIN을 한 번 더 입력해주세요."}</p>
                 <div className="flex justify-center gap-3 mb-5">
                   {[0,1,2,3].map((i) => (
@@ -62,7 +62,7 @@ return (<>{cmPinOpen && (
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 </div>
-                <h2 className="text-xl font-bold text-gray-800 mb-1">PIN 입력</h2>
+                <h2 data-popup-heading="true" className="text-xl font-bold text-gray-800 mb-1">PIN 입력</h2>
                 <p className="text-sm text-gray-500 mb-5">개인공간 4자리 PIN을 입력해주세요.</p>
                 <div className="flex justify-center gap-3 mb-5">
                   {[0,1,2,3].map((i) => (

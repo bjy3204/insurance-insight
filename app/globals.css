@@ -15,6 +15,7 @@
 }
 
 :root {
+  --menu-button-height: 44px;
   --background: #f7f9fc;
   --page-background: linear-gradient(160deg, #f7f9fc, #fafbfe 55%, #f7f9fc);
   --foreground: #171717;
@@ -156,8 +157,11 @@ body [data-page-content="true"] {
   cursor: inherit;
 }
 [data-header-control="true"]:hover { background-color: #f0f6ff; }
+[data-header-control="true"] svg.lucide-layout-grid {
+  width: 24px;
+  height: 24px;
+}
 [data-header-control="true"] svg.lucide-menu,
-[data-header-control="true"] svg.lucide-layout-grid,
 [data-header-control="true"] svg.lucide-arrow-left {
   width: 24px;
   height: 24px;
@@ -883,3 +887,107 @@ input:disabled, textarea:disabled { cursor: default !important; }
 }
 .subscriber-keyboard-list [data-subscriber-row]:focus-within { background:#eff6ff; box-shadow:inset 3px 0 #5a8ff0; }
 .subscriber-keyboard-list [data-subscriber-action]:focus-visible { outline:2px solid #3b82f6; outline-offset:3px; }
+
+/* Requested popup fields follow account settings: 44px / 12px / 14px. */
+[data-account-inputs="true"] input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="color"]):not([type="range"]){
+  height:44px !important;min-height:44px !important;box-sizing:border-box;border-radius:12px !important;font-size:14px !important;padding-top:0 !important;padding-bottom:0 !important;
+}
+[data-account-inputs="true"] [data-popup-field-wrapper="true"]{height:44px;border-radius:12px;font-size:14px}
+[data-account-inputs="true"] [data-popup-field-wrapper="true"] input{height:100% !important;min-height:0 !important;border-radius:0 !important}
+
+[data-action-height="44"]{height:44px !important;min-height:44px !important;box-sizing:border-box;padding-top:0 !important;padding-bottom:0 !important;}
+
+[data-personal-memo-card="true"] .memo-rich-body,[data-memo-kind="memo"] .ql-editor{font-size:14px}
+
+/* Consistent typography for general personal-space actions. */
+[data-action-height="44"],[data-action-height="44"] span{font-size:14px !important;font-weight:700 !important}
+
+/* Uniform icons in personal-space content buttons and shared task actions. */
+[data-personal-space="true"] main button svg.lucide,
+[data-personal-space="true"] main a[data-action-height] svg.lucide,
+[data-action-height="44"] svg.lucide{
+  width:20px !important;height:20px !important;min-width:20px;flex-shrink:0;
+}
+
+[data-action-height="48"]{height:48px !important;min-height:48px !important;box-sizing:border-box;font-size:14px;font-weight:700}
+
+/* Compact edit/delete controls retain their original icon size. */
+[data-personal-space="true"] main button:not([data-action-height]) :is(svg.lucide-pencil,svg.lucide-pencil-line,svg.lucide-square-pen,svg.lucide-trash,svg.lucide-trash-2){
+ width:16px !important;height:16px !important;min-width:16px;
+}
+
+[data-memo-manager="true"],[data-memo-manager="true"] *{scrollbar-width:none;-ms-overflow-style:none}
+[data-memo-manager="true"]::-webkit-scrollbar,[data-memo-manager="true"] *::-webkit-scrollbar{display:none}
+
+/* Shared field and rectangular action corners. */
+[data-action-height="44"],[data-action-height="48"],
+[data-confirm-dialog="true"] div:has(>button+button)>button,
+[data-personal-space="true"] main input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
+[data-personal-space="true"] main textarea,
+[data-account-inputs="true"] input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]){border-radius:12px !important}
+[data-account-inputs="true"] [data-popup-field-wrapper="true"] input{border-radius:0 !important}
+
+[data-popup-action="true"]{height:48px !important;min-height:48px !important;box-sizing:border-box;border-radius:12px !important;padding-top:0 !important;padding-bottom:0 !important}
+
+[data-account-pin-confirm="true"]{height:44px !important;min-height:44px !important;border-radius:12px !important}
+
+[data-hide-popup-scrollbar="true"],[data-hide-popup-scrollbar="true"] *{scrollbar-width:none;-ms-overflow-style:none}
+[data-hide-popup-scrollbar="true"]::-webkit-scrollbar,[data-hide-popup-scrollbar="true"] *::-webkit-scrollbar{display:none}
+
+/* All popup headings share the same size and weight. */
+[data-popup-heading="true"],
+[data-popup-title="true"],
+[data-popup-title="true"] > :is(h1,h2,h3,span),
+[data-popup-header="true"] > :is(h1,h2,h3),
+[data-confirm-dialog="true"] > :first-child,
+[data-confirm-title="true"]{font-size:18px !important;font-weight:700 !important}
+
+/* Popup close controls: shared hit area and glyph dimensions. */
+button[data-popup-close="true"],
+[data-popup-header="true"] button[data-popup-close="true"],
+[data-confirm-dialog="true"] button[data-popup-close="true"]{
+ width:36px !important;height:36px !important;min-width:36px !important;min-height:36px !important;max-width:36px !important;max-height:36px !important;padding:8px !important;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+button[data-popup-close="true"] svg.lucide-x,
+[data-personal-space="true"] button[data-popup-close="true"] svg.lucide-x{
+ width:20px !important;height:20px !important;min-width:20px !important;min-height:20px !important;flex-shrink:0;
+}
+[data-popup-action="true"],[data-popup-action="true"] span{font-size:14px !important;font-weight:700 !important}
+
+/* Popup title and close control share one vertical center line. */
+[data-popup-heading="true"],
+[data-popup-title="true"],
+[data-popup-title="true"] > :is(h1,h2,h3,span),
+[data-popup-header="true"] > :is(h1,h2,h3),
+[data-confirm-dialog="true"] > :first-child,
+[data-confirm-title="true"]{font-size:20px !important;font-weight:700 !important;line-height:28px !important}
+[data-popup-header="true"],
+[data-confirm-title="true"],
+:where(div,header):has(> [data-popup-heading="true"]):has(> button[data-popup-close="true"]),
+:where(div,header):has(> [data-popup-title="true"]):has(> button[data-popup-close="true"]){display:flex;align-items:center !important;justify-content:space-between}
+:where(div,header):has(> button[data-popup-close="true"]) > [data-popup-heading="true"],
+:where(div,header):has(> button[data-popup-close="true"]) > [data-popup-title="true"]{margin-top:0 !important;margin-bottom:0 !important}
+
+/* Popup title and footer spacing: 20px. */
+[data-popup-heading="true"],[data-popup-title="true"],
+[data-popup-title="true"] > :is(h1,h2,h3,span),
+[data-popup-header="true"] > :is(h1,h2,h3),
+[data-confirm-dialog="true"] > :first-child,[data-confirm-title="true"]{font-size:18px !important;font-weight:700 !important;line-height:28px !important}
+[data-popup-header="true"]{padding-top:20px !important}
+[data-popup-small="true"],[data-confirm-dialog="true"],[data-popup-padded="true"],.memo-editor-panel[data-popup-frame="true"]{padding-top:20px !important;padding-bottom:20px !important}
+:is([data-popup-small="true"],[data-confirm-dialog="true"],[data-popup-padded="true"]) > [data-popup-header="true"]{padding-top:0 !important}
+[data-confirm-dialog="true"] div:has(>button+button){margin-top:20px !important;margin-bottom:0 !important}
+:is([data-popup-small="true"],[data-popup-padded="true"],.memo-editor-panel[data-popup-frame="true"]) div:has(>button[data-popup-action="true"]+button):not(:has(input)):not(:has([data-popup-close])){margin-top:20px !important;margin-bottom:0 !important}
+.memo-editor-panel[data-popup-frame="true"]>div:last-child:has(>button[data-action-height="48"]){margin-top:20px !important;margin-bottom:0 !important}
+
+[data-menu-add-dialog="true"]{height:auto !important;min-height:0 !important;max-height:calc(100dvh - 32px);overflow-y:auto}
+
+[data-hospital-popup="true"]>[data-popup-header="true"]{border-bottom:1px solid #e1e9fb !important}
+[data-menu-add-dialog="true"][data-account-inputs="true"] input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="color"]):not([type="range"]){height:48px !important;min-height:48px !important}
+[data-popup-header="true"] button:not([data-popup-close="true"]){height:36px !important;min-height:36px !important;box-sizing:border-box;padding-top:0 !important;padding-bottom:0 !important}
+
+[data-popup-header="true"] button:not([data-popup-close="true"]),[data-popup-header="true"] button:not([data-popup-close="true"]) span{font-size:13px !important;font-weight:700 !important}
+button[data-popup-close="true"],[data-popup-header="true"] button[data-popup-close="true"],[data-confirm-dialog="true"] button[data-popup-close="true"]{border-radius:12px !important}
+
+[data-account-settings="true"] p:has(+div),[data-account-settings="true"] .text-xs,[data-account-settings="true"] .text-\[11px\]{font-size:14px !important}
+.personal-settings-dialog label,.personal-settings-dialog .text-xs,.personal-settings-dialog .text-sm{font-size:14px !important}

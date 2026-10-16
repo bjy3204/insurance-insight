@@ -481,7 +481,7 @@ const numberColor =
           </span>
         </div>
 
-        <h2 className="text-[26px] leading-tight font-black text-gray-900 mb-4 break-all">
+        <h2 data-popup-heading="true" className="text-[26px] leading-tight font-black text-gray-900 mb-4 break-all">
           {selectedLecture.title}
         </h2>
 

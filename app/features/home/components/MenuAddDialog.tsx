@@ -10,7 +10,7 @@ return (<>{menuAddOpen && (
     className="fixed inset-0 z-[1400] bg-black/40 flex items-center justify-center p-4"
   >
     <div
-  data-popup-resize="false"
+  data-menu-add-dialog="true" data-popup-padded="true" data-popup-resize="false" data-account-inputs="true"
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("menuAdd")}
   className="bg-white w-full max-w-md rounded-3xl shadow-xl p-6"
@@ -20,7 +20,7 @@ return (<>{menuAddOpen && (
   onPointerDown={(e) => startPopupDrag("menuAdd", e)}
   className="flex items-center justify-between mb-5"
 >
-        <h2 className="text-xl font-black text-gray-900">
+        <h2 data-popup-heading="true" className="text-xl font-black text-gray-900">
           메뉴 추가
         </h2>
 
@@ -44,9 +44,6 @@ return (<>{menuAddOpen && (
       </div>
 
       <div className="mb-4">
-        <p className="text-sm font-bold text-gray-700 mb-2">
-          아이콘 선택
-        </p>
 
         <div className="grid grid-cols-6 gap-2">
           {Object.entries(personalMenuIcons).map(([key, Icon]) => (
@@ -55,7 +52,7 @@ return (<>{menuAddOpen && (
               onClick={() => setNewMenuIcon(key as PersonalMenuIconKey)}
               className={`
                 h-12
-                rounded-2xl
+                rounded-xl
                 border
                 flex
                 items-center
@@ -122,12 +119,12 @@ return (<>{menuAddOpen && (
           px-4
           text-sm
           outline-none
-          mb-5
+          mb-0
         "
       />
 
       <div className="flex gap-3">
-        <button
+        <button data-popup-action="true" data-action-height="48"
           onClick={() => {
   setNewMenuTitle("");
   setNewMenuDesc("");
@@ -151,7 +148,7 @@ return (<>{menuAddOpen && (
           취소
         </button>
 
-        <button
+        <button data-popup-action="true" data-action-height="48"
           onClick={addPersonalMenu}
           className="
             flex-1

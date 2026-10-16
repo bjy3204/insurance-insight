@@ -27,7 +27,7 @@ export default function NpsTableModal({onClose}:{onClose:()=>void}) {
     event.currentTarget.setPointerCapture(event.pointerId);
   }
   return <div onClick={onClose} className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-    <div data-popup-frame="true" onClick={event=>event.stopPropagation()} style={{transform:`translate(${position.x}px, ${position.y}px)`}} className="cursor-default bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
+    <div data-popup-frame="true" data-account-inputs="true" onClick={event=>event.stopPropagation()} style={{transform:`translate(${position.x}px, ${position.y}px)`}} className="cursor-default bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
       <div data-popup-header="true" onPointerDown={startDrag} onPointerMove={event=>{const current=drag.current;if(current)setPosition({x:current.originX+event.clientX-current.x,y:current.originY+event.clientY-current.y});}} onPointerUp={()=>{drag.current=null;}} onPointerCancel={()=>{drag.current=null;}} className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between touch-none">
         <div data-popup-title="true" className="font-bold flex items-center gap-2"><FileText className="w-5 h-5"/>국민연금표</div>
         <button type="button" data-popup-close="true" aria-label="닫기" onPointerDown={event=>event.stopPropagation()} onClick={onClose} className="cursor-pointer w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/10 transition"><X className="w-5 h-5"/></button>

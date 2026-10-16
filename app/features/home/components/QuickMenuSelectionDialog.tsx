@@ -10,7 +10,7 @@ return (<>{quickMenuSelectOpen && (
   <div className="fixed inset-0 z-[10001] bg-black/40 flex items-center justify-center p-5">
     <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl">
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-xl font-black text-gray-900">
+        <h2 data-popup-heading="true" className="text-xl font-black text-gray-900">
           빠른메뉴 선택
         </h2>
 
@@ -79,7 +79,7 @@ return (<>{quickMenuSelectOpen && (
   })}
 </div>
       <div className="flex gap-3 mt-6">
-  <button
+  <button data-popup-action="true" data-action-height="48"
     onClick={() => {
       setTempQuickMenuKeys(quickMenuKeys);
       setQuickMenuSelectOpen(false);
@@ -100,7 +100,7 @@ return (<>{quickMenuSelectOpen && (
     취소
   </button>
 
-    <button
+    <button data-popup-action="true" data-action-height="48"
   onClick={() => {
     if (mainMenuManageMode === "normal" && !menuSortOpen) {
       setTempQuickMenuKeys(validSelection);

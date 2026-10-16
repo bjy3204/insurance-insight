@@ -127,7 +127,7 @@ export default function Calendar({
             : "flex min-h-[calc(100dvh-210px)] items-center justify-center p-6 text-center text-sm text-slate-400"
         }
       >
-        캘린더를 불러오는 중입니다.
+
       </div>
     );
   if (account.error || (account.approved && !account.userId))
@@ -617,7 +617,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
     const remote = extras.sheetEvents.filter(event => event.date === date && `${event.category} ${event.name} ${event.birth} ${event.content}`.toLowerCase().includes(searchText.toLowerCase()));
     const rows = [...normal.map(event => ({ key: `event:${event.id}`, title: event.title, detail: [event.content, event.memo].filter(Boolean).join(" · "), icon: event.icon, event, category:event.category||"개인" })), ...remote.map(event => ({ key: event.id, title: [event.category,event.name,event.birth.replace(/\D/g,"").slice(0,6)].filter(Boolean).join("    "), detail: [event.name, event.birth.replace(/\D/g,"").slice(0,6), event.memoContent??event.content].filter(Boolean).join(" · "), icon: event.icon, event: null, category:event.category }))].sort((a, b) => compareCalendarTimes(a.event?.time, b.event?.time));
     return <>
-      {rows.length === 0 && <p className="text-sm text-gray-400 text-center py-6">이 날의 일정이 없습니다</p>}
+
       {rows.map(row => <div key={row.key} className={`${layoutStyles.scheduleRow} flex items-start gap-2 rounded-xl border p-3 ${extras.completed[row.key] ? "bg-gray-50 border-gray-100 text-gray-400" : "border-gray-200 text-gray-900"}`}>
         <input type="checkbox" aria-label={`${row.title} 확인`} checked={!!extras.completed[row.key]} disabled={!extras.completionReady || extras.completionBusy} onChange={() => void extras.toggleCompleted(row.key)} className="mt-1 h-4 w-4 shrink-0 accent-blue-600" />
         <button type="button" onClick={() => {setShowMobileDayPopup(false);setViewingEvent(row.event||{title:row.title,date,icon:row.icon,memo:row.detail,category:row.category});}} className={`min-w-0 flex-1 text-left ${extras.completed[row.key] ? "line-through" : ""}`}>
@@ -634,9 +634,9 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
   if (!store.ready)
     return (
       <div className="flex min-h-[calc(100dvh-210px)] flex-col items-center justify-center gap-3 p-6 text-center text-sm text-slate-400" role="status">
-        {store.error || "캘린더를 불러오는 중입니다."}
+        {store.error || null}
         {store.error && (
-          <button onClick={() => void store.reload()}>다시 시도</button>
+          <button data-action-height="44" onClick={() => void store.reload()}>다시 시도</button>
         )}
       </div>
     );
@@ -661,7 +661,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
 
             {(extras.sheetError || extras.needsConnection || extras.completionError) && <div role="status" className="mb-3 flex flex-wrap items-center gap-2 text-sm text-gray-500">
               <span>{extras.completionError || extras.sheetError}</span>
-              {extras.needsConnection ? <button onClick={() => void extras.connect()} disabled={extras.connecting} className="rounded-lg bg-blue-50 px-3 py-2 text-blue-600">{extras.connecting ? "연결중" : "일정 연결"}</button> : (extras.sheetError || extras.completionError) && <button onClick={extras.reloadSheet} className="text-blue-600">다시 시도</button>}
+              {extras.needsConnection ? <button data-action-height="44" onClick={() => void extras.connect()} disabled={extras.connecting} className="rounded-lg bg-blue-50 px-3 py-2 text-blue-600">{extras.connecting ? "연결중" : "일정 연결"}</button> : (extras.sheetError || extras.completionError) && <button data-action-height="44" onClick={extras.reloadSheet} className="text-blue-600">다시 시도</button>}
             </div>}
             {/* 요일 헤더 */}
             <div className="grid grid-cols-7 text-center rounded-t-xl overflow-hidden border border-gray-100">
@@ -907,11 +907,11 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                     onChange={e => setChecklistText(e.target.value)}
                     onBlur={() => {if(checklistText.trim())void handleAddChecklist();else setChecklistInputOpen(false);}}
                     onKeyDown={e => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); void handleAddChecklist(); } }}
-                    className="flex-1 min-w-0 h-10 px-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400" />}
-                  <button type="button" aria-label="체크리스트 추가" aria-expanded={checklistInputOpen} disabled={checklistSaving}
+                    className="flex-1 min-w-0 h-11 px-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400" />}
+                  <button data-action-height="44" type="button" aria-label="체크리스트 추가" aria-expanded={checklistInputOpen} disabled={checklistSaving}
                     onMouseDown={event=>event.preventDefault()}
                     onClick={() => {if(!checklistInputOpen)setChecklistInputOpen(true);else if(checklistText.trim())void handleAddChecklist();else checklistInput.current?.focus();}}
-                    className="ml-auto inline-flex h-10 shrink-0 items-center gap-1 rounded-xl bg-blue-600 px-3 text-sm font-semibold text-white hover:bg-blue-700 cursor-pointer disabled:opacity-60 disabled:cursor-default"><Plus className="h-4 w-4" />추가</button>
+                    className="ml-auto inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 px-0 text-sm font-semibold text-white hover:bg-blue-700 cursor-pointer disabled:opacity-60 disabled:cursor-default"><Plus className="w-5 h-5" /></button>
                 </div>
               )}
 
@@ -928,7 +928,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                   placeholder="일정 검색"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
-                  className="w-full pl-10 pr-3 py-1.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition"
+                  className="w-full h-11 pl-10 pr-3 py-0 text-[14px] border border-gray-200 rounded-xl outline-none focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition"
                 />
               </div>
 
@@ -974,7 +974,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                 })()}
               </div>
               <div className="flex items-center gap-2">
-                <button
+                <button data-action-height="44"
                   onClick={() => {
                     setShowMobileDayPopup(false);
                     openEventModal(mobileDayDate);
@@ -1031,12 +1031,12 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
       {deleteEventConfirmOpen && createPortal(
         <div className="fixed inset-0 z-[4000] bg-black/40 flex items-center justify-center p-5">
           <div data-confirm-dialog="true" data-popup-small="true" className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-            <h2 className="text-xl font-black text-gray-900">일정 삭제</h2>
+            <h2 data-popup-heading="true" className="text-xl font-black text-gray-900">일정 삭제</h2>
             <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
               선택한 일정을 삭제하시겠습니까?
             </p>
             <div className="flex gap-3 mt-6">
-              <button
+              <button data-popup-action="true" data-action-height="44"
                 onClick={() => {
                   setDeleteEventId(null);
                   setDeleteEventConfirmOpen(false);
@@ -1045,7 +1045,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
               >
                 취소
               </button>
-              <button
+              <button data-action-height="44"
                 onClick={async () => {
                   if (deleteEventId) {
                     await handleDeleteEvent(deleteEventId);
@@ -1301,7 +1301,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
           {error && (
             <div className={styles.status} role="status">
               {error}{" "}
-              <button onClick={() => void store.reload()}>다시 시도</button>
+              <button data-action-height="44" onClick={() => void store.reload()}>다시 시도</button>
             </div>
           )}
         </>
@@ -1338,14 +1338,14 @@ function CompactCalendar({ identity }: { identity: Identity }) {
             </p>
           )}
           <div className={styles.formActions}>
-            <button
+            <button data-popup-action="true" data-action-height="44"
               className={styles.secondary}
               disabled={saving}
               onClick={closeDraft}
             >
               취소
             </button>
-            <button
+            <button data-action-height="44"
               className={styles.primary}
               disabled={saving}
               onClick={() => void save(true)}

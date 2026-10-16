@@ -40,7 +40,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 "bg-blue-100 text-blue-600"
                       }`}>{cat.name}</span>
                     )}
-                    <h2 className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep mb-2">
+                    <h2 data-popup-heading="true" className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep mb-2">
                       {popupNotice.title}
                     </h2>
                     <p className="text-xs md:text-sm text-gray-500 mb-4">

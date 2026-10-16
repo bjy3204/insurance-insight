@@ -313,7 +313,7 @@ const currentInstructors = filteredInstructors.slice(
           </div>
 
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-black text-gray-900 mb-2">
+            <h2 data-popup-heading="true" className="text-2xl font-black text-gray-900 mb-2">
               {selectedInstructor.name}
             </h2>
 

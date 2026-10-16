@@ -37,6 +37,6 @@ export default function ConfirmationHost() {
   const deleting = current.message.includes("삭제");
   return <DashboardDialog confirmation title={deleting ? "삭제 확인" : "변경 확인"} onClose={() => answer(false)}>
     <p style={{ whiteSpace: "pre-line" }}>{current.message}</p>
-    <div><button type="button" onClick={() => answer(false)}>취소</button><button type="button" onClick={() => answer(true)}>{deleting ? "삭제" : "확인"}</button></div>
+    <div><button data-popup-action="true" type="button" onClick={() => answer(false)}>취소</button><button data-popup-action="true" type="button" onClick={() => answer(true)}>{deleting ? "삭제" : "확인"}</button></div>
   </DashboardDialog>;
 }

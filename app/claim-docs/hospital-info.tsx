@@ -6,7 +6,7 @@ import {
   Hospital,
   X,
   Phone,
-  UsersRound, ExternalLink,
+  UsersRound,
   MapPin,
   ChevronDown,
   ChevronUp,
@@ -152,7 +152,7 @@ const toggleType = (type: string) => {
   onMouseLeave={stopPopupMove}
   className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
 >
-     <div data-popup-frame="true"
+     <div data-popup-frame="true" data-hospital-popup="true"
   onClick={(e) => e.stopPropagation()}
   style={{
     transform: `translate(${popupPos.x}px, ${popupPos.y}px)`,
@@ -246,7 +246,7 @@ const toggleType = (type: string) => {
   )}
 </button>
           {filterOpen && (
-            <div id="hospital-search-filters" className="border-t border-gray-100 p-4">
+            <div id="hospital-search-filters" data-account-inputs="true" className="border-t border-gray-100 p-4">
               <div className="grid grid-cols-3 gap-2">
             <input data-ui-field="true" data-page-search-input="true"
               value={sido}
@@ -325,10 +325,10 @@ const toggleType = (type: string) => {
   "
 >
 
-  <div className="grid grid-cols-2 md:grid-cols-[minmax(0,1fr)_165px_110px_100px_100px] items-center gap-3">
+  <div className="grid grid-cols-2 md:grid-cols-[minmax(0,1fr)_165px_110px_112px_112px] items-center gap-3">
     <div className="col-span-2 md:col-span-1 min-w-0">
       <div className="flex items-center gap-2 flex-wrap">
-        <h2 className="text-[17px] font-black text-gray-900 break-words">{hospital.name}</h2>
+        <h2 data-popup-heading="true" className="text-[17px] font-black text-gray-900 break-words">{hospital.name}</h2>
         <span className="px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600">{hospital.originalType || hospital.type}</span>
       </div>
       <div className="flex items-start gap-1.5 mt-1"><MapPin size={14} className="shrink-0 mt-0.5 text-slate-400" /><p className="text-xs text-slate-500 break-words">{hospital.address}</p></div>
@@ -338,10 +338,10 @@ const toggleType = (type: string) => {
       <div className="min-w-0"><p className="text-xs sm:text-sm text-slate-500">전화번호</p>{hospital.tel !== "-" ? <a href={`tel:${hospital.tel}`} className="inline-block rounded-md px-1 -mx-1 text-sm sm:text-base font-bold text-slate-900 break-words cursor-pointer hover:bg-blue-50 transition-colors">{hospital.tel}</a> : <p className="text-sm sm:text-base font-bold text-slate-900">{hospital.tel}</p>}</div>
     </div>
     <div className="flex items-center gap-3 min-w-0"><UsersRound size={23} className="w-5 h-5 sm:w-[23px] sm:h-[23px] shrink-0 text-slate-400" /><div><p className="text-xs sm:text-sm text-slate-500">총 의사수</p><p className="text-base font-bold text-blue-600">{String(hospital.doctorCount).replace("명", "")}명</p></div></div>
-    <button type="button" onClick={() => setOpenedIndex(openedIndex === index ? null : index)} aria-expanded={openedIndex === index} className="flex items-center justify-center gap-1 rounded-xl bg-blue-50 px-2 py-2.5 text-xs font-bold text-slate-600 hover:bg-blue-100 transition cursor-pointer">
+    <button data-action-height="44" type="button" onClick={() => setOpenedIndex(openedIndex === index ? null : index)} aria-expanded={openedIndex === index} className="flex items-center justify-center gap-1 rounded-xl bg-blue-50 px-2 py-2.5 text-xs font-bold text-slate-600 hover:bg-blue-100 transition cursor-pointer">
       상세정보 {openedIndex === index ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
     </button>
-    <a href={hospital.homepage} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1 rounded-xl bg-blue-600 px-2 py-2.5 text-xs font-bold text-white hover:bg-blue-700 transition"><span>바로가기</span><ExternalLink size={14} /></a>
+    <a data-action-height="44" href={hospital.homepage} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1 rounded-xl bg-blue-600 px-2 py-2.5 text-xs font-bold text-white hover:bg-blue-700 transition"><span>바로가기</span></a>
   </div>
 
   {openedIndex === index && (

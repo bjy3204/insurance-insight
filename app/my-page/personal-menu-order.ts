@@ -1,5 +1,6 @@
 export const PERSONAL_MENU_GROUPS = [
-  { title: "고객·소통", ids: ["customer-management", "coverage-analysis", "ai", "notice", "customer"] },
+  { title: "고객관리", ids: ["customer-management", "coverage-analysis", "policy-inserts", "customer"] },
+  { title: "고객 안내", ids: ["ai", "notice"] },
   { title: "일정·기록", ids: ["calendar", "memo", "diary"] },
   { title: "바로가기", ids: ["shortcut:kakao", "shortcut:mysite", "shortcut:spreadsheet"] },
 ];

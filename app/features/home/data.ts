@@ -1,3 +1,4 @@
+import PolicyInsertsIcon from "@/app/components/PolicyInsertsIcon";
 import { FileText, Calculator, Monitor, Phone, Building2, FolderOpen, CircleDollarSign, Landmark, PiggyBank, Briefcase, Link2, User, Globe, Send, BookOpen, LibraryBig } from "lucide-react";
 
 export type MemoItem = {
@@ -14,6 +15,13 @@ export type MemoItem = {
 };
 
 export const defaultMenus = [
+  {
+    id: "policy-inserts",
+    title: "보험 증권 속지",
+    desc: "보험 증권 속지 인쇄",
+    icon: PolicyInsertsIcon,
+    link: "/policy-inserts",
+  },
    {
   id: "customer-manage",
   title: "개인공간",

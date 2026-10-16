@@ -263,7 +263,7 @@ const persist = async (label: string, date: string, remove = false) => {
   )}
 </div>
             {storageError && <p role="status" className="mb-2 text-sm text-red-500">{storageError}</p>}
-            <button
+            <button data-popup-action="true"
               disabled={!storageReady || saving}
               onClick={async () => {
                 if (await persist(ddayWidgetTempLabel, ddayWidgetTempDate)) setDdayWidgetEditOpen(false);

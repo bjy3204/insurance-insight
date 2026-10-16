@@ -7,7 +7,7 @@ return (<>{(passwordResultOpen || passwordResultRef.current) && (
     <div className="fixed inset-0 z-[99999] bg-black/40 flex items-center justify-center p-5">
 
     <div data-popup-small="true" className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
-            <h2 className="text-xl font-black text-gray-900">
+            <h2 data-popup-heading="true" className="text-xl font-black text-gray-900">
         {(passwordResultSuccess || passwordResultSuccessRef.current) ? "저장 완료" : "저장 실패"}
       </h2>
       <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
@@ -17,7 +17,7 @@ return (<>{(passwordResultOpen || passwordResultRef.current) && (
       </p>
 
       <div className="flex gap-3 mt-6">
-        <button
+        <button data-popup-action="true" data-action-height="48"
                     onClick={() => {
             setPasswordResultOpen(false);
             setPasswordResultSuccess(false);

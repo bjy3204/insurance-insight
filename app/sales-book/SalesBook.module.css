@@ -4,6 +4,12 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+.menu a {
+  height: var(--menu-button-height);
+  min-height: var(--menu-button-height);
+  padding-top: 0;
+  padding-bottom: 0;
+}
 .menu::-webkit-scrollbar { display: none; }
 .materials { height: 700px; }
 @media (min-width: 768px) and (max-width: 1023px) {

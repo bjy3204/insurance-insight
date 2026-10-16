@@ -52,7 +52,7 @@ export default function CustomerFormSelect({ label, value, options, onChange, on
     return () => { document.removeEventListener("pointerdown", outside); window.removeEventListener("resize", layout); window.removeEventListener("scroll", layout, true); };
   }, [position]);
   useEffect(() => { menu.current?.querySelector('[data-active="true"]')?.scrollIntoView({ block: "nearest" }); }, [index]);
-  return <div ref={root} className={styles.select}>
+  return <div ref={root} data-popup-field-wrapper="true" className={styles.select}>
     <input ref={input} role="combobox" aria-label={label} aria-expanded={!!position} aria-controls={position ? id : undefined} aria-autocomplete="list" aria-activedescendant={position && choices[index] ? `${id}-${index}` : undefined}
       readOnly={disabled} aria-disabled={disabled} maxLength={80} value={value} placeholder="선택 또는 직접 입력" autoComplete="off"
       onChange={event => { dirty.current = true; onChange(event.target.value); open(event.target.value); }}

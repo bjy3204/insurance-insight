@@ -114,7 +114,7 @@
 .directory { position:relative; min-height:0; min-width:0; border:1px solid #dce4ef; border-radius:12px; background:#fff; }
 .directoryInner { position:absolute; inset:16px; display:flex; flex-direction:column; gap:12px; min-height:0; }
 .directory h3 { margin:0; color:#334968; font-size:16px; font-weight:700; }
-.directorySearch { display:flex; align-items:center; gap:8px; height:40px; flex-shrink:0; padding:0 12px; border:1px solid #dce4ef; border-radius:8px; background:#fafbfd; color:#94a3b8; }
+.directorySearch { display:flex; align-items:center; gap:8px; height:44px; flex-shrink:0; padding:0 12px; border:1px solid #dce4ef; border-radius:8px; background:#fafbfd; color:#94a3b8; }
 .directorySearch input { width:100%; min-width:0; height:100%; padding:0; border:0; outline:none; background:transparent; color:#24324a; caret-color:#1d4ed8; font-size:16px; line-height:24px; }
 .directorySearch:focus-within { border-color:#86adff; box-shadow:0 0 0 3px #2563eb0d; }
 .directoryList { flex:1; min-height:0; overflow-y:auto; scrollbar-width:none; -ms-overflow-style:none; }
@@ -139,3 +139,12 @@
 .contractActions { display:flex; align-items:center; justify-content:flex-end; gap:6px; white-space:nowrap; }
 .contractActions button { display:grid; place-items:center; width:28px; height:28px; border:0; border-radius:6px; background:transparent; color:#8795a9; cursor:pointer; }
 .contractActions button:hover { background:#eff6ff; color:#2563eb; }.contractActions button:last-child:hover { background:#fff1f2; color:#dc2626; }.contractActions button:disabled { opacity:.4; cursor:default; }
+
+.directorySearch input{font-size:14px}
+.detailTabs button{font-size:16px !important}
+
+.searchField label{font-size:16px}
+.ageChange,.ageChange .upperInfo,.ageChange .upperInfo>span,.ageChange strong{font-size:16px}
+.detailTabs button[data-action-height]{border-radius:0 !important}
+
+.directory{border-radius:16px}

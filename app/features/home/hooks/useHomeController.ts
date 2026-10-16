@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useHomeEffects } from "./useHomeEffects";
 import { useHomeState } from "./useHomeState";
 
@@ -19,6 +20,18 @@ import { MemoItem, defaultMenus, personalMenuIcons, PersonalMenuItem } from "../
 export function useHomeController() {
 const { fortuneOpen, setFortuneOpen, menus, setMenus, hiddenMenuIds, setHiddenMenuIds, tempHiddenMenuIds, setTempHiddenMenuIds, today, setToday, total, setTotal, showInstall, setShowInstall, deferredPrompt, setDeferredPrompt, weatherRegion, setWeatherRegion, weatherOpen, setWeatherOpen, weather, setWeather, open, setOpen, noticeOpen, setNoticeOpen, userMenuOpen, setUserMenuOpen, profileSettingOpen, setProfileSettingOpen, kakaoConnected, setKakaoConnected, kakaoConnecting, setKakaoConnecting, editNickname, setEditNickname, editInstagram, setEditInstagram, pinCheckPassword, setPinCheckPassword, pinCheckResult, setPinCheckResult, newPassword, setNewPassword, currentPassword, setCurrentPassword, newPasswordConfirm, setNewPasswordConfirm, passwordResultOpen, setPasswordResultOpen, passwordResultSuccess, setPasswordResultSuccess, passwordResultRef, passwordResultSuccessRef, quickOpen, setQuickOpen, pcQuickOpen, setPcQuickOpen, pcQuickDirection, setPcQuickDirection, pcQuickPos, setPcQuickPos, userBtnPos, setUserBtnPos, userBtnDragRef, pcQuickWrapRef, pcQuickDragRef, settingOpen, setSettingOpen, memoOpen, setMemoOpen, resourceOpen, setResourceOpen, memoOpenRef, menuSortOpen, setMenuSortOpen, tempMenus, setTempMenus, menuAddOpen, setMenuAddOpen, personalMenus, setPersonalMenus, tempPersonalMenus, setTempPersonalMenus, newMenuTitle, setNewMenuTitle, newMenuDesc, setNewMenuDesc, newMenuLink, setNewMenuLink, newMenuIcon, setNewMenuIcon, menuManageMode, setMenuManageMode, selectedPersonalMenuId, setSelectedPersonalMenuId, selectedDeleteMenuIds, setSelectedDeleteMenuIds, editingOriginalMenu, setEditingOriginalMenu, editIconOpen, setEditIconOpen, mainMenuManageMode, setMainMenuManageMode, popupPositions, setPopupPositions, popupZIndexes, setPopupZIndexes, popupZIndexRef, dragPopupRef, memoTitle, setMemoTitle, memoContent, setMemoContent, memoColor, setMemoColor, memoSearch, setMemoSearch, memoPage, setMemoPage, memoAddOpen, setMemoAddOpen, selectedMemo, setSelectedMemo, deleteMemoConfirmOpen, setDeleteMemoConfirmOpen, deleteMemoId, setDeleteMemoId, hospitalOpen, setHospitalOpen, diseaseOpen, setDiseaseOpen, pressOpen, setPressOpen, selectedPress, setSelectedPress, pressSearch, setPressSearch, pressPage, setPressPage, lifeOpen, setLifeOpen, npsTableOpen, setNpsTableOpen, bankRateOpen, setBankRateOpen, bankRateMonth, setBankRateMonth, bankRates, setBankRates, bankBaseDate, setBankBaseDate, cmPinOpen, setCmPinOpen, cmPinState, setCmPinState, cmPinStep, setCmPinStep, cmPinInput, setCmPinInput, cmPinConfirm, setCmPinConfirm, cmPinError, setCmPinError, cmPinInputRef, cmPinStepRef, quickMenuKeys, setQuickMenuKeys, tempQuickMenuKeys, setTempQuickMenuKeys, contextMenu, setContextMenu, deleteConfirmOpen, setDeleteConfirmOpen, quickLimitOpen, setQuickLimitOpen, quickMenuSelectOpen, setQuickMenuSelectOpen, quickDeleteConfirmOpen, setQuickDeleteConfirmOpen, quickDeleteKey, setQuickDeleteKey, saveConfirmOpen, setSaveConfirmOpen, saveConfirmType, setSaveConfirmType, saveConfirmMessage, setSaveConfirmMessage, menuLinkAlertOpen, setMenuLinkAlertOpen, lifeGender, setLifeGender, lifeAge, setLifeAge, noticePage, setNoticePage, selectedNotice, setSelectedNotice, noticeImageIndex, setNoticeImageIndex, popupNoticeImageIndex, setPopupNoticeImageIndex, fixMessage, setFixMessage, addMessage, setAddMessage, contact, setContact, hasUpdate, setHasUpdate, hasSalesBookUpdate, setHasSalesBookUpdate, readNoticeIds, setReadNoticeIds, dbNotices, setDbNotices, dbCategories, setDbCategories, popupNotice, setPopupNotice, popupNoticeClosed, setPopupNoticeClosed, readPressIds, setReadPressIds } = useHomeState();
 const { authUser, authNickname, authInstagram, authStatus, authRole, authCreatedAt, authLoading, refreshAuth, memos, saveMemos } = useAuth();
+
+const personalRouter = useRouter();
+const personalPath = usePathname();
+const [personalSpaceUserId, setPersonalSpaceUserId] = useState<string | null>(null);
+useEffect(() => {
+  if (personalPath !== "/my-page" || authStatus !== "approved") setPersonalSpaceUserId(null);
+}, [personalPath, authUser?.id, authStatus]);
+const enterPersonalSpace = () => {
+  setPersonalSpaceUserId(authUser!.id);
+  setCmPinOpen(false);
+  if (window.location.pathname !== "/my-page") personalRouter.push("/my-page");
+};
 
 const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -807,7 +820,7 @@ const openCmPinPopup = async () => {
     setCmPinOpen(true);
     return;
   }
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("customer_settings")
     .select("pin_hash")
     .eq("user_id", authUser.id)
@@ -818,7 +831,10 @@ const openCmPinPopup = async () => {
   setCmPinConfirm("");
   setCmPinError("");
   setCmPinStep("enter");
-  if (!data?.pin_hash) {
+  if (error) {
+    setCmPinState("locked");
+    setCmPinError("비밀번호 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+  } else if (!data?.pin_hash) {
     setCmPinState("no-pin");
   } else {
     setCmPinState("locked");
@@ -879,8 +895,7 @@ const handleCmKeypad = async (val: string) => {
                 setCmPinConfirm("");
                 return;
               }
-              setCmPinOpen(false);
-              window.location.href = "/my-page";
+              enterPersonalSpace();
             }, 200);
           }
           return next;
@@ -910,8 +925,7 @@ const handleCmKeypad = async (val: string) => {
             setCmPinInput("");
             return;
           }
-          setCmPinOpen(false);
-          window.location.href = "/my-page";
+          enterPersonalSpace();
         }, 200);
       }
     }
@@ -1368,6 +1382,7 @@ bankRateMonth,
 setBankRateMonth,
 bankRates,
 bankBaseDate,
+personalSpaceUserId,
 cmPinOpen,
 setCmPinOpen,
 cmPinState,

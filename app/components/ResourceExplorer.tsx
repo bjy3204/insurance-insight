@@ -734,7 +734,7 @@ const fileRec = fileRecords.find(
             <span className="font-bold text-gray-800 text-base">구독자 전용 자료실</span>
           </div>
           <div className="flex items-center gap-2 no-drag">
-            <button
+            <button data-popup-action="true"
               onClick={() => { setSelectMode(!selectMode); setSelectedItems(new Set()); }}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-default ${selectMode ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-600"}`}
             >
@@ -807,7 +807,7 @@ const fileRec = fileRecords.find(
           <div className="flex items-center gap-2 px-5 py-3 bg-blue-50 border-b border-blue-100 no-drag shrink-0">
             <input data-ui-field="true" type="text" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createFolder()} placeholder="폴더 이름 입력 (한글 가능)" className="flex-1 px-3 py-2 rounded-xl border border-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" autoFocus />
             <button onClick={createFolder} className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 transition cursor-default">만들기</button>
-            <button onClick={() => { setShowNewFolder(false); setNewFolderName(""); }} className="px-3 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200 transition cursor-default">취소</button>
+            <button data-popup-action="true" onClick={() => { setShowNewFolder(false); setNewFolderName(""); }} className="px-3 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200 transition cursor-default">취소</button>
           </div>
         )}
 
@@ -1109,7 +1109,7 @@ const fileRec = fileRecords.find(
       </p>
 
       <div className="flex gap-3">
-        <button
+        <button data-popup-action="true"
           onClick={() => setDeleteConfirm(null)}
           className="flex-1 py-3 rounded-2xl bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200 transition cursor-pointer"
         >
@@ -1136,7 +1136,7 @@ const fileRec = fileRecords.find(
               <span className="block text-red-400 text-xs mt-1">삭제된 파일은 복구할 수 없습니다.</span>
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setBulkDeleteConfirm(false)} className="flex-1 py-3 rounded-2xl bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200 transition cursor-default">취소</button>
+              <button data-popup-action="true" onClick={() => setBulkDeleteConfirm(false)} className="flex-1 py-3 rounded-2xl bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200 transition cursor-default">취소</button>
               <button onClick={handleBulkDelete} className="flex-1 py-3 rounded-2xl bg-red-500 text-white font-semibold hover:bg-red-600 transition cursor-pointer">삭제</button>
             </div>
           </div>

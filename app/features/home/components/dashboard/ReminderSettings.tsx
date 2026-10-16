@@ -37,6 +37,6 @@ export default function ReminderSettings({ event, userId, onClose }: { event: Ca
     <fieldset className={styles.reminderChoices} disabled={!loaded || busy}><legend>알림 받을 날</legend>{REMINDER_CHOICES.map(option => <label key={option.value} className={styles.radioLabel}><input type="radio" name="reminder" checked={choice === option.value} onChange={() => { setChoice(option.value); setError(""); }} />{option.label}</label>)}<label className={styles.radioLabel}><input type="radio" name="reminder" checked={choice === null} onChange={() => setChoice(null)} />알림 해제</label></fieldset>
     <p className={styles.muted}>{choice !== null ? `${reminderDate(event.date, choice)} 하루 동안 접속할 때 알려드려요.` : "알림을 받을 날을 하나 선택해 주세요."}</p>
     {error && <p className={styles.error} role="alert">{error}{!loaded && <button type="button" className={styles.secondary} onClick={() => setReload(value => value + 1)}>다시 시도</button>}</p>}
-    <div className={styles.formActions}><button className={styles.secondary} disabled={busy} onClick={close}>취소</button><button className={styles.primary} disabled={!loaded || busy} onClick={() => void save()}>{busy ? "저장 중" : "저장"}</button></div>
+    <div className={styles.formActions}><button data-popup-action="true" className={styles.secondary} disabled={busy} onClick={close}>취소</button><button data-popup-action="true" className={styles.primary} disabled={!loaded || busy} onClick={() => void save()}>{busy ? "저장 중" : "저장"}</button></div>
   </DashboardDialog>;
 }

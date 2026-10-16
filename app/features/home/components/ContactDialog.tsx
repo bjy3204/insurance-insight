@@ -36,7 +36,7 @@ return (<>{open && (
   onPointerDown={(e) => startPopupDrag("message", e)}
   className="mb-4"
 >
-  <h2 className="text-2xl font-black text-gray-900">
+  <h2 data-popup-heading="true" className="text-2xl font-black text-gray-900">
     보험나무에게 메세지 보내기
   </h2>
 
@@ -112,7 +112,7 @@ return (<>{open && (
             />
 
             <div className="flex gap-3">
-              <button
+              <button data-popup-action="true" data-action-height="48"
                 onClick={() => setOpen(false)}
                 className="
   flex-1

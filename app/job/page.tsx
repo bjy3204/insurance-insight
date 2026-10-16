@@ -562,7 +562,7 @@ const currentCompanies = filteredCompanies.slice(
       {readyOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-5">
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-center">
-            <h2 className="text-xl font-black text-gray-900 mb-3">
+            <h2 data-popup-heading="true" className="text-xl font-black text-gray-900 mb-3">
               서비스 준비중입니다
             </h2>
 
@@ -570,7 +570,7 @@ const currentCompanies = filteredCompanies.slice(
               {readyService} 서비스는 현재 준비중입니다.
             </p>
 
-            <button
+            <button data-popup-action="true"
               onClick={() => setReadyOpen(false)}
               className="w-full h-[46px] px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold cursor-pointer active:scale-[0.98] transition"
             >

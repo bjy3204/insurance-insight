@@ -50,7 +50,7 @@ export default function CustomerEntryDialog({ kind, values, onChange, onClose, c
     const placeholder = inherited ? values[name === "insured" ? "owner" : "ownerBirth"] || options.placeholder || (options.birth ? "960901" : undefined) : options.placeholder || (options.birth ? fullBirth ? "960901-2" : "960901" : undefined);
     return <div className={`${styles.field} ${options.wide ? styles.wide : ""}`} key={name}>
       <label htmlFor={id} className={styles.label}>{label}{options.birth && fullBirth && customerGender(values[name] || "") && <span aria-hidden="true" data-gender={customerGender(values[name] || "")} className={styles.gender}>{customerGender(values[name])}</span>}</label>
-      {options.suffix && <div className={styles.suffixField}><input id={id} name={name} aria-label={label} type="text" inputMode="numeric" autoComplete="off" value={values[name] || ""} onChange={event => onChange(name, event.target.value.replace(/\D/g, ""))} /><span>{options.suffix}</span></div>}
+      {options.suffix && <div data-popup-field-wrapper="true" className={styles.suffixField}><input id={id} name={name} aria-label={label} type="text" inputMode="numeric" autoComplete="off" value={values[name] || ""} onChange={event => onChange(name, event.target.value.replace(/\D/g, ""))} /><span>{options.suffix}</span></div>}
       {!options.suffix && <input id={id} name={name} type={options.type === "number" ? "text" : options.type || "text"} value={inherited ? "" : currentValue} placeholder={placeholder} autoComplete="off"
         inputMode={options.birth || options.phone || options.dateInput || options.type === "number" ? "numeric" : undefined} maxLength={options.birth ? fullBirth ? 8 : 6 : options.dateInput ? 10 : undefined}
         onChange={event => change(options.dateInput ? formatCustomerDate(event.target.value) : options.birth ? fullBirth ? formatCustomerBirth(event.target.value) : shortCustomerBirth(event.target.value) : options.phone ? formatCustomerPhone(event.target.value) : options.type === "number" ? event.target.value.replace(/\D/g, "") : event.target.value)} />}
@@ -71,7 +71,7 @@ export default function CustomerEntryDialog({ kind, values, onChange, onClose, c
   const section = (label: string, icon: ReactNode, children: ReactNode, contract = false, action?: ReactNode) => <section className={styles.section}><div className={styles.sectionHeading}><h3>{icon}{label}</h3>{action}</div><div className={`${styles.grid} ${contract ? styles.contractGrid : ""}`}>{children}</div></section>;
 
   return createPortal(<div className={`${styles.overlay} fixed inset-0 bg-black/40`} onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
-    <div ref={panel} className={styles.dialog} data-popup-frame="true" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+    <div ref={panel} className={styles.dialog} data-popup-frame="true" data-account-inputs="true" role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <header data-popup-header="true" className={styles.header}>
         <h2 id={titleId} data-popup-title="true" className={styles.title}><TitleIcon size={25} />{title}</h2>
         <button type="button" data-popup-close="true" aria-label={`${title} 닫기`} onClick={onClose}><X size={20} /></button>
@@ -99,7 +99,7 @@ export default function CustomerEntryDialog({ kind, values, onChange, onClose, c
                 {([['vehicleNumber','차량번호'],['vehicleType','차종'],['renewal','갱신일'],['insurer','보험사'],['driver','운전자지정'],['discount','할인']] as const).map(([key, label]) => field(`vehicle-${index}-${key}`, label, { value: vehicle[key], dateInput: key === "renewal", change: value => onChange("vehicles", JSON.stringify(vehicles.map((item, position) => position === index ? { ...item, [key]: value } : item))) }))}
               </div>
             </div>)}</div>
-          </>, false, <button type="button" className={styles.addVehicle} disabled={vehicles.length >= 100} onClick={() => onChange("vehicles", JSON.stringify([...vehicles, emptyCustomerVehicle()]))}><Plus size={15} />추가</button>)}
+          </>, false, <button type="button" aria-label="차량 추가" title="차량 추가" className={styles.addVehicle} disabled={vehicles.length >= 100} onClick={() => onChange("vehicles", JSON.stringify([...vehicles, emptyCustomerVehicle()]))}><Plus size={20} /></button>)}
         </> : <>
           {section("계약자·피보험자 정보", <UserRound />, <>
             <CustomerIdentityFields customers={customers} name={values.owner || ""} birth={values.ownerBirth || ""} onNameChange={value => onChange("owner", value)} onBirthChange={value => onChange("ownerBirth", value)} />
@@ -123,8 +123,8 @@ export default function CustomerEntryDialog({ kind, values, onChange, onClose, c
           <input type="checkbox" disabled={saving} checked={values.consentConfirmed === "true"} onChange={event => onChange("consentConfirmed", String(event.target.checked))} />
           <span>고객에게 개인정보 수집·이용 내용을 안내하고, 필요한 동의를 받았음을 확인합니다.</span>
         </label>
-        <button type="button" className={styles.cancel} disabled={saving} onClick={onClose}>취소</button>
-        <button type="button" className={styles.submit} disabled={!onSubmit || saving || values.consentConfirmed !== "true"} onClick={onSubmit}>{saving ? "저장 중" : editing ? "저장" : "추가"}</button>
+        <button data-popup-action="true" data-action-height="48" type="button" className={styles.cancel} disabled={saving} onClick={onClose}>취소</button>
+        <button data-popup-action="true" data-action-height="48" type="button" className={styles.submit} disabled={!onSubmit || saving || values.consentConfirmed !== "true"} onClick={onSubmit}>{saving ? "저장 중" : editing ? "저장" : "추가"}</button>
       </footer>
     </div>
   </div>, document.body);

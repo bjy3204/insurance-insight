@@ -1,4 +1,6 @@
 "use client";
+import PolicyInsertsIcon from "@/app/components/PolicyInsertsIcon";
+
 import DiaryTab from "./DiaryTab";
 import MemoBoard from "@/app/components/memos/MemoBoard";
 
@@ -76,6 +78,7 @@ import AiMessageTab from "./AiMessageTab";
 import NoticeTab from "./NoticeTab";
 import CustomerManagementTab from "./CustomerManagementTab";
 import CoverageAnalysisTab from "./CoverageAnalysisTab";
+import PolicyInsertsEditor from "@/app/policy-inserts/PolicyInsertsEditor";
 import SpreadsheetIcon from "./SpreadsheetIcon";
 import { normalizePersonalMenuOrder, reorderPersonalMenu, SHORTCUT_ORDER } from "./personal-menu-order";
 
@@ -91,6 +94,7 @@ type ActiveTab =
   | "calendar"
   | "ai"
   | "customer"
+  | "policy-inserts"
   | "customer-management"
   | "coverage-analysis"
   | "notice"
@@ -173,6 +177,7 @@ const TABS = [
   { id: "home" as ActiveTab, label: "홈", icon: BookOpen },
   { id: "customer-management" as ActiveTab, label: "고객관리", icon: Users },
   { id: "coverage-analysis" as ActiveTab, label: "보장분석표", icon: ClipboardList },
+  { id: "policy-inserts" as ActiveTab, label: "보험 증권 속지", icon: PolicyInsertsIcon },
   { id: "ai" as ActiveTab, label: "AI메시지", icon: MessageSquare },
   { id: "notice" as ActiveTab, label: "안내장", icon: FileText },
   { id: "customer" as ActiveTab, label: "스프레드시트", icon: SpreadsheetIcon },
@@ -222,7 +227,22 @@ function SortableTab({ tab, activeTab, setActiveTab }: { tab: any; activeTab: st
 // ─────────────────────────────────────────────
 // 메인 컴포넌트
 // ─────────────────────────────────────────────
-export default function CustomerManagePage() {
+export default function PersonalSpacePage() {
+  const controller = useSharedHomeController();
+  const { authUser, authStatus, authLoading } = useAuth();
+  const promptedUser = useRef<string | null>(null);
+  const unlocked = !!authUser && controller.personalSpaceUserId === authUser.id;
+  useEffect(() => {
+    if (authLoading || !authUser || authStatus !== "approved" || unlocked || promptedUser.current === authUser.id) return;
+    promptedUser.current = authUser.id;
+    void controller.openCmPinPopup();
+  }, [authLoading, authUser, authStatus, unlocked, controller]);
+  if (authLoading) return null;
+  if (authUser && authStatus === "approved" && !unlocked) return <main className="flex min-h-screen items-center justify-center bg-gray-50 p-4"><div className="text-center"><p className="mb-4 text-sm text-gray-600">개인공간 비밀번호를 입력해 주세요.</p><button type="button" onClick={() => void controller.openCmPinPopup()} className="cursor-pointer rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">비밀번호 입력</button></div></main>;
+  return <CustomerManagePage />;
+}
+
+function CustomerManagePage() {
   const { authUser, authStatus, authLoading, memos, saveMemos } = useAuth();
   const router = useRouter();
   const accountController = useSharedHomeController();
@@ -243,7 +263,6 @@ export default function CustomerManagePage() {
 
   // 설정 드롭다운
   const [settingOpen, setSettingOpen] = useState(false);
-  const [shortcutTab, setShortcutTab] = useState(1);
   const [settingsDialog, setSettingsDialog] = useState<"space" | null>(null);
 const [sidebarOpen, setSidebarOpen] = useState(false);
 const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -270,82 +289,6 @@ const settingRef = useRef<HTMLDivElement>(null);
   const [settingSaving, setSettingSaving] = useState(false);
   const [settingMsg, setSettingMsg] = useState("");
   const [showNewPin, setShowNewPin] = useState(false);
-const [iconPickerOpen, setIconPickerOpen] = useState<
-  null | "kakao" | "mysite" | "spreadsheet"
->(null);
-const [urlPopupName, setUrlPopupName] = useState("");
-const [urlPopupIcon, setUrlPopupIcon] = useState("CirclePlus");
-// URL 팝업 내 아이콘 피커 열림 상태
-const [urlPopupIconPickerOpen, setUrlPopupIconPickerOpen] = useState(false);
-
-
-  // ─── URL 설정 팝업 (하단 + 버튼용) ───
-  // type: "kakao" | "mysite" | "spreadsheet"
-  const [urlPopupType, setUrlPopupType] = useState<"kakao" | "mysite" | "spreadsheet" | null>(null);
-  const [urlPopupValue, setUrlPopupValue] = useState("");
-  const [urlPopupSaving, setUrlPopupSaving] = useState(false);
-
-  const urlPopupMeta = {
-    kakao: { label: "내 사이트 URL 설정", placeholder: "https://" },
-    mysite: { label: "내 사이트 URL 설정", placeholder: "https://" },
-    spreadsheet: { label: "내 사이트 URL 설정", placeholder: "https://" },
-  };
-
-  const openUrlPopup = (type: "kakao" | "mysite" | "spreadsheet") => {
-  const current =
-    type === "kakao" ? settings?.kakao_url :
-    type === "mysite" ? settings?.my_site_url :
-    settings?.spreadsheet_url;
-  const currentName =
-    type === "kakao" ? settings?.kakao_name :
-    type === "mysite" ? settings?.my_site_name :
-    settings?.spreadsheet_name;
-  const currentIcon =
-    type === "kakao" ? settings?.kakao_icon :
-    type === "mysite" ? settings?.my_site_icon :
-    settings?.spreadsheet_icon;
-  setUrlPopupValue(current || "");
-  setUrlPopupName(currentName || "");
-  setUrlPopupIcon(currentIcon || "CirclePlus");
-  setUrlPopupIconPickerOpen(false);
-  setUrlPopupType(type);
-};
-
-  const handleUrlButtonClick = (type: "kakao" | "mysite" | "spreadsheet") => {
-    const url =
-      type === "kakao" ? settings?.kakao_url :
-      type === "mysite" ? settings?.my_site_url :
-      settings?.spreadsheet_url;
-    if (url) {
-      window.open(url, "_blank");
-    } else {
-      openUrlPopup(type);
-    }
-  };
-
-  const handleSaveUrlPopup = async () => {
-  if (!authUser || !urlPopupType) return;
-  setUrlPopupSaving(true);
-  const urlField = urlPopupType === "kakao" ? "kakao_url" : urlPopupType === "mysite" ? "my_site_url" : "spreadsheet_url";
-  const nameField = urlPopupType === "kakao" ? "kakao_name" : urlPopupType === "mysite" ? "my_site_name" : "spreadsheet_name";
-  const iconField = urlPopupType === "kakao" ? "kakao_icon" : urlPopupType === "mysite" ? "my_site_icon" : "spreadsheet_icon";
-  const updateData: any = {
-    user_id: authUser.id,
-    [urlField]: urlPopupValue,
-    [nameField]: urlPopupName,
-    [iconField]: urlPopupIcon,
-  };
-  const { error } = await supabase.from("customer_settings").upsert(updateData, { onConflict: "user_id" });
-  if (!error) {
-    setSettings((prev) => prev ? { ...prev, [urlField]: urlPopupValue, [nameField]: urlPopupName, [iconField]: urlPopupIcon } : null);
-    setSettingForm((f) => ({ ...f, [urlField]: urlPopupValue, [nameField]: urlPopupName, [iconField]: urlPopupIcon }));
-  }
-  setUrlPopupSaving(false);
-  setUrlPopupType(null);
-};
-
-
-
   // ─── 메모 state ───
   const [memoOpen, setMemoOpen] = useState(false);
   const [memoSearch, setMemoSearch] = useState("");
@@ -598,15 +541,6 @@ if (!data) return;
     setSettingMsg("");
     const updateData: any = {
   user_id: authUser.id,
-  kakao_url: settingForm.kakao_url,
-  kakao_name: settingForm.kakao_name,
-  kakao_icon: settingForm.kakao_icon,
-  my_site_url: settingForm.my_site_url,
-  my_site_name: settingForm.my_site_name,
-  my_site_icon: settingForm.my_site_icon,
-  spreadsheet_url: settingForm.spreadsheet_url,
-  spreadsheet_name: settingForm.spreadsheet_name,
-  spreadsheet_icon: settingForm.spreadsheet_icon,
 };
 
     if (settingForm.new_pin) {
@@ -703,7 +637,7 @@ updateData.pin_changed_at = new Date().toISOString();
 
 <div ref={settingRef} className="absolute right-0 flex items-center gap-2" onKeyDown={event => { if (event.key === "Escape") { setSettingOpen(false); } }}>
   <div className="relative">
-    <button type="button" data-header-control="true" aria-label="설정" aria-haspopup="dialog" onClick={() => { setSettingsDialog("space"); setSettingOpen(false); setIconPickerOpen(null); setSettingMsg(""); }}><SlidersHorizontal /></button>
+    <button type="button" data-header-control="true" aria-label="설정" aria-haspopup="dialog" onClick={() => { setSettingsDialog("space"); setSettingOpen(false); setSettingMsg(""); }}><SlidersHorizontal /></button>
   </div>
   <div className="relative hidden md:block">
     <button type="button" data-header-control="true" aria-label="도구 메뉴" aria-expanded={settingOpen} aria-controls="personal-header-tools" onClick={() => { setSettingOpen(open => !open); }}><LayoutGrid /></button>
@@ -720,7 +654,6 @@ updateData.pin_changed_at = new Date().toISOString();
       </header>
 
 <PersonalSidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} onPlantOpen={() => { setPlantPopupOpen(open => !open); }} nickname={settings?.nickname || "회원"} plantStage={sidebarPlantStage} mobileOpen={sidebarOpen} onMobileClose={() => setSidebarOpen(false)} activeTab={activeTab} tabs={tabs} onSelect={id => setActiveTab(id as ActiveTab)} onReorder={handlePersonalMenuReorder} reorderDisabled={menuSaving} reorderError={menuSaveError}
- shortcuts={([{type:"kakao",name:settings?.kakao_name,icon:settings?.kakao_icon},{type:"mysite",name:settings?.my_site_name,icon:settings?.my_site_icon},{type:"spreadsheet",name:settings?.spreadsheet_name,icon:settings?.spreadsheet_icon}] as const).slice().sort((a, b) => shortcutOrder.indexOf(a.type) - shortcutOrder.indexOf(b.type)).map(link => ({id:link.type,label:link.name || "바로가기 추가",icon:LINK_ICONS.find(item => item.id === (link.icon || "CirclePlus"))?.icon || CirclePlus,onClick:() => handleUrlButtonClick(link.type)}))}
  />
 <div className={`transition-[padding] duration-200 motion-reduce:transition-none ${sidebarCollapsed ? "md:pl-0" : "md:pl-24"}`}><div className="min-w-0">
       {activeTab === "home" && <CustomerReminderNotice />}
@@ -748,6 +681,7 @@ updateData.pin_changed_at = new Date().toISOString();
 </div>
 
 {activeTab === "customer-management" && <CustomerManagementTab />}
+{activeTab === "policy-inserts" && <PolicyInsertsEditor embedded />}
 {COVERAGE_ANALYSIS_ENABLED && activeTab === "coverage-analysis" && <CoverageAnalysisTab />}
 
 <div data-compact-corners="true" className={activeTab === "customer" ? "block" : "hidden"}>
@@ -774,145 +708,9 @@ updateData.pin_changed_at = new Date().toISOString();
       </main>
 
 </div></div>
-     {settingsDialog && <PersonalSettingsDialog title="개인공간" onClose={() => { if (!settingSaving) { setSettingsDialog(null); setIconPickerOpen(null); } }}>
+     {settingsDialog && <PersonalSettingsDialog title="개인공간" onClose={() => { if (!settingSaving) { setSettingsDialog(null); } }}>
              <section className="space-y-4">
-<div role="tablist" aria-label="바로가기 설정" className="flex border-b border-gray-200">{[1, 2, 3].map(number => <button key={number} type="button" role="tab" id={`shortcut-tab-${number}`} aria-selected={shortcutTab === number} aria-controls={`shortcut-panel-${number}`} onClick={() => { setShortcutTab(number); setIconPickerOpen(null); }} className={`flex-1 cursor-pointer border-b-2 px-2 py-2 text-sm font-semibold transition-colors ${shortcutTab === number ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-800"}`}>바로가기 {number}</button>)}</div>
-              <div role="tabpanel" id="shortcut-panel-1" aria-labelledby="shortcut-tab-1" hidden={shortcutTab !== 1}>
-<div className="flex items-center gap-2 mb-1">
-  <div className="relative shrink-0">
-    <button
-      type="button"
-      onClick={() => setIconPickerOpen(iconPickerOpen === "kakao" ? null : "kakao")}
-      className="flex items-center gap-1.5 px-2.5 h-11 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
-    >
-      {(() => {
-        const found = LINK_ICONS.find(i => i.id === settingForm.kakao_icon);
-        const IconComp = found ? found.icon : CirclePlus;
-        return <IconComp className="w-4 h-4 text-gray-700" />;
-      })()}
-      <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${iconPickerOpen === "kakao" ? "rotate-180" : ""}`} />
-    </button>
-    {iconPickerOpen === "kakao" && (
-      <div className="absolute top-full left-0 mt-1 z-[9999] w-[220px] grid grid-cols-5 gap-1 p-2 rounded-xl border border-gray-200 bg-white shadow-lg">
-        {LINK_ICONS.map((item) => {
-          const IconComp = item.icon;
-          return (
-            <button key={item.id} type="button"
-              onClick={() => { setSettingForm((f) => ({ ...f, kakao_icon: item.id })); setIconPickerOpen(null); }}
-              className={`flex items-center justify-center p-1.5 rounded-lg border transition cursor-pointer ${settingForm.kakao_icon === item.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"}`}>
-              <IconComp className="w-4 h-4 text-gray-700" />
-            </button>
-          );
-        })}
-      </div>
-    )}
-  </div>
-  <input data-ui-field="true"
-    value={settingForm.kakao_name}
-    onChange={(e) => setSettingForm((f) => ({ ...f, kakao_name: e.target.value }))}
-    placeholder="버튼 이름"
-    className="flex-1 min-w-0 h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-  />
-</div>
-
-                <input data-ui-field="true"
-                  value={settingForm.kakao_url}
-                  onChange={(e) => setSettingForm((f) => ({ ...f, kakao_url: e.target.value }))}
-                  placeholder="https://"
-                  className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-                />
-              </div>
-              <div role="tabpanel" id="shortcut-panel-2" aria-labelledby="shortcut-tab-2" hidden={shortcutTab !== 2}>
-  <div className="flex items-center gap-2 mb-1">
-    <div className="relative shrink-0">
-      <button
-        type="button"
-        onClick={() => setIconPickerOpen(iconPickerOpen === "mysite" ? null : "mysite")}
-        className="flex items-center gap-1.5 px-2.5 h-11 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
-      >
-        {(() => {
-          const found = LINK_ICONS.find(i => i.id === settingForm.my_site_icon);
-          const IconComp = found ? found.icon : CirclePlus;
-          return <IconComp className="w-4 h-4 text-gray-700" />;
-        })()}
-        <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${iconPickerOpen === "mysite" ? "rotate-180" : ""}`} />
-      </button>
-      {iconPickerOpen === "mysite" && (
-        <div className="absolute top-full left-0 mt-1 z-[9999] w-[220px] grid grid-cols-5 gap-1 p-2 rounded-xl border border-gray-200 bg-white shadow-lg">
-          {LINK_ICONS.map((item) => {
-            const IconComp = item.icon;
-            return (
-              <button key={item.id} type="button"
-                onClick={() => { setSettingForm((f) => ({ ...f, my_site_icon: item.id })); setIconPickerOpen(null); }}
-                className={`flex items-center justify-center p-1.5 rounded-lg border transition cursor-pointer ${settingForm.my_site_icon === item.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"}`}>
-                <IconComp className="w-4 h-4 text-gray-700" />
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-    <input data-ui-field="true"
-      value={settingForm.my_site_name}
-      onChange={(e) => setSettingForm((f) => ({ ...f, my_site_name: e.target.value }))}
-      placeholder="버튼 이름"
-      className="flex-1 min-w-0 h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-    />
-  </div>
-  <input data-ui-field="true"
-    value={settingForm.my_site_url}
-    onChange={(e) => setSettingForm((f) => ({ ...f, my_site_url: e.target.value }))}
-    placeholder="https://"
-    className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-  />
-</div>
-
-              <div role="tabpanel" id="shortcut-panel-3" aria-labelledby="shortcut-tab-3" hidden={shortcutTab !== 3}>
-  <div className="flex items-center gap-2 mb-1">
-    <div className="relative shrink-0">
-      <button
-        type="button"
-        onClick={() => setIconPickerOpen(iconPickerOpen === "spreadsheet" ? null : "spreadsheet")}
-        className="flex items-center gap-1.5 px-2.5 h-11 rounded-xl border border-gray-200 hover:bg-gray-50 transition cursor-pointer"
-      >
-        {(() => {
-          const found = LINK_ICONS.find(i => i.id === settingForm.spreadsheet_icon);
-          const IconComp = found ? found.icon : CirclePlus;
-          return <IconComp className="w-4 h-4 text-gray-700" />;
-        })()}
-        <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${iconPickerOpen === "spreadsheet" ? "rotate-180" : ""}`} />
-      </button>
-      {iconPickerOpen === "spreadsheet" && (
-        <div className="absolute top-full left-0 mt-1 z-[9999] w-[220px] grid grid-cols-5 gap-1 p-2 rounded-xl border border-gray-200 bg-white shadow-lg">
-          {LINK_ICONS.map((item) => {
-            const IconComp = item.icon;
-            return (
-              <button key={item.id} type="button"
-                onClick={() => { setSettingForm((f) => ({ ...f, spreadsheet_icon: item.id })); setIconPickerOpen(null); }}
-                className={`flex items-center justify-center p-1.5 rounded-lg border transition cursor-pointer ${settingForm.spreadsheet_icon === item.id ? "border-blue-500 bg-blue-50" : "border-gray-200 hover:bg-gray-50"}`}>
-                <IconComp className="w-4 h-4 text-gray-700" />
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-    <input data-ui-field="true"
-      value={settingForm.spreadsheet_name}
-      onChange={(e) => setSettingForm((f) => ({ ...f, spreadsheet_name: e.target.value }))}
-      placeholder="버튼 이름"
-      className="flex-1 min-w-0 h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-    />
-  </div>
-  <input data-ui-field="true"
-    value={settingForm.spreadsheet_url}
-    onChange={(e) => setSettingForm((f) => ({ ...f, spreadsheet_url: e.target.value }))}
-    placeholder="https://"
-    className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-  />
-</div>
-
-              <AccountPinCheck controller={accountController}/>
+              <AccountPinCheck controller={accountController} divider={false}/>
               <div className="border-t border-gray-100 pt-3">
                 <label className="text-xs text-gray-500 font-semibold mb-1 block">개인공간 PIN 변경 (4자리)</label>
                 <div className="relative">
@@ -945,7 +743,7 @@ updateData.pin_changed_at = new Date().toISOString();
                   {settingMsg}
                 </p>
               )}
-              <button
+              <button data-popup-action="true"
                 onClick={handleSaveSettings}
                 disabled={settingSaving}
                 className="w-full h-12 bg-gray-800 text-white text-sm font-bold rounded-2xl hover:bg-gray-700 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
@@ -955,106 +753,6 @@ updateData.pin_changed_at = new Date().toISOString();
               </button>
             </section>
      </PersonalSettingsDialog>}
-     {/* ── URL 설정 팝업 ── */}
-{urlPopupType && (
-  <div className="fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-visible">
-      <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between rounded-t-3xl">
-        <span className="font-bold text-sm">{urlPopupMeta[urlPopupType].label}</span>
-        <button data-popup-close="true"
-          onClick={() => setUrlPopupType(null)}
-          className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="p-5 space-y-3 overflow-visible">
-        <label className="text-xs text-gray-500 font-semibold block">
-          내 사이트 URL 설정
-        </label>
-
-        <div className="flex items-center gap-2">
-          <div className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => setUrlPopupIconPickerOpen((v) => !v)}
-              className="flex items-center gap-1.5 px-2.5 h-10 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition cursor-pointer"
-            >
-              {(() => {
-                const found = LINK_ICONS.find((i) => i.id === urlPopupIcon);
-                const IconComp = found ? found.icon : CirclePlus;
-                return <IconComp className="w-4 h-4 text-gray-700" />;
-              })()}
-              <ChevronDown
-                className={`w-3.5 h-3.5 text-gray-400 transition-transform ${
-                  urlPopupIconPickerOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {urlPopupIconPickerOpen && (
-              <div className="absolute top-full left-0 mt-2 z-[9999] w-[220px] grid grid-cols-5 gap-2 p-2 rounded-2xl border border-gray-200 bg-white shadow-xl">
-                {LINK_ICONS.map((item) => {
-                  const IconComp = item.icon;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        setUrlPopupIcon(item.id);
-                        setUrlPopupIconPickerOpen(false);
-                      }}
-                      className={`flex items-center justify-center w-9 h-9 rounded-xl border transition cursor-pointer ${
-                        urlPopupIcon === item.id
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:bg-gray-50"
-                      }`}
-                    >
-                      <IconComp className="w-4 h-4 text-gray-700" />
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <input data-ui-field="true"
-            value={urlPopupName}
-            onChange={(e) => setUrlPopupName(e.target.value)}
-            placeholder="버튼 이름"
-            className="flex-1 h-10 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-          />
-        </div>
-
-        <input data-ui-field="true"
-          value={urlPopupValue}
-          onChange={(e) => setUrlPopupValue(e.target.value)}
-          placeholder={urlPopupMeta[urlPopupType].placeholder}
-          className="w-full h-10 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
-          autoFocus
-        />
-
-        <div className="flex gap-3 pt-1">
-          <button
-            onClick={() => setUrlPopupType(null)}
-            className="flex-1 h-10 bg-gray-100 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-200 transition cursor-pointer"
-          >
-            취소
-          </button>
-          <button
-            onClick={handleSaveUrlPopup}
-            disabled={urlPopupSaving}
-            className="flex-1 h-10 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition disabled:opacity-50 cursor-pointer"
-          >
-            {urlPopupSaving ? "저장 중..." : "저장"}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
       {homeMenuSettingOpen && (
  <div className="fixed inset-0 z-[250] bg-black/40 flex items-center justify-center px-3 py-4 md:p-4">
   <div data-popup-frame="true" className="bg-white rounded-3xl shadow-2xl w-full max-w-[360px] md:max-w-2xl h-[82vh] md:h-auto overflow-hidden flex flex-col">
@@ -1468,7 +1166,7 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
   return (
     <div className="w-full">
       {!embedUrl && <div className="flex items-start justify-start">
-          <button onClick={connectGoogle} disabled={connecting} className="h-11 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50 cursor-pointer">
+          <button data-action-height="44" onClick={connectGoogle} disabled={connecting} className="h-11 rounded-xl bg-blue-600 px-5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50 cursor-pointer">
             {connecting ? "연결중" : "내 고객관리 시트 만들기"}
           </button>
       </div>}
@@ -1486,7 +1184,7 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
            
       <div className="mt-3 flex flex-wrap items-center gap-3">
         {embedUrl && (
-          <button type="button" onClick={() => { setMessage(""); setRemoveConfirmOpen(true); }}
+          <button data-action-height="44" type="button" onClick={() => { setMessage(""); setRemoveConfirmOpen(true); }}
             className="ml-auto flex h-9 items-center gap-1.5 rounded-xl bg-red-50 px-4 text-xs font-bold text-red-500 transition hover:bg-red-100 cursor-pointer">
             <Trash2 className="h-3.5 w-3.5" />시트 없애기
           </button>
@@ -1506,8 +1204,8 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
             <p>연결된 시트를 삭제하시겠습니까?</p>
             {message && <p role="alert" className="mt-3 text-sm text-red-500">{message}</p>}
             <div className="mt-5 flex gap-3">
-              <button type="button" autoFocus disabled={saving} onClick={() => setRemoveConfirmOpen(false)} className="h-11 flex-1 rounded-2xl bg-gray-100 text-sm font-bold text-gray-700 hover:bg-gray-200 disabled:opacity-50 cursor-pointer">취소</button>
-              <button type="button" disabled={saving} onClick={removeSheet} className="h-11 flex-1 rounded-2xl bg-red-500 text-sm font-bold text-white hover:bg-red-600 disabled:opacity-50 cursor-pointer">{saving ? "삭제중" : "삭제"}</button>
+              <button data-popup-action="true" data-action-height="44" type="button" autoFocus disabled={saving} onClick={() => setRemoveConfirmOpen(false)} className="h-11 flex-1 rounded-2xl bg-gray-100 text-sm font-bold text-gray-700 hover:bg-gray-200 disabled:opacity-50 cursor-pointer">취소</button>
+              <button data-action-height="44" type="button" disabled={saving} onClick={removeSheet} className="h-11 flex-1 rounded-2xl bg-red-500 text-sm font-bold text-white hover:bg-red-600 disabled:opacity-50 cursor-pointer">{saving ? "삭제중" : "삭제"}</button>
             </div>
           </div>
         </div>

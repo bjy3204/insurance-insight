@@ -15,7 +15,7 @@ return (<>{menuSortOpen && (
   onClick={() => setContextMenu(null)}
   className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
 >
-   <div data-popup-frame="true"
+   <div data-popup-frame="true" data-hide-popup-scrollbar="true"
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("menuSort")}
   className={`${styles.menuSortDialog} bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col`}
@@ -133,9 +133,9 @@ return (<>{menuSortOpen && (
 
 <div className="flex-1 overflow-y-auto p-5">
 
-  {menuManageMode === "sort" && <div className="mb-4 flex h-11 items-center justify-between gap-3 rounded-lg border border-blue-100 bg-[#edf4ff] px-4 text-sm font-semibold text-[#4572ad]" aria-label="알림 배너 표시 설정">
-    <span className="flex items-center gap-2"><Bell className="h-4 w-4" />알림 배너</span>
-    <button type="button" aria-label={tempHiddenMenuIds.includes(NOTIFICATION_BANNER_ID) ? "알림 배너 표시" : "알림 배너 숨기기"} aria-pressed={!tempHiddenMenuIds.includes(NOTIFICATION_BANNER_ID)} onClick={() => setTempHiddenMenuIds(previous => previous.includes(NOTIFICATION_BANNER_ID) ? previous.filter(id => id !== NOTIFICATION_BANNER_ID) : [...previous, NOTIFICATION_BANNER_ID])} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-blue-100">
+  {menuManageMode === "sort" && <div className="mb-4 relative flex h-11 items-center justify-center gap-3 rounded-xl border border-blue-100 bg-[#edf4ff] px-4 text-sm font-semibold text-[#4572ad]" aria-label="일정 알림 배너 표시 설정">
+    <span className="flex items-center justify-center gap-2"><Bell className="h-4 w-4" />일정 알림 배너</span>
+    <button type="button" aria-label={tempHiddenMenuIds.includes(NOTIFICATION_BANNER_ID) ? "알림 배너 표시" : "알림 배너 숨기기"} aria-pressed={!tempHiddenMenuIds.includes(NOTIFICATION_BANNER_ID)} onClick={() => setTempHiddenMenuIds(previous => previous.includes(NOTIFICATION_BANNER_ID) ? previous.filter(id => id !== NOTIFICATION_BANNER_ID) : [...previous, NOTIFICATION_BANNER_ID])} className="absolute right-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-blue-100">
       {tempHiddenMenuIds.includes(NOTIFICATION_BANNER_ID) ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
     </button>
   </div>}
@@ -247,7 +247,7 @@ sm:pb-4
         cursor-default
       "
     >
-      <h2 className="text-lg font-bold text-gray-900">
+      <h2 data-popup-heading="true" className="text-lg font-bold text-gray-900">
         빠른메뉴 실행하기
       </h2>
 
@@ -392,7 +392,7 @@ sm:pb-4
                 <>
                   <Icon className="w-10 h-10 mb-4 text-blue-600 shrink-0" />
 
-                  <h2 className="text-lg font-bold text-gray-900">
+                  <h2 data-popup-heading="true" className="text-lg font-bold text-gray-900">
                     {menu.title}
                   </h2>
 
@@ -561,7 +561,7 @@ hover:-translate-y-1
 >
   <Icon className="w-10 h-10 mb-4 text-blue-600 shrink-0" />
 
-  <h2 className="text-lg font-bold leading-snug text-gray-900">
+  <h2 data-popup-heading="true" className="text-lg font-bold leading-snug text-gray-900">
     {menu.title}
   </h2>
 
@@ -577,7 +577,7 @@ hover:-translate-y-1
 </div>
 
       <div className="border-t border-gray-100 bg-white p-4 flex gap-3 justify-center">
-  <button data-menu-action
+  <button data-popup-action="true" data-action-height="48" data-menu-action
     onClick={() => {
       if (menuManageMode === "edit") {
         cancelEditingMenu();
@@ -613,7 +613,7 @@ hover:-translate-y-1
   </button>
 
   {menuManageMode === "sort" && (
-    <button data-menu-action
+    <button data-popup-action="true" data-action-height="48" data-menu-action
       onClick={() => {
         saveMenuManageChanges("popup");
       }}
@@ -635,7 +635,7 @@ hover:-translate-y-1
   )}
 
   {menuManageMode === "edit" && (
-    <button data-menu-action
+    <button data-popup-action="true" data-action-height="48" data-menu-action
       onClick={() => {
         saveMenuManageChanges("popup");
       }}
@@ -660,7 +660,7 @@ hover:-translate-y-1
   )}
 
   {menuManageMode === "delete" && (
-    <button data-menu-action
+    <button data-action-height="48" data-menu-action
       onClick={() => setDeleteConfirmOpen(true)}
       disabled={selectedDeleteMenuIds.length === 0}
       className="
