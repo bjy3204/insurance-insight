@@ -11,7 +11,7 @@ export function lockPageScroll() {
   if (scrollLocks++ === 0) { originalBodyOverflow = document.body.style.overflow; originalHtmlOverflow = document.documentElement.style.overflow; document.body.style.overflow = "hidden"; document.documentElement.style.overflow = "hidden"; }
   return () => { if (--scrollLocks === 0) { document.body.style.overflow = originalBodyOverflow; document.documentElement.style.overflow = originalHtmlOverflow; } };
 }
-export default function DashboardDialog({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
+export default function DashboardDialog({ title, children, onClose, confirmation = false }: { title: string; children: ReactNode; onClose: () => void; confirmation?: boolean }) {
   const panel = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
@@ -29,5 +29,5 @@ export default function DashboardDialog({ title, children, onClose }: { title: s
     document.addEventListener("keydown", keyboard);
     return () => { document.removeEventListener("keydown", keyboard); unlock(); previous?.focus(); };
   }, [onClose]);
-  return createPortal(<div className={styles.overlay} onClick={onClose}><div ref={panel} className={styles.dialog} role="dialog" aria-modal="true" aria-label={title} onClick={e => e.stopPropagation()}><div className={styles.dialogHeader}>{title}<button data-popup-close="true" type="button" className={styles.iconButton} onClick={onClose} aria-label="닫기"><X /></button></div>{children}</div></div>, document.body);
+  return createPortal(<div className={styles.overlay} data-confirm-overlay={confirmation || undefined} onClick={onClose}><div ref={panel} className={styles.dialog} data-confirm-dialog={confirmation || undefined} data-popup-small={confirmation || undefined} role={confirmation ? "alertdialog" : "dialog"} aria-modal="true" aria-label={title} onClick={e => e.stopPropagation()}><div className={styles.dialogHeader} data-confirm-title={confirmation || undefined}>{title}<button data-popup-close="true" type="button" className={styles.iconButton} onClick={onClose} aria-label="닫기"><X /></button></div>{children}</div></div>, document.body);
 }

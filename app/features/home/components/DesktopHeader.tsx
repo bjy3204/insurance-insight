@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Bell, Settings, User, X } from "lucide-react";
 import SiteHeader from "@/app/components/SiteHeader";
+import MembershipStatus from "@/components/MembershipStatus";
 import AuthButton from "@/components/AuthButton";
 import { noticeVersion } from "@/app/notice/notices";
 import type { HomeController } from "../hooks/useHomeController";
@@ -16,8 +17,8 @@ export default function DesktopHeader({ controller: c }: { controller: HomeContr
       <div className={styles.counters}><div><span>TODAY</span><strong>{c.today.toLocaleString()}</strong></div><div><span>TOTAL</span><strong>{c.total.toLocaleString()}</strong></div></div>
       <div className={styles.headerLogo}><h1>보험인사이트</h1><p>보험설계사 업무 통합 플랫폼</p></div>
       <div className={styles.headerActions}>
-        {c.authLoading ? <span className="h-8 w-24 rounded-full bg-gray-100 animate-pulse" /> : c.authUser ? <div className={styles.headerMember}>
-          <button className={styles.nickname} aria-label="구독자료" aria-disabled={c.authStatus !== "approved"} onClick={e => { e.stopPropagation(); c.setUserMenuOpen(false); c.setSettingOpen(false); if (c.authStatus === "approved") c.setResourceOpen(true); }}><AuthButton variant="label" {...authProps} /></button>
+        {c.authLoading ? <span className="h-8 w-24 rounded-full bg-gray-100 animate-pulse" /> : c.authUser ? <div className={styles.memberIdentity}>
+          <button className={styles.nickname} aria-label="구독자료" aria-disabled={c.authStatus !== "approved"} onClick={e => { e.stopPropagation(); c.setUserMenuOpen(false); c.setSettingOpen(false); if (c.authStatus === "approved") c.setResourceOpen(true); }}><AuthButton variant="label" {...authProps} hideStatus /></button><MembershipStatus status={c.authStatus}/>
         </div> : <div className={styles.headerAuth}><AuthButton variant="menu" {...authProps} /></div>}
         <button className={styles.headerIcon} aria-label="공지사항" onClick={e => { e.stopPropagation(); localStorage.setItem("noticeRead", noticeVersion.toString()); localStorage.setItem("seen_db_notice_ids", JSON.stringify(c.dbNotices.map(n => n.id))); c.setHasUpdate(false); c.setSelectedNotice(null); c.resetPopupPosition("notice"); c.setNoticeOpen(true); c.setUserMenuOpen(false); c.setSettingOpen(false); }}><Bell />{c.hasUpdate && <i />}</button>
         <div className={styles.headerMember}>

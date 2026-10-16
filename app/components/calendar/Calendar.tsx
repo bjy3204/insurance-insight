@@ -1030,7 +1030,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
       {/* 삭제 확인 팝업 */}
       {deleteEventConfirmOpen && createPortal(
         <div className="fixed inset-0 z-[4000] bg-black/40 flex items-center justify-center p-5">
-          <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+          <div data-confirm-dialog="true" data-popup-small="true" className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
             <h2 className="text-xl font-black text-gray-900">일정 삭제</h2>
             <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
               선택한 일정을 삭제하시겠습니까?
@@ -1330,7 +1330,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
         />
       )}
       {draft && ready && confirmDelete && (
-        <DashboardDialog title="일정 삭제" onClose={closeDraft}>
+        <DashboardDialog confirmation title="일정 삭제" onClose={closeDraft}>
           <p>이 일정을 삭제할까요?</p>
           {formError && (
             <p className={styles.error} role="alert">

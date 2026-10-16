@@ -1,4 +1,5 @@
 "use client";
+import { confirmAction } from "@/components/ConfirmationHost";
 import { useRef, useState } from "react";
 import { Search, Save } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -16,10 +17,10 @@ export default function CoverageCustomerStorage({ value, onLoad }: { value: Cove
   const data=await response.json();if(!response.ok)throw new Error(data.error||"처리하지 못했습니다.");return data;
  }
  async function load(customer:Customer){
-  if(selected&&snapshot.current!==JSON.stringify(value)&&!window.confirm("저장하지 않은 변경사항이 있습니다. 다른 고객을 불러올까요?"))return;
+  if(selected&&snapshot.current!==JSON.stringify(value)&&!await confirmAction("저장하지 않은 변경사항이 있습니다. 다른 고객을 불러올까요?"))return;
   setBusy(true);setMessage("");try{
    const data=await request(`?customerId=${encodeURIComponent(customer.id)}`);
-   if(data.report&& !selected && value.before.policies.some(p=>p.insurer||p.product||p.premium||Object.keys(p.amounts).length)&&!window.confirm("작성 중인 내용 대신 저장된 보장분석을 불러올까요?"))return;
+   if(data.report&& !selected && value.before.policies.some(p=>p.insurer||p.product||p.premium||Object.keys(p.amounts).length)&&!await confirmAction("작성 중인 내용 대신 저장된 보장분석을 불러올까요?"))return;
    const next:CoverageSet=data.report||{...value,before:{...value.before,name:customer.name,birth:customer.birth},after:{...value.after,name:customer.name,birth:customer.birth}};
    setSelected(customer);setRevision(data.revision);setCustomers([]);onLoad(next);snapshot.current=JSON.stringify(next);setMessage(data.report?"저장된 보장분석을 불러왔습니다.":"등록된 고객입니다. 작성 후 저장해 주세요.");
   }catch(error){setMessage(error instanceof Error?error.message:"불러오지 못했습니다.");}finally{setBusy(false);}

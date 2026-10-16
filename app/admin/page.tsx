@@ -1,4 +1,5 @@
 "use client";
+import { confirmAction } from "@/components/ConfirmationHost";
 
 import { hasCompletedMembership } from "@/lib/auth/membership";
 import { findSubscriberLinks, normalizeInstagramId, subscriberLinkCandidates } from "@/lib/subscriber-links";
@@ -535,7 +536,7 @@ useEffect(() => {
   };
 
   const deleteNotice = async (id: string) => {
-    if (!confirm("공지를 삭제하시겠습니까?")) return;
+    if (!await confirmAction("공지를 삭제하시겠습니까?")) return;
     await supabase.from("notices_db").delete().eq("id", id);
     loadNoticeData();
   };
@@ -548,7 +549,7 @@ useEffect(() => {
   };
 
   const deleteCategory = async (id: string) => {
-    if (!confirm("카테고리를 삭제하시겠습니까?")) return;
+    if (!await confirmAction("카테고리를 삭제하시겠습니까?")) return;
     await supabase.from("notice_categories").delete().eq("id", id);
     loadNoticeData();
   };
@@ -736,7 +737,7 @@ console.log(
     return;
   }
 
-  const ok = confirm(
+  const ok = await confirmAction(
     `${saveTargetYear}년 ${saveTargetMonth}월에 구독중 ${activeSubscribers.length}명을 저장할까요?\n이미 등록된 구독자는 자동으로 건너뜁니다.`
   );
 
@@ -823,7 +824,7 @@ console.log(
       if (!latest) throw new Error("구독자 체크 상태를 확인하지 못했습니다. 처리하지 않았습니다.");
       const ids = uncheckedActiveSubscriberIds(latest);
       if (!ids.length) { alert("해지할 미체크 구독자가 없습니다."); return; }
-      if (!window.confirm(`전체 구독자 중 체크하지 않은 구독중 ${ids.length}명을 해지 처리할까요?\n\n검색·탭·필터와 관계없이 전체목록이 대상입니다.\n체크된 구독자는 제외됩니다.\n사이트 상태만 변경하며 페이앱 실제 정기결제는 해지되지 않습니다.`)) return;
+      if (!await confirmAction(`전체 구독자 중 체크하지 않은 구독중 ${ids.length}명을 해지 처리할까요?\n\n검색·탭·필터와 관계없이 전체목록이 대상입니다.\n체크된 구독자는 제외됩니다.\n사이트 상태만 변경하며 페이앱 실제 정기결제는 해지되지 않습니다.`)) return;
       for (let start = 0; start < ids.length; start += 100) {
         const { data, error } = await supabase.from("subscribers").update({ status: "canceled" }).in("id", ids.slice(start, start + 100)).eq("status", "active").or("is_checked.eq.false,is_checked.is.null").select("id");
         if (error) throw new Error("일괄 해지 중 오류가 발생했습니다. 남은 구독자를 확인해 주세요.");
@@ -2515,7 +2516,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
       {/* ==================== 팝업 4: 삭제 확인 팝업 ==================== */}
       {deleteConfirmOpen && (
         <div className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-5">
-          <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <div data-confirm-dialog="true" data-popup-small="true" className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-200">
             <h2 className="text-xl font-black text-gray-900">
               구독자 삭제
             </h2>

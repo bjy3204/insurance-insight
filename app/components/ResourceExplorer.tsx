@@ -1096,7 +1096,7 @@ const fileRec = fileRecords.find(
       {/* ── 단일 삭제 확인 ── */}
      {deleteConfirm && (
   <div className="fixed inset-0 z-[10001] bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm">
+    <div data-confirm-dialog="true" className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm">
       <p className="text-gray-800 font-bold text-center mb-2">자료 삭제</p>
       <p className="text-gray-500 text-sm text-center mb-6">
         <span className="font-semibold text-gray-700">
@@ -1129,7 +1129,7 @@ const fileRec = fileRecords.find(
       {/* ── 다중 삭제 확인 ── */}
       {bulkDeleteConfirm && (
         <div className="fixed inset-0 z-[10001] bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm">
+          <div data-confirm-dialog="true" className="bg-white rounded-3xl shadow-2xl p-6 w-full max-w-sm">
             <p className="text-gray-800 font-bold text-center mb-2">선택 항목 삭제</p>
             <p className="text-gray-500 text-sm text-center mb-6">
               선택한 <span className="font-semibold text-gray-700">{selectedCount}개</span> 항목을 삭제하시겠습니까?

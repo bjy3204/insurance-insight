@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const instagram = typeof body.instagramId === "string" ? body.instagramId.trim().replace(/^@/, "").toLowerCase() : "";
-    if (!/^[a-z0-9._]{1,30}$/.test(instagram) || !PAYAPP_SUBSCRIPTION.amounts.some(value => value === body.amount)) return json("아이디와 결제 금액을 확인해 주세요.", 400);
+    if ((instagram && !/^[a-z0-9._]{1,30}$/.test(instagram)) || !PAYAPP_SUBSCRIPTION.amounts.some(value => value === body.amount)) return json("아이디와 결제 금액을 확인해 주세요.", 400);
     const db = paymentDb();
     // Keep the browser's pending payment: retries must not create another agreement.
     const prior = request.cookies.get(CLAIM_COOKIE)?.value;
@@ -22,12 +22,12 @@ export async function POST(request: NextRequest) {
       if (error) throw error;
       if (data) {
         if (data.state === "paid") return NextResponse.json({ url: `${PAYAPP_ORIGIN}/subscribe/complete` });
-        if (data.amount === body.amount && data.instagram_id === instagram && data.pay_url) return NextResponse.json({ url: data.pay_url });
+        if (data.amount === body.amount && (data.instagram_id || "") === instagram && data.pay_url) return NextResponse.json({ url: data.pay_url });
         return json("진행 중인 결제가 있습니다. 관리자에게 확인해 주세요.", 409);
       }
     }
     const id = randomUUID(), claim = randomBytes(32).toString("hex");
-    const { error } = await db.from("payapp_orders").insert({ id, instagram_id: instagram, amount: body.amount, claim_hash: digest(claim), claim_expires_at: new Date(Date.now() + 30 * 86400000).toISOString() });
+    const { error } = await db.from("payapp_orders").insert({ id, instagram_id: instagram || null, amount: body.amount, claim_hash: digest(claim), claim_expires_at: new Date(Date.now() + 30 * 86400000).toISOString() });
     if (error) throw error;
     const result = await requestPayapp({ cmd: "rebillRegist", userid: process.env.PAYAPP_USER_ID!, goodname: PAYAPP_SUBSCRIPTION.productName,
       goodprice: String(body.amount), recvphone: "01000000000", smsuse: "n", openpaytype: "card,phone", rebillCycleType: "Month",

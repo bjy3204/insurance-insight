@@ -1,4 +1,5 @@
 "use client";
+import { confirmAction } from "@/components/ConfirmationHost";
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/app/components/AuthProvider";
@@ -72,7 +73,7 @@ export default function ProfileSettingsTab({ onSaved }: { onSaved: () => Promise
 
   const toggleKakao = async () => {
     if (busy || !authUser?.id) return;
-    if (connected && !window.confirm("카카오 연결을 해제하시겠습니까?")) return;
+    if (connected && !await confirmAction("카카오 연결을 해제하시겠습니까?")) return;
     setBusy("kakao"); setNotice("");
     try {
       if (!connected) {

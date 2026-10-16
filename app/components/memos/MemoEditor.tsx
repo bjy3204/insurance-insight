@@ -1,4 +1,5 @@
 "use client";
+import { confirmAction } from "@/components/ConfirmationHost";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import type ReactQuill from "react-quill-new";
@@ -67,7 +68,7 @@ export default function MemoEditor({ memo, onClose, kind = "memo", extraFields, 
     finally { setBusy(false); }
   };
   const remove = async () => {
-    if (!memo || busy || !window.confirm(kind === "diary" ? "이 일기를 삭제하시겠습니까?" : "이 메모를 삭제하시겠습니까?")) return;
+    if (!memo || busy || !await confirmAction(kind === "diary" ? "이 일기를 삭제하시겠습니까?" : "이 메모를 삭제하시겠습니까?")) return;
     setBusy(true);
     try { if (onDeleteRecord) await onDeleteRecord(); else await persistMemos(memosRef.current.filter(item => item.id !== memo.id)); onClose(); }
     catch { setNotice(kind === "diary" ? "일기를 삭제하지 못했습니다." : "메모를 삭제하지 못했습니다."); }

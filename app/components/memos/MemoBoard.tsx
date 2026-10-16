@@ -1,4 +1,5 @@
 "use client";
+import { confirmAction } from "@/components/ConfirmationHost";
 import { useState } from "react";
 import { NotebookPen, Plus, Search, Pin, Eye, Trash2 } from "lucide-react";
 import { useAuth } from "../AuthProvider";
@@ -12,7 +13,7 @@ export default function MemoBoard() {
  const [search,setSearch]=useState("");
  const [editing,setEditing]=useState<MemoItem|null|undefined>(undefined),[busy,setBusy]=useState(false),[notice,setNotice]=useState("");
  async function update(id:string,patch:Partial<MemoItem>, reject=false) { if(busy) { if(reject) throw new Error("busy"); return; } setBusy(true); try { await persistMemos(memos.map(m=>m.id===id?{...m,...patch,updatedAt:new Date().toISOString()}:m)); setNotice(""); } catch {setNotice("변경 내용을 저장하지 못했습니다."); if(reject) throw new Error("save failed");} finally{setBusy(false);} }
- async function remove(id:string) { if(busy || !window.confirm("이 메모를 삭제하시겠습니까?")) return; setBusy(true); try { await persistMemos(memos.filter(m=>m.id!==id)); setNotice(""); } catch { setNotice("메모를 삭제하지 못했습니다."); } finally { setBusy(false); } }
+ async function remove(id:string) { if(busy || !await confirmAction("이 메모를 삭제하시겠습니까?")) return; setBusy(true); try { await persistMemos(memos.filter(m=>m.id!==id)); setNotice(""); } catch { setNotice("메모를 삭제하지 못했습니다."); } finally { setBusy(false); } }
  const shown=memos.filter(m=>`${m.title} ${decodeMemo(m).text}`.toLowerCase().includes(search.toLowerCase())).sort((a,b)=>Number(b.pinned)-Number(a.pinned)||(Date.parse(b.updatedAt)||0)-(Date.parse(a.updatedAt)||0));
  return <section className="memo-board space-y-4">
  <div className="flex flex-wrap items-center justify-between gap-4"><h2 className="flex items-center gap-3 text-xl font-bold"><NotebookPen className="w-7 h-7 text-yellow-500"/>메모</h2><div className="flex w-full sm:w-[520px] max-w-full items-center gap-3"><label data-page-search-wrapper="true" className="flex min-w-0 items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 h-11 flex-1 focus-within:border-yellow-400"><Search className="w-4 h-4 shrink-0 text-slate-400"/><input data-ui-field="true" data-page-search-input="true" value={search} onChange={e=>setSearch(e.target.value)} placeholder="메모 검색 (제목, 내용)" aria-label="메모 검색" className="min-w-0 w-full h-full text-sm text-gray-900 caret-gray-900 cursor-text outline-none"/></label><button disabled={memosLoading||!!memosError||busy} onClick={()=>setEditing(null)} className="flex items-center gap-2 rounded-xl bg-yellow-400 px-4 h-11 text-sm font-bold whitespace-nowrap cursor-pointer disabled:opacity-50"><Plus className="w-5 h-5"/>새 메모</button></div></div>

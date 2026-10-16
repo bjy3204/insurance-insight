@@ -111,3 +111,5 @@ button.quickMenuEdge svg {color:#64748b;}
 .quickMenuFloating[data-quick-edge] [data-pc-quick-menu] > div:first-child {border-top:0;}
 
 .quickMenuFloating[data-quick-edge="right"] {right:calc(100% - 100vw) !important;}
+
+@media(min-width:768px){.memberIdentity{display:grid;grid-template-columns:minmax(0,auto) auto;align-items:center;gap:8px}.memberIdentity button.nickname{margin-right:0}}

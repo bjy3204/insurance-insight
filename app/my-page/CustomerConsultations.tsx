@@ -62,6 +62,6 @@ export default function CustomerConsultations({customer,onSave}:{customer?:Custo
         <div className={styles.field}><label htmlFor={`${prefix}-content`}>상담 내용</label><textarea id={`${prefix}-content`} rows={6} maxLength={12000} value={draft.content} onChange={event=>setDraft({...draft,content:event.target.value})}/></div>
       </fieldset>{error&&<p role="alert" className={styles.error}>{error}</p>}<div className={styles.actions}><button type="button" disabled={saving} onClick={close}>취소</button><button type="button" disabled={saving||!draft.content.trim()} className={styles.primary} onClick={save}>{saving?"저장 중":"저장"}</button></div></div>
     </DashboardDialog>}
-    {deleting&&<DashboardDialog title="상담일지를 삭제할까요?" onClose={close}>{error&&<p role="alert" className={styles.error}>{error}</p>}<div className={styles.actions}><button type="button" disabled={saving} onClick={close}>취소</button><button type="button" className={styles.delete} disabled={saving} onClick={()=>void persist(entries.filter(entry=>entry.id!==deleting.id))}>{saving?"삭제 중":"삭제"}</button></div></DashboardDialog>}
+    {deleting&&<DashboardDialog confirmation title="상담일지를 삭제할까요?" onClose={close}><p>선택한 상담일지를 삭제하시겠습니까?</p>{error&&<p role="alert" className={styles.error}>{error}</p>}<div className={styles.actions}><button type="button" disabled={saving} onClick={close}>취소</button><button type="button" className={styles.delete} disabled={saving} onClick={()=>void persist(entries.filter(entry=>entry.id!==deleting.id))}>{saving?"삭제 중":"삭제"}</button></div></DashboardDialog>}
   </div>;
 }

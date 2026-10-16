@@ -1,4 +1,5 @@
 "use client";
+import { confirmAction } from "@/components/ConfirmationHost";
 
 import { useEffect, useRef, useState } from "react";
 import { BookOpen, Pencil, Search, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
@@ -55,13 +56,13 @@ export default function DiaryTab() {
     return entry.date.startsWith(month) && `${memo.title} ${decodeMemo(memo).text}`.toLowerCase().includes(search.toLowerCase());
   });
   const current = filtered.find(entry => entry.id === selected) || filtered[0];
-  const open = (entry: Entry | null) => {
-    if (edit !== undefined && !window.confirm("수정 중인 내용을 취소하시겠습니까?")) return;
+  const open = async (entry: Entry | null) => {
+    if (edit !== undefined && !await confirmAction("수정 중인 내용을 취소하시겠습니까?")) return;
     const now = new Date();
     setDate(entry?.date || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`);
     setMood(entry?.mood || "good"); setEdit(entry);
   };
-  const shiftMonth = (offset: number) => { if (edit !== undefined && !window.confirm("수정 중인 내용을 취소하고 다른 달로 이동하시겠습니까?")) return; setEdit(undefined); const [y, m] = month.split("-").map(Number); const next = new Date(y, m - 1 + offset, 1); setMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`); setSelected(null); };
+  const shiftMonth = async (offset: number) => { if (edit !== undefined && !await confirmAction("수정 중인 내용을 취소하고 다른 달로 이동하시겠습니까?")) return; setEdit(undefined); const [y, m] = month.split("-").map(Number); const next = new Date(y, m - 1 + offset, 1); setMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`); setSelected(null); };
   const save = async (memo: MemoItem) => {
     if (!owner || ownerRef.current !== owner) throw new Error("로그인이 필요합니다.");
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(new Date(date + "T12:00:00").getTime())) throw new Error("날짜를 선택하시기 바랍니다.");
@@ -90,12 +91,12 @@ export default function DiaryTab() {
         <div className={`flex-1 max-h-[640px] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${!loading && filtered.length === 0 ? "flex items-center justify-center" : ""}`}>
           {loading ? <p className="p-5 text-sm text-gray-400">불러오는 중...</p> : filtered.length === 0 ? <p className="p-5 text-sm text-gray-400">이 달의 일기가 없습니다.</p> : filtered.map(entry => {
             const memo = asMemo(entry), day = new Date(entry.date + "T12:00:00");
-            return <button type="button" key={entry.id} onClick={() => { if (edit !== undefined && !window.confirm("수정 중인 내용을 취소하고 다른 일기를 보시겠습니까?")) return; setEdit(undefined); setSelected(entry.id); }} className={`w-full flex gap-4 p-4 text-left rounded-xl cursor-pointer ${current?.id === entry.id ? "bg-blue-50" : "border-b border-gray-100 hover:bg-gray-50"}`}><div className={`w-8 shrink-0 text-center ${current?.id === entry.id ? "text-blue-600" : "text-gray-700"}`}><div className="text-xl font-bold">{day.getDate()}</div><div className="text-xs mt-1">{day.toLocaleDateString("ko-KR", { weekday: "short" })}</div></div><div className="min-w-0 flex-1"><h3 className="font-bold truncate">{memo.title || "제목 없는 일기"}</h3><p className="line-clamp-2 text-sm text-gray-500 mt-1 whitespace-pre-wrap">{decodeMemo(memo).text}</p></div><MoodFace mood={entry.mood} /></button>;
+            return <button type="button" key={entry.id} onClick={async () => { if (edit !== undefined && !await confirmAction("수정 중인 내용을 취소하고 다른 일기를 보시겠습니까?")) return; setEdit(undefined); setSelected(entry.id); }} className={`w-full flex gap-4 p-4 text-left rounded-xl cursor-pointer ${current?.id === entry.id ? "bg-blue-50" : "border-b border-gray-100 hover:bg-gray-50"}`}><div className={`w-8 shrink-0 text-center ${current?.id === entry.id ? "text-blue-600" : "text-gray-700"}`}><div className="text-xl font-bold">{day.getDate()}</div><div className="text-xs mt-1">{day.toLocaleDateString("ko-KR", { weekday: "short" })}</div></div><div className="min-w-0 flex-1"><h3 className="font-bold truncate">{memo.title || "제목 없는 일기"}</h3><p className="line-clamp-2 text-sm text-gray-500 mt-1 whitespace-pre-wrap">{decodeMemo(memo).text}</p></div><MoodFace mood={entry.mood} /></button>;
           })}
         </div>
       </aside>
       <article className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 md:p-8 min-w-0 min-h-[520px] flex flex-col">
-        {edit !== undefined ? editor : current ? <><div className="flex justify-between gap-4"><div><p className="text-gray-500 mb-3">{dateLabel(current.date)}</p><h3 className="text-2xl font-bold">{asMemo(current).title || "제목 없는 일기"}</h3></div><div className="flex items-center gap-2 self-center"><MoodFace mood={current.mood} large /><div><p className="text-xs text-gray-500">오늘의 기분</p><p className="font-bold mt-1">{moods.find(option => option.value === current.mood)?.label || "좋아요"}</p></div></div></div><div className="border-t border-gray-100 mt-6 pt-5 flex-1"><MemoBody memo={asMemo(current)} className="!max-h-none !p-0 !text-base !leading-8" /></div><div className="flex justify-end items-center gap-4 mt-6"><button type="button" aria-label="일기 삭제" onClick={async () => { if (!window.confirm("이 일기를 삭제하시겠습니까?")) return; try { await remove(current); } catch { setError("일기를 삭제하지 못했습니다."); } }} className="text-gray-400 hover:text-red-500 cursor-pointer"><Trash2 size={17} /></button><button type="button" onClick={() => open(current)} aria-label="일기 수정" title="일기 수정" className="p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer"><Pencil size={17} /></button></div><p className="text-xs text-gray-400 text-right mt-3">{new Date(current.created_at).toLocaleString("ko-KR")}</p></> : <p className="m-auto text-sm text-gray-400">일기를 선택하거나 새로운 이야기를 기록하시기 바랍니다.</p>}
+        {edit !== undefined ? editor : current ? <><div className="flex justify-between gap-4"><div><p className="text-gray-500 mb-3">{dateLabel(current.date)}</p><h3 className="text-2xl font-bold">{asMemo(current).title || "제목 없는 일기"}</h3></div><div className="flex items-center gap-2 self-center"><MoodFace mood={current.mood} large /><div><p className="text-xs text-gray-500">오늘의 기분</p><p className="font-bold mt-1">{moods.find(option => option.value === current.mood)?.label || "좋아요"}</p></div></div></div><div className="border-t border-gray-100 mt-6 pt-5 flex-1"><MemoBody memo={asMemo(current)} className="!max-h-none !p-0 !text-base !leading-8" /></div><div className="flex justify-end items-center gap-4 mt-6"><button type="button" aria-label="일기 삭제" onClick={async () => { if (!await confirmAction("이 일기를 삭제하시겠습니까?")) return; try { await remove(current); } catch { setError("일기를 삭제하지 못했습니다."); } }} className="text-gray-400 hover:text-red-500 cursor-pointer"><Trash2 size={17} /></button><button type="button" onClick={() => open(current)} aria-label="일기 수정" title="일기 수정" className="p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer"><Pencil size={17} /></button></div><p className="text-xs text-gray-400 text-right mt-3">{new Date(current.created_at).toLocaleString("ko-KR")}</p></> : <p className="m-auto text-sm text-gray-400">일기를 선택하거나 새로운 이야기를 기록하시기 바랍니다.</p>}
       </article>
     </div>
 

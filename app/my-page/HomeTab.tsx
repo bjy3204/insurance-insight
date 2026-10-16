@@ -871,7 +871,7 @@ const diaryEndPage = Math.min(
       {/* ── 삭제 확인 팝업 ── */}
 {confirmDelete && (
   <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
-    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xs p-6 space-y-4 text-center">
+    <div data-confirm-dialog="true" className="bg-white rounded-3xl shadow-2xl w-full max-w-xs p-6 space-y-4 text-center">
       <p className="font-bold text-gray-900 text-base">정말 삭제할까요?</p>
       <p className="text-sm text-gray-400">삭제하면 복구할 수 없습니다.</p>
       <div className="flex gap-2">

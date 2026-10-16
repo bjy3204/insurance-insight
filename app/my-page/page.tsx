@@ -1496,9 +1496,10 @@ function CustomerTab({ spreadsheetUrl, onSaveUrl }: { spreadsheetUrl: string | n
         <div className="fixed inset-0 z-[6000] flex items-center justify-center bg-black/40 p-4"
           onClick={() => { if (!saving) setRemoveConfirmOpen(false); }}
           onKeyDown={event => { if (event.key === "Escape" && !saving) { event.stopPropagation(); setRemoveConfirmOpen(false); } }}>
-          <div role="alertdialog" aria-modal="true" aria-labelledby="remove-customer-sheet-title"
+          <div data-confirm-dialog="true" data-popup-small="true" role="alertdialog" aria-modal="true" aria-labelledby="remove-customer-sheet-title"
             className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl" onClick={event => event.stopPropagation()}>
             <h3 id="remove-customer-sheet-title" className="font-bold text-gray-900">시트를 삭제할까요?</h3>
+            <p>연결된 시트를 삭제하시겠습니까?</p>
             {message && <p role="alert" className="mt-3 text-sm text-red-500">{message}</p>}
             <div className="mt-5 flex gap-3">
               <button type="button" autoFocus disabled={saving} onClick={() => setRemoveConfirmOpen(false)} className="h-11 flex-1 rounded-2xl bg-gray-100 text-sm font-bold text-gray-700 hover:bg-gray-200 disabled:opacity-50 cursor-pointer">취소</button>

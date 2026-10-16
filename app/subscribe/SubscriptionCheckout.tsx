@@ -30,8 +30,8 @@ export default function SubscriptionCheckout({ amount, enabled = false }: { amou
         <div className={styles.price}><span>월 구독료</span><div><strong>{money}</strong><b>원</b><small>/ 월</small></div></div>
         <div className={styles.benefits}><span><Check size={16} />보험나무 자료 구독</span><span><Check size={16} />결제 후 보험인사이트 가입·연결</span></div>
         <form className={styles.form} onSubmit={checkout}>
-          <label className={styles.phoneLabel} htmlFor="subscription-instagram">인스타그램 아이디</label>
-          <div className={styles.phone}><AtSign size={18} /><input id="subscription-instagram" name="instagramId" type="text" autoComplete="off" autoCapitalize="none" spellCheck={false} placeholder="인스타그램 아이디를 입력해 주세요" required /></div>
+          <label className={styles.phoneLabel} htmlFor="subscription-instagram">인스타그램 아이디 (선택)</label>
+          <div className={styles.phone}><AtSign size={18} /><input id="subscription-instagram" name="instagramId" type="text" autoComplete="off" autoCapitalize="none" spellCheck={false} placeholder="입력하지 않아도 결제할 수 있어요" /></div>
           <button type="submit" disabled={!enabled || busy}>{busy ? "결제창 여는 중…" : "구독 결제하기"}</button>
           {!enabled && <p className={styles.notReady}>페이앱 연동 준비 중입니다.</p>}
           {error && <p role="alert" className={styles.notReady}>{error}</p>}

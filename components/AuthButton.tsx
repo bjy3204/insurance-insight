@@ -239,6 +239,7 @@ onKakaoLogin,
 
 export default function AuthButton({
   variant = "full",
+  hideStatus = false,
   user,
   nickname,
   status,
@@ -247,6 +248,7 @@ export default function AuthButton({
   onMenuClose,
 }: {
   variant?: VariantType;
+  hideStatus?: boolean;
   user?: any;
   nickname?: string | null;
   status?: string | null;
@@ -609,7 +611,7 @@ const handleResetPassword = async () => {
               {getGradeEmoji(createdAt ?? null)} {nickname || "회원"} 님
             </span>
 
-            {renderStatusBadge()}
+            {!hideStatus && renderStatusBadge()}
           </>
         )}
       </div>

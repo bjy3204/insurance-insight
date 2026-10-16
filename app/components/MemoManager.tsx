@@ -553,7 +553,7 @@ export default function MemoManager({ open, onClose }: Props) {
 
       {deleteMemoConfirmOpen && (
         <div className="fixed inset-0 z-[2000] bg-black/40 flex items-center justify-center p-5">
-          <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+          <div data-confirm-dialog="true" data-popup-small="true" className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
             <h2 className="text-xl font-black text-gray-900">메모 삭제</h2>
 
             <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">

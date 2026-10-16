@@ -740,6 +740,72 @@ input:disabled, textarea:disabled { cursor: default !important; }
 }
 [data-mini-close="true"] { flex-shrink:0; }
 
+/* Calendar confirmation scale, shared by every cancel/delete confirmation. */
+[data-confirm-overlay="true"] { background:rgb(0 0 0 / .4) !important; z-index:100000; }
+.fixed:has(> [data-confirm-dialog="true"]) { background:rgb(0 0 0 / .4) !important; padding:20px !important; z-index:100000; }
+[data-confirm-dialog="true"] {
+  box-sizing:border-box;
+  width:384px !important;
+  max-width:calc(100vw - 40px) !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:calc(100dvh - 40px) !important;
+  padding:24px !important;
+  border-radius:24px !important;
+  background:white !important;
+  color:#111827;
+  text-align:left !important;
+  overflow-y:auto;
+}
+[data-confirm-dialog="true"] > :first-child,
+[data-confirm-title="true"] {
+  margin:0 !important;
+  font-size:20px !important;
+  line-height:28px !important;
+  font-weight:900 !important;
+  color:#111827 !important;
+  text-align:left !important;
+}
+[data-confirm-dialog="true"] p:not(:first-child),
+[data-confirm-dialog="true"] > div:not([data-confirm-title]) > p {
+  margin:8px 0 0 !important;
+  font-size:14px !important;
+  line-height:1.625 !important;
+  font-weight:400 !important;
+  text-align:left !important;
+}
+[data-confirm-dialog="true"] :is(div):has(> button + button) {
+  display:flex !important;
+  gap:12px !important;
+  margin:24px 0 0 !important;
+  padding:0 !important;
+}
+[data-confirm-dialog="true"] div:has(> button + button) > button {
+  flex:1 1 0 !important;
+  width:0 !important;
+  min-width:0 !important;
+  height:48px !important;
+  padding:0 12px !important;
+  border:0 !important;
+  border-radius:16px !important;
+  font-size:14px !important;
+  line-height:20px !important;
+  font-weight:700 !important;
+  cursor:pointer;
+  transition:background-color .15s,color .15s,filter .15s;
+}
+[data-confirm-dialog="true"] div:has(> button + button) > button:first-child { background:#f3f4f6 !important; color:#374151 !important; }
+[data-confirm-dialog="true"] div:has(> button + button) > button:last-child { background:#ef4444 !important; color:white !important; }
+[data-confirm-dialog="true"] [data-popup-close="true"] { width:28px; height:28px; border-radius:8px; transition:background-color .15s; }
+[data-confirm-dialog="true"] p:not(:first-child):not([role="alert"]),
+[data-confirm-dialog="true"] > div:not([data-confirm-title]) > p:not([role="alert"]) { color:#6b7280; }
+[data-confirm-dialog="true"] div:has(> button + button) > button:disabled { cursor:default; opacity:.5; }
+@media(hover:hover) and (pointer:fine) {
+  [data-confirm-dialog="true"] div:has(> button + button) > button:first-child:hover:not(:disabled) { background:#e5e7eb !important; }
+  [data-confirm-dialog="true"] div:has(> button + button) > button:last-child:hover:not(:disabled) { background:#dc2626 !important; }
+  [data-confirm-dialog="true"] [data-popup-close="true"]:hover { background:#f3f4f6; }
+}
+
 /* Resize the explorer frame without creating an outer scrolling surface. */
 [data-popup-frame="true"][data-resource-explorer="true"] {
   overflow:hidden !important;
