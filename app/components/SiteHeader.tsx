@@ -9,7 +9,7 @@ type SiteHeaderProps = {
 /** Page-owned controls retain their handlers and permission checks. */
 export default function SiteHeader({ children, variant = "page" }: SiteHeaderProps) {
   return (
-    <header className={`${styles.header} ${variant === "main" ? styles.main : ""}`}>
+    <header data-site-header="true" className={`${styles.header} ${variant === "main" ? styles.main : ""}`}>
       <div className={styles.inner}>{children}</div>
     </header>
   );

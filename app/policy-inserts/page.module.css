@@ -66,3 +66,14 @@
 .customerAdd>button{width:44px;padding-left:0;padding-right:0}
 
 .categories{border-radius:16px}
+
+.previewToolbar{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}.previewToolbar .pagination{grid-column:2;grid-row:1;justify-self:center}.previewToolbar>button{grid-column:3;grid-row:1;justify-self:end}
+@media(max-width:767px){.previewToolbar{grid-template-columns:minmax(0,1fr)}.previewToolbar .pagination{grid-column:1;grid-row:1;justify-self:center}}
+.card>h2{margin-bottom:14px}
+@media(min-width:768px){.controls .card{padding-top:18px;padding-bottom:18px}}
+
+.controls .card{padding-top:16px;padding-bottom:16px}.card>h2,.customerHeading,.sectionHeading{margin-bottom:14px}.sectionHeading.collapsedHeading{margin-bottom:0}
+
+.controls .card{padding-left:16px;padding-right:16px}
+
+.card,.preview,.categories{border-radius:16px}

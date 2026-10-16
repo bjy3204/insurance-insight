@@ -6,14 +6,15 @@ import { lockPageScroll } from "@/app/features/home/components/dashboard/Dashboa
 import { PERSONAL_MENU_GROUPS } from "./personal-menu-order";
 import { SortablePersonalMenu, SortablePersonalMenuButton } from "./SortablePersonalMenu";
 import PlantSVG, { type PlantStage } from "./PlantSVG";
-import { X, Menu, Home, ChevronDown, type LucideIcon } from "lucide-react";
+import { X, Menu, Home, ChevronDown, SlidersHorizontal, type LucideIcon } from "lucide-react";
 
 type Item = { id: string; label: string; icon: LucideIcon };
 
-export default function PersonalSidebar({ collapsed, onCollapsedChange, mobileOpen, onMobileClose, activeTab, tabs, onSelect, nickname, plantStage, onPlantOpen, onReorder, reorderDisabled = false, reorderError }: {
+export default function PersonalSidebar({ collapsed, onCollapsedChange, mobileOpen, onMobileClose, activeTab, tabs, onSelect, nickname, plantStage, onPlantOpen, onSettingsOpen, onReorder, reorderDisabled = false, reorderError }: {
   collapsed: boolean;
   onCollapsedChange: (collapsed: boolean) => void;
   onPlantOpen: () => void;
+  onSettingsOpen: () => void;
   nickname: string;
   plantStage: PlantStage;
   mobileOpen: boolean;
@@ -50,10 +51,10 @@ export default function PersonalSidebar({ collapsed, onCollapsedChange, mobileOp
     {mobileOpen && <>
       <button aria-label="메뉴 닫기" onClick={onMobileClose} className="fixed inset-0 z-[5000] bg-black/40 md:hidden" />
       <aside role="dialog" aria-modal="true" aria-label="개인공간 모바일 메뉴" className={`${styles.scroll} fixed inset-y-0 right-0 z-[5001] w-[84vw] max-w-[360px] overflow-y-auto bg-slate-50 shadow-xl md:hidden pb-[env(safe-area-inset-bottom)]`}>
-        <div className="flex items-center justify-between gap-3 px-5 py-5 bg-white border-b border-gray-100"><div className="min-w-0"><p className="text-xs text-slate-500 mb-1 truncate">{nickname}님의 공간</p><h2 data-popup-heading="true" className="text-lg font-bold text-gray-900">개인공간 메뉴</h2></div><button type="button" aria-label="메뉴 닫기" onClick={onMobileClose} className="p-2 text-gray-700 cursor-pointer"><X className="w-6 h-6" /></button></div>
+        <div className="flex items-center justify-between gap-3 h-20 shrink-0 px-5 bg-white border-b border-gray-100"><div className="flex min-w-0 items-center gap-2"><PlantSVG stage={plantStage} size={32} compact /><h2 className="text-lg font-bold text-gray-900 truncate">{nickname}님의 공간</h2></div><div className="flex shrink-0 items-center gap-1"><button type="button" aria-label="개인공간 설정" title="개인공간 설정" onClick={() => { onMobileClose(); onSettingsOpen(); }} className="flex h-9 w-9 items-center justify-center rounded-xl text-gray-700 hover:bg-gray-100 cursor-pointer"><SlidersHorizontal size={20}/></button><button type="button" aria-label="메뉴 닫기" onClick={onMobileClose} className="flex h-9 w-9 items-center justify-center rounded-xl text-gray-700 hover:bg-gray-100 cursor-pointer"><X size={20}/></button></div></div>
         <nav className="px-5 pt-5 pb-8 space-y-6">
-          <button type="button" onClick={() => { onSelect("home"); onMobileClose(); }} className={`flex items-center gap-3 w-full p-4 rounded-2xl border text-sm font-semibold cursor-pointer ${activeTab === "home" ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-gray-200 text-gray-700"}`}><Home className="w-5 h-5" />개인공간 홈</button>
-          {PERSONAL_MENU_GROUPS.slice(0, 3).map(group => <section key={group.title}><h3 className="text-xs font-semibold text-slate-500 mb-3">{group.title}</h3><div className="grid grid-cols-2 gap-2.5"><SortablePersonalMenu grid ids={tabs.filter(tab => group.ids.includes(tab.id)).map(tab => tab.id)} disabled={reorderDisabled} onReorder={onReorder}>{tabs.filter(tab => group.ids.includes(tab.id)).map(tab => <SortablePersonalMenuButton key={tab.id} id={tab.id} label={tab.label} disabled={reorderDisabled} onClick={() => { onSelect(tab.id); onMobileClose(); }} className={`flex flex-col items-start gap-3 min-h-[92px] p-4 rounded-2xl border text-sm font-semibold cursor-pointer ${activeTab === tab.id ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-gray-200 text-gray-700"}`}><tab.icon className="w-5 h-5" />{tab.label}</SortablePersonalMenuButton>)}</SortablePersonalMenu></div></section>)}
+          <button type="button" onClick={() => { onSelect("home"); onMobileClose(); }} className={`flex items-center gap-3 w-full p-4 rounded-xl border text-sm font-semibold cursor-pointer ${activeTab === "home" ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-gray-200 text-gray-700"}`}><Home className="w-5 h-5" />개인공간 홈</button>
+          {PERSONAL_MENU_GROUPS.slice(0, 3).map(group => <section key={group.title}><h3 className="text-sm font-semibold text-slate-500 mb-3">{group.title}</h3><div className="grid grid-cols-2 gap-2.5"><SortablePersonalMenu grid ids={tabs.filter(tab => group.ids.includes(tab.id)).map(tab => tab.id)} disabled={reorderDisabled} onReorder={onReorder}>{tabs.filter(tab => group.ids.includes(tab.id)).map(tab => <SortablePersonalMenuButton key={tab.id} id={tab.id} label={tab.label} disabled={reorderDisabled} onClick={() => { onSelect(tab.id); onMobileClose(); }} className={`flex flex-col items-start gap-3 min-h-[92px] p-4 rounded-xl border text-sm font-semibold cursor-pointer ${activeTab === tab.id ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-gray-200 text-gray-700"}`}><tab.icon className="w-5 h-5" />{tab.label}</SortablePersonalMenuButton>)}</SortablePersonalMenu></div></section>)}
           {reorderError && <p role="alert" className="text-xs text-red-500">{reorderError}</p>}
         </nav>
       </aside>

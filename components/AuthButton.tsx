@@ -573,7 +573,7 @@ const handleResetPassword = async () => {
 
   if (variant === "compact") {
     return <>
-      <div className="flex items-center gap-2">
+      <div data-compact-auth="true" className="flex items-center gap-2">
         {userEmail ? <button type="button" onClick={handleLogout} className="px-3 h-9 border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer">로그아웃</button> : <>
           <button type="button" onClick={() => { setMode("login"); setAuthOpen(true); }} className="px-3 h-9 border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer">로그인</button>
           <button type="button" onClick={() => { setMode("signup"); setAuthOpen(true); }} className="px-3 h-9 border border-gray-200 bg-white text-xs font-semibold text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer">회원가입</button>

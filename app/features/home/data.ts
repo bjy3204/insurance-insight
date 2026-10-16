@@ -16,13 +16,6 @@ export type MemoItem = {
 
 export const defaultMenus = [
   {
-    id: "policy-inserts",
-    title: "보험 증권 속지",
-    desc: "보험 증권 속지 인쇄",
-    icon: PolicyInsertsIcon,
-    link: "/policy-inserts",
-  },
-   {
   id: "customer-manage",
   title: "개인공간",
   desc: "일정  · 고객관리 · AI 메시지",
@@ -30,6 +23,21 @@ export const defaultMenus = [
   link: "/my-page",
   isDefault: true,
 },
+  {
+    id: "policy-inserts",
+    title: "보험 증권 속지",
+    desc: "보험 증권 속지 인쇄",
+    icon: PolicyInsertsIcon,
+    link: "/policy-inserts",
+  },
+  {
+  id: "sales-book",
+  title: "세일즈북",
+  desc: "상담 세일즈북 자료",
+  icon: BookOpen,
+  link: "/sales-book",
+},
+
 {
   id: "subscriber-folder",
   title: "구독자료 폴더",
@@ -85,13 +93,6 @@ export const defaultMenus = [
     icon: FolderOpen,
     link: "https://naver.me/FWTmVFQz",
   },
-{
-  id: "sales-book",
-  title: "세일즈북",
-  desc: "상담 세일즈북 자료",
-  icon: BookOpen,
-  link: "/sales-book",
-},
 
   {
     id: "calculator",

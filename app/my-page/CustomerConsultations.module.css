@@ -58,3 +58,8 @@
 .records .actions .primary { background:#2563eb; color:white; }.records button:disabled { opacity:.4; cursor:default; }
 @media(max-width:1100px) { .split { grid-template-columns:minmax(0,1fr); } }
 @media(max-width:767px) { .records,.notes { padding:12px; }.recordsTable input,.recordsTable textarea { font-size:16px; } }
+
+.panel{padding-top:16px;padding-bottom:16px}.header{margin-bottom:14px}
+
+.panel{padding-left:16px;padding-right:16px}
+.entry,.tableScroll{border-radius:16px}

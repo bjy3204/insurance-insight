@@ -54,7 +54,7 @@ useEffect(() => { setPage(1); }, [itemsPerPage]);
           </h2>
 
           <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-            세일즈북 기능은 승인된 회원만
+            선택한 메뉴는 승인된 회원만
             <br />
             이용 가능합니다.
           </p>

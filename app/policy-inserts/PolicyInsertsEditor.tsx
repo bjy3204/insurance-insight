@@ -24,6 +24,7 @@ export default function PolicyInsertsEditor({ embedded = false }: { embedded?: b
   const [nameInput, setNameInput] = useState("");
   const [nameError, setNameError] = useState("");
   const nameField = useRef<HTMLInputElement>(null);
+  const [namesOwner, setNamesOwner] = useState<string | null>(null);
   const [advisor, setAdvisor] = useState<Advisor>({ name: "", company: "", phone: "", fax: "" });
   const [advisorDraft, setAdvisorDraft] = useState<Advisor>({ name: "", company: "", phone: "", fax: "" });
   const [advisorError, setAdvisorError] = useState("");
@@ -49,6 +50,22 @@ export default function PolicyInsertsEditor({ embedded = false }: { embedded?: b
   const pageCount = pages.length;
   const pageIndex = Math.max(0, pages.findIndex(item => item.page === page));
   const ready = !loading && allPages.every(number => !!images[number]) && (category !== "pet" || !!petIcons[petKind]);
+
+  useEffect(() => {
+    if (!authUser?.id || !allowed) return;
+    let restored: string[] = [];
+    try {
+      const raw = localStorage.getItem(`policy-inserts:customers:${authUser.id}`);
+      const saved: unknown = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(saved)) restored = saved.filter((name): name is string => typeof name === "string" && !!name.trim()).slice(0, MAX_CUSTOMERS).map(name => name.trim().slice(0, 30));
+    } catch { /* Start with an empty list if browser storage is unavailable. */ }
+    setNames(restored); setCustomerIndex(0); setNamesOwner(authUser.id);
+  }, [authUser?.id, allowed]);
+
+  useEffect(() => {
+    if (!authUser?.id || namesOwner !== authUser.id || !allowed) return;
+    try { localStorage.setItem(`policy-inserts:customers:${authUser.id}`, JSON.stringify(names)); } catch { /* Editing still works if browser storage is unavailable. */ }
+  }, [names, namesOwner, authUser?.id, allowed]);
 
   useEffect(() => {
     if (!allowed || !authUser?.id) return;
@@ -187,7 +204,7 @@ export default function PolicyInsertsEditor({ embedded = false }: { embedded?: b
 
       {<div className={styles.workspace}>
       <nav className={styles.categories} aria-label="속지 주제">{categories.map(item => <button data-action-height="44" key={item.id} type="button" aria-pressed={category === item.id} className={category === item.id ? styles.activeCategory : ""} onClick={() => { if (category === item.id) return; setCategory(item.id as TemplateId); setPage(1); setSelected(templatePages(item.id as TemplateId, petKind).map(item => item.page)); setImages({}); setLoading(true); setError(""); }}>{item.label}</button>)}</nav>
-        <section className={styles.preview} aria-label="인쇄 미리보기"><div className={styles.previewToolbar}><h2>미리보기</h2><div className={styles.pagination}><button type="button" aria-label="이전 페이지" disabled={pageIndex === 0} onClick={() => setPage(pages[pageIndex - 1].page)}><ChevronLeft size={18}/></button><CustomSelect label="미리볼 페이지" value={String(page)} onChange={value => setPage(Number(value))} options={pages.map((item, index) => ({value: String(item.page), label: `${index + 1}.\u00a0\u00a0${item.title}`}))}/><button type="button" aria-label="다음 페이지" disabled={pageIndex === pageCount - 1} onClick={() => setPage(pages[pageIndex + 1].page)}><ChevronRight size={18}/></button></div><button data-action-height="44" type="button" disabled={!ready || printing} onClick={() => void print("single")}><Printer size={17}/>개별 인쇄</button></div>
+        <section className={styles.preview} aria-label="인쇄 미리보기"><div className={styles.previewToolbar}><div className={styles.pagination}><button type="button" aria-label="이전 페이지" disabled={pageIndex === 0} onClick={() => setPage(pages[pageIndex - 1].page)}><ChevronLeft size={18}/></button><CustomSelect label="미리볼 페이지" value={String(page)} onChange={value => setPage(Number(value))} options={pages.map((item, index) => ({value: String(item.page), label: `${index + 1}.\u00a0\u00a0${item.title}`}))}/><button type="button" aria-label="다음 페이지" disabled={pageIndex === pageCount - 1} onClick={() => setPage(pages[pageIndex + 1].page)}><ChevronRight size={18}/></button></div><button data-action-height="44" type="button" disabled={!ready || printing} onClick={() => void print("single")}><Printer size={17}/>개별 인쇄</button></div>
           {error && <div role="alert" className={styles.error}>{error}{!ready && <button data-action-height="44" type="button" onClick={() => setRetry(value => value + 1)}>다시 시도</button>}</div>}
           {loading ? null : images[page] ? <div className={styles.paper}><Image unoptimized width={1414} height={2000} src={images[page]} alt={`${TEMPLATES[category].label} ${titles[page - 1]}`}/><div className={styles.overlays} dangerouslySetInnerHTML={{ __html: overlayHtml(page, currentName, advisor, category) + petDecorationHtml(page, category, { kind: petKind, src: petIcons[petKind] }) }}/></div> : null}
         </section>

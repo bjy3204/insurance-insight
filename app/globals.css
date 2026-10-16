@@ -991,3 +991,25 @@ button[data-popup-close="true"],[data-popup-header="true"] button[data-popup-clo
 
 [data-account-settings="true"] p:has(+div),[data-account-settings="true"] .text-xs,[data-account-settings="true"] .text-\[11px\]{font-size:14px !important}
 .personal-settings-dialog label,.personal-settings-dialog .text-xs,.personal-settings-dialog .text-sm{font-size:14px !important}
+
+/* Personal-space information card spacing. */
+[data-personal-space="true"] .personal-grid:is([class~="p-4"],[class~="p-5"],[class~="p-6"]),
+[data-personal-space="true"] [data-personal-memo-card="true"]{padding-top:16px !important;padding-bottom:16px !important}
+[data-personal-space="true"] .personal-grid > :is(h2,h3),
+[data-personal-space="true"] .personal-grid > div:has(>h2):first-child{margin-bottom:14px !important}
+
+[data-personal-space="true"] .personal-grid:is([class~="p-4"],[class~="p-5"],[class~="p-6"]),[data-personal-space="true"] [data-personal-memo-card="true"]{padding-left:16px !important;padding-right:16px !important}
+
+[data-compact-auth="true"]>button,
+[data-mobile-menu-account="true"]>button:not([aria-label="메뉴 닫기"]){height:36px !important;min-height:36px !important;border-radius:8px !important;font-size:12px !important;line-height:18px !important;font-weight:600 !important}
+
+[data-mobile-menu-account="true"]{display:flex;align-items:center;gap:8px;padding-top:12px;padding-right:56px}
+[data-mobile-menu-account="true"]>[data-compact-auth="true"]{display:flex;width:auto;flex:none;gap:8px}
+[data-mobile-menu-account="true"]>[data-compact-auth="true"]>button,[data-mobile-menu-account="true"]>button:not([aria-label="메뉴 닫기"]){width:auto;flex:none;padding-left:12px;padding-right:12px}
+[data-mobile-menu-account="true"]{min-height:60px;box-sizing:border-box;padding-top:12px;padding-bottom:12px}[data-mobile-menu-account="true"]>button[aria-label="메뉴 닫기"]{top:12px;right:12px;width:36px;height:36px;padding:6px;display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+
+/* Page titles follow the main Insurance Insight wordmark. */
+:root{--page-title-size:28px;--page-title-weight:700}
+@media(max-width:767px){:root{--page-title-size:21px;--page-title-weight:650}}
+:is(header[data-page-header="true"],header[data-site-header="true"]) h1{font-size:var(--page-title-size) !important;font-weight:var(--page-title-weight) !important}
+@media(max-width:767px){[data-mobile-menu-account="true"]{height:80px;min-height:80px;padding-top:22px;padding-bottom:22px}[data-mobile-menu-account="true"]>button[aria-label="메뉴 닫기"]{top:22px}}

@@ -148,3 +148,8 @@
 .detailTabs button[data-action-height]{border-radius:0 !important}
 
 .directory{border-radius:16px}
+
+.directoryInner{gap:14px}
+
+.card,.directory,.contractPanel,.emptyDetailPanel{border-radius:16px}
+.searchFields{border-radius:16px}.searchField label{font-size:14px}

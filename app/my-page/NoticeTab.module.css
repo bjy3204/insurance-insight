@@ -4,3 +4,5 @@
 @media(max-width:767px){.workspace{grid-template-columns:minmax(0,1fr)}.menu{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;padding:4px}.menu button{text-align:center;padding:0 4px}.controls{grid-row:2}.preview{grid-row:3}}
 
 .menu{border-radius:16px}
+
+.menu,.preview,.controls{border-radius:16px}

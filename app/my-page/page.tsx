@@ -587,7 +587,7 @@ updateData.pin_changed_at = new Date().toISOString();
           </div>
           <h2 className="text-lg font-bold text-gray-900 mb-2">{authStatus === "payment_error" ? "결제오류" : "접근 제한"}</h2>
           <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-            {authStatus === "payment_error" ? <>정기결제에 오류가 발생했습니다.<br />결제 상태를 확인하거나 관리자에게 문의해 주세요.</> : <>개인공간 기능은 승인된 회원만<br />이용 가능합니다.</>}
+            {authStatus === "payment_error" ? <>정기결제에 오류가 발생했습니다.<br />결제 상태를 확인하거나 관리자에게 문의해 주세요.</> : <>선택한 메뉴는 승인된 회원만<br />이용 가능합니다.</>}
           </p>
           <button
             onClick={() => router.push("/")}
@@ -636,7 +636,7 @@ updateData.pin_changed_at = new Date().toISOString();
 </div>
 
 <div ref={settingRef} className="absolute right-0 flex items-center gap-2" onKeyDown={event => { if (event.key === "Escape") { setSettingOpen(false); } }}>
-  <div className="relative">
+  <div className="relative hidden md:block">
     <button type="button" data-header-control="true" aria-label="설정" aria-haspopup="dialog" onClick={() => { setSettingsDialog("space"); setSettingOpen(false); setSettingMsg(""); }}><SlidersHorizontal /></button>
   </div>
   <div className="relative hidden md:block">
@@ -653,7 +653,7 @@ updateData.pin_changed_at = new Date().toISOString();
         </div>
       </header>
 
-<PersonalSidebar collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} onPlantOpen={() => { setPlantPopupOpen(open => !open); }} nickname={settings?.nickname || "회원"} plantStage={sidebarPlantStage} mobileOpen={sidebarOpen} onMobileClose={() => setSidebarOpen(false)} activeTab={activeTab} tabs={tabs} onSelect={id => setActiveTab(id as ActiveTab)} onReorder={handlePersonalMenuReorder} reorderDisabled={menuSaving} reorderError={menuSaveError}
+<PersonalSidebar onSettingsOpen={() => { setSettingsDialog("space"); setSettingOpen(false); setSettingMsg(""); }} collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} onPlantOpen={() => { setPlantPopupOpen(open => !open); }} nickname={settings?.nickname || "회원"} plantStage={sidebarPlantStage} mobileOpen={sidebarOpen} onMobileClose={() => setSidebarOpen(false)} activeTab={activeTab} tabs={tabs} onSelect={id => setActiveTab(id as ActiveTab)} onReorder={handlePersonalMenuReorder} reorderDisabled={menuSaving} reorderError={menuSaveError}
  />
 <div className={`transition-[padding] duration-200 motion-reduce:transition-none ${sidebarCollapsed ? "md:pl-0" : "md:pl-24"}`}><div className="min-w-0">
       {activeTab === "home" && <CustomerReminderNotice />}

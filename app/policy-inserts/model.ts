@@ -44,16 +44,16 @@ export function overlayHtml(page: number, customer: string, advisor: Advisor, ca
     return `<span class="insert-text" style="left:${x}%;top:${y}%;width:${width}%;font-size:${fittedSize}cqw;font-weight:${weight};justify-content:${left ? "flex-start" : "center"}">${escapeHtml(value)}</span>`;
   };
   let result = "";
-  if (page === 1) result += text(customer, 21.5, 23.1, 27.5, 9.1, 700);
-  if (page === TEMPLATES[category].promise) result += text(customer, 12, 13, 20.3, 3.6, 700);
-  if ((category === "family" || category === "summer") && page === 9) result += text(customer, 26.5, 15.4, 26.5, 4.5, 500);
-  if (category === "care" && page === 10) result += text(customer, 20.5, 20.2, 35, 5.5);
-  if (category === "pet" && page === 9) result += text(customer, 21, 63.8, 26.5, 4.5);
+  if (page === 1) result += text(customer, 21.5, 22.4, 27.5, 8.3, 700);
+  if (page === TEMPLATES[category].promise) result += text(customer, 12, 12.5, 20.3, 4.3, 700);
+  if ((category === "family" || category === "summer" || category === "driver") && page === 9) result += text(customer, 26.5, 15, 26.5, 4.5, 500);
+  if (category === "care" && page === 10) result += text(customer, 20.7, 19.5, 35, 5.5);
+  if (category === "pet" && page === 9) result += text(customer, 21, 63.4, 27, 5);
   if (page === TEMPLATES[category].advisor) {
-    result += text(advisor.name, 10, 7.6, 22, 4.1, 700);
+    result += text(advisor.name, 10, 7.1, 22, 4.6, 700);
     result += text(advisor.company, 14.5, 97.1, 22, 2.5, 500, true);
-    result += text(advisor.phone, 45, 97.1, 22, 3, 500, true, true);
-    result += text(advisor.fax || "", 76, 97.1, 21, 3, 500, true, true);
+    result += text(advisor.phone, 45, 97.1, 22, 2.5, 500, true, true);
+    result += text(advisor.fax || "", 76, 97.1, 21, 2.5, 500, true, true);
   }
   return result;
 }
