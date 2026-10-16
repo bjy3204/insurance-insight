@@ -12,7 +12,7 @@ return (<>{(passwordResultOpen || passwordResultRef.current) && (
       </h2>
       <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
         {(passwordResultSuccess || passwordResultSuccessRef.current)
-          ? "개인설정이 저장되었습니다."
+          ? "계정설정이 저장되었습니다."
           : "저장에 실패했습니다. 다시 시도해주세요."}
       </p>
 

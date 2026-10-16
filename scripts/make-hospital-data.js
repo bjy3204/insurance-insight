@@ -21,7 +21,7 @@ const trafficFile = path.join(
 
 const outputFile = path.join(
   baseDir,
-  "app/claim-docs/hospital-data.ts"
+  "public/data/hospitals.json"
 );
 
 function readExcel(filePath) {
@@ -219,16 +219,12 @@ const result = hospitals
   })
   .filter(Boolean);
 
-const fileContent = `export const hospitalData = ${JSON.stringify(
-  result,
-  null,
-  2
-)} as const;
-`;
+const fileContent = JSON.stringify(result);
 
+fs.mkdirSync(path.dirname(outputFile), { recursive: true });
 fs.writeFileSync(outputFile, fileContent, "utf8");
 
-console.log(`hospital-data.ts 생성 완료: ${result.length}개`);
+console.log(`hospitals.json 생성 완료: ${result.length}개`);
 console.log(
   "상급종합병원:",
   result.filter((item) => item.type === "상급종합병원").length

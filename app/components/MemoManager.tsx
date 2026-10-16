@@ -586,6 +586,17 @@ export default function MemoManager({ open, onClose }: Props) {
 }
 export function GlobalMemoManager(){
  const {memos}=useAuth();const [open,setOpen]=useState(false),[id,setId]=useState<string|null>(null);
+ useEffect(()=>{
+  // Physical key code keeps Ctrl+Alt+N available with Korean input enabled.
+  // Opening is idempotent; holding the shortcut must not repeatedly toggle it.
+  const shortcut=(event:KeyboardEvent)=>{
+   if(!event.ctrlKey||!event.altKey||event.shiftKey||event.metaKey||event.repeat||event.isComposing||event.code!=="KeyN")return;
+   event.preventDefault();
+   setOpen(true);
+  };
+  window.addEventListener("keydown",shortcut);
+  return()=>window.removeEventListener("keydown",shortcut);
+ },[]);
  useEffect(()=>{const show=()=>setOpen(true);const detail=(e:Event)=>setId((e as CustomEvent).detail);const context=(e:Event)=>setId((e as CustomEvent).detail.id);window.addEventListener("open-memo-manager",show);window.addEventListener("open-memo-detail",detail);return()=>{window.removeEventListener("open-memo-manager",show);window.removeEventListener("open-memo-detail",detail);};},[]);
  const selected=memos.find(m=>m.id===id);
  return <><MemoManager open={open} onClose={()=>setOpen(false)}/>{selected&&<MemoEditor key={selected.id} memo={selected} onClose={()=>setId(null)}/>}</>;

@@ -1,9 +1,10 @@
 "use client";
 
+import AccountPinCheck from "./AccountPinCheck";
 import { X } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
 export default function ProfileSettingsDialog({ controller }: { controller: HomeController }) {
-const { authUser, profileSettingOpen, setProfileSettingOpen, kakaoConnected, kakaoConnecting, editNickname, setEditNickname, editInstagram, setEditInstagram, pinCheckPassword, setPinCheckPassword, pinCheckResult, newPassword, setNewPassword, currentPassword, setCurrentPassword, newPasswordConfirm, setNewPasswordConfirm, handleCheckPin, saveProfileSettings, handleKakaoConnect, handleKakaoDisconnect } = controller;
+const { authUser, profileSettingOpen, setProfileSettingOpen, kakaoConnected, kakaoConnecting, editNickname, setEditNickname, editInstagram, setEditInstagram, newPassword, setNewPassword, currentPassword, setCurrentPassword, newPasswordConfirm, setNewPasswordConfirm, saveProfileSettings, handleKakaoConnect, handleKakaoDisconnect } = controller;
 return (<>{profileSettingOpen && (
   <div
     className="fixed inset-0 z-[9999] bg-black/40 flex items-center justify-center p-4"
@@ -11,10 +12,15 @@ return (<>{profileSettingOpen && (
   >
     <div
       data-popup-resize="false"
+      data-popup-small="true"
+      data-account-settings="true"
+      role="dialog" aria-modal="true" aria-label="계정설정"
       onClick={(e) => e.stopPropagation()}
       className="
         w-full
         max-w-sm
+        max-h-[calc(100dvh-32px)]
+        overflow-y-auto
         rounded-3xl
         bg-white
         p-6
@@ -24,7 +30,7 @@ return (<>{profileSettingOpen && (
     >
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-lg font-bold text-gray-900">
-          개인설정
+          계정설정
         </h2>
 
         <button data-popup-close="true"
@@ -77,29 +83,7 @@ return (<>{profileSettingOpen && (
           className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
               />
 
-        <div className="pt-3 border-t border-gray-100">
-          <p className="mb-2 text-xs font-bold text-gray-500">개인공간 비밀번호</p>
-          <div className="flex gap-2">
-            <input data-ui-field="true"
-  type="password"
-  placeholder="회원가입 비밀번호 입력"
-  value={pinCheckPassword}
-  onChange={(e) => setPinCheckPassword(e.target.value)}
-  onKeyDown={(e) => { if (e.key === "Enter") handleCheckPin(); }}
-  className="flex-1 h-11 rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
-/>
-
-            <button
-              onClick={handleCheckPin}
-              className="h-11 px-4 rounded-xl bg-gray-900 text-white text-sm font-bold cursor-pointer hover:bg-gray-800"
-            >
-              확인
-            </button>
-          </div>
-          {pinCheckResult && (
-            <p className="mt-2 text-sm text-center font-semibold text-blue-600">{pinCheckResult}</p>
-          )}
-        </div>
+        <AccountPinCheck controller={controller}/>
 
         <div className="pt-3 border-t border-gray-100">
           <p className="mb-2 text-xs font-bold text-gray-500">

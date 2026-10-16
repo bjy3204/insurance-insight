@@ -32,7 +32,7 @@ export default function DesktopHeader({ controller: c }: { controller: HomeContr
         {!c.authLoading && c.authUser && <div className={styles.headerMember}>
           <button className={styles.headerIcon} aria-label="회원 메뉴" aria-expanded={c.userMenuOpen} onClick={e => { e.stopPropagation(); c.setUserMenuOpen(!c.userMenuOpen); c.setSettingOpen(false); }}><User /></button>
           {c.userMenuOpen && <div className={styles.headerDropdown} onClick={e => e.stopPropagation()}>
-            <button onClick={() => { c.setEditNickname(c.authNickname || ""); c.setEditInstagram(c.authInstagram || ""); c.setCurrentPassword(""); c.setNewPassword(""); c.setNewPasswordConfirm(""); c.setProfileSettingOpen(true); c.setUserMenuOpen(false); }}>개인설정</button>
+            <button onClick={() => { c.setEditNickname(c.authNickname || ""); c.setEditInstagram(c.authInstagram || ""); c.setCurrentPassword(""); c.setNewPassword(""); c.setNewPasswordConfirm(""); c.setProfileSettingOpen(true); c.setUserMenuOpen(false); }}>계정설정</button>
             <AuthButton variant="menu" {...authProps} />
           </div>}
         </div>}

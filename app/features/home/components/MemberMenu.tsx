@@ -54,7 +54,7 @@ return (<>{userMenuOpen && (
     }}
     className="block w-full px-4 py-3 text-center text-sm font-bold text-gray-700 hover:bg-gray-50 border-t border-gray-100 cursor-default"
   >
-    개인설정
+    계정설정
   </button>
 )}
 

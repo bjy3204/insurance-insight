@@ -10,7 +10,7 @@ import { useAuth } from "@/app/components/AuthProvider";
 import { Menu,
   LayoutGrid,
   ArrowLeft,
-  Settings,
+  SlidersHorizontal,
   X,
   Lock,
   Users,
@@ -66,8 +66,9 @@ import { CSS } from "@dnd-kit/utilities";
 import HomeTab from "./HomeTab";
 import CustomerReminderNotice from "@/app/features/home/components/CustomerReminderNotice";
 import PersonalSidebar from "./PersonalSidebar";
-import ProfileSettingsTab from "./ProfileSettingsTab";
+import { useSharedHomeController } from "@/app/features/home/HomeControllerProvider";
 import PersonalSettingsDialog from "./PersonalSettingsDialog";
+import AccountPinCheck from "@/app/features/home/components/AccountPinCheck";
 import type { PlantStage } from "./PlantSVG";
 import CalendarTab from "./CalendarTab";
 
@@ -224,6 +225,7 @@ function SortableTab({ tab, activeTab, setActiveTab }: { tab: any; activeTab: st
 export default function CustomerManagePage() {
   const { authUser, authStatus, authLoading, memos, saveMemos } = useAuth();
   const router = useRouter();
+  const accountController = useSharedHomeController();
 
   const [settings, setSettings] = useState<CustomerSettings | null>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("home");
@@ -241,8 +243,8 @@ export default function CustomerManagePage() {
 
   // 설정 드롭다운
   const [settingOpen, setSettingOpen] = useState(false);
-  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
-  const [settingsDialog, setSettingsDialog] = useState<"account" | "space" | null>(null);
+  const [shortcutTab, setShortcutTab] = useState(1);
+  const [settingsDialog, setSettingsDialog] = useState<"space" | null>(null);
 const [sidebarOpen, setSidebarOpen] = useState(false);
 const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 const [homeMenuSettingOpen, setHomeMenuSettingOpen] = useState(false);
@@ -515,12 +517,11 @@ useEffect(() => {
   const handleClickOutside = (e: MouseEvent) => {
     if (settingRef.current && !settingRef.current.contains(e.target as Node)) {
       setSettingOpen(false);
-      setSettingsMenuOpen(false);
     }
   };
-  if (settingOpen || settingsMenuOpen) document.addEventListener("mousedown", handleClickOutside);
+  if (settingOpen) document.addEventListener("mousedown", handleClickOutside);
   return () => document.removeEventListener("mousedown", handleClickOutside);
-}, [settingOpen, settingsMenuOpen]);
+}, [settingOpen]);
 
 useEffect(() => {
  const handleOpenMemoDetail = (e: Event) => {
@@ -700,13 +701,12 @@ updateData.pin_changed_at = new Date().toISOString();
   
 </div>
 
-<div ref={settingRef} className="absolute right-0 flex items-center gap-2" onKeyDown={event => { if (event.key === "Escape") { setSettingOpen(false); setSettingsMenuOpen(false); } }}>
+<div ref={settingRef} className="absolute right-0 flex items-center gap-2" onKeyDown={event => { if (event.key === "Escape") { setSettingOpen(false); } }}>
   <div className="relative">
-    <button type="button" aria-label="설정" aria-haspopup="menu" aria-expanded={settingsMenuOpen} aria-controls="personal-settings-menu" onClick={() => { setSettingsMenuOpen(open => !open); setSettingOpen(false); }} className="flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white px-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-blue-50 hover:text-blue-600"><Settings size={18}/><span className="hidden md:inline">설정</span></button>
-    {settingsMenuOpen && <div id="personal-settings-menu" role="menu" aria-label="설정" className="absolute right-0 top-12 z-[1000] w-40 overflow-hidden rounded-xl border border-gray-200 bg-white p-1 shadow-xl">{([{id:"account",label:"계정설정"},{id:"space",label:"개인공간"}] as const).map(item => <button role="menuitem" key={item.id} type="button" onClick={() => { setSettingsDialog(item.id); setSettingsMenuOpen(false); setIconPickerOpen(null); setSettingMsg(""); }} className="block w-full cursor-pointer rounded-lg px-4 py-3 text-left text-sm font-semibold text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-600">{item.label}</button>)}</div>}
+    <button type="button" data-header-control="true" aria-label="설정" aria-haspopup="dialog" onClick={() => { setSettingsDialog("space"); setSettingOpen(false); setIconPickerOpen(null); setSettingMsg(""); }}><SlidersHorizontal /></button>
   </div>
   <div className="relative hidden md:block">
-    <button type="button" data-header-control="true" aria-label="도구 메뉴" aria-expanded={settingOpen} aria-controls="personal-header-tools" onClick={() => { setSettingOpen(open => !open); setSettingsMenuOpen(false); }}><LayoutGrid /></button>
+    <button type="button" data-header-control="true" aria-label="도구 메뉴" aria-expanded={settingOpen} aria-controls="personal-header-tools" onClick={() => { setSettingOpen(open => !open); }}><LayoutGrid /></button>
   {settingOpen && <div id="personal-header-tools" className="absolute right-0 top-12 z-[1000] w-40 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
     <button type="button" onClick={() => { window.dispatchEvent(new Event("open-memo-manager")); setSettingOpen(false); }} className="block w-full px-4 py-3 text-sm font-bold text-gray-700 text-center hover:bg-blue-50 hover:text-blue-600 cursor-pointer">메모장</button>
     {[{ label: "계산기", event: "open-calculator" }, { label: "환율변환기", event: "open-currency-converter" }].map(item => <button key={item.event} type="button" onClick={() => { setSettingOpen(false); window.dispatchEvent(new CustomEvent(item.event)); }} className="block w-full border-t border-gray-100 px-4 py-3 text-sm font-bold text-gray-700 text-center hover:bg-gray-50 cursor-pointer">{item.label}</button>)}
@@ -774,11 +774,10 @@ updateData.pin_changed_at = new Date().toISOString();
       </main>
 
 </div></div>
-     {settingsDialog && <PersonalSettingsDialog title={settingsDialog === "account" ? "계정설정" : "개인공간"} onClose={() => { if (!settingSaving) { setSettingsDialog(null); setIconPickerOpen(null); } }}>
-       {settingsDialog === "account" ? <ProfileSettingsTab embedded onSaved={loadSettings}/> : (      <section className="space-y-4">
-<h2 className="text-base font-bold text-gray-900">바로가기 · 개인공간 PIN</h2>
-              <div>
-                <label className="text-xs text-gray-500 font-semibold mb-1 block">바로가기 1</label>
+     {settingsDialog && <PersonalSettingsDialog title="개인공간" onClose={() => { if (!settingSaving) { setSettingsDialog(null); setIconPickerOpen(null); } }}>
+             <section className="space-y-4">
+<div role="tablist" aria-label="바로가기 설정" className="flex border-b border-gray-200">{[1, 2, 3].map(number => <button key={number} type="button" role="tab" id={`shortcut-tab-${number}`} aria-selected={shortcutTab === number} aria-controls={`shortcut-panel-${number}`} onClick={() => { setShortcutTab(number); setIconPickerOpen(null); }} className={`flex-1 cursor-pointer border-b-2 px-2 py-2 text-sm font-semibold transition-colors ${shortcutTab === number ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-800"}`}>바로가기 {number}</button>)}</div>
+              <div role="tabpanel" id="shortcut-panel-1" aria-labelledby="shortcut-tab-1" hidden={shortcutTab !== 1}>
 <div className="flex items-center gap-2 mb-1">
   <div className="relative shrink-0">
     <button
@@ -823,8 +822,7 @@ updateData.pin_changed_at = new Date().toISOString();
                   className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
                 />
               </div>
-              <div>
-  <label className="text-xs text-gray-500 font-semibold mb-1 block">바로가기 2</label>
+              <div role="tabpanel" id="shortcut-panel-2" aria-labelledby="shortcut-tab-2" hidden={shortcutTab !== 2}>
   <div className="flex items-center gap-2 mb-1">
     <div className="relative shrink-0">
       <button
@@ -869,8 +867,7 @@ updateData.pin_changed_at = new Date().toISOString();
   />
 </div>
 
-              <div>
-  <label className="text-xs text-gray-500 font-semibold mb-1 block">바로가기 3</label>
+              <div role="tabpanel" id="shortcut-panel-3" aria-labelledby="shortcut-tab-3" hidden={shortcutTab !== 3}>
   <div className="flex items-center gap-2 mb-1">
     <div className="relative shrink-0">
       <button
@@ -915,6 +912,7 @@ updateData.pin_changed_at = new Date().toISOString();
   />
 </div>
 
+              <AccountPinCheck controller={accountController}/>
               <div className="border-t border-gray-100 pt-3">
                 <label className="text-xs text-gray-500 font-semibold mb-1 block">개인공간 PIN 변경 (4자리)</label>
                 <div className="relative">
@@ -953,9 +951,9 @@ updateData.pin_changed_at = new Date().toISOString();
                 className="w-full h-12 bg-gray-800 text-white text-sm font-bold rounded-2xl hover:bg-gray-700 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 
-                {settingSaving ? "저장 중..." : "바로가기 · PIN 저장"}
+                {settingSaving ? "저장 중..." : "저장"}
               </button>
-            </section>)}
+            </section>
      </PersonalSettingsDialog>}
      {/* ── URL 설정 팝업 ── */}
 {urlPopupType && (

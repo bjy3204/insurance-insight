@@ -457,7 +457,7 @@ const handleResetPassword = async () => {
         const response = await fetch("/api/auth/kakao/signup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "commit", access_token: session?.access_token, refresh_token: session?.refresh_token }) });
         const result = await response.json();
         if (!response.ok) {
-          showNotice(`회원가입은 완료되었습니다. ${authErrorMessage({message:result.error}, "카카오 연결은 개인설정에서 다시 진행해 주세요.")}`);
+          showNotice(`회원가입은 완료되었습니다. ${authErrorMessage({message:result.error}, "카카오 연결은 계정설정에서 다시 진행해 주세요.")}`);
           setAuthOpen(false); setCompletingSignup(false); setCompletingKakao(false);
           await clearKakaoSignup();
           return;
@@ -474,7 +474,7 @@ const handleResetPassword = async () => {
       setSignupNickname(""); setSignupInstagram(""); setEmail("");
     } catch (error) {
       if (membershipSaved) {
-        showNotice("회원가입은 완료되었습니다. 카카오 연결 상태는 개인설정에서 확인해 주세요.");
+        showNotice("회원가입은 완료되었습니다. 카카오 연결 상태는 계정설정에서 확인해 주세요.");
         setAuthOpen(false);
         await clearKakaoSignup();
       } else {

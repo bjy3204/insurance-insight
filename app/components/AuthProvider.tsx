@@ -62,9 +62,6 @@ const loadProfile = async (userId: string) => {
     .eq("id", userId)
     .maybeSingle();
 
-  console.log("profiles userId:", userId);
-  console.log("profiles data:", profile);
-  console.log("profiles error:", error);
 
   if (error) {
     console.error("profiles 조회 실패:", error);
@@ -109,8 +106,6 @@ const initialize = async () => {
     error,
   } = await supabase.auth.getSession();
 
-  console.log("getSession session:", session);
-  console.log("getSession error:", error);
 
   const user = session?.user || null;
   setAuthUser(user);

@@ -13,6 +13,8 @@ import DiseaseDialog from "./components/DiseaseDialog";
 import BankRatesDialog from "./components/BankRatesDialog";
 import LifeExpectancyDialog from "./components/LifeExpectancyDialog";
 import PressDialog from "./components/PressDialog";
+import ProfileSettingsDialog from "./components/ProfileSettingsDialog";
+import PasswordResultDialog from "./components/PasswordResultDialog";
 
 const HomeControllerContext = createContext<HomeController | null>(null);
 
@@ -27,6 +29,8 @@ export default function HomeControllerProvider({ children }: { children: ReactNo
   return (
     <HomeControllerContext.Provider value={controller}>
       {children}
+      <ProfileSettingsDialog controller={controller} />
+      <PasswordResultDialog controller={controller} />
       <MenuContextMenu controller={controller} />
       <QuickMenuPanel controller={controller} />
       <QuickMenuSelectionDialog controller={controller} />

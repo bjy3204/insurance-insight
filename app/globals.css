@@ -1,6 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Noto+Serif+KR:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
+/* Data and generated artifacts do not contain application utility classes. */
+@source not "./claim-docs/hospital-data.ts";
+@source not "../outputs";
+@source not "../output";
+@source not "../public/data";
 
 @font-face {
   font-family: "Kyobo";
@@ -739,6 +744,8 @@ input:disabled, textarea:disabled { cursor: default !important; }
   transition:background-color .15s,color .15s,border-color .15s,filter .15s;
 }
 [data-mini-close="true"] { flex-shrink:0; }
+[data-account-settings="true"] { --text-xs:12px; --text-xs--line-height:1.333333; }
+[data-account-settings="true"] .text-\[11px\] { font-size:11px !important; }
 
 /* Calendar confirmation scale, shared by every cancel/delete confirmation. */
 [data-confirm-overlay="true"] { background:rgb(0 0 0 / .4) !important; z-index:100000; }

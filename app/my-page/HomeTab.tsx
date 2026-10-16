@@ -186,7 +186,7 @@ const PAGE_GROUP = 5;
   const [todayWatered, setTodayWatered] = useState(false);
   const [wateringAnim, setWateringAnim] = useState(false);
 
-  const [plantPos, setPlantPos] = useState({ x: 40, y: 180 });
+  const [plantPos, setPlantPos] = useState({ x: 256, y: 95 });
   const plantPositionDirty = useRef(false);
   const plantCardRef = useRef<HTMLDivElement>(null);
   const clampPlantPosition = (x: number, y: number) => ({
@@ -230,8 +230,13 @@ const [plantDragInfo, setPlantDragInfo] = useState<null | {
 
 
   useEffect(() => {
-    if (typeof settings?.plant_pos_x !== "number" || typeof settings?.plant_pos_y !== "number") return;
-    setPlantPos(clampPlantPosition(settings.plant_pos_x, settings.plant_pos_y));
+    if (typeof settings?.plant_pos_x === "number" && typeof settings?.plant_pos_y === "number") {
+      setPlantPos(clampPlantPosition(settings.plant_pos_x, settings.plant_pos_y));
+    } else {
+      const sidebar = document.querySelector('aside[aria-label="개인공간 메뉴"]')?.getBoundingClientRect();
+      const header = document.querySelector('header[data-page-header="true"]')?.getBoundingClientRect();
+      setPlantPos(clampPlantPosition(sidebar?.width ? sidebar.right + 16 : 12, (header?.bottom || 83) + 12));
+    }
     plantPositionDirty.current = false;
   }, [authUser?.id, settings?.plant_pos_x, settings?.plant_pos_y]);
 

@@ -1,7 +1,7 @@
 "use client";
 import Pagination from "@/app/components/Pagination";
 import { useEffect, useRef, useState } from "react";
-import { hospitalData } from "./hospital-data";
+import { loadHospitalData } from "./hospital-data";
 import {
   Hospital,
   X,
@@ -26,6 +26,7 @@ export default function HospitalInfoPopup({ open, onClose }: Props) {
   const [page, setPage] = useState(1);
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const searchGeneration = useRef(0);
   const [openedIndex, setOpenedIndex] = useState<number | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   useEffect(() => { if (open) setFilterOpen(false); }, [open]);
@@ -71,11 +72,14 @@ const closePopup = () => {
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );
-const handleSearch = () => {
+const handleSearch = async () => {
+  const generation = ++searchGeneration.current;
   setPage(1);
   setLoading(true);
 
   try {
+    const hospitalData = await loadHospitalData();
+    if (generation !== searchGeneration.current) return;
     const sidoKeyword = normalize(sido);
     const dongKeyword = normalize(dong);
     const departmentKeyword = normalize(department);
@@ -117,9 +121,9 @@ const handleSearch = () => {
     setResults(filtered);
   } catch (error) {
     console.log(error);
-    setResults([]);
+    if (generation === searchGeneration.current) setResults([]);
   } finally {
-    setLoading(false);
+    if (generation === searchGeneration.current) setLoading(false);
   }
 };
     
@@ -131,7 +135,7 @@ const handleSearch = () => {
     handleSearch();
   }, 300);
 
-  return () => clearTimeout(timer);
+  return () => { clearTimeout(timer); ++searchGeneration.current; };
 }, [open, selectedType, sido, dong, department, hospitalName]);
   if (!open) return null;
 

@@ -8,14 +8,14 @@ import MainHeader from "./components/MainHeader";
 import CustomerReminderNotice from "./components/CustomerReminderNotice";
 import DashboardCards from "./components/dashboard/DashboardCards";
 import MainMenuGrid from "./components/MainMenuGrid";
-import ProfileSettingsDialog from "./components/ProfileSettingsDialog";
+
 import MainFooter from "./components/MainFooter";
 import MenuEditFooter from "./components/MenuEditFooter";
 import MenuLinkAlert from "./components/MenuLinkAlert";
 import DeleteMenuDialog from "./components/DeleteMenuDialog";
 import SaveMenuDialog from "./components/SaveMenuDialog";
 
-import PasswordResultDialog from "./components/PasswordResultDialog";
+
 import PopupNoticeDialog from "./components/PopupNoticeDialog";
 import ContactDialog from "./components/ContactDialog";
 import NoticeDialog from "./components/NoticeDialog";
@@ -43,7 +43,7 @@ return ((
       <MainMenuGrid controller={controller} />
       <DashboardCards controller={controller} />
 
-      <ProfileSettingsDialog controller={controller} />
+      
 
 
 
@@ -81,7 +81,7 @@ return ((
 
 
 
-<PasswordResultDialog controller={controller} />
+
 
       {/* 공지 팝업 */}
       <PopupNoticeDialog controller={controller} />
