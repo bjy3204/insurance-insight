@@ -1,10 +1,12 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { calendarUpdated } from "@/app/features/home/components/dashboard/calendar-storage";
 import { CALENDAR_UPDATED } from "@/app/features/home/components/dashboard/reminder-utils";
 import type { SheetCalendarEvent } from "@/lib/google/sheet-calendar-model";
 
+import {useCrmCalendar} from "@/app/notion-crm/CrmCalendarContext";
+import {buildCrmCalendar} from "@/lib/notion-crm/calendar";
 type Identity = { userId: string | null; approved: boolean };
 type CompletionMap = Record<string, boolean>;
 const localKey = "insurance-calendar-completed-v1";
@@ -12,6 +14,8 @@ const normalize = (value: unknown): CompletionMap => value && typeof value === "
 
 export default function useCalendarExtras(identity: Identity, month: Date, active: boolean) {
   const { userId, approved } = identity;
+  const crm=useCrmCalendar();
+  const usingCrm=!!crm;
   const year = month.getFullYear(), monthIndex = month.getMonth();
   const first = new Date(Date.UTC(year, monthIndex, 1 - new Date(year, monthIndex, 1).getDay()));
   const from = first.toISOString().slice(0, 10), to = new Date(first.getTime() + 41 * 86400000).toISOString().slice(0, 10);
@@ -33,7 +37,7 @@ export default function useCalendarExtras(identity: Identity, month: Date, activ
   const [refresh, setRefresh] = useState(0);
   useEffect(()=>{
     setCustomerEvents([]);setCustomerError("");
-    if(!active||!approved||!userId)return;
+    if(usingCrm||!active||!approved||!userId)return;
     let stopped=false;
     const controller=new AbortController();
     const load=async()=>{
@@ -48,7 +52,7 @@ export default function useCalendarExtras(identity: Identity, month: Date, activ
     };
     void load();window.addEventListener("focus",load);window.addEventListener("customer-schedules-updated",load);
     return()=>{stopped=true;controller.abort();window.removeEventListener("focus",load);window.removeEventListener("customer-schedules-updated",load);};
-  },[active,approved,userId,from,to,refresh]);
+  },[active,approved,userId,from,to,refresh,usingCrm]);
   useEffect(() => {
     const report = (event: Event) => { const message = (event as CustomEvent<string>).detail; setSheetError(message); if (message) setNeedsConnection(true); };
     window.addEventListener("insurance-sheet-calendar-error", report);
@@ -56,7 +60,7 @@ export default function useCalendarExtras(identity: Identity, month: Date, activ
   }, []);
 
   useEffect(() => {
-    if (!active || !approved || !userId) { setSheetEvents([]); setSheetError(""); setNeedsConnection(false); return; }
+    if (usingCrm || !active || !approved || !userId) { setSheetEvents([]); setSheetError(""); setNeedsConnection(false); return; }
     let stopped = false;
     let controller: AbortController | undefined;
     const load = async () => {
@@ -81,7 +85,7 @@ export default function useCalendarExtras(identity: Identity, month: Date, activ
     window.addEventListener("focus", load);
     window.addEventListener("insurance-sheet-calendar-updated", load);
     return () => { stopped = true; controller?.abort(); window.removeEventListener("focus", load); window.removeEventListener("insurance-sheet-calendar-updated", load); };
-  }, [active, approved, userId, from, to, refresh]);
+  }, [active, approved, userId, from, to, refresh,usingCrm]);
 
   useEffect(() => {
     let stopped = false;
@@ -134,5 +138,6 @@ export default function useCalendarExtras(identity: Identity, month: Date, activ
       window.location.assign(result.url);
     } catch (error) { setSheetError(error instanceof Error ? error.message : "일정 연결을 시작하지 못했습니다."); setConnecting(false); }
   };
-  return { sheetEvents:[...customerEvents,...sheetEvents], sheetError:sheetError||customerError, needsConnection, connect, connecting, sheetLoading, reloadSheet: () => setRefresh(value => value + 1), completed, completionReady, completionBusy, completionError, toggleCompleted };
+  const crmEvents=useMemo(()=>crm&&approved?buildCrmCalendar(crm.data,from,to):[],[crm,approved,from,to]);
+  return { sheetEvents:usingCrm?crmEvents:[...customerEvents,...sheetEvents], sheetError:usingCrm?"":sheetError||customerError, needsConnection:usingCrm?false:needsConnection, connect, connecting, sheetLoading, reloadSheet: () => crm?crm.reload():setRefresh(value => value + 1), completed, completionReady, completionBusy, completionError, toggleCompleted };
 }

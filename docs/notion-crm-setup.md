@@ -1,6 +1,16 @@
+# 운영자 최초 설정 — 1회
+
+1. Supabase SQL Editor에서 supabase/migrations/20261017_crm_storage_connections.sql 실행.
+2. docs/notion-crm.env.example을 참고해 OAuth 환경변수와 암호화 키 등록 후 서버 재시작/배포.
+3. Notion 공개 OAuth 앱에 빈 고객관리 템플릿 등록. Google 앱에서 Sheets API 활성화. 각 callback URL 허용.
+
+현재 로컬에는 CRM OAuth 값과 암호화 키가 없습니다. 기존 NOTION_TOKEN은 회원별 OAuth를 대신하지 못합니다. SQL도 파일로 준비했으며 실제 DB에 적용한 상태는 아닙니다.
+
+사용자 흐름: 로그인 → 연결 버튼 → 제공자 권한 승인. Google은 개인 빈 파일을 자동 생성합니다. Notion은 등록된 빈 템플릿을 복제하면 반환된 페이지 ID로 자동 연결합니다. 템플릿 미등록 또는 기존 페이지 선택 시 링크 입력이 필요할 수 있습니다.
+
 # 노션 고객관리 웹 연결 설정
 
-화면: `/notion-crm`
+화면: `/my-page`
 
 보험인사이트 고객관리 스타일의 별도 화면입니다. 기존 `/my-page` 고객정보 저장소와 분리되어 있으며, 고객정보·계약·차량·수납·상담을 연결한 사용자 본인의 노션 복사본에 저장합니다.
 
@@ -8,20 +18,20 @@
 
 1. Notion Developer portal에서 **Public connection / Any workspace** 앱을 생성합니다.
 2. 읽기·삽입·수정 권한을 설정합니다. 고객 데이터에 필요하지 않은 사용자 이메일 등 권한은 추가하지 않습니다.
-3. OAuth redirect URI를 `https://운영도메인/api/notion-crm/oauth/callback`으로 등록합니다.
+3. OAuth redirect URI를 `https://운영도메인/api/my-page/oauth/callback`으로 등록합니다.
 4. `Notion URL for optional template`에 배포할 **빈 고객관리 노트 템플릿**의 공개 복제 링크를 등록합니다. 실제 고객이 들어 있는 원본을 공개하지 말고 빈 배포본을 별도로 준비합니다. 이 코드는 공개 설정을 변경하지 않습니다.
 5. 서버 환경변수를 설정합니다. `NEXT_PUBLIC_` 접두사를 사용하지 않습니다.
 
 ```dotenv
 NOTION_CLIENT_ID=
 NOTION_CLIENT_SECRET=
-NOTION_REDIRECT_URI=https://운영도메인/api/notion-crm/oauth/callback
+NOTION_REDIRECT_URI=https://운영도메인/api/my-page/oauth/callback
 NOTION_SESSION_SECRET=
 ```
 
 `NOTION_SESSION_SECRET`은 `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`로 생성한 64자리 hex 키입니다. 배포 플랫폼의 비밀 환경변수 저장소에 입력하세요. 기존 고객정보 암호화 키와 별도로 유지합니다.
 
-로컬 테스트는 별도 앱 또는 등록된 `http://localhost:3000/api/notion-crm/oauth/callback` redirect URI를 사용합니다.
+로컬 테스트는 별도 앱 또는 등록된 `http://localhost:3000/api/my-page/oauth/callback` redirect URI를 사용합니다.
 
 ## 사용자 흐름
 
@@ -33,9 +43,9 @@ NOTION_SESSION_SECRET=
 
 ## 저장 및 동작
 
-- 연결 토큰은 서버에서 AES-256-GCM으로 암호화한 HttpOnly/SameSite=Lax 쿠키에 보관합니다. 운영에서는 Secure입니다. 클라이언트 응답에 토큰을 넣지 않습니다.
-- 브라우저별 7일 세션이며 재연결할 수 있습니다. 만료가 다가온 access token은 refresh token이 있으면 갱신합니다. 여러 기기·동시 탭에서 토큰 갱신이 경합하면 재연결이 필요할 수 있습니다.
-- 연결 해제는 이 브라우저의 암호화 쿠키를 삭제합니다. Notion 자체 연결 권한을 철회하려면 Notion 연결 설정에서 제거합니다.
+- 연결 토큰은 AES-256-GCM으로 암호화하여 crm_storage_connections에 회원·제공자별로 저장합니다. 일반 클라이언트 접근은 RLS 및 권한으로 차단합니다.
+- 로그인하면 다른 기기에서도 회원 연결 정보를 복원합니다. 외부 서비스 권한 철회나 토큰 만료·동시 갱신 경합 시에는 재연결이 필요할 수 있습니다.
+- 연결 해제는 회원의 저장 연결을 비우고 브라우저 쿠키를 삭제합니다. 다른 기기의 옛 쿠키로 복구되지 않도록 해제 기록을 남깁니다. 외부 서비스 자체 권한 철회는 제공자 설정에서 할 수 있습니다.
 - 고객 저장은 이름·주민등록번호, 청구정보, 실손정보, 체크리스트 등을 노션 속성에 기록합니다. 주민등록번호는 13자리 형식과 실제 생년월일을 검증하며, 생년월일 속성은 자동 계산합니다. 본인확인/주민등록번호 유효성 인증 기능은 아닙니다.
 - 차량·계약·카드수납·일정은 별도 데이터 소스에 저장하고 고객 관계로 연결합니다.
 - 노션에서 바꾼 내용은 **새로고침**으로 불러옵니다. 실시간 양방향 동기화나 자동 폴링은 아닙니다.
@@ -53,34 +63,34 @@ NOTION_SESSION_SECRET=
 
 ## 구글 스프레드시트 저장소
 
-`/notion-crm` 상단에서 **노션 / 구글 스프레드시트**를 선택합니다. 각각 연결·데이터를 별도로 유지하고, 선택한 한 곳에만 저장합니다. 기존 데이터의 자동 이전이나 양쪽 동시 동기화는 하지 않습니다.
+`/my-page` 상단에서 **노션 / 구글 스프레드시트**를 선택합니다. 각각 연결·데이터를 별도로 유지하고, 선택한 한 곳에만 저장합니다. 기존 데이터의 자동 이전이나 양쪽 동시 동기화는 하지 않습니다.
 
 운영자가 Google Cloud 프로젝트에서 Google Sheets API와 OAuth 동의 화면·웹 클라이언트를 등록하고 다음 서버 환경변수를 설정합니다.
 
 ```dotenv
 GOOGLE_CRM_CLIENT_ID=
 GOOGLE_CRM_CLIENT_SECRET=
-GOOGLE_CRM_REDIRECT_URI=https://운영도메인/api/notion-crm/sheets/oauth/callback
+GOOGLE_CRM_REDIRECT_URI=https://운영도메인/api/my-page/sheets/oauth/callback
 CRM_SESSION_SECRET=
 ```
 
-`CRM_SESSION_SECRET`은 공통 암호화용 64자리 hex 키입니다. 기존 `NOTION_SESSION_SECRET`도 호환되므로 이미 설정한 경우 유지할 수 있습니다. 로컬 redirect URI는 `http://localhost:3000/api/notion-crm/sheets/oauth/callback`을 별도로 등록합니다.
+`CRM_SESSION_SECRET`은 공통 암호화용 64자리 hex 키입니다. 기존 `NOTION_SESSION_SECRET`도 호환되므로 이미 설정한 경우 유지할 수 있습니다. 로컬 redirect URI는 `http://localhost:3000/api/my-page/sheets/oauth/callback`을 별도로 등록합니다.
 
 Google OAuth는 `https://www.googleapis.com/auth/spreadsheets` 범위를 요청합니다. 공개 배포 시 Google 앱 검증 요건을 확인하고, 테스트 모드에서는 허용한 테스트 사용자로 검증합니다. 클라이언트 비밀값은 웹 코드나 채팅에 넣지 않습니다.
 
 준비된 저장 파일: https://docs.google.com/spreadsheets/d/1c9ydHc0IHNs2d7810J0eacj5TLS1Qwv8KuXf-A_liZY/edit
 
 - 고객 관리·계약 관리·자동차보험·카드수납·일정·상담의 5개 시트를 만들었습니다. 현재는 빈 양식입니다.
-- 위 파일은 현재 사용자가 지정한 대상입니다. 다른 사용자에게는 **파일 사본**을 만들게 하고, 각자 자신의 편집 가능한 파일을 연결합니다. 모든 사용자를 위 파일로 자동 연결하지 않습니다.
+- 위 파일은 기존에 지정한 참고 대상입니다. 일반 사용자는 OAuth 승인 후 각자의 빈 파일을 자동 생성합니다. 모든 사용자를 위 파일로 연결하지 않습니다.
 - 연결 링크에 `?storage=sheets&sheet=<파일ID>`를 붙이면 연결 후 해당 파일 링크를 미리 채웁니다. 파일 편집 권한은 사용자 본인의 Google 계정 권한을 따릅니다.
-- Google 계정 로그인·권한 허용 후 저장할 시트 링크를 한 번 확인합니다. 사용자마다 API 키를 발급할 필요는 없습니다.
+- Google 권한 승인 후 본인 계정에 빈 고객관리 파일과 5개 시트를 자동 생성합니다. 사본 만들기·링크 입력·개인 API 키 발급은 필요 없습니다. 명시적인 sheet 링크가 있으면 기존 파일을 검증해 연결합니다.
 - 열 제목과 순서를 검증하고 헤더가 달라지면 쓰기를 중단합니다. 숨겨진 `_id`, `_updated`, `_deleted` 및 내부 상세정보 열은 삭제하지 않습니다.
 - 날짜는 Google 날짜 일련번호로 저장하고 한국 시간대에서 읽습니다. 텍스트는 `RAW`로 저장해 주민번호·카드번호의 앞자리 0을 유지하고 수식으로 실행하지 않습니다.
 - 체크리스트·알릴의무·상담일지의 상세 구조는 내부 텍스트 열에 저장합니다. 시트의 한 셀 제한을 고려해 내부 상세정보는 한 항목당 45,000자 이내로 제한합니다.
 - 수정 충돌은 실제 행 내용의 SHA-256으로 감지합니다. Google Sheets API의 원자적 조건부 수정 기능이 아니므로 정확히 동시 쓰기는 완전 차단하지 못합니다.
 - 시트에서 직접 기존 값은 수정할 수 있지만, 웹용 새 항목 등록은 화면에서 합니다. ID 없는 수동 입력 행은 고객관리 화면에 불러오지 않습니다.
 - 삭제는 `_deleted=true`로 표시하는 복구 가능한 방식입니다. 원본 행은 남고 웹 목록에서 제외됩니다. 자동으로 전체 행을 지우지 않습니다.
-- Google 연결 해제는 이 브라우저의 세션 쿠키를 삭제합니다. Google 계정의 앱 권한 철회는 계정 연결 설정에서 별도로 할 수 있습니다.
+- Google 연결 해제는 회원 연결을 비우고 쿠키를 삭제합니다. 파일은 보존합니다.
 
 현재 Google OAuth 환경변수가 없어 실제 로그인·저장 검증은 운영자 설정 후 수행해야 합니다. 시트 작성에 사용한 ChatGPT Google Drive 연결과 웹 서비스의 OAuth 앱은 별도입니다.
 

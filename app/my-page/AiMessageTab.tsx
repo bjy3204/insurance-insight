@@ -291,7 +291,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
       <label className="text-xs text-gray-400 block mb-1.5">
         자동차보험 갱신일
       </label>
-      <div data-ui-field-wrapper="true" className="flex items-center gap-2 h-11 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus-within:border-blue-400">
+      <div data-ui-field-wrapper="true" className="flex items-center gap-2 h-11 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus-within:border-blue-600">
         <input data-ui-field="true" aria-label="갱신 월" inputMode="numeric" disabled={generating} value={extraInfo.split("-")[0] || ""} onChange={event => { const value = event.target.value.replace(/\D/g, "").slice(0, 2); setExtraInfo(value + "-" + (extraInfo.split("-")[1] || "")); if (value.length === 2) event.currentTarget.parentElement?.querySelector<HTMLInputElement>('[aria-label="갱신 일"]')?.focus(); }} placeholder="MM" className="w-10 bg-transparent text-center outline-none" /><span>월</span>
         <ClearableSearchInput onClear={() => setExtraInfo((extraInfo.split("-")[0] || "") + "-" + "".replace(/\D/g, "").slice(0, 2))} data-ui-field="true" aria-label="갱신 일" inputMode="numeric" disabled={generating} value={extraInfo.split("-")[1] || ""} onChange={event => setExtraInfo((extraInfo.split("-")[0] || "") + "-" + event.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="DD" className="w-10 bg-transparent text-center outline-none" /><span>일</span>
       </div>
@@ -302,13 +302,13 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
 {generationNotice && <p role="status" className="text-sm text-gray-500">{generationNotice}</p>}
       <div className="flex min-h-0 flex-1 flex-col">
         <label htmlFor="generated-message-editor" className="block text-base font-bold text-gray-900 mb-3">생성된 메시지</label>
-        <textarea data-ui-field="true" id="generated-message-editor" value={generatedMessage} disabled={!messageCreated || generating} rows={10} placeholder="메시지를 생성한 뒤 여기에서 내용을 수정하세요." onChange={event => { setGeneratedMessage(event.target.value); setCopied(false); }} className="block w-full min-h-0 flex-1 resize-none overflow-y-auto rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-900 leading-7 outline-none focus:border-blue-400 disabled:bg-gray-50" />
+        <textarea data-ui-field="true" id="generated-message-editor" value={generatedMessage} disabled={!messageCreated || generating} rows={10} placeholder="메시지를 생성한 뒤 여기에서 내용을 수정하세요." onChange={event => { setGeneratedMessage(event.target.value); setCopied(false); }} className="block w-full min-h-0 flex-1 resize-none overflow-y-auto rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-900 leading-7 outline-none focus:border-blue-600 disabled:bg-gray-50" />
       </div>
 {/* 생성 버튼 */}
 <button
   data-message-action="generate" onClick={handleGenerate}
   disabled={generating}
-  className="mt-auto shrink-0 w-full h-12 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition bg-gray-900 text-white hover:bg-gray-800 shadow-sm cursor-pointer disabled:cursor-default"
+  className="mt-auto shrink-0 w-full h-12 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition bg-blue-600 text-white hover:bg-blue-700 shadow-sm cursor-pointer disabled:cursor-default"
 >
   {generating ? (
     <>
@@ -332,8 +332,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
 
     {/* 오른쪽: 대화창 미리보기 */}
     <div className="personal-grid flex flex-col items-center w-full min-w-0 h-[640px] xl:h-auto xl:min-h-0 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-      <h3 data-personal-card-title="true" className="w-full mb-3 text-base font-bold text-gray-900">미리보기</h3>
-      <div className="relative flex min-h-0 flex-1 w-full max-w-[350px] mx-auto">
+      <div className={`${styles.messagePreview} relative flex min-h-0 flex-1 w-full max-w-[350px] mx-auto`}>
         <div className="flex flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm">
           <div className="flex flex-col flex-1 rounded-2xl overflow-hidden">
             <div className="flex flex-col flex-1 min-h-0 min-w-0 bg-[#b2c7d9]">
@@ -377,7 +376,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
           data-message-action="copy" data-copied={copied ? "true" : "false"} onClick={handleCopy}
           disabled={!generatedMessage.trim() || generating}
           className={`mt-4 shrink-0 w-full h-12 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm cursor-pointer disabled:cursor-default disabled:opacity-40 ${
-            copied ? "bg-green-100 text-green-700" : "bg-gray-900 text-white hover:bg-gray-800"
+            copied ? "bg-green-100 text-green-700" : "bg-blue-600 text-white hover:bg-blue-700"
           }`}
         >
           {copied ? <><Check className="w-5 h-5" /> 복사됨</> : <><Copy className="w-5 h-5" /> 메시지 복사</>}

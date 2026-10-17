@@ -1108,7 +1108,7 @@ function SelectButton({
       onClick={onClick}
       className={`
         rounded-2xl border p-4 text-center font-bold cursor-default
-        ${active ? "border-blue-500 bg-white text-gray-900 shadow-sm" : "border-gray-200 bg-white text-gray-700"}
+        ${active ? "border-blue-600 bg-white text-gray-900 shadow-sm" : "border-gray-200 bg-white text-gray-700"}
       `}
     >
       {children}

@@ -28,7 +28,7 @@ export function disclosureMemo(serialized?:string):string {
 export type MedicalHistoryRow={date:string;name:string;detail:string;hospital:string;note:string};
 export type MedicalHistories={hospitalizations:MedicalHistoryRow[];surgeries:MedicalHistoryRow[]};
 export const emptyMedicalHistoryRow=():MedicalHistoryRow=>({date:"",name:"",detail:"",hospital:"",note:""});
-export const emptyMedicalHistories=():MedicalHistories=>({hospitalizations:Array.from({length:3},emptyMedicalHistoryRow),surgeries:Array.from({length:3},emptyMedicalHistoryRow)});
+export const emptyMedicalHistories=():MedicalHistories=>({hospitalizations:Array.from({length:5},emptyMedicalHistoryRow),surgeries:Array.from({length:5},emptyMedicalHistoryRow)});
 export function parseMedicalHistories(serialized?:string):MedicalHistories{
   if(!serialized)return emptyMedicalHistories();
   const value=JSON.parse(serialized),result=emptyMedicalHistories();
@@ -44,7 +44,7 @@ export function parseMedicalHistories(serialized?:string):MedicalHistories{
       }
       return next;
     });
-    while(result[key].length<3)result[key].push(emptyMedicalHistoryRow());
+    while(result[key].length<5)result[key].push(emptyMedicalHistoryRow());
   }
   return result;
 }

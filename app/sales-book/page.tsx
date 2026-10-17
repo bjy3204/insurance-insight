@@ -79,7 +79,7 @@ const pagedCategories = filteredCategories.slice(
     items-center
     gap-3
     focus-within:ring-2 focus-within:ring-blue-500/20
-    focus-within:border-blue-500
+    focus-within:border-blue-600
     transition
   "
 >

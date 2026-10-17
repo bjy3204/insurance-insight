@@ -21,7 +21,7 @@ export async function GET(request:NextRequest){try{
   const name=(request.nextUrl.searchParams.get("name")||"").trim(),birth=(request.nextUrl.searchParams.get("birth")||"").replace(/\D/g,"");
   if((!name&&!birth)||name.length>60||birth.length>7)return json({customers:[]});
   const customers:{id:string;name:string;birth:string}[]=[];
-  for(let from=0;;from+=500){const {data,error}=await db.from("customer_records").select("id,encrypted_payload,encryption_key_id").eq("user_id",user.id).order("id").range(from,from+499);if(error)throw error;
+  for(let from=0;;from+=500){const {data,error}=await db.from("customer_records").select("id,encrypted_payload,encryption_key_id").eq("user_id",user.id).eq("payload_version",1).order("id").range(from,from+499);if(error)throw error;
    for(const row of data||[]){if(row.encryption_key_id!=="v1")throw new Error("key");const c=openCustomerData(row.encrypted_payload,user.id,"customer",row.id);if((!name||c.name?.includes(name))&&(!birth||c.birth?.replace(/\D/g,"").startsWith(birth)))customers.push({id:row.id,name:c.name,birth:c.birth.slice(0,6)});}
    if(!data||data.length<500)break;
   }return json({customers:customers.slice(0,30)});

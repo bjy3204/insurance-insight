@@ -1,101 +1,14 @@
 "use client";
-
-import ClearableSearchInput from "@/app/components/ClearableSearchInput";
-import AuthNotice from "@/components/AuthNotice";
-import { authErrorMessage } from "@/lib/auth/error-message";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-
-export default function ResetPasswordPage() {
-  const router = useRouter();
-
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
-
-  const [loading, setLoading] = useState(false);
-  const [notice, setNotice] = useState("");
-  const [done, setDone] = useState(false);
-
-  const handleResetPassword = async () => {
-    if (!password.trim()) {
-      setNotice("새 비밀번호를 입력해주세요.");
-      return;
-    }
-
-    if (password.length < 6) {
-      setNotice("비밀번호는 6자 이상 입력해주세요.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setNotice("비밀번호가 일치하지 않습니다.");
-      return;
-    }
-
-    setLoading(true);
-
-    const { error } = await supabase.auth.updateUser({
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      setNotice(authErrorMessage(error, "비밀번호 변경에 실패했습니다."));
-      return;
-    }
-
-    setNotice("비밀번호가 변경되었습니다.");
-
-    setDone(true);
-  };
-
-  return (
-    <main className="min-h-screen bg-gray-100 flex items-center justify-center p-5">
-      <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-xl">
-        <h1 className="text-2xl font-black text-center text-gray-900">
-          비밀번호 재설정
-        </h1>
-
-        <p className="mt-2 text-sm text-center text-gray-500">
-          새 비밀번호를 입력해주세요.
-        </p>
-
-        <div className="mt-6 space-y-3">
-          <ClearableSearchInput onClear={() => setPassword("")} data-ui-field="true"
-            type="password"
-            placeholder="새 비밀번호"
-            value={password}
-            onChange={(e) =>
-              setPassword(e.target.value)
-            }
-            className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
-          />
-
-          <ClearableSearchInput onClear={() => setConfirmPassword("")} data-ui-field="true"
-            type="password"
-            placeholder="새 비밀번호 확인"
-            value={confirmPassword}
-            onChange={(e) =>
-              setConfirmPassword(e.target.value)
-            }
-            className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
-          />
-
-          <button
-            onClick={handleResetPassword}
-            disabled={loading}
-            className="h-11 w-full rounded-xl bg-gray-900 text-sm font-bold text-white hover:bg-gray-800 disabled:opacity-50"
-          >
-            {loading
-              ? "변경 중..."
-              : "비밀번호 변경하기"}
-          </button>
-        </div>
-      </div>
-      {notice && <AuthNotice message={notice} onClose={() => { setNotice(""); if (done) router.push("/"); }} />}
-    </main>
-  );
+import {useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {LockKeyhole,Home,Eye,EyeOff} from 'lucide-react';
+import {supabase} from '@/lib/supabase';
+import {authErrorMessage} from '@/lib/auth/error-message';
+import styles from '@/app/notion-crm/IdleLock.module.css';
+export default function ResetPasswordPage(){
+ const router=useRouter();
+ const [showPassword,setShowPassword]=useState(false),[showConfirm,setShowConfirm]=useState(false);
+ const [password,setPassword]=useState(''),[confirmPassword,setConfirmPassword]=useState(''),[loading,setLoading]=useState(false),[notice,setNotice]=useState(''),[done,setDone]=useState(false);
+ const reset=async()=>{if(loading)return;setNotice('');if(password.length<6){setNotice('비밀번호는 6자 이상 입력해 주세요');return;}if(password!==confirmPassword){setNotice('비밀번호가 일치하지 않습니다');return;}setLoading(true);try{const {error}=await supabase.auth.updateUser({password});if(error){setNotice(authErrorMessage(error,'비밀번호를 변경하지 못했습니다').replace(/[.。]+$/,''));return;}setPassword('');setConfirmPassword('');setDone(true);router.replace("/");}catch{setNotice('연결 상태를 확인한 뒤 다시 시도해 주세요');}finally{setLoading(false);}};
+ return <main className={styles.page}><a className={styles.home} href="/" aria-label="홈"><Home size={24}/></a><div className={styles.content}><LockKeyhole size={40} aria-hidden="true"/><h1>{done?'비밀번호가 변경되었습니다':'비밀번호 재설정'}</h1><p>{done?'새 비밀번호로 고객 관리 노트를 이용해 주세요':'새 비밀번호를 입력해 주세요'}</p>{done?<form onSubmit={event=>{event.preventDefault();router.push('/');}}><button type="submit">보험인사이트로 이동</button></form>:<form onSubmit={event=>{event.preventDefault();void reset();}}><label htmlFor="new-password">새 비밀번호</label><div className={styles.passwordField}><input id="new-password" type={showPassword?"text":"password"} autoComplete="new-password" required minLength={6} maxLength={512} autoFocus disabled={loading} value={password} onChange={event=>setPassword(event.target.value)}/><button type="button" className={styles.eyeButton} aria-label={showPassword?"새 비밀번호 숨기기":"새 비밀번호 보기"} aria-pressed={showPassword} onClick={()=>setShowPassword(value=>!value)}>{showPassword?<Eye size={20}/>:<EyeOff size={20}/>}</button></div><label htmlFor="confirm-password" style={{marginTop:16}}>새 비밀번호 확인</label><div className={styles.passwordField}><input id="confirm-password" type={showConfirm?"text":"password"} autoComplete="new-password" required minLength={6} maxLength={512} disabled={loading} value={confirmPassword} onChange={event=>setConfirmPassword(event.target.value)}/><button type="button" className={styles.eyeButton} aria-label={showConfirm?"비밀번호 확인 숨기기":"비밀번호 확인 보기"} aria-pressed={showConfirm} onClick={()=>setShowConfirm(value=>!value)}>{showConfirm?<Eye size={20}/>:<EyeOff size={20}/>}</button></div>{notice&&<p role="alert" className={styles.error}>{notice}</p>}<button type="submit" disabled={loading||!password||!confirmPassword}>{loading?'변경 중':'비밀번호 변경하기'}</button></form>}</div></main>;
 }

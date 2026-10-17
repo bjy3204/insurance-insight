@@ -2,7 +2,7 @@
 .actions button:disabled { opacity:.45; cursor:default; }
 .actions button { transition:background-color .15s,border-color .15s,color .15s; }
 .actions button:first-child:hover:not(:disabled) { background:#f1f5f9; border-color:#cbd5e1; }
-.actions button:last-child:hover:not(:disabled) { background:#1d4ed8; }
+.actions button:last-child:hover:not(:disabled) { background:#195DFF; }
 @media (min-width:1101px) {
   .header .actions { width:340px; flex-shrink:0; }
   .actions button { flex:1; min-width:0; }

@@ -13,7 +13,7 @@
 .unit { font-size:16px; margin-left:2px; }
 .change { font-size:17px; font-variant-numeric:tabular-nums; }
 .changeArrow { font-size:18px; margin-right:4px; vertical-align:baseline; }
-.up { color:#ff245b; } .down { color:#0864ff; } .same { color:#95a1b3; }
+.up { color:#ff245b; } .down { color:#195DFF; } .same { color:#95a1b3; }
 .empty { grid-column:1/-1; background:white; border:1px solid #e2e6ed; border-radius:16px; color:#8e9aad; padding:26px; text-align:center; font-size:13px; }
 @media(max-width:767px) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .tile strong { font-size:22px; } .tile { padding:18px 12px; } .heading { align-items:baseline; gap:8px; } }
 

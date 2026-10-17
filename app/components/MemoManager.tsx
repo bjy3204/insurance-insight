@@ -387,7 +387,7 @@ export default function MemoManager({ open, onClose }: Props) {
                   value={memoSearch}
                   onChange={(e) => setMemoSearch(e.target.value)}
                   placeholder="메모 검색" aria-label="메모 검색"
-                  className="block w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm text-gray-900 caret-gray-900 cursor-text outline-none focus:border-blue-400"
+                  className="block w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm text-gray-900 caret-gray-900 cursor-text outline-none focus:border-blue-600"
                 />
               </div>
 
@@ -479,7 +479,7 @@ export default function MemoManager({ open, onClose }: Props) {
                                   }}
                                   className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${
                                     memo.pinned
-                                      ? "bg-blue-100 border-blue-200 text-blue-700 hover:bg-blue-200 hover:border-blue-300"
+                                      ? "bg-blue-100 border-blue-200 text-blue-700 hover:bg-blue-200 hover:border-blue-600"
                                       : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"
                                   }`}
                                 >

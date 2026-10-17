@@ -10,5 +10,5 @@
 @media(max-width:767px) { .track { animation-duration:12s; } }
 @media(prefers-reduced-motion:reduce) { .track { animation:none; }.viewport { overflow-x:auto; scrollbar-width:none; }.viewport::-webkit-scrollbar { display:none; }.group[aria-hidden="true"] { display:none; } }
 button.item { border:0; border-radius:4px; background:transparent; color:inherit; cursor:pointer; text-align:left; }
-button.item:hover { color:#2563eb; }
+button.item:hover { color:#195DFF; }
 button.item:focus-visible { outline:2px solid #93b5fa; outline-offset:-2px; }

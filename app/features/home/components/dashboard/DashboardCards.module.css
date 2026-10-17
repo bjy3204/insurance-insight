@@ -4,10 +4,10 @@
 .card,.card *, .dialog,.dialog *, .reminderPanel,.reminderPanel * { cursor:default; }
 .card button,.card button *, .dialog button,.dialog button *, .reminderPanel button,.reminderPanel button * { cursor:pointer; }
 .card button:disabled,.card button:disabled *, .dialog button:disabled,.dialog button:disabled * { cursor:default; }
-.card button:focus-visible, .dialog button:focus-visible, .marketItem:focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
+.card button:focus-visible, .dialog button:focus-visible, .marketItem:focus-visible { outline:2px solid #195DFF; outline-offset:2px; }
 .heading { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:68px; flex-shrink:0; padding:14px 16px; }
 .heading h2 { display:flex; align-items:center; gap:8px; font-size:18px; font-weight:750; white-space:nowrap; }
-.heading h2 svg { color:#0864ff; width:25px; height:25px; flex-shrink:0; }
+.heading h2 svg { color:#195DFF; width:25px; height:25px; flex-shrink:0; }
 .actions { display:flex; gap:3px; align-items:center; }
 .iconButton { display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:9px; color:#42618d; flex-shrink:0; }
 .iconButton:hover { background:#edf5ff; }
@@ -24,7 +24,7 @@
 .weatherTop::after { content:''; position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg,#07142666,transparent 85%); opacity:var(--night-weight,0); transition:opacity 15s linear; pointer-events:none; }
 .location { display:flex; align-items:center; gap:3px; min-width:0; }
 .location button { display:flex; align-items:center; gap:3px; font-size:14px; color:#29486d; }
-.location svg { color:#0864ff; width:16px; height:16px; }
+.location svg { color:#195DFF; width:16px; height:16px; }
 .locationLabel { max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .weatherTitle { display:flex; align-items:center; gap:10px; min-width:0; }
 .weatherMain { display:flex; align-items:center; gap:20px; padding:5px 25px; }
@@ -45,7 +45,7 @@
 .forecastDate { font-size:12.5px; font-weight:500; white-space:nowrap; letter-spacing:0.5px; }
 .marketGrid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:repeat(2,minmax(0,1fr)); flex:1; min-height:0; gap:8px; padding:3px 10px 16px; }
 .marketItem { min-width:0; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:11px; border:1px solid #e9eff8; border-radius:13px; background:linear-gradient(#fcfdff,#f8fbff); padding:10px 4px; text-decoration:none; transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease; }
-.marketItem:hover { transform:translateY(-3px) scale(1.025); box-shadow:0 7px 16px #176bff12; border-color:#d0e3fc; }
+.marketItem:hover { transform:translateY(-3px) scale(1.025); box-shadow:0 7px 16px #195DFF12; border-color:#d0e3fc; }
 .marketLabel { display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap; font-size:14px; color:#3f5780; line-height:1.3; min-height:37px; }
 .marketLabel span { text-align:center; }
 .marketLabel svg { width:19px; height:19px; color:#f5224b; flex-shrink:0; }
@@ -55,7 +55,7 @@
 .change { margin-top:-5px; display:flex; align-items:center; justify-content:center; gap:3px; font-size:14px; }
 .change svg { width:12px; height:12px; }
 .changeNumber { font-variant-numeric:tabular-nums; }
-.up { color:#f5224b; } .down { color:#0864ff; } .same { color:#7186aa; }
+.up { color:#f5224b; } .down { color:#195DFF; } .same { color:#7186aa; }
 .marketTime { font-size:14px; line-height:1.5; color:#7186aa; text-align:right; }
 .marketTime span { display:block; white-space:nowrap; }
 .visuallyHidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
@@ -69,11 +69,11 @@
 .calendarPageLink:hover { background:transparent; }
 .marketPageLink { width:25px; height:28px; padding:0; border:0; border-radius:7px; display:grid; place-items:center; background:transparent; cursor:pointer; transition:background-color .2s ease; }
 .marketPageLink:hover { background:transparent; }
-.marketPageLink:focus-visible { outline:2px solid #0864ff; outline-offset:3px; }
+.marketPageLink:focus-visible { outline:2px solid #195DFF; outline-offset:3px; }
 .day:hover { background:#edf5ff; }
-.sunday { color:#fb2548; } .saturday { color:#0864ff; } .outside { opacity:.35; }
-.selected,.selected:hover { background:#0864ff; color:white; }
-.today:not(.selected) { background:#0864ff; color:#fff; }
+.sunday { color:#fb2548; } .saturday { color:#195DFF; } .outside { opacity:.35; }
+.selected,.selected:hover { background:#195DFF; color:white; }
+.today:not(.selected) { background:#195DFF; color:#fff; }
 .dots { position:absolute; bottom:2px; left:0; right:0; display:flex; justify-content:center; gap:2px; }
 .dot { width:4px; height:4px; border-radius:50%; }
 .scroll { overflow-y:auto; scrollbar-width:thin; scrollbar-color:#b9cee9 #f1f6fc; }
@@ -87,7 +87,7 @@
 .eventPlace { max-width:30%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#7186aa; font-size:14px; }
 .eventActions { display:flex; gap:3px; flex-shrink:0; }
 .eventActions button { display:flex; align-items:center; justify-content:center; width:28px; height:30px; color:#5877a5; border-radius:7px; }
-.eventActions button:hover { background:#dbeaff; color:#0864ff; }
+.eventActions button:hover { background:#dbeaff; color:#195DFF; }
 .eventActions button:last-child:hover { color:#e33c58; background:#ffe8ed; }
 .eventActions svg { width:17px; height:17px; }
 .empty { display:flex; height:100%; align-items:center; justify-content:center; font-size:14px; color:#7186aa; text-align:center; }
@@ -100,7 +100,7 @@
 .dialog textarea { min-height:65px; resize:vertical; }
 .formRow { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .formActions { display:flex; gap:8px; justify-content:flex-end; margin-top:20px; }
-.primary { background:#0864ff; color:white; border-radius:9px; padding:9px 17px; font-size:14px; font-weight:650; }
+.primary { background:#195DFF; color:white; border-radius:9px; padding:9px 17px; font-size:14px; font-weight:650; }
 .primary:disabled { opacity:.5; }
 .secondary { background:#f0f5fb; color:#42618d; border-radius:9px; padding:9px 14px; font-size:14px; }
 .danger { color:#e33c58; margin-right:auto; font-size:14px; }
@@ -110,12 +110,12 @@
 .reminderChoices { margin:22px 0 16px; border:0; }
 .reminderChoices legend { font-size:14px; font-weight:650; margin-bottom:8px; }
 .dialog .radioLabel { display:flex; align-items:center; gap:9px; margin:0; padding:10px 5px; font-size:14px; }
-.dialog .radioLabel input { display:inline-block; width:16px; height:16px; margin:0; padding:0; accent-color:#0864ff; }
+.dialog .radioLabel input { display:inline-block; width:16px; height:16px; margin:0; padding:0; accent-color:#195DFF; }
 .reminderEventTitle { font-size:16px; font-weight:650; overflow-wrap:anywhere; }
 .reminderOverlay { position:fixed; inset:0; z-index:3500; cursor:default; }
 .reminderPanel { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:360px; max-width:calc(100vw - 32px); max-height:min(340px,85dvh); display:flex; flex-direction:column; padding:20px; border:1px solid #d9e7fa; border-radius:17px; background:#fff; box-shadow:0 14px 50px #16375a30; color:#162442; font-size:14px; }
 .reminderHeader { display:flex; align-items:center; gap:8px; font-size:18px; font-weight:750; margin-bottom:12px; }
-.reminderHeader svg { width:22px; height:22px; color:#0864ff; }
+.reminderHeader svg { width:22px; height:22px; color:#195DFF; }
 .reminderList { flex:1; min-height:0; max-height:200px; }
 .reminderItem { padding:12px 0; border-bottom:1px solid #edf2fa; }
 .reminderItem strong { font-size:16px; overflow-wrap:anywhere; }
@@ -126,7 +126,7 @@
 @media(prefers-reduced-motion:reduce) { .weatherSceneEnter { animation:none; } .weatherLayer,.weatherTop,.weatherTop::before,.weatherTop::after,.weatherTop .location button,.weatherTop .location svg,.weatherTop .iconButton { transition:none; } .marketItem { transition:none; } .marketItem:hover { transform:none; } }
 
 .heading.calendarHeading { display:grid; grid-template-columns:minmax(25px,1fr) auto minmax(25px,1fr); }
-.calendarHeading > .calendarPageLink { color:#0864ff; }
+.calendarHeading > .calendarPageLink { color:#195DFF; }
 .calendarHeading > .calendarPageLink svg { width:25px; height:25px; }
 .calendarMonthNavigation { display:flex; align-items:center; justify-content:center; gap:8px; }
 .calendarMonthNavigation button { cursor:pointer; }

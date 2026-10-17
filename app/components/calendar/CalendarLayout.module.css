@@ -14,20 +14,59 @@
 .dayContent > :first-child { flex-shrink:0; }
 .dayContent > :nth-child(2) { min-height:0; overflow:hidden; }
 .dayEvent { display:flex; align-items:flex-start; gap:3px; width:100%; text-align:left; padding:4px 3px 4px 6px; border-radius:6px; font-size:14px; line-height:19px; cursor:pointer; }
+@media(min-width:768px){
+ .dayContent>.dayEvent,.dayContent .dayEvent{border:0!important;box-shadow:none!important}
+ .dayContent>:first-child{margin-bottom:2px}
+ .dayContent .dayAdd[data-icon-only=true][data-icon-only=true][data-icon-only=true][data-icon-only=true]{width:28px!important;min-width:28px!important;max-width:28px!important;height:28px!important;min-height:28px!important;max-height:28px!important;padding:0!important}
+}
 .dayEvent > span:first-child { flex-shrink:0; }.dayEvent > span:last-child { min-width:0; overflow:hidden; text-overflow:clip; white-space:pre; letter-spacing:normal; word-spacing:normal; }
 .customerIcons { flex-shrink:0; align-self:flex-end; margin-top:auto; padding-top:4px; font-size:17px; line-height:24px; text-align:right; }
 .scheduleLine { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:400; white-space:nowrap; min-width:0; }
 .scheduleTitle { font-weight:400; min-width:0; overflow:hidden; text-overflow:clip; flex:1; white-space:pre; }.scheduleLine > span:not(:first-child) { color:#718096; font-size:14px; }.schedulePlace { max-width:30%; overflow:hidden; text-overflow:ellipsis; }
 .scheduleActions { display:flex; align-items:center; gap:4px; flex-shrink:0; margin-left:10px; }
 .scheduleActions button { display:grid; place-items:center; width:25px; height:26px; padding:0; border:0; border-radius:5px; color:#93a0b2; background:transparent; cursor:pointer; }
-.scheduleActions button:hover { color:#2563eb; background:#eff6ff; }.scheduleActions button:last-child:hover { color:#ef4444; background:#fff1f2; }.scheduleActions button:disabled { opacity:.4; cursor:default; }
+.scheduleActions button:hover { color:#195DFF; background:#eff6ff; }.scheduleActions button:last-child:hover { color:#ef4444; background:#fff1f2; }.scheduleActions button:disabled { opacity:.4; cursor:default; }
 .scheduleRow { transition:background-color .15s,border-color .15s; }
+.scheduleRow{box-sizing:border-box;height:44px;min-height:44px;padding:0 12px!important}
 .scheduleRow:hover { background:#f0f6ff; border-color:#c9dbfa; }
 .scheduleRow > button { cursor:pointer; }
 .scheduleRow > button:focus-visible { outline:2px solid #93b5fa; outline-offset:3px; border-radius:4px; }
 .dayAdd { display:grid; place-items:center; width:26px; height:26px; flex-shrink:0; padding:0; border:0; background:transparent; color:#9aa8ba; opacity:0; cursor:pointer; transition:opacity .15s,color .15s; }
 .dayContent:hover .dayAdd,.dayAdd:focus-visible { opacity:1; }
-.dayAdd:hover { color:#2563eb; }
+.dayAdd:hover { color:#195DFF; }
 .dayAdd:focus-visible { outline:2px solid #bfdbfe; outline-offset:1px; border-radius:4px; }
 
 @media(max-width:767px){.layout{display:flex;flex-direction:column}.calendar,.sidebar{width:100%}.calendar{order:1}.sidebar{order:2}.sidebar .schedules{display:none}}
+.stickerView>div{margin:0;padding:0}.stickerView .layout{display:block}.stickerView .calendar{padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important}.stickerView .sidebar{display:none}.stickerView .customerIcons{display:none}.stickerView .scheduleActions{gap:0;margin-left:0}.stickerView .scheduleRow{padding-inline:8px!important}.stickerView .scheduleLine,.stickerView .scheduleLine>span:not(:first-child){font-size:13px}
+
+.stickerView,.stickerView>div,.stickerView .calendar,.stickerView :global(.bg-white){background:transparent!important}
+
+.stickerView [data-calendar-month-title="true"]{font-size:15px!important}
+.stickerView [data-calendar-weekday="true"],.stickerView [data-calendar-date="true"]{font-size:14px!important}
+
+.stickerView [data-calendar-month-navigation="true"]{gap:2px}
+
+.stickerView [data-calendar-month-row="true"]{position:absolute;top:12px;left:0;right:0;height:28px;min-height:28px;margin:0;pointer-events:none}
+.stickerView [data-calendar-month-navigation="true"]{pointer-events:auto}
+.stickerView [data-calendar-month-navigation="true"] button{width:28px;height:28px;background:transparent}
+
+.stickerView [data-calendar-date-grid="true"]{grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:auto;align-items:start}
+.stickerView [data-calendar-day-cell="true"]{box-sizing:border-box;width:100%;height:auto;min-height:0;aspect-ratio:1/1;align-self:start}
+.stickerView [data-calendar-day-cell="true"]>div:first-child{position:absolute;inset:0;height:auto}
+
+.stickerView [data-calendar-selected-list="true"]{max-height:220px;overflow-y:auto;scrollbar-width:none}
+.stickerView [data-calendar-selected-list="true"]::-webkit-scrollbar{display:none}
+.stickerView [data-calendar-selected-list="true"]>*+*{margin-top:0!important}
+.stickerView .scheduleRow{border:0!important;box-shadow:none!important;border-radius:0;background:transparent}
+
+.stickerView [data-calendar-date="true"]{transform:translateY(-3px)}
+
+.stickerView [data-calendar-selected-date="true"]{font-size:15px!important}
+
+.stickerView [data-calendar-selected-heading="true"]{height:28px;min-height:28px;margin-bottom:0}
+.stickerView [data-calendar-selected-heading="true"]>button{transform:scale(.8)}
+
+.stickerView [data-calendar-month-row="true"]{pointer-events:auto;touch-action:none;user-select:none;cursor:default}
+
+.stickerView [data-calendar-day-cell="true"][data-calendar-today="true"]{background:var(--sticker-today,#edf5ff)!important}
+.stickerView [data-calendar-day-cell="true"][data-calendar-today="true"] [data-calendar-date="true"]{background:transparent!important;border-radius:0;box-shadow:none!important}

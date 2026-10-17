@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     async function read(table: string, kind: string) {
       const result: Record<string,string>[] = [];
       for (let start = 0; ; start += 500) {
-        const { data, error } = await db.from(table).select("*").eq("user_id", user.id).order("created_at").order("id").range(start, start + 499);
+        const { data, error } = await db.from(table).select("*").eq("user_id", user.id).eq("payload_version",1).order("created_at").order("id").range(start, start + 499);
         if (error) throw new Error("storage_unavailable");
         for (const row of data || []) {
           if (row.encryption_key_id !== "v1") throw new Error("unsupported_key");

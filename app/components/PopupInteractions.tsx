@@ -45,7 +45,7 @@ export default function PopupInteractions() {
     const identify = () => {
       // Some dialogs mark the overlay with role=dialog; move the inner panel.
       document.querySelectorAll<HTMLElement>('[role="dialog"][aria-modal="true"], [role="alertdialog"]').forEach(dialog => {
-        if (dialog.matches('[data-inline-diary], [aria-label="모바일 메뉴"], [aria-label="개인공간 모바일 메뉴"]')) return;
+        if (dialog.matches('[data-inline-diary], [data-sidebar-drawer], [aria-label="모바일 메뉴"], [aria-label="개인공간 모바일 메뉴"]')) return;
         if (dialog.matches('[data-popup-frame], [data-popup-small], [data-popup-padded]')) return;
         const child = dialog.firstElementChild;
         const rect = dialog.getBoundingClientRect();

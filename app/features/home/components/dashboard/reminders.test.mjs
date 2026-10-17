@@ -76,3 +76,15 @@ test('banner is opt-in, includes enabled upcoming schedules and removes disabled
  assert.equal(utils.calendarBannerReminders([event],[{...reminder,acknowledged_at:'confirmed'}],'2026-10-01').length,0);
  assert.equal(utils.calendarBannerReminders([event],[],'2026-10-01').length,0);
 });
+
+test('main banner shows today schedules and removes checked, deleted or cleared-date entries',()=>{
+ const crm={...event,id:'crm:linked',title:'고객관리 일정'};
+ const tomorrow={...event,id:'tomorrow',date:'2026-10-02'};
+ const noDate={...event,id:'cleared',date:''};
+ const rows=[event,crm,tomorrow,noDate];
+ assert.equal(utils.todayBannerEvents(rows,{},'2026-10-01').length,2);
+ assert.equal(utils.todayBannerEvents(rows,{'event:test-event':true},'2026-10-01')[0].id,'crm:linked');
+ assert.equal(utils.todayBannerEvents(rows,{'event:test-event':true,'event:crm:linked':true},'2026-10-01').length,0);
+ assert.equal(utils.todayBannerEvents([tomorrow,noDate],{},'2026-10-01').length,0);
+ assert.equal(utils.todayBannerEvents(rows,{'event:test-event':false},'2026-10-01').length,2);
+});

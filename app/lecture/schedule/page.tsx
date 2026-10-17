@@ -121,7 +121,7 @@ const calendarDays = [
   const getCategoryColors = (category: string) => {
   switch (category) {
     case "실비":
-      return { bg: "#eff6ff", text: "#1d4ed8", hover: "#dbeafe" };
+      return { bg: "#eff6ff", text: "#195DFF", hover: "#dbeafe" };
     case "자동차":
       return { bg: "#ecfeff", text: "#0e7490", hover: "#cffafe" };
     case "보장분석":
@@ -271,7 +271,7 @@ const calendarDays = [
     index === 0
       ? "#ef4444"
       : index === 6
-      ? "#3b82f6"
+      ? "#195DFF"
       : "#374151",
 }}
 className="text-sm font-bold"
@@ -326,7 +326,7 @@ const numberColor =
     : realDay === 6
     ? isOtherMonth
       ? "#bfdbfe"
-      : "#3b82f6"
+      : "#195DFF"
     : isOtherMonth
     ? "#d1d5db"
     : "#374151";

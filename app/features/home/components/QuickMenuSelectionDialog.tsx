@@ -68,7 +68,7 @@ return (<>{quickMenuSelectOpen && (
           cursor-default
           ${
             isSelected
-              ? "border-blue-400 bg-blue-50 text-blue-600"
+              ? "border-blue-600 bg-blue-50 text-blue-600"
               : "border-gray-200 text-gray-700 hover:bg-gray-50"
           }
         `}

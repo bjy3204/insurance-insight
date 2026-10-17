@@ -5,8 +5,8 @@
 .search { display:flex; align-items:center; gap:8px; flex:0 1 220px; min-width:0; height:44px; min-height:44px; padding:0 12px; border:1px solid #dce4ef; border-radius:12px; background:#fafbfd; color:#94a3b8; }
 .search svg { flex-shrink:0; }
 .search input { width:100%; min-width:0; height:100%; border:0; outline:none; background:transparent; color:#334968; font-size:14px; }
-.search:focus-within { border-color:#93b5fa; }
-.primary { height:40px; padding:0 22px; border-radius:9px; background:#2563eb; color:#fff; font-size:14px; font-weight:700; cursor:pointer; }
+.search:focus-within { border-color:#195DFF; }
+.primary { height:40px; padding:0 22px; border-radius:9px; background:#195DFF; color:#fff; font-size:14px; font-weight:700; cursor:pointer; }
 .primary:disabled { opacity:.4; cursor:default; }
 .list { display:grid; gap:10px; }
 .entry { padding:16px 18px; border:1px solid #edf0f5; border-radius:10px; background:#fafbfd; }
@@ -26,7 +26,7 @@
 .field input,.field textarea,.dateButton { width:100%; min-width:0; border:1px solid #dce4ef; border-radius:10px; background:#fff; color:#334968; font-size:14px; outline:none; }
 .field input { height:44px; padding:0 12px; }
 .field textarea { min-height:140px; padding:12px; line-height:1.7; resize:vertical; }
-.field input:focus,.field textarea:focus { border-color:#93b5fa; }
+.field input:focus,.field textarea:focus { border-color:#195DFF; }
 .dateButton { display:flex; align-items:center; gap:8px; height:44px; padding:0 12px; cursor:pointer; }
 .dateButton svg { color:#94a3b8; }
 .calendar { padding:12px; border:1px solid #dce4ef; border-radius:10px; background:#fff; }
@@ -36,10 +36,10 @@
 .days span,.days button { display:flex; align-items:center; justify-content:center; min-height:32px; }
 .days span { color:#94a3b8; }
 .days [data-weekday="0"] { color:#ef4444; }
-.days [data-weekday="6"] { color:#3b82f6; }
+.days [data-weekday="6"] { color:#195DFF; }
 .days button { border-radius:7px; cursor:pointer; }
 .days button:hover { background:#eff6ff; }
-.days button[aria-pressed="true"] { background:#2563eb; color:#fff; }
+.days button[aria-pressed="true"] { background:#195DFF; color:#fff; }
 .actions { display:flex; justify-content:flex-end; gap:8px; margin-top:20px; }
 .actions button { height:42px; padding:0 20px; border-radius:9px; font-size:14px; font-weight:700; cursor:pointer; }
 .actions button:first-child { background:#f1f5f9; color:#52627a; }
@@ -53,9 +53,9 @@
 .recordsHeader h3 { margin:0; color:#334968; font-size:16px; font-weight:700; }.recordsHeader button { display:grid; place-items:center; width:32px; height:32px; border:1px solid #dce4ef; border-radius:8px; background:white; color:#64748b; cursor:pointer; }
 .recordsFields { min-width:0; padding:0; margin:0; border:0; }.tableScroll { overflow-x:auto; border:1px solid #e1e7f1; border-radius:8px; }
 .recordsTable { width:100%; min-width:610px; table-layout:fixed; border-collapse:collapse; color:#334968; font-size:14px; }.recordsTable th { padding:11px 4px; background:#f5f8fe; text-align:center; font-weight:600; white-space:nowrap; }.recordsTable td { padding:5px; border-top:1px solid #e4eaf3; vertical-align:middle; }.recordsTable td+td,.recordsTable th+th { border-left:1px solid #e4eaf3; }
-.recordsTable input,.recordsTable textarea { display:block; width:100%; border:1px solid transparent; border-radius:5px; background:transparent; color:inherit; font:inherit; padding:5px 3px; outline:none; }.recordsTable input { height:34px; text-align:left; }.recordsTable textarea { height:34px; min-height:34px; max-height:34px; resize:none; overflow:auto; line-height:22px; white-space:pre; scrollbar-width:none; }.recordsTable textarea::-webkit-scrollbar { display:none; }.recordsTable input:focus,.recordsTable textarea:focus { border-color:#93b5fa; background:white; }
+.recordsTable input,.recordsTable textarea { display:block; width:100%; border:1px solid transparent; border-radius:5px; background:transparent; color:inherit; font:inherit; padding:5px 3px; outline:none; }.recordsTable input { height:34px; text-align:left; }.recordsTable textarea { height:34px; min-height:34px; max-height:34px; resize:none; overflow:auto; line-height:22px; white-space:pre; scrollbar-width:none; }.recordsTable textarea::-webkit-scrollbar { display:none; }.recordsTable input:focus,.recordsTable textarea:focus { border-color:#195DFF; background:white; }
 .statusCell { display:flex; align-items:center; gap:3px; }.statusCell > button[aria-haspopup] { flex:1; min-width:0; padding-inline:6px; font-size:14px; }.statusCell > button:last-child { flex-shrink:0; border:0; padding:3px; background:none; color:#9aa6b7; cursor:pointer; }
-.records .actions .primary { background:#2563eb; color:white; }.records button:disabled { opacity:.4; cursor:default; }
+.records .actions .primary { background:#195DFF; color:white; }.records button:disabled { opacity:.4; cursor:default; }
 @media(max-width:1100px) { .split { grid-template-columns:minmax(0,1fr); } }
 @media(max-width:767px) { .records,.notes { padding:12px; }.recordsTable input,.recordsTable textarea { font-size:16px; } }
 
@@ -65,7 +65,7 @@
 .entry,.tableScroll{border-radius:16px}
 
 .header h3,.recordsHeader h3{font-size:15px;color:#284261}
-.recordsHeader button[data-icon-only="true"][data-icon-only="true"][data-icon-only="true"][data-icon-only="true"]{width:40px !important;height:40px !important;min-width:40px !important;min-height:40px !important;max-width:40px !important;max-height:40px !important}
+.recordsHeader button[data-icon-only="true"][data-icon-only="true"][data-icon-only="true"][data-icon-only="true"]{width:44px !important;height:44px !important;min-width:44px !important;min-height:44px !important;max-width:44px !important;max-height:44px !important}
 .header>.primary[data-action-height="44"]{height:44px !important;min-height:44px !important}
 .recordsHeader h3,.notesTitle{font-size:15px !important;font-weight:700;color:#284261}
 .recordsTable input,.recordsTable textarea,
@@ -77,8 +77,8 @@
 .recordDelete:hover{color:#ef4444;background:#fff1f2}
 .recordsTable .recordActionHeader{padding:0 5px}
 .recordAdd{display:flex;align-items:center;justify-content:center;margin:auto;border:0 !important;background:transparent !important;color:#94a3b8;cursor:pointer;box-shadow:none !important}
-.recordAdd:not(:disabled):hover{background:transparent !important;color:#2563eb !important;box-shadow:none !important}
-.recordAdd:not(:disabled):hover svg{color:#2563eb !important}
+.recordAdd:not(:disabled):hover{background:transparent !important;color:#195DFF !important;box-shadow:none !important}
+.recordAdd:not(:disabled):hover svg{color:#195DFF !important}
 .records,.notes{padding:0;border:0;border-radius:0;background:transparent}
 .notes{padding:16px;border:1px solid #dce4ef;border-radius:16px;background:#fff}
 .records .tableScroll{border:1px solid #dce4ef;border-radius:16px;background:#fff}
@@ -108,3 +108,5 @@
 @media(max-width:767px){.field{gap:8px}.form fieldset{gap:20px}.grid{row-gap:20px}.field>label{margin:0}}
 
 @media(min-width:1101px){.split[data-match-height=true]{align-items:stretch}.split[data-match-height=true]>.records{min-height:0}.split[data-match-height=true]>.notes{box-sizing:border-box;display:flex;flex-direction:column;height:0;min-height:100%;overflow:hidden}.split[data-match-height=true]>.notes>.header{flex-shrink:0}.split[data-match-height=true]>.notes>.list{flex:1;min-height:0;overflow-y:auto;align-content:start}}
+
+.field input,.dateButton{box-sizing:border-box;height:44px;min-height:44px;border-radius:12px}.search{box-sizing:border-box;height:44px;min-height:44px;border-radius:12px}

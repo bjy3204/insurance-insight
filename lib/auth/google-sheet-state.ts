@@ -1,6 +1,6 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 
-type SheetState = { userId: string; state: string; verifier: string; expires: number; accessToken?: string; creationId?: string; refreshToken?: string; accessExpires?: number; purpose?: "calendar"; pickerFileId?: string };
+type SheetState = { returnPath?: "/my-page"|"/notion-crm"|"/personal-space"; userId: string; state: string; verifier: string; expires: number; accessToken?: string; creationId?: string; refreshToken?: string; accessExpires?: number; purpose?: "calendar"; pickerFileId?: string };
 function key() {
   const secret = process.env.GOOGLE_SHEETS_STATE_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!secret) throw new Error("Google Sheets state secret is missing");

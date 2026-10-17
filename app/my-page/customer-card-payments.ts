@@ -1,0 +1,4 @@
+export const CARD_PAYMENT_FIELDS=['명의자','보험사','결제일','카드사','카드번호','유효기간'] as const;
+export type CardPayment=Record<(typeof CARD_PAYMENT_FIELDS)[number],string>&{__id:string;__edited:string};
+export const emptyCardPayment=():CardPayment=>Object.fromEntries([...CARD_PAYMENT_FIELDS,'__id','__edited'].map(key=>[key,''])) as CardPayment;
+export function parseCardPayments(raw:string):CardPayment[]{let list:unknown;try{list=JSON.parse(raw);}catch{throw Error('카드수납 정보를 확인해 주세요');}if(!Array.isArray(list)||list.length<1||list.length>100)throw Error('카드수납 정보를 확인해 주세요');return list.map(item=>{if(!item||typeof item!=='object')throw Error('카드수납 정보를 확인해 주세요');const next=emptyCardPayment();for(const key of [...CARD_PAYMENT_FIELDS,'__id','__edited'] as const){if(item[key]!==undefined&&typeof item[key]!=='string')throw Error('카드수납 정보를 확인해 주세요');next[key]=item[key]||'';}return next;});}

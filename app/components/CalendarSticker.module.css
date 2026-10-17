@@ -1,0 +1,29 @@
+.sticker{position:fixed;z-index:1400;display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden;border:1px solid #dce4ef;border-radius:16px;background:#fff;box-shadow:0 8px 30px #24395720;color:#284261}
+.header{display:flex;align-items:center;gap:8px;flex:0 0 48px;padding:0 8px 0 14px;border-bottom:1px solid #e5ebf4;cursor:move;touch-action:none;user-select:none}.header>svg{color:#195dff;flex-shrink:0}.header h2{flex:1;margin:0;font-size:14px;font-weight:700}.header button{display:grid;place-items:center;width:32px;height:36px;flex-shrink:0;padding:0;border:0;background:transparent;color:#94a3b8;cursor:pointer}.header button:hover{color:#195dff}
+.content{flex:1;min-height:0;overflow:auto;padding:12px 12px 20px;scrollbar-width:none}.content::-webkit-scrollbar{display:none}.loading{padding:24px;font-size:13px;color:#8191a7;text-align:center}
+.resize{position:absolute;right:2px;bottom:2px;display:grid;place-items:center;width:20px;height:20px;padding:0;border:0;background:transparent;color:#94a3b8;cursor:se-resize;touch-action:none}
+.edge{position:fixed;z-index:1400;display:grid;place-items:center;width:36px;height:44px;padding:0;border:1px solid #dce4ef;background:#fff;color:#195dff;box-shadow:0 3px 12px #24395718;cursor:pointer}.left{left:0;border-radius:0 12px 12px 0}.right{right:0;border-radius:12px 0 0 12px}.sticker button:focus-visible,.edge:focus-visible{outline:2px solid #195dff;outline-offset:-2px}
+
+.sticker{border-radius:12px;background:color-mix(in srgb,var(--sticker-color,#fff) calc(var(--sticker-opacity,1)*100%),transparent);box-shadow:0 12px 32px #1b1f3514,0 2px 5px #1b1f3508}
+.header{flex-basis:40px;border-bottom-color:#23252810}.header button{width:28px;height:28px}.header button[aria-pressed=true]{color:#195dff}
+.settings{padding:8px 3px;color:#56636f;font-size:14px}.settingsHeading{display:flex;align-items:center;gap:8px;margin-bottom:22px}.settingsHeading button{display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;background:transparent;color:inherit;cursor:pointer}.settings p{margin:0 0 12px;font-weight:600}.palette{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}.palette button{display:grid;place-items:center;aspect-ratio:1;min-width:0;padding:0;border:1px solid #2326291f;border-radius:6px;color:#52616e;cursor:pointer}.palette button[aria-pressed=true]{outline:1.5px solid #5f717e;outline-offset:2px}.customColor{display:flex;align-items:center;justify-content:space-between;margin-top:16px;cursor:pointer}.customColor input{width:32px;height:28px;padding:2px;border:1px solid #dce4ef;border-radius:6px;background:transparent;cursor:pointer}.opacity{display:grid;gap:12px;margin-top:24px}.opacity>span{display:flex;justify-content:space-between}.opacity b{font-weight:600}.opacity input{width:100%;margin:0;accent-color:#83cbea;cursor:pointer}
+
+.headerSpacer{flex:1}
+
+.header{border-bottom:0}
+
+.header button{background:transparent!important;color:#94a3b8!important}.header button:is(:hover,:active,:focus-visible),.header button:is(:hover,:active,:focus-visible) svg{background:transparent!important;color:#52618b!important}
+
+.header{flex-basis:40px;padding-top:12px;box-sizing:content-box;align-items:flex-start}.header button{position:relative;z-index:2}.content{padding-top:8px}
+
+.settings{position:absolute;z-index:5;top:46px;right:12px;width:218px;max-width:calc(100% - 24px);box-sizing:border-box;padding:16px;border:1px solid #e6e9ed;border-radius:12px;background:#fff;box-shadow:0 10px 30px #17243422}.palette{grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.palette button{border-radius:50%}.settings .opacity{margin-top:18px}
+
+.header{flex-basis:28px;padding:12px 12px 0}.content{padding-top:10px}.settings{left:12px;right:auto}
+
+.header{cursor:default}
+
+.edge{display:flex;align-items:center;justify-content:flex-start;width:140px;height:36px;box-sizing:border-box;padding:0 12px;font-size:13px;font-weight:600;color:#334155;text-align:left;border-color:#dbe3ef;box-shadow:0 2px 8px #0f172a0d}.left{border-left:0;border-radius:0 10px 10px 0}.right{border-right:0;border-radius:10px 0 0 10px}.edge:hover{border-color:#195dff;box-shadow:0 3px 10px #195dff15}
+
+.sticker{border-radius:16px}
+
+.content{padding-bottom:15px}

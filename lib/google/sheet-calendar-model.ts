@@ -1,5 +1,5 @@
 export type SheetCalendarEvent = {
-  id: string; date: string; kind: "birthday" | "immunity" | "reduction" | "renewal";
+  id: string; date: string; kind: "birthday" | "immunity" | "reduction" | "renewal" | "payment";
   category: string; name: string; birth: string; content: string; icon: string; memoContent?:string;
 };
 type Cell = string | number | boolean | null;
@@ -40,7 +40,7 @@ export function buildSheetCalendar(rows: SheetCalendarRows, from: string, to: st
   const add = (date: Date, event: Omit<SheetCalendarEvent, "id" | "date">, source: string) => {
     const value = key(date);
     if (value < from || value > to) return;
-    events.push({ ...event, category: { birthday: "생일", immunity: "면책", reduction: "감액", renewal: "자동차갱신" }[event.kind], date: value, id: `sheet:${identify(JSON.stringify([source, value, event.kind, event.name, event.birth, event.content]))}` });
+    events.push({ ...event, category: { birthday: "생일", immunity: "면책", reduction: "감액", renewal: "자동차갱신", payment: "카드수납" }[event.kind], date: value, id: `sheet:${identify(JSON.stringify([source, value, event.kind, event.name, event.birth, event.content]))}` });
   };
   const firstYear = Number(from.slice(0, 4)), lastYear = Number(to.slice(0, 4));
   rows.customers.forEach((row, index) => {

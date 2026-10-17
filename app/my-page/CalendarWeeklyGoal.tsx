@@ -512,7 +512,7 @@ export default function CalendarPage() {
             {["일", "월", "화", "수", "목", "금", "토"].map((day, index) => (
               <div
                 key={day}
-                style={{ color: index === 0 ? "#ef4444" : index === 6 ? "#3b82f6" : "#374151" }}
+                style={{ color: index === 0 ? "#ef4444" : index === 6 ? "#195DFF" : "#374151" }}
                 className="text-sm font-bold"
               >
                 {day}
@@ -543,7 +543,7 @@ export default function CalendarPage() {
 
               const numberColor =
                 realDay === 0 ? (isOtherMonth ? "#fecaca" : "#ef4444")
-                : realDay === 6 ? (isOtherMonth ? "#bfdbfe" : "#3b82f6")
+                : realDay === 6 ? (isOtherMonth ? "#bfdbfe" : "#195DFF")
                 : isOtherMonth ? "#d1d5db" : "#374151";
 
               return (
@@ -878,40 +878,40 @@ export default function CalendarPage() {
                 placeholder="제목 *"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-400 transition"
+                className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-600 transition"
               />
               <input data-ui-field="true"
                 type="date"
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-400 transition"
+                className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-600 transition"
               />
               <input data-ui-field="true"
                 type="time"
                 value={formData.time}
                 onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-400 transition"
+                className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-600 transition"
               />
               <ClearableSearchInput onClear={() => setFormData({ ...formData, content: "" })} data-ui-field="true"
                 type="text"
                 placeholder="내용"
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-400 transition"
+                className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-600 transition"
               />
               <ClearableSearchInput onClear={() => setFormData({ ...formData, place: "" })} data-ui-field="true"
                 type="text"
                 placeholder="장소"
                 value={formData.place}
                 onChange={(e) => setFormData({ ...formData, place: e.target.value })}
-                className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-400 transition"
+                className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-600 transition"
               />
               <textarea data-ui-field="true"
                 placeholder="메모"
                 value={formData.memo}
                 onChange={(e) => setFormData({ ...formData, memo: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-400 transition resize-none"
+                className="w-full px-4 py-3 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-600 transition resize-none"
               />
 
               {/* 색상 선택 */}

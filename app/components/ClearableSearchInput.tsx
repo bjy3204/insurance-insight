@@ -10,11 +10,19 @@ const ClearableSearchInput = forwardRef<HTMLInputElement, Props>(function Cleara
   const wrapper = useRef<HTMLSpanElement>(null);
   const [position, setPosition] = useState<{ top: number; right: number }>();
   useImperativeHandle(ref, () => input.current!);
+  const [hasUnit, setHasUnit] = useState(false);
   const filled = String(props.value ?? props.defaultValue ?? "").length > 0;
   const isSearch = props["data-page-search-input"] === "true" || props.type === "search" || /검색/.test(`${props.placeholder ?? ""} ${props["aria-label"] ?? ""}`) || props.id === "weather-region-query";
   useLayoutEffect(() => {
     const field = input.current, container = wrapper.current;
     if (!field || !container) return;
+    let unitParent: HTMLElement | null = container.parentElement;
+    let unitFound = false;
+    for (let depth = 0; unitParent && depth < 3; depth++, unitParent = unitParent.parentElement) {
+      if (unitParent.querySelectorAll('input').length > 1) break;
+      if (unitParent.hasAttribute('data-field-unit') || Array.from(unitParent.children).some(child => child !== container && !child.querySelector('input') && /^(원|개월|%)$/.test(child.textContent?.trim() || ''))) { unitFound = true; break; }
+    }
+    setHasUnit(unitFound);
     let boundary: HTMLElement = field;
     const borderless = parseFloat(getComputedStyle(field).borderRightWidth) === 0;
     if (borderless) field.setAttribute('data-borderless-field', 'true');
@@ -58,7 +66,7 @@ const ClearableSearchInput = forwardRef<HTMLInputElement, Props>(function Cleara
   }, [props.value, props.className, isSearch]);
   return <span ref={wrapper} data-clearable-search="true" data-search-control={isSearch ? "true" : undefined}>
     <input {...props} ref={input} />
-    {showClearButton && filled && <button data-search-clear="true" style={position} type="button" disabled={props.disabled || props.readOnly} aria-label="입력값 지우기" onPointerDown={event => event.preventDefault()} onClick={() => { onClear(); input.current?.focus(); }}><X size={15} aria-hidden="true" /></button>}
+    {showClearButton && !hasUnit && filled && <button data-search-clear="true" style={position} type="button" disabled={props.disabled || props.readOnly} aria-label="입력값 지우기" onPointerDown={event => event.preventDefault()} onClick={() => { onClear(); input.current?.focus(); }}><X size={15} aria-hidden="true" /></button>}
   </span>;
 });
 

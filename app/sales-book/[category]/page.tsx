@@ -1,4 +1,5 @@
 "use client";
+import AccessRestrictedPage from "@/app/components/AccessRestrictedPage";
 
 import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import Pagination from "@/app/components/Pagination";
@@ -42,34 +43,7 @@ const [page, setPage] = useState(1);
 const itemsPerPage = useSalesBookPageSize();
 useEffect(() => { setPage(1); }, [itemsPerPage]);
 
-  if (!authUser || authStatus !== "approved") {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl shadow-xl p-8 max-w-sm w-full text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-gray-400" />
-          </div>
-
-          <h2 className="text-lg font-bold text-gray-900 mb-2">
-            접근 제한
-          </h2>
-
-          <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-            선택한 메뉴는 승인된 회원만
-            <br />
-            이용 가능합니다.
-          </p>
-
-          <button
-            onClick={() => router.push("/")}
-            className="w-full h-11 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition cursor-pointer"
-          >
-            메인으로 돌아가기
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (!authUser || authStatus !== "approved") { return <AccessRestrictedPage paymentError={authStatus === "payment_error"}/>; }
 
   if (!subcategories) {
     return (
@@ -128,7 +102,7 @@ const pagedSubcategories = filteredSubcategories.slice(
       </header>
 
       <div data-page-content="true" className="max-w-7xl mx-auto px-4 py-4">
-        <div data-page-search-wrapper="true" className="h-12 rounded-2xl border border-gray-300 bg-white px-5 flex items-center gap-3 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition">
+        <div data-page-search-wrapper="true" className="h-12 rounded-2xl border border-gray-300 bg-white px-5 flex items-center gap-3 focus-within:border-blue-600 focus-within:ring-2 focus-within:ring-blue-500/20 transition">
           <Search className="w-4 h-4 text-gray-400 shrink-0" />
 
           <ClearableSearchInput onClear={() => {

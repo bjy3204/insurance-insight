@@ -1,0 +1,24 @@
+"use client";
+import {emptyCardPayment,parseCardPayments} from "@/app/my-page/customer-card-payments";
+import CustomerEntryDialog from '@/app/my-page/CustomerEntryDialog';
+import {medicalMaturity} from '@/app/my-page/customer-lookup-model';
+import {residentBirth} from '@/lib/notion-crm/records';
+import {customerVehicles} from '@/app/my-page/customer-form-fields';
+import type {CrmRow,CrmValue} from '@/lib/notion-crm/model';
+const customerMap:Record<string,string>={name:'이름',birth:'주민번호',category:'유입경로',phone:'연락처',company:'회사',job:'직업',email:'E-Mail',address:'주소',memo:'메모',accountOwner:'예금주',accountBirth:'예금주 생년월일',bank:'은행',accountNumber:'계좌번호',medicalInsurer:'실손 보험사',medicalJoined:'실손 가입일',medicalGeneration:'실손 세대',medicalMaturity:'실손 만기일',cardOwner:'__cards_명의자',cardBirth:'__cards_생년월일',cardDay:'__cards_결제일',cardCompany:'__cards_카드사',cardNumber:'__cards_카드번호',cardExpiry:'__cards_유효기간'};
+const contractMap:Record<string,string>={owner:'계약자',ownerBirth:'계약자 생년월일',insured:'피보험자',insuredBirth:'피보험자 생년월일',date:'계약일',maturity:'만기',insurer:'보험사',premium:'보험료',product:'상품명',immunity:'면책기간(개월)',reduction:'감액기간(개월)',memo:'메모'};
+const vehicleMap:Record<string,string>={vehicleNumber:'차량번호',vehicleType:'차종',renewal:'갱신일',insurer:'보험사',driver:'운전자지정',discount:'할인'};
+export default function CrmEntryDialog({limited=false,source,values,customers,onChange,onSubmit,onClose,saving,error,editing}:{limited?:boolean;source:'customers'|'contracts';values:Record<string,CrmValue>;customers:CrmRow[];onChange:(values:Record<string,CrmValue>)=>void;onSubmit:(values:Record<string,CrmValue>)=>void;onClose:()=>void;saving:boolean;error:string;editing:boolean}){
+ const map=source==='customers'?customerMap:contractMap;
+ const form:Record<string,string>=Object.fromEntries(Object.entries(map).map(([key,name])=>[key,String(values[name]??'')]));
+ for(const name of ['sameInsured','consentConfirmed','carrier'])form[name]=String(values['__'+name]??'');
+ const linked=customers.find(c=>Array.isArray(values['고객'])&&values['고객'].includes(c.id));
+ if(source==='contracts'&&linked){form.owner ||= String(linked.values['이름']||'');form.ownerBirth ||= String(linked.values['주민번호']||'').replace(/\D/g,'').slice(0,6);}
+ if(source==='customers'&&!form.medicalMaturity)form.medicalMaturity=medicalMaturity(form.medicalJoined)?.text||'';
+ if(source==='contracts'&&/^\d{4}-/.test(form.maturity)&&linked){try{const birth=residentBirth(String(linked.values['주민번호']));const age=Number(form.maturity.slice(0,4))-Number(birth.slice(0,4));if([80,90,100].includes(age))form.maturity=age+'세 만기';}catch{}}
+ form.vehicles=String(values.__vehicles&&values.__vehicles!=='[]'?values.__vehicles:JSON.stringify([Object.fromEntries(Object.entries(vehicleMap).map(([key,name])=>[key,String(values['__cars_'+name]??'')]))]));
+ form.cardPayments=values.__cardPayments?String(values.__cardPayments):JSON.stringify([{...emptyCardPayment(),...Object.fromEntries(['명의자','보험사','결제일','카드사','카드번호','유효기간'].map(key=>[key,String(values['__cards_'+key]??'')]))}]);
+ const change=(key:string,value:string)=>{const next={...values,[map[key]||'__'+key]:value};if(source==='contracts'&&(key==='owner'||key==='ownerBirth')){const owner=key==='owner'?value:form.owner,birth=key==='ownerBirth'?value:form.ownerBirth;const match=customers.filter(c=>String(c.values['이름'])===owner&&(!birth||String(c.values['주민번호']||'').replace(/\D/g,'').slice(0,6)===birth));next['고객']=match.length===1?[match[0].id]:[];}onChange(next);};
+ const submit=()=>{const next={...values};if(source==='customers'){const birth=form.birth.replace(/\D/g,'').slice(0,6);next['예금주 생년월일']=form.accountBirth.trim()||birth;next['__cards_생년월일']=form.cardBirth.trim()||'';next.__vehicles=JSON.stringify(customerVehicles(form));next.__cardPayments=JSON.stringify(parseCardPayments(form.cardPayments));if(/^\d{4}-\d{2}$/.test(form.medicalMaturity))next['실손 만기일']=form.medicalMaturity+'-01';}else{next['계약일']=form.date.trim()||new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});if(/^(80|90|100)세 만기$/.test(form.maturity)){if(!linked){onSubmit({...next,'만기':form.maturity});return;}const birth=residentBirth(String(linked.values['주민번호']));const date=new Date(birth+'T00:00:00Z');date.setUTCFullYear(date.getUTCFullYear()+Number(form.maturity.slice(0,-4)));next['만기']=date.toISOString().slice(0,10);}else if(form.maturity==='갱신')next['만기']='';next['계약자']=form.owner;next['계약자 생년월일']=form.ownerBirth;if(form.sameInsured!=='false'){next['피보험자']=form.owner;next['피보험자 생년월일']=form.ownerBirth;}}onSubmit(next);};
+ return <CustomerEntryDialog crm limited={limited} kind={source==='customers'?'customer':'contract'} values={form} onChange={change} onSubmit={submit} onClose={onClose} customers={customers.map(c=>({name:String(c.values['이름']||''),birth:String(c.values['주민번호']||'')}))} saving={saving} error={error} editing={editing}/>;
+}

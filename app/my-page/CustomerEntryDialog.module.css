@@ -11,26 +11,26 @@
 .contractGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 .field { display:flex; min-width:0; flex-direction:column; gap:8px; }
 .label { color:#52627a; font-size:12px; font-weight:600; }
-.gender { margin-left:8px; padding:2px 7px; border-radius:6px; background:#eff6ff; color:#2563eb; font-size:11px; }
+.gender { margin-left:8px; padding:2px 7px; border-radius:6px; background:#eff6ff; color:#195DFF; font-size:11px; }
 .wide { grid-column:1 / -1; }
 :is(.field > input,.field > span[data-clearable-search] > input), :is(.phoneRow > input,.phoneRow > span[data-clearable-search] > input), .field > textarea, .select { width:100%; min-width:0; border:1px solid #dce4ef; border-radius:12px; background:#fff; color:#24324a; font-size:14px; }
 :is(.field > input,.field > span[data-clearable-search] > input), :is(.phoneRow > input,.phoneRow > span[data-clearable-search] > input) { height:44px; padding:0 12px; }
 .field > textarea { min-height:100px; padding:11px 12px; line-height:24px; resize:vertical; }
 .field input::placeholder, .field textarea::placeholder { color:#a0aabd; }
-.field input:focus, .field textarea:focus { outline:none; border-color:#86adff; box-shadow:0 0 0 3px #2563eb0d; }
+.field input:focus, .field textarea:focus { outline:none; border-color:#195DFF; box-shadow:0 0 0 3px #195DFF0d; }
 .select { display:flex; align-items:center; height:44px; }
-.select:focus-within { border-color:#86adff; box-shadow:0 0 0 3px #2563eb0d; }
+.select:focus-within { border-color:#195DFF; box-shadow:0 0 0 3px #195DFF0d; }
 .select input { width:100%; min-width:0; height:100%; padding:0 0 0 12px; border:0; border-radius:12px; background:transparent; outline:none; font:inherit; box-shadow:none !important; }
 .select button { display:flex; align-items:center; justify-content:center; flex-shrink:0; height:100%; width:36px; border:0; background:transparent; color:#8896aa; cursor:pointer; }
-.options { position:fixed; z-index:7300; overflow-y:auto; overscroll-behavior:contain; padding:4px; border:1px solid #dce4ef; border-radius:12px; background:#fff; box-shadow:0 10px 30px #1725541f; }
+.options { box-sizing:border-box; min-width:0; position:fixed; z-index:7300; overflow-y:auto; overscroll-behavior:contain; padding:4px; border:1px solid #dce4ef; border-radius:12px; background:#fff; box-shadow:0 10px 30px #1725541f; }
 .options button { display:flex; align-items:center; justify-content:space-between; gap:8px; width:100%; padding:10px; border:0; border-radius:8px; background:#fff; color:#475569; font-size:13px; text-align:left; cursor:pointer; }
-.options button[data-active="true"] { background:#eff6ff; color:#2563eb; }
+.options button[data-active="true"] { background:#eff6ff; color:#195DFF; }
 .options p { padding:10px; color:#94a3b8; font-size:12px; }
 .footer { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; flex-shrink:0; gap:10px; padding:14px 30px 14px 24px; border-top:1px solid #e5ebf5; background:#fff; }
 .saveError { flex-basis:100%; margin:0; color:#dc2626; font-size:14px; }
 .footer button { min-width:100px; height:44px; padding:0 20px; border:0; border-radius:12px; font-size:14px; font-weight:700; cursor:pointer; }
 .cancel { background:#f1f5f9; color:#475569; }
-.submit { background:#2563eb; color:#fff; }
+.submit { background:#195DFF; color:#fff; }
 .footer button:disabled { cursor:default; opacity:.45; }
 @media (max-width:767px) {
   .overlay { padding:12px; }
@@ -50,7 +50,7 @@
 .optionRow > button:first-child > span { overflow-wrap:anywhere; }
 .options .removeOption { width:32px; height:32px; padding:6px; flex-shrink:0; justify-content:center; color:#94a3b8; }
 .options .removeOption:hover { background:transparent; color:#000000; }
-.options .addOption { justify-content:flex-start; color:#2563eb; background:#eff6ff; }
+.options .addOption { justify-content:flex-start; color:#195DFF; background:#eff6ff; }
 .options button:disabled { opacity:.45; cursor:default; }
 .select input:disabled { color:#94a3b8; }
 
@@ -65,7 +65,7 @@
 .suffixField input { flex:1; width:100%; min-width:0; height:100%; border:0; border-radius:12px; padding:0 12px; font:inherit; }
 .suffixField > span[data-clearable-search] { flex:1 1 0; width:0; min-width:0; height:100%; margin-left:0; }
 .suffixField > span:not([data-clearable-search]) { flex:0 0 auto; margin-left:0; white-space:nowrap; }
-.suffixField:focus-within { border-color:#86adff; box-shadow:0 0 0 3px #2563eb0d; }
+.suffixField:focus-within { border-color:#195DFF; box-shadow:0 0 0 3px #195DFF0d; }
 @media (max-width:767px) { .suffixField input { font-size:16px; } }
 .identityInput { width:100%; min-width:0; height:44px; padding:0 12px; border:1px solid #dce4ef; border-radius:12px; color:#24324a; font-size:14px; }
 .identityOption { display:flex; flex-direction:row; align-items:center; gap:12px; min-width:0; white-space:nowrap; }
@@ -74,19 +74,19 @@
 @media (max-width:767px) { .identityInput { font-size:16px; } }
 
 .sameInsured { display:inline-flex; align-items:center; gap:7px; color:#52627a; font-size:14px; cursor:pointer; }
-.sameInsured input[type="checkbox"] { width:16px; height:16px; margin:0; accent-color:#2563eb; cursor:pointer; }
+.sameInsured input[type="checkbox"] { width:16px; height:16px; margin:0; accent-color:#195DFF; cursor:pointer; }
 
 .gender[data-gender="여"] { color:#db2777; background:#fdf2f8; }
 
 .sectionHeading { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:16px; }
 .sectionHeading h3 { margin:0; }
 .sectionHeading .sameInsured { flex-shrink:0; white-space:nowrap; }
-.addVehicle { display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 10px; border-radius:7px; background:#eff6ff; color:#2563eb; font-size:14px; font-weight:600; cursor:pointer; }
+.addVehicle { display:inline-flex; align-items:center; gap:4px; height:30px; padding:0 10px; border-radius:7px; background:#eff6ff; color:#195DFF; font-size:14px; font-weight:600; cursor:pointer; }
 .vehicleGroups { display:grid; gap:16px; }
-.vehicleGroup + .vehicleGroup { padding-top:16px; border-top:1px solid #e4eaf4; }
-.vehicleGroup h4 { margin:0 0 12px; color:#52627a; font-size:14px; font-weight:600; }
+.vehicleGroup { min-width:0; }
+.vehicleGroup h4 { display:table; margin:0 0 12px; padding:6px 12px; border-radius:10px; background:#eff6ff; color:#52627a; font-size:14px; font-weight:600; }
 .consentConfirmation { display:flex; flex:1; min-width:0; align-items:flex-start; gap:9px; margin:0 auto 0 0; color:#52627a; font-size:14px; line-height:1.6; cursor:pointer; }
-.consentConfirmation input { width:16px; height:16px; flex-shrink:0; margin-top:3px; accent-color:#2563eb; cursor:pointer; }
+.consentConfirmation input { width:16px; height:16px; flex-shrink:0; margin-top:3px; accent-color:#195DFF; cursor:pointer; }
 @media (max-width:767px) { .footer { flex-wrap:wrap; } .consentConfirmation { flex-basis:100%; } }
 
 .footer{padding-top:20px;padding-bottom:20px}
@@ -104,3 +104,42 @@
 @media(max-width:767px){.field{gap:8px}.field>label{margin-bottom:0}.section{row-gap:20px}}
 
 .suffixField > span[data-clearable-search] > input { padding-right:12px !important; }
+
+.body{scrollbar-width:none}.body::-webkit-scrollbar{display:none}
+
+/* Shared popup spacing: section 12px, label-to-control 8px. */
+.dialog .section{padding:16px;margin-bottom:12px}.dialog .sectionHeading{margin-bottom:12px}.dialog .section h3{margin:0;line-height:24px}.dialog .grid{gap:12px}.dialog .field{gap:8px}.dialog .field>.label{margin:0!important;line-height:20px}.dialog .field input,.dialog .field textarea,.dialog .field>button,.dialog .suffixField,.dialog .select{transition:border-color .15s ease,box-shadow .15s ease}
+.dialog .field input:not([data-borderless-field=true]):focus,.dialog .field textarea:focus,.dialog .field>button:focus-visible,.dialog .field>button[aria-expanded=true],.dialog .carrier>button:focus-visible,.dialog .carrier>button[aria-expanded=true],.dialog .suffixField:focus-within,.dialog .select:focus-within{outline:none!important;border-color:#195DFF!important;box-shadow:0 0 0 3px #195DFF0d!important}
+.dialog .suffixField input:focus,.dialog input[data-borderless-field=true]:focus{outline:none!important;border-color:transparent!important;box-shadow:none!important}
+@media(max-width:767px){.dialog .section{padding:14px 12px}.dialog .grid{column-gap:10px;row-gap:12px}}
+
+/* Customer entry focus uses the original identity-field's pale treatment. */
+.dialog[data-personal-focus=blue]{--personal-focus-border:#dce4ef;--personal-focus-shadow:#195DFF0d}
+.dialog .field input:not([data-borderless-field=true]):focus,.dialog .field textarea:focus,.dialog .field>button:focus-visible,.dialog .field>button[aria-expanded=true],.dialog .carrier>button:focus-visible,.dialog .carrier>button[aria-expanded=true],.dialog .suffixField:focus-within,.dialog .select:focus-within{outline:none!important;border-color:#dce4ef!important;box-shadow:0 0 0 3px #195DFF0d!important}
+.dialog .suffixField input:focus,.dialog input[data-borderless-field=true]:focus{outline:none!important;border-color:transparent!important;box-shadow:none!important}
+
+.dialog .select input,.dialog .select input:focus,.dialog .suffixField input,.dialog .suffixField input:focus{border:0!important;border-radius:0!important;outline:none!important;box-shadow:none!important;background:transparent!important}.dialog .select{overflow:hidden}.dialog .select button,.dialog .select button:focus,.dialog .select button:focus-visible{border:0!important;outline:none!important;box-shadow:none!important}.dialog .select:focus-within,.dialog .suffixField:focus-within{border-color:#dce4ef!important;outline:none!important;box-shadow:0 0 0 3px #195DFF0d!important}
+
+.customerContactRow,.customerCompanyRow{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;min-width:0}.dialog .customerContactRow>.phoneField{grid-column:auto}@media(max-width:767px){.customerContactRow,.customerCompanyRow{gap:12px 10px}}
+
+.customerIdentityRow{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;min-width:0}@media(max-width:767px){.customerIdentityRow{gap:10px}}
+
+.dialog .customerIdentityRow>.field:first-child>.select{width:88px;max-width:100%;box-sizing:border-box}.dialog .customerIdentityRow>.field:first-child>.select input{min-width:0;padding-left:8px}.dialog .customerIdentityRow>.field:first-child>.select button{width:28px;flex-shrink:0}
+
+.dialog .customerIdentityRow,.dialog .customerContactRow{grid-template-columns:120px repeat(2,minmax(0,1fr));gap:12px}.dialog .customerIdentityRow>.field:first-child>.select{width:120px;max-width:100%}.dialog .carrier{flex:0 0 120px;width:120px}.dialog .customerContactRow>.phoneField{grid-column:1/3}.dialog .customerContactRow>.field:last-child{grid-column:3}.dialog .customerContactRow .phoneRow{gap:12px}.dialog .customerContactRow .phoneRow>[data-clearable-search]{flex:1 1 0;min-width:0}
+
+.dialog .carrier,.phoneNumberField{display:flex;flex-direction:column;gap:8px;min-width:0}.phoneNumberField{flex:1 1 0}.dialog .phoneRow .label{margin:0!important;line-height:20px}.dialog .phoneRow{align-items:flex-start}.phoneNumberField>[data-clearable-search]{width:100%}
+
+.dialog .select button[aria-haspopup=listbox]{width:45px;flex:0 0 45px;padding:0!important;justify-content:center}.dialog .select button[aria-haspopup=listbox]>svg:last-child{margin:0!important}
+
+.dialog .label{padding-left:4px;box-sizing:border-box}
+
+.optionRow{border-radius:8px}.optionRow:hover,.optionRow:has(>button[data-active=true]){background:#eff6ff}.optionRow>button:first-child,.optionRow>button:first-child:hover,.optionRow>button:first-child[data-active=true],.optionRow>.removeOption,.optionRow>.removeOption:hover{background:transparent}.optionRow:hover>button:first-child,.optionRow:has(>button[data-active=true])>button:first-child{color:#195DFF}
+
+.vehicleHeading{display:flex;align-items:center;gap:6px;margin-bottom:12px}.vehicleHeading h4{margin:0}.removeVehicle{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:8px;background:transparent;color:#94a3b8;cursor:pointer}.removeVehicle:hover{background:#fff1f2;color:#e11d48}.removeVehicle:disabled{opacity:.45;cursor:default}
+
+.dialog .field>.label,.dialog .carrier>.label,.dialog .phoneNumberField>.label{font-size:15px;font-weight:700;color:#284261;line-height:24px}.dialog .grid{gap:12px}.dialog .field,.dialog .carrier,.dialog .phoneNumberField{gap:8px}
+
+@media(max-width:767px){
+.dialog[data-popup-frame]{min-width:0;width:calc(100vw - 24px);max-width:calc(100vw - 24px);height:auto;max-height:calc(100dvh - 24px);min-height:0}.dialog .body{padding:12px}.dialog .grid{gap:12px}.dialog .customerIdentityRow{grid-template-columns:100px minmax(0,1fr);gap:12px}.dialog .customerIdentityRow>.field:last-child{grid-column:1/-1}.dialog .customerIdentityRow>.field:first-child>.select{width:100%}.dialog .customerContactRow{grid-template-columns:minmax(0,1fr);gap:12px}.dialog .customerContactRow>.phoneField,.dialog .customerContactRow>.field:last-child{grid-column:1}.dialog .carrier{width:100px;flex-basis:100px}.dialog .customerCompanyRow{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+}

@@ -69,7 +69,7 @@ return (<>{mainMenuManageMode === "normal" && (
         
                        <button
             onClick={() => {
-              window.location.href = "/calendar";
+              window.dispatchEvent(new Event("open-calendar-sticker"));
               setPcQuickOpen(false);
             }}
             className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"
@@ -247,7 +247,7 @@ return (<>{mainMenuManageMode === "normal" && (
 
                 <button
             onClick={() => {
-              window.location.href = "/calendar";
+              window.dispatchEvent(new Event("open-calendar-sticker"));
               setPcQuickOpen(false);
             }}
             className="w-full h-[48px] px-4 text-sm font-bold text-gray-700 hover:bg-gray-50 transition border-t border-gray-100 cursor-default flex items-center justify-center"

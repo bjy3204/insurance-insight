@@ -8,20 +8,20 @@
 .table td+td { border-left:1px solid #e6ebf3; }
 .table textarea { display:block; width:100%; height:56px; min-height:56px; max-height:56px; padding:7px 10px; border:1px solid transparent; border-radius:8px; outline:none; background:transparent; color:#334968; font:inherit; line-height:20px; resize:none; overflow-y:auto; scrollbar-width:thin; }
 .table textarea:hover:not(:disabled) { border-color:#e2e8f0; }
-.table textarea:focus { border-color:#93b5fa; background:#fff; }
+.table textarea:focus { border-color:#195DFF; background:#fff; }
 .table td:last-child textarea { border-color:#e6ebf3; background:#fafbfd; }
 .options { display:flex; flex-wrap:wrap; gap:8px 12px; margin-top:8px; }
 .options label,.answers label { display:inline-flex; align-items:center; gap:6px; cursor:pointer; }
-.options input,.answers input { width:15px; height:15px; margin:0; flex-shrink:0; accent-color:#2563eb; }
+.options input,.answers input { width:15px; height:15px; margin:0; flex-shrink:0; accent-color:#195DFF; }
 .answers { display:flex; align-items:center; justify-content:center; gap:20px; min-height:56px; white-space:nowrap; }
 .actions { display:flex; justify-content:flex-end; padding:12px 16px; }
-.actions button { height:40px; padding:0 22px; border-radius:8px; background:#2563eb; color:#fff; font-size:14px; font-weight:700; cursor:pointer; }
+.actions button { height:40px; padding:0 22px; border-radius:8px; background:#195DFF; color:#fff; font-size:14px; font-weight:700; cursor:pointer; }
 .actions button:disabled { opacity:.4; cursor:default; }
 .error { padding:12px 16px 0; color:#dc2626; font-size:14px; }
 .memo { display:grid; gap:8px; padding:16px 16px 0; }
 .memo label { color:#52627a; font-size:14px; font-weight:600; }
 .memo textarea { display:block; width:100%; min-height:140px; padding:12px; border:1px solid #dce4ef; border-radius:8px; background:#fafbfd; color:#334968; font-size:14px; line-height:24px; outline:none; resize:vertical; }
-.memo textarea:focus { border-color:#93b5fa; background:#fff; }
+.memo textarea:focus { border-color:#195DFF; background:#fff; }
 @media(max-width:767px) { .memo textarea { font-size:16px; } }
 @media(max-width:767px) { .table textarea { font-size:16px; } }
 .histories { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; padding:20px 16px 0; }
@@ -36,7 +36,7 @@
 .historyTable td { border-top:1px solid #e6ebf3; padding:4px; }
 .historyTable td+td,.historyTable th+th { border-left:1px solid #e6ebf3; }
 .historyTable textarea { display:block; width:100%; height:30px; min-height:30px; max-height:30px; resize:none; overflow:auto; padding:4px; border:1px solid transparent; border-radius:4px; background:transparent; color:inherit; font:inherit; line-height:20px; white-space:pre; }
-.historyTable textarea:focus { outline:none; border-color:#93b5fa; background:#fff; }
+.historyTable textarea:focus { outline:none; border-color:#195DFF; background:#fff; }
 @media(max-width:1100px) { .histories { grid-template-columns:1fr; } }
 @media(max-width:767px) { .historyTable textarea { font-size:16px; }.histories { padding-inline:8px; } }
 @media(max-width:767px) {
@@ -56,7 +56,7 @@
 .historyTable textarea,.historyTable textarea:hover,.historyTable textarea:focus{border-color:transparent !important;outline:none !important;box-shadow:none !important;background:transparent !important}
 .historyTable .historyActionHeader{padding:0 4px}
 .historyAdd,.historyDelete{display:flex;align-items:center;justify-content:center;margin:auto;border:0 !important;background:transparent !important;color:#94a3b8;cursor:pointer;box-shadow:none !important}
-.historyAdd:not(:disabled):hover,.historyAdd:not(:disabled):hover svg{color:#2563eb !important;background:transparent !important}
+.historyAdd:not(:disabled):hover,.historyAdd:not(:disabled):hover svg{color:#195DFF !important;background:transparent !important}
 .historyDelete:not(:disabled):hover,.historyDelete:not(:disabled):hover svg{color:#ef4444 !important;background:transparent !important}
 .historyAdd:disabled{opacity:.4;cursor:default}
 .historyCard{padding:0;border:0;border-radius:0;background:transparent}

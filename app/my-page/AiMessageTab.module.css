@@ -34,3 +34,7 @@
 }
 
 @media(max-width:767px){.mobileCategories button[aria-haspopup="listbox"]>svg{display:none}.categoryMenu .mobileCategories button[aria-haspopup="listbox"]{gap:0}}
+
+@media(max-width:767px){.categoryMenu .mobileCategories button[aria-haspopup=listbox]{padding-left:5px!important;padding-right:5px!important;display:flex;justify-content:center!important;align-items:center;gap:0!important;text-align:center!important}.categoryMenu .mobileCategories button[aria-haspopup=listbox]>span{display:block;width:100%;margin:0;text-align:center!important}}
+
+@media(max-width:767px){.messagePreview{width:100%;max-width:none;margin-left:0;margin-right:0;box-sizing:border-box}}

@@ -7,10 +7,10 @@
 .date { display:flex; align-items:center; gap:12px; padding:17px; border:1px solid #e5ebf4; border-radius:12px; color:#4f72a5; }.date > div { display:flex; align-items:baseline; flex-wrap:wrap; gap:8px; }.date strong { color:#334968; font-size:17px; font-weight:400; }.date span { font-size:14px; color:#8290a4; }
 .metadata { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; padding-inline:4px; }.metadata > div { display:flex; gap:10px; align-items:flex-start; color:#8b9bb0; }.metadata span { min-width:0; display:grid; gap:6px; }.metadata small { font-size:13px; color:#8b9bb0; }.metadata strong { color:#334968; font-size:16px; font-weight:500; overflow-wrap:anywhere; }
 .memo { padding:16px; border-radius:12px; background:#f8fafc; }.memo > div { display:flex; align-items:center; gap:7px; color:#75869c; font-size:14px; }.memo p { margin:10px 0 0; color:#334968; font-size:16px; line-height:1.75; white-space:pre-wrap; overflow-wrap:anywhere; max-height:35vh; overflow:auto; }
-.close { height:44px; border:0; border-radius:9px; background:#2563eb; color:white; font-size:15px; font-weight:600; cursor:pointer; }
+.close { height:44px; border:0; border-radius:9px; background:#195DFF; color:white; font-size:15px; font-weight:600; cursor:pointer; }
 @media(max-width:400px) { .hero { gap:9px; }.icon { width:44px; height:44px; }.title h2 { font-size:19px; }.dday { font-size:13px; padding:6px 8px; } }
 .content button { transition:background-color .15s,color .15s; }
-.close:hover:not(:disabled) { background:#1d4ed8; }
+.close:hover:not(:disabled) { background:#195DFF; }
 .tools button:last-child:hover:not(:disabled) { background:#fff1f2; }
 
 .hero .dday{align-self:flex-end;display:flex;align-items:center;justify-content:center;min-height:32px;box-sizing:border-box;margin-bottom:2px}
@@ -20,6 +20,6 @@
 
 .close{font-size:14px;font-weight:700}
 
-.actions{display:flex;gap:8px}.actions button{flex:1;height:48px;border:0;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer}.edit{background:#2563eb;color:white}.edit:hover{background:#1d4ed8}.delete{background:#fff1f2;color:#dc2626}.delete:hover{background:#ffe4e6}
+.actions{display:flex;gap:8px}.actions button{flex:1;height:48px;border:0;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer}.edit{background:#195DFF;color:white}.edit:hover{background:#195DFF}.delete{background:#fff1f2;color:#dc2626}.delete:hover{background:#ffe4e6}
 .date strong,.metadata strong,.memo p{font-size:15px}
 .title h2{font-size:15px}

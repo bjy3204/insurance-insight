@@ -20,8 +20,8 @@ export function parseConsultations(value:string):ConsultationEntry[] {
   });
 }
 export const CONSULTATION_STATUSES=["연락 예정","상담 중","검토 중","완료","보류"] as const;
-export type ConsultationRecord={id:string;date:string;content:string;reaction:string;nextContact:string;status:string};
-export const emptyConsultationRecord=():ConsultationRecord=>({id:crypto.randomUUID(),date:"",content:"",reaction:"",nextContact:"",status:""});
+export type ConsultationRecord={id:string;date:string;content:string;memo:string;nextContact:string;status:string;eventId?:string};
+export const emptyConsultationRecord=():ConsultationRecord=>({id:crypto.randomUUID(),date:"",content:"",memo:"",nextContact:"",status:""});
 export function parseConsultationRecords(value?:string):ConsultationRecord[]{
  if(!value)return [];
  const parsed=JSON.parse(value);
@@ -30,9 +30,11 @@ export function parseConsultationRecords(value?:string):ConsultationRecord[]{
  const ids=new Set<string>();
  return parsed.records.map((row:ConsultationRecord)=>{
   if(!row||typeof row!=="object"||typeof row.id!=="string"||!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(row.id)||ids.has(row.id))throw new Error("상담 관리 기록을 확인해 주세요.");
-  for(const field of ["date","content","reaction","nextContact","status"] as const)if(typeof row[field]!=="string"||row[field].length>(field==="content"||field==="reaction"?2000:30))throw new Error("상담 관리 기록을 확인해 주세요.");
+  const legacy=row as ConsultationRecord&{reaction?:string};row={...row,memo:typeof row.memo==='string'?row.memo:legacy.reaction??''};
+  for(const field of ["date","content","memo","nextContact","status"] as const)if(typeof row[field]!=="string"||row[field].length>(field==="content"||field==="memo"?2000:30))throw new Error("상담 관리 기록을 확인해 주세요.");
   if(row.date&&!validConsultationDate(row.date)||row.nextContact&&!validConsultationDate(row.nextContact)||row.status!==""&&!(CONSULTATION_STATUSES as readonly string[]).includes(row.status))throw new Error("상담일·다음 연락일·진행 상태를 확인해 주세요.");
-  ids.add(row.id);return {id:row.id,date:row.date,content:row.content,reaction:row.reaction,nextContact:row.nextContact,status:row.status};
+  ids.add(row.id);if(row.eventId!==undefined&&(typeof row.eventId!=="string"||row.eventId.length>100))throw Error("연결된 일정을 확인해 주세요.");
+  return {id:row.id,date:row.date,content:row.content,memo:row.memo,nextContact:row.nextContact,status:row.status,...(row.eventId?{eventId:row.eventId}:{})};
  });
 }
 export const serializeConsultations=(entries:readonly ConsultationEntry[],records?:readonly ConsultationRecord[])=>JSON.stringify({version:1,entries,...(records?{records}:{})});

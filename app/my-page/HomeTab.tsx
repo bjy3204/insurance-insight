@@ -27,7 +27,7 @@ import {
   Heart,
   Star,
 } from "lucide-react";
-import type { CustomerSettings } from "./page";
+import type { CustomerSettings } from "./LegacyPersonalSpace";
 import PlantSVG, { getPlantStage, type PlantStage } from "./PlantSVG";
 
 // ─────────────────────────────────────────────
@@ -117,6 +117,7 @@ export default function HomeTab({
   hiddenHomeMenus,
   onPlantStageChange,
   plantPopupOpen = false,
+  plantAnchorToMenu = false,
   onPlantPopupClose,
 }: {
   settings: CustomerSettings | null;
@@ -124,6 +125,7 @@ export default function HomeTab({
   hiddenHomeMenus: string[];
   onPlantStageChange?: (stage: PlantStage) => void;
   plantPopupOpen?: boolean;
+  plantAnchorToMenu?: boolean;
   onPlantPopupClose?: () => void;
 }) {
 
@@ -192,6 +194,7 @@ const PAGE_GROUP = 5;
 
   const [plantPos, setPlantPos] = useState({ x: 256, y: 95 });
   const plantPositionDirty = useRef(false);
+  useEffect(()=>{if(!plantAnchorToMenu||!plantPopupOpen)return;const sidebar=document.querySelector('[data-crm-sidebar]')?.getBoundingClientRect();const header=document.querySelector('[data-crm-header]')?.getBoundingClientRect();setPlantPos(clampPlantPosition(sidebar?.width?sidebar.right+16:12,(header?.bottom||79)+14));plantPositionDirty.current=false;},[plantAnchorToMenu,plantPopupOpen]);
   const plantCardRef = useRef<HTMLDivElement>(null);
   const clampPlantPosition = (x: number, y: number) => ({
     x: Math.max(0, Math.min(Math.max(0, window.innerWidth - (plantCardRef.current?.offsetWidth || 180)), x)),
@@ -686,7 +689,7 @@ const diaryEndPage = Math.min(
       }
       setShowDiaryDatePicker(!showDiaryDatePicker);
     }}
-    className="w-full h-12 px-4 rounded-2xl border border-gray-200 text-base text-left flex items-center justify-between hover:bg-gray-50 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
+    className="w-full h-12 px-4 rounded-2xl border border-gray-200 text-base text-left flex items-center justify-between hover:bg-gray-50 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-50 transition"
   >
     <span>{diaryForm.date || "날짜 선택"}</span>
     <Calendar className="w-5 h-5 text-gray-700" />
@@ -713,7 +716,7 @@ const diaryEndPage = Math.min(
                       onClick={() => setDiaryForm((f) => ({ ...f, mood: mood.value }))}
                       className={`flex-1 py-2.5 rounded-2xl border text-sm font-bold transition flex flex-col items-center gap-1 ${
                         diaryForm.mood === mood.value
-                          ? "border-blue-400 bg-blue-50 text-blue-600 shadow-sm"
+                          ? "border-blue-600 bg-blue-50 text-blue-600 shadow-sm"
                           : "border-gray-200 text-gray-500 hover:bg-gray-50"
                       }`}
                     >
@@ -730,7 +733,7 @@ const diaryEndPage = Math.min(
                   onChange={(e) => setDiaryForm((f) => ({ ...f, content: e.target.value }))}
                   placeholder="오늘 하루는 어땠나요?"
                   rows={8}
-                  className="w-full px-4 py-4 rounded-2xl border border-gray-200 text-base leading-relaxed outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition resize-none"
+                  className="w-full px-4 py-4 rounded-2xl border border-gray-200 text-base leading-relaxed outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-50 transition resize-none"
                 />
               </div>
               {diaryError && <p className="text-xs text-red-500">{diaryError}</p>}

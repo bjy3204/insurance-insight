@@ -197,9 +197,9 @@ function InflationChart() {
               <Line
                 type="monotone"
                 dataKey="rate"
-                stroke="#3b82f6"
+                stroke="#195DFF"
                 strokeWidth={2}
-                dot={{ r: 3, fill: '#3b82f6', strokeWidth: 0 }}
+                dot={{ r: 3, fill: '#195DFF', strokeWidth: 0 }}
                 activeDot={{ r: 5 }}
               />
             </LineChart>

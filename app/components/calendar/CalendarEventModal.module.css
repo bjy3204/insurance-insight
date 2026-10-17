@@ -8,31 +8,31 @@
 .emojiButton { transition:background-color .15s; }
 .emojiButton:hover:not(:disabled) { background:#e5edf9; }
 .heroText { min-width:0; flex:1; display:flex; flex-direction:column; gap:4px; }.heroText > button { align-self:flex-start; height:22px; padding:0; border:0; background:transparent; color:#7a899e; font-size:13px; }
-.titleInput { width:100%; height:36px; padding:4px 8px; border:1px solid #dce4ef; border-radius:6px; outline:none; background:white; color:#24324a; font-size:19px; font-weight:400; }.titleInput::placeholder { color:#94a3b8; font-size:16px; font-weight:400; }.titleInput:focus { border-color:#93b5fa; }
+.titleInput { width:100%; height:36px; padding:4px 8px; border:1px solid #dce4ef; border-radius:6px; outline:none; background:white; color:#24324a; font-size:19px; font-weight:400; }.titleInput::placeholder { color:#94a3b8; font-size:16px; font-weight:400; }.titleInput:focus { border-color:#195DFF; }
 .dday { flex-shrink:0; padding:6px 10px; border-radius:8px; background:#f1f3f6; color:#64748b; font-size:15px; font-weight:700; }
 .field { display:flex; flex-direction:column; gap:8px; min-width:0; }.field > span { display:flex; align-items:center; gap:8px; color:#8290a4; font-size:14px; font-weight:500; }
 .inputWithIcon { position:relative; display:flex; align-items:center; }.inputWithIcon input { width:100%; min-width:0; height:32px; padding:0; border:0; border-bottom:1px solid transparent; border-radius:0; outline:none; color:#334968; font-size:16px; background:transparent; }.inputWithIcon input:focus { border-color:#c3d5f5; }
 .dateField { border:1px solid #e5ebf4; border-radius:12px; padding:15px 17px; }.dateField input { height:28px; padding-left:34px; font-size:17px; font-weight:400; }.dateField .inputWithIcon > button { position:absolute; left:0; display:grid; place-items:center; padding:0; border:0; background:none; color:#4f72a5; }
 .dateTimeRow { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; padding-inline:4px; }.dateTimeRow .inputWithIcon { padding-left:28px; }
 .body > .field:last-of-type:not(.dateField) { padding:12px 16px; border-radius:12px; background:#f8fafc; }.field textarea { display:block; width:100%; height:30px; min-height:30px; padding:1px 0; border:0; outline:none; resize:vertical; background:transparent; color:#334968; font-size:16px; line-height:28px; }
-.footer { display:flex; justify-content:flex-end; gap:8px; padding:0 22px 22px; }.footer button { height:44px; min-width:76px; padding:0 16px; border:1px solid #dce3ed; border-radius:9px; background:white; color:#475569; font-size:15px; font-weight:600; }.footer .primary { flex:1; border-color:#2563eb; background:#2563eb; color:white; }.footer .delete { min-width:0; margin-right:auto; padding:0 8px; border:0; color:#dc2626; }
+.footer { display:flex; justify-content:flex-end; gap:8px; padding:0 22px 22px; }.footer button { height:44px; min-width:76px; padding:0 16px; border:1px solid #dce3ed; border-radius:9px; background:white; color:#475569; font-size:15px; font-weight:600; }.footer .primary { flex:1; border-color:#195DFF; background:#195DFF; color:white; }.footer .delete { min-width:0; margin-right:auto; padding:0 8px; border:0; color:#dc2626; }
 .dismiss { position:fixed; inset:0; z-index:5; border:0; background:transparent; }.emojiMenu { position:absolute; top:calc(100% + 6px); left:0; z-index:6; width:260px; display:grid; grid-template-columns:repeat(5,1fr); gap:4px; padding:12px; border:1px solid #dce3ed; border-radius:12px; background:white; box-shadow:0 12px 30px #1e293b20; }.emojiMenu button { height:38px; border:0; border-radius:6px; background:white; font-size:23px; }.emojiMenu button:hover { background:#f1f5f9; }
-.dateMenu { position:relative; z-index:6; width:100%; padding:10px 0 0; background:white; }.monthHeader { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }.monthHeader button { display:grid; place-items:center; padding:5px; border:0; background:none; }.days { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; text-align:center; font-size:14px; }.days span { padding-block:5px; color:#94a3b8; }.days span[data-weekday="0"] { color:#ef4444; }.days button { height:32px; border:0; border-radius:7px; background:white; }.days button:hover { background:#eff6ff; }.days button[aria-pressed="true"] { color:white; background:#2563eb; }
+.dateMenu { position:relative; z-index:6; width:100%; padding:10px 0 0; background:white; }.monthHeader { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }.monthHeader button { display:grid; place-items:center; padding:5px; border:0; background:none; }.days { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; text-align:center; font-size:14px; }.days span { padding-block:5px; color:#94a3b8; }.days span[data-weekday="0"] { color:#ef4444; }.days button { height:32px; border:0; border-radius:7px; background:white; }.days button:hover { background:#eff6ff; }.days button[aria-pressed="true"] { color:white; background:#195DFF; }
 .editor button { cursor:pointer; }.editor button:disabled { opacity:.5; cursor:default; }.error { color:#dc2626; font-size:14px; }
 .footer .delete { flex:1; min-width:0; margin-right:0; padding:0 16px; background:#fff1f2; }
 @media(max-width:400px) { .hero { gap:9px; }.emojiButton { width:44px; height:44px; }.titleInput { font-size:19px; }.dday { padding:6px 8px; font-size:13px; } }
 .editor button:not(.dismiss) { transition:background-color .15s,color .15s,border-color .15s; }
 .closeButton:hover:not(:disabled) { background:#e8edf3; color:#334155; }
 .footer button:hover:not(:disabled) { background:#f1f5f9; border-color:#cbd5e1; }
-.footer .primary:hover:not(:disabled) { background:#1d4ed8; border-color:#1d4ed8; }
+.footer .primary:hover:not(:disabled) { background:#195DFF; border-color:#195DFF; }
 .footer .delete:hover:not(:disabled) { background:#fff1f2; color:#b91c1c; }
 .heroText > button:hover:not(:disabled) { background:#f1f5f9; color:#475569; }
 .dateField .inputWithIcon > button:hover:not(:disabled),.monthHeader button:hover:not(:disabled) { background:#eef2f7; border-radius:6px; }
-.days button[aria-pressed="true"]:hover:not(:disabled) { background:#1d4ed8; }
+.days button[aria-pressed="true"]:hover:not(:disabled) { background:#195DFF; }
 
 .hero .dday{align-self:flex-end;display:flex;align-items:center;justify-content:center;height:36px;box-sizing:border-box;margin-bottom:2px}
 .dateField{height:44px;box-sizing:border-box;padding:0 17px;display:flex;justify-content:center}.dateField .inputWithIcon{width:100%}.dateField input{height:42px;font-weight:400}
-.body > .field:last-of-type:not(.dateField){padding:0;background:transparent}.field textarea{min-height:80px;height:80px;box-sizing:border-box;padding:10px 12px;border:1px solid #e5ebf4;border-radius:12px;background:white}.field textarea:focus{border-color:#93b5fa}
+.body > .field:last-of-type:not(.dateField){padding:0;background:transparent}.field textarea{min-height:80px;height:80px;box-sizing:border-box;padding:10px 12px;border:1px solid #e5ebf4;border-radius:12px;background:white}.field textarea:focus{border-color:#195DFF}
 
 .body .titleInput,.body .titleInput::placeholder,.body .inputWithIcon input,.body .field textarea{font-size:14px;font-weight:400}.heroText > button,.field > span{font-size:14px}
 
@@ -51,7 +51,7 @@
 .panel{border-radius:20px}
 .dateMenu{position:absolute;top:calc(100% + 3px);left:0;margin-top:0;width:100%;box-sizing:border-box}
 .monthHeader strong{font-size:14px}
-.body .field textarea{height:240px;min-height:240px}
+.body .field textarea{height:120px;min-height:120px}
 .fixedDateMenu{height:284px;display:flex;flex-direction:column}
 .fixedDateMenu .monthHeader{flex-shrink:0;margin-bottom:10px}
 .fixedDateMenu .monthHeader strong{font-size:15px}
@@ -62,3 +62,36 @@
 .fixedDateMenu .days span{padding-block:0;display:flex;align-items:center;justify-content:center}
 .fixedDateMenu .monthHeader button,.fixedDateMenu .days button{width:30px;height:30px;padding:0;justify-self:center;align-self:center;border-radius:8px}
 .fixedDateMenu .monthHeader button:hover:not(:disabled),.fixedDateMenu .days button:hover:not(:disabled){border-radius:8px}
+
+.field>span{font-size:15px;font-weight:700;color:#284261;line-height:24px}.field{gap:8px}.body,.dateTimeRow{gap:12px}
+
+.titleInput,.inputWithIcon input,.categorySelect>button{box-sizing:border-box;height:44px;min-height:44px;max-height:44px;border-radius:12px}.dateField{box-sizing:border-box;height:44px;min-height:44px;padding:0 12px;border-radius:12px}.dateField .inputWithIcon{height:100%}.dateField .inputWithIcon input{height:42px;min-height:0;max-height:42px;border-radius:0}.dateTimeRow .inputWithIcon{padding-left:0}.dateTimeRow input{padding-inline:12px}
+
+/* Calendar control sits inside the field without a separate button surface. */
+.dateField{padding:0;border:0}.dateField .inputWithIcon{height:44px}.dateField .inputWithIcon input{box-sizing:border-box;height:44px;min-height:44px;max-height:44px;border:1px solid #e5ebf4;border-radius:12px;padding:0 12px 0 44px}.dateField .inputWithIcon>button{left:2px;top:2px;transform:none;color:#8294ab;background:transparent!important;border:0!important;box-shadow:none!important}.dateField .inputWithIcon>button:hover:not(:disabled){background:transparent!important;color:#195DFF;box-shadow:none!important}.dateField .inputWithIcon>button svg{width:20px;height:20px;color:inherit}
+
+.dateField .inputWithIcon>button{top:0;left:0}
+
+.editor[data-calendar-overlay=true]{position:fixed!important;inset:0!important;width:100%!important;height:100dvh!important;max-width:none!important;max-height:none!important;margin:0!important;padding:16px!important;border:0!important;border-radius:0!important;box-sizing:border-box;transform:none!important}
+
+.panel .field>span{padding-left:4px;box-sizing:border-box}
+
+.panel .field textarea[aria-label=메모]{box-sizing:border-box;height:72px!important;min-height:72px!important;max-height:72px!important;padding:11px 12px;line-height:24px;resize:none;overflow-y:auto}
+
+@media(max-width:767px){
+.editor[data-calendar-overlay=true]{padding:12px!important}
+.editor .panel{box-sizing:border-box;width:calc(100vw - 24px);max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);min-height:0;border-radius:20px;transform:none!important;overflow:hidden}
+.panel .header{padding:20px 16px 12px;flex-shrink:0}
+.panel .header h2{font-size:20px;font-weight:700;color:#162442}
+.panel .closeButton{width:44px;height:44px;min-width:44px;flex-shrink:0;padding:0;background:transparent}
+.panel .body{padding:12px;gap:12px}
+.panel .field>span{font-size:15px;font-weight:700;color:#284261;line-height:24px;padding-left:4px}
+.panel .field{gap:8px}.panel .dateTimeRow{gap:12px}
+.panel .titleInput,.panel .inputWithIcon input,.panel .categorySelect>button{font-size:14px!important;font-weight:400}
+.panel .footer{padding:12px;gap:12px;border-top:1px solid #e5ebf5;flex-shrink:0}
+.panel .footer button{height:48px;min-height:48px;flex:1;min-width:0;border-radius:12px;font-size:14px;font-weight:700;margin:0}
+}
+@media(max-width:767px){
+ .editor .panel[data-popup-frame=true][role=dialog]{position:relative!important;inset:auto!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;height:auto!important;min-height:0!important;max-height:calc(100dvh - 24px)!important;margin:0!important;transform:none!important;translate:none!important;flex:0 1 auto}
+ .editor .panel[data-popup-frame=true][role=dialog]>.body{flex:0 1 auto;min-height:0;overflow-y:auto}
+}

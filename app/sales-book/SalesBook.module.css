@@ -17,7 +17,7 @@
 }
 
 .menu a { cursor:pointer; transition:background-color .18s ease,color .18s ease; }
-.menu a:hover { background-color:#eff6ff; color:#2563eb; }
+.menu a:hover { background-color:#eff6ff; color:#195DFF; }
 .materials .card {
   display:flex;
   flex-direction:column;
@@ -32,7 +32,7 @@
 .materials .card:hover {
   transform:translateY(-1px);
   border-color:#bfdbfe;
-  box-shadow:0 4px 12px #2563eb12;
+  box-shadow:0 4px 12px #195DFF12;
 }
 .materials .card:focus-visible, .menu a:focus-visible {
   outline:2px solid #93c5fd;
@@ -47,7 +47,7 @@
 .hiddenScroll { scrollbar-width:none; -ms-overflow-style:none; }
 .hiddenScroll::-webkit-scrollbar { display:none; }
 
-@media(min-width:768px){.menu{width:265px;box-sizing:border-box;padding-left:16px;padding-right:16px}.menu a{display:flex;align-items:center;gap:12px;height:44px;min-height:44px;box-sizing:border-box;padding:0 12px;border:0;border-radius:12px;font-size:14px;font-weight:600;color:#4b5563}.menu a+a{margin-top:4px}.menu a[aria-current=page]{background:#eff6ff;color:#1d4ed8}.menu a:not([aria-current=page]):hover{background:#f9fafb;color:#4b5563;filter:none}.menu a[aria-current=page]:hover{background:#eff6ff;filter:none}}
+@media(min-width:768px){.menu{width:265px;box-sizing:border-box;padding-left:16px;padding-right:16px}.menu a{display:flex;align-items:center;gap:12px;height:44px;min-height:44px;box-sizing:border-box;padding:0 12px;border:0;border-radius:12px;font-size:14px;font-weight:600;color:#4b5563}.menu a+a{margin-top:4px}.menu a[aria-current=page]{background:#eff6ff;color:#195DFF}.menu a:not([aria-current=page]):hover{background:#f9fafb;color:#4b5563;filter:none}.menu a[aria-current=page]:hover{background:#eff6ff;filter:none}}
 
 @media(min-width:768px){.menu :global(.space-y-1){display:flex;flex-direction:column;gap:4px}.menu a{margin-top:0 !important;margin-bottom:0 !important}.menu a span{font-size:14px;font-weight:600}}
 

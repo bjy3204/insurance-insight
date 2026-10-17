@@ -1140,7 +1140,7 @@ const matchSearch =
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -1240,7 +1240,7 @@ const matchSearch =
                   key={key}
                   onClick={() => { setFilterStatus(key); setCurrentPage(1); }}
                   className={`bg-white rounded-2xl border p-4 flex items-center gap-3 transition cursor-default hover:shadow-md ${
-                    filterStatus === key ? "border-blue-400 shadow-md" : "border-gray-200"
+                    filterStatus === key ? "border-blue-600 shadow-md" : "border-gray-200"
                   }`}
                 >
                   <Icon className={`w-6 h-6 ${color}`} />
@@ -1394,7 +1394,7 @@ cat.color === "gray" ? "bg-gray-300" :
                     value={catForm.name}
                     onChange={(e) => setCatForm({ ...catForm, name: e.target.value })}
                     placeholder="카테고리 이름"
-                    className="flex-1 h-10 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
+                    className="flex-1 h-10 px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-600"
                   />
                   <div className="hidden sm:flex gap-1.5">
                     {["blue","yellow","red","green","orange","gray"].map((c) => (
@@ -1433,12 +1433,12 @@ c === "gray" ? "bg-gray-300" :
                     value={noticeForm.title}
                     onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })}
                     placeholder="제목"
-                    className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
+                    className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-600"
                   />
                   <ResponsiveSelect data-ui-field="true"
                     value={noticeForm.category_id}
                     onChange={(e) => setNoticeForm({ ...noticeForm, category_id: e.target.value })}
-                    className="w-full h-11 pl-4 pr-8 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 bg-white "
+                    className="w-full h-11 pl-4 pr-8 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-600 bg-white "
                   >
                     <option value="">카테고리 선택 (선택사항)</option>
                     {noticeCategories.map((cat) => (
@@ -1569,7 +1569,7 @@ c === "gray" ? "bg-gray-300" :
           <button
             type="button"
             onClick={() => openNoticeDatePicker(type)}
-          className="h-9 px-2 sm:px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 bg-white flex items-center justify-between gap-2"
+          className="h-9 px-2 sm:px-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-600 bg-white flex items-center justify-between gap-2"
           >
             <span className={value ? "text-gray-800" : "text-gray-400"}>
               {value || "연도-월-일"}
@@ -2098,7 +2098,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 </div>
               ) : (
                 availableToSelect.map((sub) => (
-                  <div key={sub.id} className="bg-white border border-gray-200 rounded-xl p-3 flex items-center justify-between hover:border-blue-300 transition cursor-pointer" onClick={() => addToMonthly(sub.id)}>
+                  <div key={sub.id} className="bg-white border border-gray-200 rounded-xl p-3 flex items-center justify-between hover:border-blue-600 transition cursor-pointer" onClick={() => addToMonthly(sub.id)}>
                     <div className="flex items-center gap-2 min-w-0">
   <p className="font-bold text-gray-900 text-sm truncate">
     {sub.name}
@@ -2134,22 +2134,22 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">아이디</label>
-                  <ClearableSearchInput onClear={() => setSubForm({...subForm, subscriber_id: ""})} data-ui-field="true" value={subForm.subscriber_id} onChange={(e) => setSubForm({...subForm, subscriber_id: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="아이디 입력" />
+                  <ClearableSearchInput onClear={() => setSubForm({...subForm, subscriber_id: ""})} data-ui-field="true" value={subForm.subscriber_id} onChange={(e) => setSubForm({...subForm, subscriber_id: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600" placeholder="아이디 입력" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">이름</label>
-                  <ClearableSearchInput onClear={() => setSubForm({...subForm, name: ""})} data-ui-field="true" value={subForm.name} onChange={(e) => setSubForm({...subForm, name: e.target.value})} onKeyDown={event => { if (!subForm.id && event.key === "Tab" && !event.shiftKey) { event.preventDefault(); subscriberSaveButton.current?.focus(); } }} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="이름 입력" />
+                  <ClearableSearchInput onClear={() => setSubForm({...subForm, name: ""})} data-ui-field="true" value={subForm.name} onChange={(e) => setSubForm({...subForm, name: e.target.value})} onKeyDown={event => { if (!subForm.id && event.key === "Tab" && !event.shiftKey) { event.preventDefault(); subscriberSaveButton.current?.focus(); } }} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600" placeholder="이름 입력" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">자료방</label>
-                  <ClearableSearchInput onClear={() => setSubForm({...subForm, data_room: ""})} data-ui-field="true" value={subForm.data_room} onChange={(e) => setSubForm({...subForm, data_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="자료방 이름" />
+                  <ClearableSearchInput onClear={() => setSubForm({...subForm, data_room: ""})} data-ui-field="true" value={subForm.data_room} onChange={(e) => setSubForm({...subForm, data_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600" placeholder="자료방 이름" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">영상방</label>
-                  <ClearableSearchInput onClear={() => setSubForm({...subForm, video_room: ""})} data-ui-field="true" value={subForm.video_room} onChange={(e) => setSubForm({...subForm, video_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="영상방 이름" />
+                  <ClearableSearchInput onClear={() => setSubForm({...subForm, video_room: ""})} data-ui-field="true" value={subForm.video_room} onChange={(e) => setSubForm({...subForm, video_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600" placeholder="영상방 이름" />
                 </div>
               </div>
 
@@ -2167,7 +2167,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
     <ClearableSearchInput onClear={() => setSubForm({...subForm, pay_app_code: ""})} data-ui-field="true"
       value={subForm.pay_app_code}
       onChange={(e) => setSubForm({...subForm, pay_app_code: e.target.value})}
-      className="w-full bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400"
+      className="w-full bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600"
       placeholder="페이앱 코드 입력"
     />
   </div>
@@ -2175,7 +2175,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
               <div>
                 <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">메모</label>
-                <textarea data-ui-field="true" value={subForm.memo} onChange={(e) => setSubForm({...subForm, memo: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 resize-none h-24" placeholder="메모를 입력하세요" />
+                <textarea data-ui-field="true" value={subForm.memo} onChange={(e) => setSubForm({...subForm, memo: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-600 resize-none h-24" placeholder="메모를 입력하세요" />
               </div>
 
               <button data-popup-action="true" ref={subscriberSaveButton} onClick={saveSubscriber} disabled={subscriberSaving} className="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-sm disabled:cursor-wait disabled:opacity-60">
@@ -2457,7 +2457,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                     <p className="text-sm text-gray-600 mt-2 leading-relaxed whitespace-pre-line break-keep">{memo.content}</p>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <button data-icon-only="true" onClick={(e) => { e.stopPropagation(); toggleMemoVisible(memo.id); }} className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.visible ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}>
+                    <button data-icon-only="true" onClick={(e) => { e.stopPropagation(); toggleMemoVisible(memo.id); }} className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.visible ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-600" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}>
                       {memo.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                     </button>
                     <button data-icon-only="true" onClick={(e) => { e.stopPropagation(); toggleMemoPinned(memo.id); }} className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.pinned ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-600" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}>

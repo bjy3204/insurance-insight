@@ -1,4 +1,6 @@
 "use client";
+import {useCrmCalendar} from "@/app/notion-crm/CrmCalendarContext";
+import {eventCalendarFields} from "@/lib/notion-crm/account-calendar";
 import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
@@ -6,7 +8,6 @@ import { useAuth } from "@/app/components/AuthProvider";
 import { createPortal } from "react-dom";
 import {
   CalendarDays,
-  ChevronUp,
   ChevronLeft,
   ChevronRight,
   Plus,
@@ -50,6 +51,7 @@ type Event = {
   icon: string;
   color: string;
   category?: string;
+  customerId?: string;
 };
 type Checklist = { id: string; text: string; completed: boolean };
 type Holiday = { date: string; name: string };
@@ -62,7 +64,7 @@ type Identity = {
 const CHECKLIST_KEY = "insurance-calendar-local-checklists-v1";
 const colors: Record<string, string> = {
   white: "#a1aec1",
-  blue: "#176bff",
+  blue: "#195DFF",
   red: "#fa4268",
   green: "#13ad88",
   yellow: "#e9ad18",
@@ -101,7 +103,7 @@ export default function Calendar({
   identity: provided,
   beforeChecklist,
 }: {
-  mode?: "compact" | "full";
+  mode?: "compact" | "full" | "sticker";
   active?: boolean;
   beforeChecklist?: ReactNode;
   identity?: Identity;
@@ -141,11 +143,12 @@ export default function Calendar({
   return mode === "compact" ? (
     <CompactCalendar key={owner} identity={account} />
   ) : (
-    <FullCalendar active={active} key={owner} identity={account} beforeChecklist={beforeChecklist} />
+    <FullCalendar sticker={mode==="sticker"} active={active} key={owner} identity={account} beforeChecklist={beforeChecklist} />
   );
 }
 
 function useCalendarData(identity: Identity) {
+  const crm=useCrmCalendar();
   const { userId, approved } = identity;
   const cloud = approved;
   const [events, setEvents] = useState<Event[]>([]),
@@ -292,8 +295,10 @@ function useCalendarData(identity: Identity) {
         dateKey(new Date(`${event.date}T12:00:00`)) !== event.date
       )
         throw Error("Invalid event");
+      if(crm){const row=id?.startsWith('crm:')?crm.data.events.find(item=>'crm:'+item.id===id):id?crm.accountEvents.find(item=>item.id==='calendar:'+id):undefined;if(id&&!row)throw Error('일정을 찾을 수 없습니다.');await crm.saveEvent(row,{'제목':event.title,'일정':event.date+(event.time?'T'+event.time+':00+09:00':''),'장소':event.place,'상담내용':event.content,'메모':event.memo,'분류':event.category||'개인','고객':event.customerId?[event.customerId]:[]});return;}
+      const {customerId:_customerId,...nativeFields}=event;
       const fields = {
-        ...event,
+        ...nativeFields,
         title: event.title.trim(),
         time: event.time || null,
         place: event.place || null,
@@ -321,6 +326,7 @@ function useCalendarData(identity: Identity) {
     });
   const deleteEvent = (id: string) =>
     write(async () => {
+      if(crm){const row=id.startsWith('crm:')?crm.data.events.find(item=>'crm:'+item.id===id):crm.accountEvents.find(item=>item.id==='calendar:'+id);if(!row)throw Error('일정을 찾을 수 없습니다.');await crm.deleteEvent(row);return;}
       if (cloud) {
         const result = await supabase
           .from("calendar_events")
@@ -363,7 +369,7 @@ function useCalendarData(identity: Identity) {
       }
     });
   return {
-    events,
+    events:[...events.map(event=>{const linked=crm?.accountEvents.find(row=>row.id==='calendar:'+event.id);return {...event,category:['개인','상담','기타'].includes(event.category||'')?event.category:'기타',customerId:linked&&Array.isArray(linked.values['고객'])?linked.values['고객'][0]||'':''};}),...(crm?.data.events||[]).flatMap(row=>{try{const fields=eventCalendarFields(row.values);return [{...fields,id:'crm:'+row.id,time:fields.time||'',icon:'💬',color:'#195DFF',customerId:Array.isArray(row.values['고객'])?row.values['고객'][0]||'':''}];}catch{return [];}})],
     checklists,
     ready,
     error,
@@ -375,7 +381,7 @@ function useCalendarData(identity: Identity) {
   };
 }
 
-function FullCalendar({ identity, beforeChecklist, active }: { identity: Identity; beforeChecklist?: ReactNode; active: boolean }) {
+function FullCalendar({ identity, beforeChecklist, active, sticker=false }: { identity: Identity; beforeChecklist?: ReactNode; active: boolean;sticker?:boolean }) {
   const store = useCalendarData(identity);
   const { events, checklists } = store;
   const [calendarDate, setCalendarDate] = useState(new Date());
@@ -625,17 +631,14 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
         <button type="button" onClick={() => {setShowMobileDayPopup(false);setViewingEvent(row.event||{title:row.title,date,icon:row.icon,memo:row.detail,category:row.category});}} className={`min-w-0 flex-1 text-left ${extras.completed[row.key] ? "line-through" : ""}`}>
           <span className={layoutStyles.scheduleLine}><span className={layoutStyles.scheduleTitle}>{row.icon} {row.title}</span>{row.event?.time && <span>{formatCalendarTime(row.event.time)}</span>}</span>
         </button>
-        {row.event&&<div className={layoutStyles.scheduleActions}>
-          <button data-icon-only="true" type="button" aria-label={`${row.title} 수정`} title="수정" disabled={store.saving} onClick={()=>{setShowMobileDayPopup(false);setEditingEvent(row.event);setFormData(row.event!);setShowEventModal(true);}}><Pencil size={17}/></button>
-          <button data-icon-only="true" type="button" aria-label={`${row.title} 삭제`} title="삭제" disabled={store.saving} onClick={()=>{setDeleteEventId(row.event!.id);setDeleteEventConfirmOpen(true);}}><Trash2 size={17}/></button>
-        </div>}
+
       </div>)}
     </>;
   };
 
   if (!store.ready)
     return (
-      <div className="flex min-h-[calc(100dvh-210px)] flex-col items-center justify-center gap-3 p-6 text-center text-sm text-slate-400" role="status">
+      <div className={(sticker?"min-h-40":"min-h-[calc(100dvh-210px)]")+" flex flex-col items-center justify-center gap-3 p-6 text-center text-sm text-slate-400"} role="status">
         {store.error || null}
         {store.error && (
           <button data-action-height="44" onClick={() => void store.reload()}>다시 시도</button>
@@ -643,7 +646,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
       </div>
     );
   return (
-    <div data-calendar-layout="full">
+    <div data-calendar-layout={sticker?"sticker":"full"} className={sticker?layoutStyles.stickerView:undefined}>
       {/* 메인 콘텐츠 */}
       <div className="w-full pt-0 pb-6 mt-2">
         {/* PC: 2열 레이아웃 (왼쪽 1fr: 체크리스트+일정, 오른쪽 3fr: 달력) */}
@@ -653,11 +656,11 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
           {/* 달력 — PC: 오른쪽(order-2) */}
           <div className={`${layoutStyles.calendar} personal-grid bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5`}>
             {/* 월 네비게이션 */}
-            <div className="relative flex items-center justify-center mb-4 min-h-9">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <button data-icon-only="true" data-prev-next="true" aria-label="이전 달" onClick={() => setCalendarDate(new Date(currentYear, currentMonth - 1, 1))} className="w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-50 transition"><ChevronLeft data-arrow-size="20" className="w-4 h-4" /></button>
+            <div data-calendar-month-row="true" className="relative flex items-center justify-center mb-4 min-h-9">
+              <div data-calendar-month-navigation="true" className="flex items-center gap-3 sm:gap-4">
+                <button data-icon-only={sticker?undefined:"true"} data-prev-next="true" aria-label="이전 달" onClick={() => setCalendarDate(new Date(currentYear, currentMonth - 1, 1))} className="w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-50 transition"><ChevronLeft data-arrow-size="20" className="w-4 h-4" /></button>
                 <h2 data-calendar-month-title="true" className="text-xl sm:text-2xl font-bold text-gray-900 whitespace-nowrap">{currentYear}년 {currentMonth + 1}월</h2>
-                <button data-icon-only="true" data-prev-next="true" aria-label="다음 달" onClick={() => setCalendarDate(new Date(currentYear, currentMonth + 1, 1))} className="w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-50 transition"><ChevronRight data-arrow-size="20" className="w-4 h-4" /></button>
+                <button data-icon-only={sticker?undefined:"true"} data-prev-next="true" aria-label="다음 달" onClick={() => setCalendarDate(new Date(currentYear, currentMonth + 1, 1))} className="w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-50 transition"><ChevronRight data-arrow-size="20" className="w-4 h-4" /></button>
               </div>
             </div>
 
@@ -675,10 +678,10 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                       index === 0
                         ? "#ef4444"
                         : index === 6
-                          ? "#3b82f6"
+                          ? "#195DFF"
                           : "#374151",
                   }}
-                  className="text-[15px] font-bold py-2 border-r border-gray-100 last:border-r-0"
+                  data-calendar-weekday="true" className="text-[15px] font-bold py-2 border-r border-gray-100 last:border-r-0"
                 >
                   {day}
                 </div>
@@ -686,7 +689,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
             </div>
 
             {/* 달력 그리드 */}
-            <div className="grid grid-cols-7 overflow-hidden rounded-b-xl border-l border-gray-100">
+            <div data-calendar-date-grid="true" className="grid grid-cols-7 overflow-hidden rounded-b-xl border-l border-gray-100">
               {calendarDays.map((dateItem, index) => {
                 const displayDay = dateItem.day;
 
@@ -720,7 +723,14 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                 const isToday = fullDate === todayValue;
                 const isOtherMonth = dateItem.type !== "current";
                 const realDay = new Date(fullDate).getDay();
-                const hasEvents = dayEvents.length > 0;
+                const mobileDotColors = [...new Set([
+                  ...extras.sheetEvents.filter(event => event.date === fullDate).map(event =>
+                    event.kind === "birthday" ? "#EC4899" :
+                    event.kind === "renewal" ? "#F97316" :
+                    event.kind === "payment" ? "#9333EA" : "#16A34A"
+                  ),
+                  ...(dayEvents.length ? ["#195DFF"] : []),
+                ])];
 
                 const numberColor =
                   holiday || realDay === 0
@@ -730,20 +740,20 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                     : realDay === 6
                       ? isOtherMonth
                         ? "#bfdbfe"
-                        : "#3b82f6"
+                        : "#195DFF"
                       : isOtherMonth
                         ? "#d1d5db"
                         : "#374151";
 
                 return (
                   <div
-                    key={`${dateItem.type}-${displayDay}-${index}`}
+                    data-calendar-day-cell="true" data-calendar-today={isToday?"true":undefined} key={`${dateItem.type}-${displayDay}-${index}`}
                     onClick={() => {
                       setSelectedDate(fullDate);
                       // 모바일: 선택한 날짜의 일정을 달력 안에서 펼칩니다.
-                      if (window.innerWidth < 768) {
+                      if (sticker || window.innerWidth < 768) {
                         setMobileDayDate(fullDate);
-                        setShowMobileDayPopup(true);
+                        setShowMobileDayPopup(previous => mobileDayDate===fullDate ? !previous : true);
                       }
                     }}
                     className={`
@@ -754,27 +764,27 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                   `}
                   >
                     {/* 모바일: 날짜 숫자만 중앙 표시 */}
-                    <div className="sm:hidden relative flex items-center justify-center h-full">
+                    <div className={(sticker?"":"sm:hidden ")+"relative flex items-center justify-center h-full"}>
                       <span
-                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${isToday ? holiday ? "ring-2 ring-blue-500" : "bg-blue-600 text-white" : ""}`}
-                        style={{ color: holiday ? isOtherMonth ? "#fecaca" : "#ef4444" : isToday ? "#ffffff" : numberColor }}
+                        data-calendar-date="true" className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${isToday&&!sticker ? holiday ? "ring-2 ring-blue-500" : "bg-blue-600 text-white" : ""}`}
+                        style={{ color: holiday ? isOtherMonth ? "#fecaca" : "#ef4444" : isToday&&!sticker ? "#ffffff" : numberColor }}
                       >
                         {displayDay}
                       </span>
-                      {/* 일정 있으면 파란 점 */}
-                      {sheetIcons.length > 0 && <div className="absolute right-1 bottom-1 flex text-[10px] leading-none">{sheetIcons.join("")}</div>}
-                      {hasEvents && sheetIcons.length === 0 && (
-                        <div className="absolute left-1/2 top-[calc(50%+16px)] -translate-x-1/2 w-1 h-1 rounded-full bg-blue-400" />
+                      {mobileDotColors.length > 0 && (
+                        <div aria-label="일정 표시" className="absolute left-1/2 bottom-[3px] -translate-x-1/2 flex gap-0.5">
+                          {mobileDotColors.map(color => <span key={color} className="w-1 h-1 rounded-full" style={{backgroundColor:color}} />)}
+                        </div>
                       )}
                     </div>
 
                     {/* PC: 기존 레이아웃 */}
-                    <div className={`hidden sm:flex ${layoutStyles.dayContent}`}>
+                    <div className={`${sticker?'hidden':'hidden sm:flex'} ${layoutStyles.dayContent}`}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-0.5">
                           <span
-                            className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-[15px] font-semibold ${isToday ? holiday ? "ring-2 ring-blue-500" : "bg-blue-600 text-white" : ""}`}
-                            style={{ color: holiday ? isOtherMonth ? "#fecaca" : "#ef4444" : isToday ? "#ffffff" : numberColor }}
+                            className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-[15px] font-semibold ${isToday&&!sticker ? holiday ? "ring-2 ring-blue-500" : "bg-blue-600 text-white" : ""}`}
+                            style={{ color: holiday ? isOtherMonth ? "#fecaca" : "#ef4444" : isToday&&!sticker ? "#ffffff" : numberColor }}
                           >
                             {displayDay}
                           </span>
@@ -836,9 +846,9 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                 );
               })}
             </div>
-          {showMobileDayPopup && <section className="mt-4 border-t border-gray-200 pt-4 md:hidden" aria-label="선택한 날짜 일정">
-              <div className="flex items-center justify-between gap-2 mb-3"><h3 className="text-base font-bold">{mobileDayDate} 일정</h3><div className="flex items-center gap-2"><button type="button" data-action-height="44" className="rounded-xl bg-blue-50 px-3 text-sm text-blue-600" onClick={()=>openEventModal(mobileDayDate)}>일정 추가</button><button type="button" aria-label="일정 목록 접기" className="p-2 text-gray-400" onClick={()=>setShowMobileDayPopup(false)}><ChevronUp size={18}/></button></div></div>
-              <div className="space-y-2">{renderSchedules(mobileDayDate,getEventsForDate(mobileDayDate))}</div>
+          {showMobileDayPopup && <section className={sticker?"mt-2":"mt-2 md:hidden"} aria-label="선택한 날짜 일정">
+              <div data-calendar-selected-heading="true" className="flex items-center justify-between gap-2 mb-1"><h3 data-calendar-selected-date="true" className="pl-3 text-base font-bold">{mobileDayDate}</h3><button type="button" data-icon-only="true" aria-label="일정 추가" title="일정 추가" className="flex h-11 w-11 items-center justify-center rounded-xl bg-transparent text-blue-600" onClick={()=>openEventModal(mobileDayDate)}><Plus size={20}/></button></div>
+              <div data-calendar-selected-list="true" className="space-y-2">{renderSchedules(mobileDayDate,getEventsForDate(mobileDayDate))}</div>
             </section>}
           </div>
 
@@ -954,6 +964,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
           formData={formData}
           setFormData={setFormData}
           editingEvent={Boolean(editingEvent)}
+          categoryOptions={['개인','상담','기타']}
           onClose={() => {
             setShowEventModal(false);
             resetForm();
@@ -1144,7 +1155,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
                       aria-pressed={!!reminders.enabled[event.id]}
                       title={reminders.enabled[event.id]?"알림 끄기":"알림 켜기"}
                     >
-                      {reminders.enabled[event.id]?<Bell style={{color:"#2563eb"}}/>:<BellOff />}
+                      {reminders.enabled[event.id]?<Bell style={{color:"#195DFF"}}/>:<BellOff />}
                     </button>}
                     <button data-icon-only="true"
                       onClick={() => open(event)}

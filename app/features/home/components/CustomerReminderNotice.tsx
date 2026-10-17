@@ -2,9 +2,11 @@
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { loadReminders, readLocalEvents } from "./dashboard/calendar-storage";
-import { CALENDAR_UPDATED, calendarBannerReminders, type CalendarEvent } from "./dashboard/reminder-utils";
+import { readLocalEvents } from "./dashboard/calendar-storage";
+import { CALENDAR_UPDATED, todayBannerEvents, type CalendarEvent } from "./dashboard/reminder-utils";
 import { formatCalendarTime } from "@/lib/calendar-time";
+import {eventCalendarFields} from '@/lib/notion-crm/account-calendar';
+import type {CrmRow} from '@/lib/notion-crm/model';
 import CalendarEventDetails from "@/app/components/calendar/CalendarEventDetails";
 import CustomerScheduleReminderDialog, {type CustomerScheduleReminder} from "./CustomerScheduleReminderDialog";
 import styles from "./CustomerReminderNotice.module.css";
@@ -26,7 +28,22 @@ export default function CustomerReminderNotice(){
     const userId=session?.user.id||null;
     const results=await Promise.allSettled([
       session?fetch("/api/customers?view=reminders",{cache:"no-store",headers:{Authorization:`Bearer ${session.access_token}`}}).then(async response=>response.ok?(await response.json()).reminders||[]:[]):Promise.resolve([]),
-      Promise.all([userId?supabase.from("calendar_events").select("*").eq("user_id",userId).then(({data,error})=>{if(error)throw error;return (data||[]) as CalendarEvent[];}):Promise.resolve(readLocalEvents()),loadReminders(userId)]).then(([events,reminders])=>calendarBannerReminders(events,reminders).map(event=>({id:`calendar:${event.id}`,date:event.date,name:"",label:event.title,event})))
+      (async()=>{
+       const stored=userId?await supabase.from("calendar_events").select("*").eq("user_id",userId):{data:readLocalEvents(),error:null};
+       if(stored.error)throw stored.error;
+       const completion=userId?await supabase.from('customer_settings').select('calendar_completed').eq('user_id',userId).maybeSingle():{data:{calendar_completed:JSON.parse(localStorage.getItem('insurance-calendar-completed-v1')||'{}')},error:null};
+       if(completion.error)throw completion.error;
+       const completed=completion.data?.calendar_completed||{};
+       let linked:CalendarEvent[]=[];
+       if(session){
+        const provider=localStorage.getItem('crm-storage-provider');
+        if(['notion','sheets','native'].includes(provider||'')){
+         const response=await fetch('/api/my-page'+(provider==='notion'?'':'/'+provider)+'?source=events',{cache:'no-store',headers:{Authorization:'Bearer '+session.access_token}});
+         if(response.ok){const result=await response.json();linked=(result.data?.events||[]).flatMap((row:CrmRow)=>{try{const fields=eventCalendarFields(row.values);if(row.values['완료'])return [];return [{...fields,id:'crm:'+row.id,icon:'📅',color:'blue'}];}catch{return [];}});}
+        }
+       }
+       return todayBannerEvents([...(stored.data||[]) as CalendarEvent[],...linked],completed).map(event=>({id:`calendar:${event.id}`,date:event.date,name:"",label:event.title,event}));
+      })()
     ]);
     const all=results.flatMap(result=>result.status==="fulfilled"?result.value:[]);
     if(active&&current===run){setRows(all);setViewing(current=>current&&all.some(row=>row.event?.id===current.id)?all.find(row=>row.event?.id===current?.id).event:null);}

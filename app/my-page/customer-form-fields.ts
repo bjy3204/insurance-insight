@@ -34,7 +34,7 @@ export function customerVehicles(values: Record<string, string>): CustomerVehicl
 }
 export function customerGender(value: string) {
   const digits = value.replace(/\D/g, "");
-  return digits.length === 7 ? Number(digits[6]) % 2 ? "남" : "여" : "";
+  return digits.length >= 7 ? Number(digits[6]) % 2 ? "남" : "여" : "";
 }
 export function formatCustomerPhone(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 12);

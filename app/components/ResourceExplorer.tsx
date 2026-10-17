@@ -770,7 +770,7 @@ const fileRec = fileRecords.find(
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder="파일명 또는 폴더명 검색..."
-              className="w-full pl-9 pr-9 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition"
+              className="w-full pl-9 pr-9 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-600 transition"
             />
             {searchQuery && (
               <button data-icon-only="true" onClick={clearSearch} className="absolute right-3 text-gray-400 hover:text-gray-600 cursor-default">
@@ -900,12 +900,12 @@ const fileRec = fileRecords.find(
                       <div
                         key={item.storageName}
                         className={`relative group flex flex-col items-center gap-2 p-3 rounded-2xl border transition cursor-default select-none ${
-                          isSelected ? "border-blue-400 bg-blue-50 ring-2 ring-blue-300" : "border-gray-100 bg-white hover:bg-blue-50 hover:border-blue-200"
+                          isSelected ? "border-blue-600 bg-blue-50 ring-2 ring-blue-300" : "border-gray-100 bg-white hover:bg-blue-50 hover:border-blue-200"
                         }`}
                         onClick={() => handlePreview(item)}
                       >
                         {!item.isFolder && (
-                          <button type="button" aria-label={`${item.displayName} 선택`} aria-pressed={isSelected} onClick={event => { event.stopPropagation(); setSelectMode(true); toggleSelect(item.storageName); }} className={`absolute top-2 left-2 z-10 w-5 h-5 rounded border-2 flex items-center justify-center transition ${isSelected ? "bg-blue-500 border-blue-500" : "bg-white border-gray-300"}`}>
+                          <button type="button" aria-label={`${item.displayName} 선택`} aria-pressed={isSelected} onClick={event => { event.stopPropagation(); setSelectMode(true); toggleSelect(item.storageName); }} className={`absolute top-2 left-2 z-10 w-5 h-5 rounded border-2 flex items-center justify-center transition ${isSelected ? "bg-blue-500 border-blue-600" : "bg-white border-gray-300"}`}>
                             {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                           </button>
                         )}
@@ -993,7 +993,7 @@ const fileRec = fileRecords.find(
                       {/* 아이콘 / 체크박스 */}
                       <div className="w-8 flex items-center justify-center">
                         {selectMode ? (
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition ${isSelected ? "bg-blue-500 border-blue-500" : "bg-white border-gray-300"}`}>
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition ${isSelected ? "bg-blue-500 border-blue-600" : "bg-white border-gray-300"}`}>
                             {isSelected && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                           </div>
                         ) : (

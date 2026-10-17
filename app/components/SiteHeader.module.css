@@ -11,7 +11,7 @@
 .main h1 + p { font-size: 14px; color: #6b7280; margin-top: 6px; }
 .main button { cursor: pointer; }
 .header h1, .header h1 + p { cursor: default; }
-.main button:focus-visible { outline: 2px solid #2563eb; outline-offset: 3px; }
+.main button:focus-visible { outline: 2px solid #195DFF; outline-offset: 3px; }
 .main :global(.shadow-sm) { box-shadow: none; }
 .main :global(.rounded-2xl) { border-radius: 8px; }
 .main :global(.gap-10) { gap: 36px; }

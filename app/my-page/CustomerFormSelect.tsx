@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { Check, ChevronDown, Plus, X } from "lucide-react";
 import styles from "./CustomerEntryDialog.module.css";
 
-export default function CustomerFormSelect({ label, value, options, onChange, onAdd, onRemove, disabled }: {
+export default function CustomerFormSelect({ label, value, options, onChange, onAdd, onRemove, disabled, placeholder = "선택 또는 직접 입력" }: { placeholder?:string;
   label: string; value: string; options: readonly string[]; onChange: (value: string) => void;
   onAdd: (value: string) => Promise<boolean>; onRemove: (value: string) => Promise<boolean>; disabled: boolean;
 }) {
@@ -53,8 +53,8 @@ export default function CustomerFormSelect({ label, value, options, onChange, on
   }, [position]);
   useEffect(() => { menu.current?.querySelector('[data-active="true"]')?.scrollIntoView({ block: "nearest" }); }, [index]);
   return <div ref={root} data-popup-field-wrapper="true" className={styles.select}>
-    <input ref={input} role="combobox" aria-label={label} aria-expanded={!!position} aria-controls={position ? id : undefined} aria-autocomplete="list" aria-activedescendant={position && choices[index] ? `${id}-${index}` : undefined}
-      readOnly={disabled} aria-disabled={disabled} maxLength={80} value={value} placeholder="선택 또는 직접 입력" autoComplete="off"
+    <input data-borderless-field="true" ref={input} role="combobox" aria-label={label} aria-expanded={!!position} aria-controls={position ? id : undefined} aria-autocomplete="list" aria-activedescendant={position && choices[index] ? `${id}-${index}` : undefined}
+      readOnly={disabled} aria-disabled={disabled} maxLength={80} value={value} placeholder={placeholder} autoComplete="off"
       onChange={event => { dirty.current = true; onChange(event.target.value); open(event.target.value); }}
       onBlur={event => { if (!menu.current?.contains(event.relatedTarget as Node) && !root.current?.contains(event.relatedTarget as Node)) { void commit(); close(); } }}
       onKeyDown={event => {
@@ -64,8 +64,8 @@ export default function CustomerFormSelect({ label, value, options, onChange, on
         if (event.key === "Enter") { event.preventDefault(); if (position && choices[index]) choose(choices[index]); else { void commit(); } }
         if (event.key === "Tab") { void commit(); close(); }
       }} />
-    <button type="button" disabled={disabled} aria-label={`${label} 목록`} aria-haspopup="listbox" aria-expanded={!!position} onClick={() => { if (position) close(); else open(); input.current?.focus(); }}><ChevronDown size={16} /></button>
-    {position && createPortal(<div ref={menu} id={id} role="listbox" aria-label={label} className={styles.options} style={position}>
+    <button type="button" disabled={disabled} aria-label={`${label} 목록`} aria-haspopup="listbox" aria-expanded={!!position} onClick={() => { if (position) close(); else open(); input.current?.focus(); }}><ChevronDown size={15} /></button>
+    {position && createPortal(<div ref={menu} data-mini-dropdown="true" id={id} role="listbox" aria-label={label} className={styles.options} style={position}>
       {choices.map((option, optionIndex) => <div className={styles.optionRow} key={option} role="presentation">
         <button type="button" tabIndex={-1} id={`${id}-${optionIndex}`} role="option" aria-selected={option === value} data-active={optionIndex === index} onPointerDown={event => event.preventDefault()} onMouseEnter={() => setIndex(optionIndex)} onClick={() => choose(option)}><span>{option}</span>{option === value && <Check size={16} />}</button>
         <button type="button" className={styles.removeOption} aria-label={`${label} ${option} 삭제`} disabled={disabled} onPointerDown={event => event.preventDefault()} onClick={async () => { if (await onRemove(option)) { if (currentValue.current === option) { dirty.current = false; onChange(""); } setIndex(-1); } }}><X size={15} /></button>

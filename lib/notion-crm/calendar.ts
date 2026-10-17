@@ -1,0 +1,17 @@
+import {contractExpiry} from "./contract-dates";
+import type {CrmData,CrmRow} from './model';
+import type {SheetCalendarEvent} from '@/lib/google/sheet-calendar-model';
+const str=(row:CrmRow,key:string)=>String(row.values[key]??'');
+const date=(value:string)=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return null;const d=new Date(value+'T00:00:00Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===value?d:null;};
+const key=(d:Date)=>d.toISOString().slice(0,10);
+const monthDate=(year:number,month:number,day:number)=>new Date(Date.UTC(year,month,Math.min(day,new Date(Date.UTC(year,month+1,0)).getUTCDate())));
+export function buildCrmCalendar(data:CrmData,from:string,to:string){
+ const output:SheetCalendarEvent[]=[];if(!date(from)||!date(to)||from>to)return output;
+ const add=(row:CrmRow,customer:CrmRow,day:string,kind:SheetCalendarEvent['kind'],category:string,content:string,icon:string)=>{if(day<from||day>to)return;output.push({id:'sheet:ncrm_'+row.id.replace(/[^a-zA-Z0-9_-]/g,'')+'_'+kind+'_'+day,date:day,kind,category,name:str(customer,'이름'),birth:str(customer,'주민번호').replace(/\D/g,'').slice(0,6)||str(customer,'생년월일').slice(2).replace(/-/g,''),content,memoContent:content,icon});};
+ const owner=(row:CrmRow)=>{const ids=row.values['고객'];return Array.isArray(ids)?data.customers.find(c=>ids.some(id=>id.replace(/-/g,'')===c.id.replace(/-/g,''))):undefined;};
+ for(const customer of data.customers){let birth=date(str(customer,'생년월일'));if(!birth){const digits=str(customer,'주민번호').replace(/\D/g,'');if(digits.length>=7){const century='3478'.includes(digits[6])?'20':'19';birth=date(century+digits.slice(0,2)+'-'+digits.slice(2,4)+'-'+digits.slice(4,6));}}if(birth)for(let year=Number(from.slice(0,4));year<=Number(to.slice(0,4));year++)add(customer,customer,key(monthDate(year,birth.getUTCMonth(),birth.getUTCDate())),'birthday','생일','생일','🎂');}
+ for(const row of data.cars){const customer=owner(row),renewal=date(str(row,'갱신일'));if(!customer||!renewal)continue;for(let year=Number(from.slice(0,4));year<=Number(to.slice(0,4));year++)add(row,customer,key(monthDate(year,renewal.getUTCMonth(),renewal.getUTCDate())),'renewal','자동차갱신',[str(row,'차량번호'),str(row,'보험사')].filter(Boolean).join(' · '),'🚗');}
+ for(const row of data.cards){const customer=owner(row),day=Number(row.values['결제일']);if(!customer||!Number.isInteger(day)||day<1||day>31)continue;const start=date(from)!,end=date(to)!;for(let d=new Date(Date.UTC(start.getUTCFullYear(),start.getUTCMonth(),1));d<=end;d=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,1)))add(row,customer,key(monthDate(d.getUTCFullYear(),d.getUTCMonth(),day)),'payment','카드수납',[str(row,'보험사'),str(row,'카드사'),str(row,'명의자')].filter(Boolean).join(' · '),'💳');}
+ for(const row of data.contracts){const customer=owner(row);if(!customer)continue;for(const [kind,label,field,months] of [['immunity','면책 만료','면책만료','면책기간(개월)'],['reduction','감액 만료','감액만료','감액기간(개월)']] as const){let expiry=date(contractExpiry(str(row,'계약일'),row.values[months]))||date(str(row,field));const contract=date(str(row,'계약일')),count=Number(row.values[months]);if(!expiry&&contract&&Number.isInteger(count)&&count>0&&count<=1200)expiry=monthDate(contract.getUTCFullYear(),contract.getUTCMonth()+count,contract.getUTCDate());if(expiry)add(row,customer,key(expiry),kind,label,[label,str(row,'보험사'),str(row,'상품명')].filter(Boolean).join(' · '),'🔒');}}
+ return output.sort((a,b)=>a.date.localeCompare(b.date)||a.name.localeCompare(b.name,'ko'));
+}

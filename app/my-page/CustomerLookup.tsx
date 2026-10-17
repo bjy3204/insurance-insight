@@ -119,7 +119,7 @@ export default function CustomerLookup({ customers = [], contracts = [], mobileA
         {cell("유입경로", value("category"))}{cell("전화번호", <span className={styles.phoneLine}><span>{values.phone ? formatCustomerPhone(values.phone) : ""}</span>{values.carrier && <span className={styles.carrier} data-carrier={values.carrier}>{values.carrier}</span>}</span>)}
         {cell("직업", value("job"))}{cell("이메일", value("email"))}
         {cell("주소", value("address"), true)}{cell("메모", value("memo"), true)}
-      </>, selected && <span className={styles.identityMeta}>{timing && <span aria-label="나이">만 {timing.age}세</span>}{timing && gender && <span className={styles.metaDot}>·</span>}{gender && <span aria-label="성별" className={gender === "여" ? styles.female : styles.male}>{gender}</span>}</span>)}
+      </>, selected && <span className={styles.identityMeta}>{timing && <span aria-label="나이">{timing.age}세</span>}{timing && gender && <span className={styles.metaDot}>/</span>}{gender && <span aria-label="성별" className={gender === "여" ? styles.female : styles.male}>{gender}</span>}</span>)}
       {card("보험금 청구", <Landmark size={19} />, styles.accountTone, <>
         {cell("예금주", value("accountOwner"))}{cell("생년월일", values.accountBirth ? shortCustomerBirth(values.accountBirth) : "")}
         {cell("은행", value("bank"), true)}{cell("계좌번호", value("accountNumber"), true)}

@@ -31,3 +31,7 @@ export function calendarBannerReminders(events:CalendarEvent[],reminders:Calenda
   const enabled=new Set(reminders.filter(reminder=>!reminder.acknowledged_at).map(reminder=>reminder.event_id));
   return events.filter(event=>enabled.has(event.id)&&event.date===today).sort((a,b)=>a.date.localeCompare(b.date)||(a.time||"").localeCompare(b.time||""));
 }
+
+export function todayBannerEvents(events:CalendarEvent[],completed:Record<string,boolean>,today=koreaDate()){
+ return events.filter(event=>event.date===today&&!completed['event:'+event.id]).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+}

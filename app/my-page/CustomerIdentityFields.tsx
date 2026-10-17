@@ -6,7 +6,8 @@ import { customerNameStartsWith, shortCustomerBirth, type CustomerIdentity } fro
 import styles from "./CustomerEntryDialog.module.css";
 
 // Suggestions are supplied by the customer-list connection. Typing never replaces an input.
-export default function CustomerIdentityFields({ customers, name, birth, onNameChange, onBirthChange }: {
+export default function CustomerIdentityFields({ customers, name, birth, onNameChange, onBirthChange, suggestions = false }: {
+  suggestions?: boolean;
   customers: readonly CustomerIdentity[]; name: string; birth: string;
   onNameChange: (value: string) => void; onBirthChange: (value: string) => void;
 }) {
@@ -16,9 +17,10 @@ export default function CustomerIdentityFields({ customers, name, birth, onNameC
   const [target, setTarget] = useState<"name" | "birth">("name");
   const [index, setIndex] = useState(-1);
   const matches = customers.filter(customer => target === "name" ? customerNameStartsWith(customer.name, name) : !!name.trim() && customer.name.trim() === name.trim());
-  const visible = !!position && matches.length > 0;
+  const visible = suggestions && !!position && matches.length > 0;
   const close = () => { setPosition(null); setIndex(-1); };
   const open = (field: "name" | "birth") => {
+    if (!suggestions) return;
     const input = field === "name" ? nameInput.current : birthInput.current;
     if (!input) return;
     const rect = input.getBoundingClientRect();
@@ -41,7 +43,7 @@ export default function CustomerIdentityFields({ customers, name, birth, onNameC
   useEffect(() => { menu.current?.querySelector('[data-active="true"]')?.scrollIntoView({ block: "nearest" }); }, [index]);
   const input = (field: "name" | "birth", label: string) => <div className={styles.field}>
     <label htmlFor={`${id}-${field}`} className={styles.label}>{label}</label>
-    <input ref={field === "name" ? nameInput : birthInput} id={`${id}-${field}`} className={styles.identityInput} role="combobox" aria-autocomplete="list" aria-expanded={visible && target === field} aria-controls={visible && target === field ? `${id}-options` : undefined} aria-activedescendant={visible && target === field && matches[index] ? `${id}-option-${index}` : undefined}
+    <input ref={field === "name" ? nameInput : birthInput} id={`${id}-${field}`} className={styles.identityInput} role="combobox" aria-autocomplete={suggestions ? "list" : "none"} aria-expanded={visible && target === field} aria-controls={visible && target === field ? `${id}-options` : undefined} aria-activedescendant={visible && target === field && matches[index] ? `${id}-option-${index}` : undefined}
       value={field === "name" ? name : birth} autoComplete="off" inputMode={field === "birth" ? "numeric" : undefined} maxLength={field === "birth" ? 6 : 80}
       onFocus={() => open(field)} onBlur={() => close()} onChange={event => { if (field === "name") onNameChange(event.target.value); else onBirthChange(shortCustomerBirth(event.target.value)); open(field); }}
       onKeyDown={event => {
@@ -54,7 +56,7 @@ export default function CustomerIdentityFields({ customers, name, birth, onNameC
   </div>;
   return <>
     {input("name", "계약자")}{input("birth", "생년월일")}
-    {visible && createPortal(<div ref={menu} id={`${id}-options`} role="listbox" aria-label={target === "name" ? "계약자 후보" : "생년월일 후보"} className={styles.options} style={position!}>
+    {visible && createPortal(<div ref={menu} data-mini-dropdown="true" id={`${id}-options`} role="listbox" aria-label={target === "name" ? "계약자 후보" : "생년월일 후보"} className={styles.options} style={{...position!,boxSizing:"border-box",minWidth:0,maxWidth:position!.width}}>
       {matches.map((customer, optionIndex) => <button key={`${customer.name}:${customer.birth}:${optionIndex}`} id={`${id}-option-${optionIndex}`} type="button" role="option" tabIndex={-1} aria-selected={optionIndex === index} data-active={optionIndex === index} onPointerDown={event => event.preventDefault()} onMouseEnter={() => setIndex(optionIndex)} onClick={() => choose(customer)}>
         <span className={styles.identityOption}><span>{customer.name}</span><small>{shortCustomerBirth(customer.birth)}</small></span>
       </button>)}

@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
     const { data: settings, error: settingsError } = await db.from("customer_settings").select("customer_url").eq("user_id", user.id).maybeSingle();
     if (settingsError) return json({ error: "기존 시트 정보를 확인하지 못했습니다." }, 500);
     const body = await request.json().catch(() => ({}));
+    let returnPath: "/my-page"|"/notion-crm"|"/personal-space"="/my-page";try{const path=new URL(request.headers.get("referer")||"").pathname;if(path==="/notion-crm"||path==="/personal-space")returnPath=path;}catch{}
     const pending = readSheetState(request.cookies.get(pickerCookie)?.value);
     const calendarAction = body.action === "calendar-connect" || (body.action === "picker-complete" || body.action === "picker-cancel") && pending?.purpose === "calendar";
     if (settings?.customer_url && !calendarAction) return json({ existing: true });
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
     url.search = new URLSearchParams({ client_id: process.env.GOOGLE_SHEETS_CLIENT_ID!, redirect_uri: callbackUrl(request), response_type: "code", scope, state, code_challenge: createHash("sha256").update(verifier).digest("base64url"), code_challenge_method: "S256", access_type: "offline", prompt: "consent select_account" }).toString();
     const response = json({ url: url.toString() });
     response.cookies.set(pickerCookie, "", { ...cookieOptions, maxAge: 0 });
-    response.cookies.set(cookieName, sealSheetState({ userId: user.id, state, verifier, ...(body.action === "calendar-connect" ? { purpose: "calendar" as const } : {}), expires: Date.now() + 600000 }), cookieOptions);
+    response.cookies.set(cookieName, sealSheetState({ returnPath, userId: user.id, state, verifier, ...(body.action === "calendar-connect" ? { purpose: "calendar" as const } : {}), expires: Date.now() + 600000 }), cookieOptions);
     return response;
   } catch { return json({ error: "구글 연결을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요." }, 500); }
 }
@@ -86,8 +87,9 @@ export async function GET(request: NextRequest) {
   }
   const state = readSheetState(request.cookies.get(cookieName)?.value);
   const finish = (status: string) => {
+    const returnPath=state?.returnPath==="/personal-space"?"/personal-space":"/my-page";
     const tab = state?.purpose === "calendar" ? "calendar" : "customer";
-    const response = NextResponse.redirect(new URL(status === "ready" ? `/my-page?tab=${tab}` : `/my-page?tab=${tab}&google_sheet=${status}`, request.url));
+    const response = NextResponse.redirect(new URL(status === "ready" ? `${returnPath}?tab=${tab}` : `${returnPath}?tab=${tab}&google_sheet=${status}`, request.url));
     response.headers.set("Cache-Control", "no-store");
     response.headers.set("Referrer-Policy", "no-referrer");
     response.cookies.set(cookieName, "", { ...cookieOptions, maxAge: 0 });
@@ -112,7 +114,7 @@ export async function GET(request: NextRequest) {
       const fileId = spreadsheetIdFromUrl(settings?.customer_url);
       if (!fileId) return finish("error");
       const response = finish("picker");
-      response.cookies.set(pickerCookie, sealSheetState({ userId: state.userId, state: "picker", verifier: "picker", creationId: state.state, purpose: "calendar", pickerFileId: fileId, ...connection, expires: Date.now() + 300000 }), { ...cookieOptions, maxAge: 300 });
+      response.cookies.set(pickerCookie, sealSheetState({ returnPath:state.returnPath, userId: state.userId, state: "picker", verifier: "picker", creationId: state.state, purpose: "calendar", pickerFileId: fileId, ...connection, expires: Date.now() + 300000 }), { ...cookieOptions, maxAge: 300 });
       return response;
     }
     // Picker fallback uses a five-minute encrypted cookie; completed connections are encrypted server-side.
@@ -120,7 +122,7 @@ export async function GET(request: NextRequest) {
     if (result.status) {
       if (["template_app_access", "template_not_found", "template"].includes(result.status)) {
         const response = finish("picker");
-        response.cookies.set(pickerCookie, sealSheetState({ userId: state.userId, state: "picker", verifier: "picker", creationId: state.state, ...connection, expires: Date.now() + 300000 }), { ...cookieOptions, maxAge: 300 });
+        response.cookies.set(pickerCookie, sealSheetState({ returnPath:state.returnPath, userId: state.userId, state: "picker", verifier: "picker", creationId: state.state, ...connection, expires: Date.now() + 300000 }), { ...cookieOptions, maxAge: 300 });
         return response;
       }
       return finish(result.status);

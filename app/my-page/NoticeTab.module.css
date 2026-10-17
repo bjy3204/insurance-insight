@@ -32,3 +32,20 @@
 
 .root [data-notice-mobile-action="true"]{display:none}
 @media(max-width:767px){.root .controls>[data-notice-mobile-action="true"]{display:flex}}
+
+.root[data-compact-notice=true] .workspace{grid-template-columns:minmax(0,1.35fr) minmax(265px,1fr)}.root[data-compact-notice=true] .topActions>.menu{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;flex:1;margin-right:auto;padding:0;border:0;border-radius:0;background:transparent}.root[data-compact-notice=true] .topActions>.menu button{width:auto;min-width:96px;height:44px;padding:0 16px;border:1px solid #dce4ef;background:white;text-align:center;border-radius:12px}.root[data-compact-notice=true] .topActions>.menu button[aria-pressed=true]{color:#195DFF;border-color:#195DFF;background:#eff6ff}
+@media(min-width:768px) and (max-width:1100px){.root[data-compact-notice=true] .preview{grid-column:1;grid-row:1}.root[data-compact-notice=true] .controls{grid-column:2;grid-row:1}}
+@media(max-width:767px){.root[data-compact-notice=true] .topActions{display:flex!important;order:0;gap:8px}.root[data-compact-notice=true] .topActions>.menu{flex-basis:100%;margin:0;order:0}.root[data-compact-notice=true] .topActions>.menu button{flex:1;min-width:0;padding:0 8px}.root[data-compact-notice=true] .topActions>button{width:44px;height:44px}.root[data-compact-notice=true] .topActions>button>span{display:none}.root[data-compact-notice=true] .controls>[data-notice-mobile-action=true]{display:none}.root[data-compact-notice=true] .workspace{grid-template-columns:minmax(0,1fr)}}
+.root[data-compact-notice=true] .workspace{column-gap:16px}
+
+.root[data-compact-notice=true] .workspace{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:12px}.root[data-compact-notice=true] .preview,.root[data-compact-notice=true] .controls{width:100%;max-width:none;justify-self:stretch}@media(max-width:767px){.root[data-compact-notice=true] .workspace{grid-template-columns:minmax(0,1fr)}}
+@media(min-width:768px){.root[data-compact-notice=true] .workspace{align-items:stretch}.root[data-compact-notice=true] .preview,.root[data-compact-notice=true] .controls{align-self:stretch;height:100%;box-sizing:border-box}}
+
+.root .menu button,.root .controls button[data-personal-choice=true]{border:1px solid #dce4ef;background:#fff;color:#64748b}.root .menu button[aria-pressed=true],.root .controls button[data-personal-choice=true][aria-pressed=true]{border-color:#195DFF;background:#eff6ff;color:#195DFF}.root .menu button:not(:disabled):hover,.root .controls button[data-personal-choice=true]:hover{border-color:#195DFF;background:#eff6ff}
+
+
+
+@media(max-width:767px){.root[data-compact-notice=true] .topActions>button{display:none!important}.root[data-compact-notice=true] .controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:8px;row-gap:20px}.root[data-compact-notice=true] .controls>*{grid-column:1/-1}.root[data-compact-notice=true] .controls>[data-notice-mobile-action=true]{display:flex!important;grid-column:auto;width:100%!important;min-width:0;height:44px!important;gap:6px;font-size:14px}.root[data-compact-notice=true] .controls>[data-notice-mobile-action=true]>span{display:inline}.root[data-compact-notice=true] .controls>[data-notice-mobile-action=true] svg{width:18px!important;height:18px!important}}
+.root textarea{scrollbar-width:none;-ms-overflow-style:none}.root textarea::-webkit-scrollbar{display:none;width:0;height:0}
+
+@media(max-width:767px){.root [id=notice-design-settings]>div>div>button>span:first-child{width:18px!important;height:18px!important;min-width:18px!important}.root [id=notice-design-settings]>div>div>button{gap:8px;padding-left:10px;padding-right:10px}}

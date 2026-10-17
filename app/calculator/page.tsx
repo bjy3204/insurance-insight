@@ -1143,7 +1143,7 @@ const pagedMemos = filteredMemos.slice(
   bg-white rounded-2xl border p-4 text-left transition 
                 ${
                   generation === item.id
-                    ? "border-blue-500 bg-blue-50 shadow-sm"
+                    ? "border-blue-600 bg-blue-50 shadow-sm"
                     : "border-gray-200"
                 }
               `}

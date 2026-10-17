@@ -50,7 +50,8 @@ async function embeddedFonts(element: HTMLElement): Promise<string> {
 }
 
 // 배경 사진까지 포함해 브라우저가 표시한 글자와 간격을 PNG로 옮깁니다.
-export async function captureNoticeImage(element: HTMLElement): Promise<HTMLCanvasElement> {
+export async function captureNoticeImage(element: HTMLElement, dimensions?: { width: number; height: number; outputWidth: number; outputHeight: number }): Promise<HTMLCanvasElement> {
+  const { width, height, outputWidth, outputHeight } = dimensions ?? { width: 720, height: 720, outputWidth: 1440, outputHeight: 1440 };
   await document.fonts.ready;
   const fonts = await embeddedFonts(element);
   const photos = [...element.querySelectorAll("img")];
@@ -74,12 +75,12 @@ export async function captureNoticeImage(element: HTMLElement): Promise<HTMLCanv
     clonedPhotos[index].remove();
     return raster;
   });
-  Object.assign(clone.style, { transform: "none", position: "relative", left: "0", top: "0", margin: "0", width: "720px", height: "720px" });
+  Object.assign(clone.style, { transform: "none", position: "relative", left: "0", top: "0", margin: "0", width: `${width}px`, height: `${height}px` });
   if (backgroundLayers.length) clone.style.background = "transparent";
   clone.setAttribute("xmlns", "http://www.w3.org/1999/xhtml");
   if (fonts) { const style = document.createElement("style"); style.textContent = fonts; clone.prepend(style); }
   const markup = new XMLSerializer().serializeToString(clone);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="720"><foreignObject width="720" height="720">${markup}</foreignObject></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><foreignObject width="${width}" height="${height}">${markup}</foreignObject></svg>`;
   const image = new Image();
   await new Promise<void>((resolve, reject) => {
     image.onload = () => resolve();
@@ -87,11 +88,11 @@ export async function captureNoticeImage(element: HTMLElement): Promise<HTMLCanv
     image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   });
   const canvas = document.createElement("canvas");
-  canvas.width = 1440; canvas.height = 1440;
+  canvas.width = outputWidth; canvas.height = outputHeight;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("안내장 이미지를 저장하지 못했습니다.");
-  for (const background of backgroundLayers) context.drawImage(background, 0, 0, 1440, 1440);
-  context.drawImage(image, 0, 0, 1440, 1440);
+  for (const background of backgroundLayers) context.drawImage(background, 0, 0, outputWidth, outputHeight);
+  context.drawImage(image, 0, 0, outputWidth, outputHeight);
   return canvas;
 }
 

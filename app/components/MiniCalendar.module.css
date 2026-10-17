@@ -10,7 +10,7 @@
 .days span[data-weekday="0"]{color:#ef4444}
 .days button{font-size:13px;font-weight:400}
 .days button:hover:not(:disabled){background:#eff6ff}
-.days button[aria-pressed="true"]{background:#2563eb;color:#fff}
-.days button[aria-pressed="true"]:hover:not(:disabled){background:#1d4ed8}
+.days button[aria-pressed="true"]{background:#195DFF;color:#fff}
+.days button[aria-pressed="true"]:hover:not(:disabled){background:#195DFF}
 .header button:focus-visible,.days button:focus-visible{outline:2px solid #93b5fa;outline-offset:1px}
 .header button:disabled,.days button:disabled{opacity:.5;cursor:default}

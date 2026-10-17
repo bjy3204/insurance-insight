@@ -3,20 +3,20 @@
 .items { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:12px; }
 .item { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; min-height:100px; padding:16px 8px; border:1px solid #e5ebf4; border-radius:8px; background:#fafcfe; cursor:default; }
 .item > span { display:inline-flex; align-items:center; justify-content:center; gap:8px; color:#334968; font-size:16px; font-weight:700; white-space:nowrap; }
-.item svg { color:#3182f6; flex-shrink:0; }
-.item input,.complete input { width:17px; height:17px; margin:0; accent-color:#2563eb; cursor:pointer; }
-.item[data-checked="true"] > span { color:#2563eb; }
+.item svg { color:#195DFF; flex-shrink:0; }
+.item input,.complete input { width:17px; height:17px; margin:0; accent-color:#195DFF; cursor:pointer; }
+.item[data-checked="true"] > span { color:#195DFF; }
 .item:has(input:disabled),.item input:disabled { cursor:default; }
 .schedule { width:100%; }
 .toolbar { margin:0 0 16px; color:#334968; font-size:16px; font-weight:700; }
 .scheduleItems { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:12px; }
 .scheduleItem { display:flex; flex-direction:column; align-items:center; gap:12px; padding:16px 8px; border:1px solid #e5ebf4; border-radius:8px; background:#fafcfe; }
-.scheduleLabel { display:flex; align-items:center; justify-content:center; gap:7px; color:#334968; font-size:16px; font-weight:600; }.scheduleLabel svg { color:#3182f6; flex-shrink:0; }
-.date { width:100%; max-width:146px; height:36px; padding:6px 8px; border:1px solid #dce4ef; border-radius:6px; outline:none; background:white; color:#334968; text-align:center; font-size:14px; }.date:focus { border-color:#93b5fa; }
+.scheduleLabel { display:flex; align-items:center; justify-content:center; gap:7px; color:#334968; font-size:16px; font-weight:600; }.scheduleLabel svg { color:#195DFF; flex-shrink:0; }
+.date { width:100%; max-width:146px; height:36px; padding:6px 8px; border:1px solid #dce4ef; border-radius:6px; outline:none; background:white; color:#334968; text-align:center; font-size:14px; }.date:focus { border-color:#195DFF; }
 .complete { display:inline-flex; align-items:center; gap:7px; color:#718096; font-size:14px; cursor:default; }
 .complete input:disabled { cursor:default; }
 .scheduleItem[data-done="true"] .scheduleLabel span { color:#94a3b8; text-decoration:line-through; }
-.actions { display:flex; justify-content:flex-end; margin-top:16px; }.actions button { padding:9px 22px; border:0; border-radius:8px; background:#2563eb; color:white; font-size:14px; cursor:pointer; }.actions button:disabled { opacity:.5; cursor:default; }
+.actions { display:flex; justify-content:flex-end; margin-top:16px; }.actions button { padding:9px 22px; border:0; border-radius:8px; background:#195DFF; color:white; font-size:14px; cursor:pointer; }.actions button:disabled { opacity:.5; cursor:default; }
 .error { margin:0; color:#dc2626; font-size:14px; }
 @media(max-width:1100px) { .items,.scheduleItems { grid-template-columns:repeat(3,minmax(0,1fr)); row-gap:12px; } }
 @media(max-width:767px) {
@@ -55,3 +55,5 @@
  .items{grid-template-columns:repeat(3,minmax(0,1fr))}
  .item>span{gap:4px}
 }
+
+.date{box-sizing:border-box;height:44px;min-height:44px;max-height:44px;border-radius:12px}.scheduleItem>[data-clearable-search=true]{height:44px;min-height:44px}

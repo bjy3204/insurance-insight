@@ -11,12 +11,12 @@ export const fields:Record<Source,Field[]> = {
  ],
  contracts:[{name:"상품명",type:"text"},{name:"고객",type:"relation"},{name:"계약일",type:"date"},{name:"계약자",type:"text"},{name:"계약자 생년월일",type:"text"},{name:"피보험자",type:"text"},{name:"피보험자 생년월일",type:"text"},{name:"보험사",type:"text"},{name:"보험료",type:"number"},{name:"만기",type:"date"},{name:"면책기간(개월)",type:"number"},{name:"감액기간(개월)",type:"number"},{name:"메모",type:"text"}],
  cars:[{name:"차량번호",type:"text"},{name:"고객",type:"relation"},{name:"차종",type:"text"},{name:"갱신일",type:"date"},{name:"보험사",type:"text"},{name:"운전자지정",type:"text"},{name:"할인",type:"text"},{name:"메모",type:"text"}],
- cards:[{name:"수납명",type:"text"},{name:"고객",type:"relation"},{name:"결제일",type:"number"},{name:"명의자",type:"text"},{name:"생년월일",type:"text"},{name:"카드사",type:"text"},{name:"카드번호",type:"text"},{name:"유효기간",type:"text"},{name:"메모",type:"text"}],
- events:[{name:"제목",type:"text"},{name:"고객",type:"relation"},{name:"일정",type:"date"},{name:"분류",type:"select",options:["상담","안부연락","계약","보험금 청구","기타"]},{name:"완료",type:"checkbox"},{name:"장소",type:"text"},{name:"상담내용",type:"text"},{name:"다음 연락일",type:"date"},{name:"메모",type:"text"}]
+ cards:[{name:"수납명",type:"text"},{name:"고객",type:"relation"},{name:"결제일",type:"number"},{name:"명의자",type:"text"},{name:"보험사",type:"text"},{name:"카드사",type:"text"},{name:"카드번호",type:"text"},{name:"유효기간",type:"text"},{name:"메모",type:"text"}],
+ events:[{name:"제목",type:"text"},{name:"고객",type:"relation"},{name:"일정",type:"date"},{name:"분류",type:"select",options:["개인","상담","기타"]},{name:"완료",type:"checkbox"},{name:"장소",type:"text"},{name:"상담내용",type:"text"},{name:"다음 연락일",type:"date"},{name:"메모",type:"text"}]
 };
 export const titleNames:Record<Source,string>={customers:"이름",contracts:"상품명",cars:"차량번호",cards:"수납명",events:"제목"};
 export type CrmValue=string|number|boolean|string[];
-export type CrmRow={id:string;edited:string;values:Record<string,CrmValue>};
+export type CrmRow={id:string;created?:string;updated?:string;edited:string;values:Record<string,CrmValue>};
 export type CrmData=Record<Source,CrmRow[]>;
 export const emptyData=():CrmData=>({customers:[],contracts:[],cars:[],cards:[],events:[]});
 export function isSource(value:unknown):value is Source{return typeof value==="string"&&Object.hasOwn(sourceNames,value);}
