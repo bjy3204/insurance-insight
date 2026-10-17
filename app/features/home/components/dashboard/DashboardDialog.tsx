@@ -19,6 +19,8 @@ export default function DashboardDialog({ title, children, onClose, confirmation
     const focusable = () => Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]') || []);
     (panel.current?.querySelector<HTMLElement>("input, textarea, select") || focusable()[0])?.focus();
     const keyboard = (event: KeyboardEvent) => {
+      const dialogs = document.querySelectorAll<HTMLElement>('[role="dialog"], [role="alertdialog"]');
+      if (dialogs[dialogs.length - 1] !== panel.current) return;
       if (event.key === "Escape") onClose();
       if (event.key !== "Tab") return;
       const elements = focusable();

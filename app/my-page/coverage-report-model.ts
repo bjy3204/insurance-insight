@@ -24,7 +24,22 @@ export const REPORT_COVERAGE_GROUPS = COVERAGE_GROUPS.filter(group => group.titl
   });
 
 export type ReportPolicy = { id: string; insurer: string; product: string; years: string; start: string; end: string; premium: string; units?: Record<string,string>; amounts: Record<string, string> };
-export type CoverageReport = { name: string; birth: string; date: string; advisor: string; organization?: string; phone?: string; fax?: string; email?: string; removedGroups?: string[]; removedFields?: string[]; customFields?: Record<string,CoverageField[]>; fieldUnits?: Record<string,string>; categoryLabels?: Record<string,string>; fieldLabels?: Record<string,string>; chartTargets?: Record<string,string>; statusOverrides?:Record<string,string>; statusLabels?:Record<string,string>; memo: string; policies: ReportPolicy[]; overrides: Record<string, string> };
+export type CoverPlacement = { x: number; y: number; scale: number };
+export type CoverLayout = Partial<Record<"image"|"overview",CoverPlacement>>;
+export const REPORT_BACKGROUNDS = [
+  {id:"protection",label:"손 위의 보장",src:"/images/coverage/report-cover-protection.png"},
+  {id:"umbrella",label:"든든한 보장",src:"/images/coverage/report-cover-umbrella.png"},
+  {id:"home-photo",label:"손 위의 집 · 실사",src:"/images/coverage/report-photo-background.png"},
+  {id:"review-flat",label:"보장 점검",src:"/images/coverage/report-cover-review-flat.png"},
+  {id:"forest",label:"나무의 여유",src:"/images/coverage/report-cover-trees-v2.png"},
+  {id:"orange-paper",label:"기록과 설계",src:"/images/coverage/report-cover-orange-paper.png"},
+  {id:"family-palm",label:"손 위의 가족",src:"/images/coverage/report-cover-family-palm.png"},
+  {id:"insurance-photo",label:"보험 분석 · 실사",src:"/images/coverage/report-cover-insurance-photo-v2.png"},
+  {id:"yellow-care",label:"노란 우산의 안심",src:"/images/coverage/report-cover-yellow-care-v2.png"},
+] as const;
+export const DEFAULT_REPORT_BACKGROUND = "umbrella" as const;
+export type ReportBackground = typeof REPORT_BACKGROUNDS[number]["id"];
+export type CoverageReport = { coverBackground?: ReportBackground; coverLayout?: CoverLayout; name: string; birth: string; date: string; advisor: string; organization?: string; phone?: string; fax?: string; email?: string; removedGroups?: string[]; removedFields?: string[]; customFields?: Record<string,CoverageField[]>; fieldUnits?: Record<string,string>; categoryLabels?: Record<string,string>; fieldLabels?: Record<string,string>; chartTargets?: Record<string,string>; statusOverrides?:Record<string,string>; statusLabels?:Record<string,string>; memo: string; policies: ReportPolicy[]; overrides: Record<string, string> };
 export const coverageStatusReport=(report:CoverageReport):CoverageReport=>({...report,overrides:{...report.overrides,...report.statusOverrides},fieldLabels:{...report.fieldLabels,...report.statusLabels}});
 export const reportCoverageGroups = (report: CoverageReport) => [
   ...REPORT_COVERAGE_GROUPS.map(group=>({...group,fields:[...group.fields.filter(field=>!report.removedFields?.includes(field.id)),...(report.customFields?.[group.title]||[])]})),
@@ -33,11 +48,45 @@ export const reportCoverageGroups = (report: CoverageReport) => [
 export const coverageGroupLabel = (report: CoverageReport, title: string) => report.categoryLabels?.[title] ?? title;
 export const coverageFieldLabel = (report: CoverageReport, field: CoverageField) => report.fieldLabels?.[field.id] ?? field.label;
 export const filledPolicyCount = (report:CoverageReport) => report.policies.filter(policy=>policy.insurer.trim()||policy.product.trim()||policy.premium.trim()||Object.values(policy.amounts).some(value=>value.trim())).length;
-export const DEFAULT_CHART_TARGETS:Record<string,string>={"disability-0":"20000","cancer-0":"10000","heart-0":"5000","brain-0":"5000","surgery-0":"100","hospital-0":"20"};
+export const DEFAULT_CHART_TARGETS:Record<string,string>={"disability-0":"20000","cancer-0":"10000","heart-0":"5000","brain-0":"5000","surgery-0":"200","hospital-0":"30"};
 export const REPORT_CHART_FIELDS = [
-  {id:"disability-0",label:"후유장해"},{id:"cancer-0",label:"암"},{id:"heart-0",label:"심장"},
-  {id:"brain-0",label:"뇌"},{id:"surgery-0",label:"수술"},{id:"hospital-0",label:"입원"},
+  {id:"cancer-0",label:"암 진단비",source:"일반암 진단"},
+  {id:"brain-0",label:"뇌 진단비",source:"뇌혈관질환 진단"},
+  {id:"heart-0",label:"심장 진단비",source:"심혈관질환 진단"},
+  {id:"disability-0",label:"후유장해",source:"질병후유장해(3%)"},
+  {id:"surgery-0",label:"수술비",source:"질병 수술비"},
+  {id:"hospital-0",label:"입원일당",source:"질병 입원 · 1일 기준"},
 ] as const;
+export function reportChartValues(report:CoverageReport){
+  const fields=reportCoverageGroups(report).flatMap(group=>group.fields);
+  const matches=(axis:string,field:CoverageField)=>{
+    const label=coverageFieldLabel(report,field).replace(/\s/g,"");
+    if(axis==="cancer-0")return ["cancer-0","cancer-1"].includes(field.id)||(/암/.test(label)&&/진단|일반암|고액암|소액암|유사암/.test(label)&&!/치료|수술/.test(label));
+    if(axis==="brain-0")return ["brain-0","brain-1","brain-2"].includes(field.id)||(/뇌혈관|뇌출혈|뇌경색|뇌졸중/.test(label)&&!/치료|수술/.test(label));
+    if(axis==="heart-0")return ["heart-0","heart-1","heart-2"].includes(field.id)||(/심혈관|허혈성심장|심근경색|심장.*진단/.test(label)&&!/치료|수술/.test(label));
+    if(axis==="disability-0")return /^disability-/.test(field.id)||/후유장해/.test(label);
+    if(axis==="surgery-0")return ["surgery-0","surgery-3"].includes(field.id)||(/질병수술|상해수술/.test(label)&&!/종|N대/.test(label));
+    return ["hospital-0","hospital-1"].includes(field.id)||(/질병입원|상해입원/.test(label)&&!/의료비|간병|1인실/.test(label));
+  };
+  const conversion=(unit:string)=>unit==="억"?10000:unit==="천원"?.1:unit==="원"?.0001:unit==="만원"?1:null;
+  return REPORT_CHART_FIELDS.map(axis=>{
+    const target=reportNumber(report.chartTargets?.[axis.id]??DEFAULT_CHART_TARGETS[axis.id]);
+    let amount:number|null=0;
+    for(const field of fields.filter(field=>matches(axis.id,field))){
+      if(Object.prototype.hasOwnProperty.call(report.overrides,field.id)){
+        const raw=report.overrides[field.id].trim();if(!raw)continue;
+        const number=reportNumber(raw);if(number===null){amount=null;break;}amount+=number;continue;
+      }
+      for(const policy of report.policies){
+        const raw=policy.amounts[field.id]?.trim();if(!raw)continue;
+        const number=reportNumber(raw),factor=conversion(policy.units?.[field.id]||report.fieldUnits?.[field.id]||"만원");
+        if(number===null||factor===null){amount=null;break;}amount+=number*factor;
+      }
+      if(amount===null)break;
+    }
+    return {...axis,amount,target,percent:target&&target>0&&amount!==null?Math.round(amount/target*100):null};
+  });
+}
 export const REPORT_SECTIONS = [
   { id: "cover", title: "표지" }, { id: "analysis", title: "보장분석표" },
   { id: "after-analysis", title: "리모델링 후 보장분석표" }, { id: "status", title: "보장현황표" },
@@ -46,10 +95,10 @@ export const REPORT_SECTIONS = [
 ] as const;
 export type ReportSection = typeof REPORT_SECTIONS[number]["id"] | "all";
 export const REPORT_THEMES = [
-  { id: "yellow", title: "#d2a02a", titleAccent: "#e7bd54", label: "노랑", primary: "#eab52a", secondary: "#34465b", soft: "#fffbed", tint: "#fff4cc", line: "#f2e3af" },
+  { id: "yellow", title: "#997822", titleAccent: "#c6a341", label: "노랑", primary: "#c6a341", secondary: "#34465b", soft: "#fffdf3", tint: "#fcf6df", line: "#e9dfb9" },
   { id: "orange", title: "#d97d46", titleAccent: "#f1a56f", label: "주황", primary: "#f28b45", secondary: "#34465b", soft: "#fff8f2", tint: "#ffeadb", line: "#f8d7be" },
   { id: "sky", title: "#426588", titleAccent: "#6a9bc6", label: "하늘", primary: "#6a9bc6", secondary: "#426588", soft: "#eff5fc", tint: "#edf4fb", line: "#dce5f0" },
-  { id: "green", title: "#428e79", titleAccent: "#72b6a0", label: "초록", primary: "#45a786", secondary: "#34465b", soft: "#f2fbf7", tint: "#e0f4ea", line: "#cbe8db" },
+  { id: "green", title: "#244c3b", titleAccent: "#406650", label: "초록", primary: "#365e49", secondary: "#34465b", soft: "#f5f8f4", tint: "#eaf0e7", line: "#d5dfd1" },
   { id: "gray", title: "#252525", titleAccent: "#606060", label: "블랙", primary: "#353535", secondary: "#292929", soft: "#f8f8f8", tint: "#eeeeee", line: "#dedede" },
 ] as const;
 export type ReportTheme = typeof REPORT_THEMES[number]["id"];

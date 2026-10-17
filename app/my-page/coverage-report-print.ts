@@ -30,7 +30,7 @@ export const REPORT_CSS = `
 .cr-remodeled .cr-heading:before{content:'리모델링 후';position:absolute;right:38px;top:20px;font-size:10px;color:var(--cr-accent)}
 .cr-band{display:flex;align-items:baseline;justify-content:center;gap:12px;min-height:92px;padding:26px 12px;background:var(--cr-soft);border-top:2px solid var(--cr-accent);border-bottom:1px solid #dfdcd5;margin-bottom:30px}.cr-band strong{font-size:27px}.cr-band span{font-size:17px;color:var(--cr-secondary)}
 .cr-compare-labels{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:0 0 18px 46px}.cr-compare-labels span{font-size:16px;text-align:center;padding:14px;background:var(--cr-tint);border-top:2px solid var(--cr-secondary)}.cr-compare-labels span:last-child{background:var(--cr-soft);border-color:var(--cr-accent)}
-.cr-compare-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:10px}.cr-compare-table th,.cr-compare-table td{height:19px;border-bottom:1px dotted #ced1d2;padding:2px 6px;text-align:left;font-weight:400}.cr-compare-table td{text-align:right;white-space:nowrap}.cr-compare-table tbody:nth-child(even){background:var(--cr-soft)}.cr-compare-table tbody tr:last-child>*{border-bottom:1px solid #bac1c7}.cr-compare-table .cr-compare-category{text-align:center;font-size:11px;font-weight:700;border-right:1px solid #d9dce0;color:var(--cr-secondary)}.cr-compare-table .cr-gutter{border:0;background:white}
+.cr-compare-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:10px}.cr-compare-table th,.cr-compare-table td{height:19px;border-bottom:1px dotted #ced1d2;padding:2px 6px;text-align:left;font-weight:400}.cr-compare-table td{text-align:right;white-space:nowrap}.cr-compare-table tbody:nth-child(even){background:var(--cr-soft)}.cr-compare-table tbody tr:last-child>*{border-bottom:1px dotted #ced1d2}.cr-compare-table .cr-compare-category{text-align:center;font-size:11px;font-weight:700;border-right:1px solid #d9dce0;color:var(--cr-secondary)}.cr-compare-table .cr-gutter{border:0;background:white}
 .cr-compare-money{display:grid;grid-template-columns:140px 1fr 1fr;gap:12px;padding:17px 10px;margin-top:20px;background:var(--cr-soft);font-size:12px;text-align:center}.cr-compare-money b{font-size:10px;font-weight:500}.cr-compare-total{background:var(--cr-tint);margin-top:10px}
 .cr-summary-columns{display:grid;grid-template-columns:1fr 1fr;gap:24px}.cr-contract-total{display:flex;align-items:center;justify-content:space-between;border:1px solid #cfd4d8;margin-bottom:18px;min-height:62px;font-size:11px}.cr-contract-total span{padding:14px;background:var(--cr-tint);flex:1}.cr-contract-total strong{padding:12px;font-size:13px;color:var(--cr-secondary)}.cr-summary-columns section:last-child .cr-contract-total span{background:var(--cr-soft)}.cr-summary-columns table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:10px}.cr-summary-columns th,.cr-summary-columns td{border:1px solid #d2d6da;padding:8px 6px;height:84px;overflow-wrap:anywhere;font-weight:400;text-align:center}.cr-summary-columns th{background:var(--cr-tint)}.cr-summary-columns section:last-child th{background:var(--cr-soft)}.cr-summary-columns td:last-child{font-size:10px}
 .cr-savings{margin-top:38px;padding:22px 14px;background:var(--cr-soft);text-align:center;border-top:1px solid var(--cr-accent)}.cr-savings p{font-size:13px;line-height:2.2;margin:3px 0}.cr-savings strong{color:var(--cr-accent);font-size:22px;margin:0 7px}
@@ -155,7 +155,7 @@ export const REPORT_CSS = `
 
 .cr-reference .cr-summary{background:radial-gradient(ellipse at 48% 0%,rgba(255,255,255,.75),rgba(255,255,255,0) 66%),linear-gradient(155deg,var(--cr-tint) 0%,var(--cr-soft) 48%,#fff 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
 
-.cr-reference .cr-cover-bottom th,.cr-reference .cr-cover-bottom td{height:33px}
+.cr-reference .cr-cover-bottom th,.cr-reference .cr-cover-bottom td{height:35px}
 
 .cr-reference .cr-cover-bottom{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:20px;align-items:center}
 .cr-reference .cr-cover-bottom>.cr-cover-hero{height:185px;margin:0;background:transparent;border:0;border-radius:0;overflow:visible}
@@ -224,6 +224,147 @@ export const REPORT_CSS = `
 .cr-reference .cr-cover-contracts h2{font-weight:400}
 .cr-reference .cr-cover-contracts h2>strong{font-weight:700}
 .cr-reference .cr-cover-contracts h2>small{font-weight:400;margin-left:2px}
+
+.cr-reference .cr-cover-contracts dl{left:34px;width:220px}
+.cr-reference .cr-cover-contracts dl>div{display:grid;grid-template-columns:78px minmax(0,1fr);column-gap:12px}
+.cr-reference .cr-cover-contracts dd{text-align:right}
+.cr-reference .cr-cover-contracts .cr-donut{left:280px;right:auto}
+
+.cr-reference .cr-cover-contracts dl{width:190px}.cr-reference .cr-cover-contracts dl>div{grid-template-columns:68px minmax(0,1fr);column-gap:8px}.cr-reference .cr-cover-contracts .cr-donut{left:244px}
+
+.cr-reference .cr-cover-contracts .cr-donut{width:160px;height:160px;left:280px;right:auto}
+
+.cr-reference .cr-cover .cr-cover-contracts h2,.cr-reference .cr-cover .cr-cover-contracts h2 strong,.cr-reference .cr-cover .cr-cover-contracts h2 small,.cr-reference .cr-cover .cr-cover-contracts dl,.cr-reference .cr-cover .cr-cover-contracts dt,.cr-reference .cr-cover .cr-cover-contracts dd{font-size:16px}
+
+.cr-reference .cr-cover .cr-cover-bottom table th,.cr-reference .cr-cover .cr-cover-bottom table td{font-size:15px;font-weight:400}
+
+.cr-reference .cr-cover-contracts dl{width:206px}.cr-reference .cr-cover-contracts dl>div{grid-template-columns:80px minmax(0,1fr);column-gap:8px}.cr-reference .cr-cover-contracts dt,.cr-reference .cr-cover-contracts dd{white-space:nowrap;word-break:keep-all}
+
+.cr-reference .cr-cover .cr-cover-contracts h2 strong{font-size:18px}
+
+.cr-reference .cr-cover .cr-cover-contracts{border:1px solid rgba(148,163,184,.35);background:rgba(255,255,255,.72);box-shadow:none}
+
+/* Cover composition: one centered overview followed by balanced artwork/contact columns. */
+.cr-reference .cr-cover-panels{max-width:570px;margin:28px auto 0}
+.cr-reference .cr-cover-contracts{height:248px;padding:0}
+.cr-reference .cr-cover-contracts h2{margin:0;line-height:28px;text-align:center}
+.cr-reference .cr-cover-contracts dl{left:58px;top:142px;width:206px;transform:translateY(-50%)}
+.cr-reference .cr-cover-contracts .cr-donut{left:318px;top:142px;width:160px;height:160px;transform:translateY(-50%)}
+.cr-reference .cr-cover-bottom{position:static;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:30px;align-items:center;margin:36px 0 0}
+.cr-reference .cr-cover-bottom>.cr-cover-hero{height:240px;display:flex;align-items:center;justify-content:center}
+.cr-reference .cr-cover-bottom>.cr-cover-hero img{width:100%;height:240px;object-fit:contain;margin:0}
+.cr-reference .cr-cover-bottom>table{width:330px;margin:0}
+
+
+
+.cr-reference .cr-cover-bottom{position:absolute;bottom:65px;left:38px;right:38px;display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:20px;align-items:center;margin:0}
+.cr-reference .cr-cover-bottom>table{width:350px;margin:0}
+.cr-reference .cr-cover-bottom>.cr-cover-hero,.cr-reference .cr-cover-bottom>.cr-cover-hero img{height:185px}
+.cr-reference .cr-cover-bottom th,.cr-reference .cr-cover-bottom td{height:35px}
+
+[data-cover-movable=true]{position:relative;user-select:none;outline:1px dashed transparent;outline-offset:5px}
+[data-cover-movable=true]:hover,[data-cover-movable=true]:focus-within{outline-color:#b7c8de}
+[data-cover-movable=true] img{pointer-events:none;user-select:none;-webkit-user-drag:none}
+.cr-book [data-cover-movable=true]>.cr-cover-resize{position:absolute;bottom:-10px;right:-10px;width:24px;height:24px;min-width:24px;padding:0;border:1px solid #dce5f0;border-radius:5px;background:white;color:#64748b;display:flex;align-items:center;justify-content:center;cursor:nwse-resize;touch-action:none;opacity:0;z-index:8}
+[data-cover-movable=true]:hover>.cr-cover-resize,[data-cover-movable=true]:focus-within>.cr-cover-resize{opacity:1}
+@media(hover:none){.cr-book [data-cover-movable=true]>.cr-cover-resize{opacity:1}}
+@media print{.cr-cover-resize{display:none!important}[data-cover-movable=true]{outline:0!important}}
+
+[data-cover-movable=true] :is(section,dl,dt,dd,h2,svg){touch-action:none;cursor:move}
+.cr-book [data-cover-movable=true]>.cr-cover-move{position:absolute;top:0;left:0;width:28px;height:28px;min-width:28px;padding:0;border:0;background:transparent;color:#94a3b8;cursor:move;touch-action:none;display:flex;align-items:center;justify-content:center;z-index:9}
+.cr-book [data-cover-movable=true]>.cr-cover-move:hover{color:#334155}
+@media print{.cr-cover-move{display:none!important}}
+
+/* Photo cover: keep report copy legible while the scene fills the middle. */
+.cr-reference .cr-cover-photographic{isolation:isolate;background:#f8f8f6}
+.cr-reference .cr-cover-photographic>.cr-cover-photo{position:absolute;inset:0;width:794px;height:1123px;margin:0;z-index:-2;pointer-events:none}
+.cr-reference .cr-cover-photo>img{display:block;width:100%;height:100%;max-width:none;object-fit:cover}
+.cr-reference .cr-cover-photo[data-background="yellow-care"]>img{transform:translateY(95px)}
+.cr-cover-photo-wash{position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,1) 0%,rgba(255,255,255,.98) 18%,rgba(255,255,255,.9) 30%,rgba(255,255,255,.62) 43%,rgba(255,255,255,.18) 58%,rgba(255,255,255,0) 70%,rgba(255,255,255,0) 77%,rgba(255,255,255,.4) 100%)}
+.cr-reference .cr-cover-photographic>.cr-cover-bottom{display:flex;justify-content:flex-end}
+.cr-reference .cr-cover-photographic .cr-cover-bottom>table{width:350px;max-width:100%;table-layout:fixed;background:rgba(255,255,255,.94)}
+.cr-reference .cr-cover-photographic .cr-cover-bottom>table th{width:105px;white-space:nowrap}
+.cr-reference .cr-cover-photographic .cr-cover-bottom>table td{overflow-wrap:anywhere;word-break:break-word}
+.cr-reference .cr-cover-photographic>.cr-set-footer{background:transparent}
+
+/* Overview uses shared grid alignment instead of independent absolute offsets. */
+.cr-reference .cr-cover .cr-cover-contracts{height:264px;border-radius:24px;padding:20px 36px;display:grid;grid-template-columns:minmax(0,1fr) 160px;grid-template-rows:28px minmax(0,1fr);column-gap:36px;row-gap:12px;align-items:center}
+.cr-reference .cr-cover .cr-cover-contracts h2{grid-column:1/-1;margin:0;line-height:28px;align-self:center;text-align:center}
+.cr-reference .cr-cover .cr-cover-contracts dl{position:static;left:auto;top:auto;transform:none;width:100%;max-width:226px;margin:0;justify-self:center;align-self:center}
+.cr-reference .cr-cover .cr-cover-contracts dl>div{grid-template-columns:80px minmax(0,1fr);column-gap:12px;margin-bottom:5px}
+.cr-reference .cr-cover .cr-cover-contracts dl>div:last-child{margin-bottom:0}
+.cr-reference .cr-cover .cr-cover-contracts .cr-donut{position:static;left:auto;right:auto;top:auto;transform:none;width:160px;height:160px;margin:0;align-self:center;justify-self:center}
+
+.cr-reference .cr-cover>.cr-coverage-radar{position:absolute;right:38px;bottom:254px;width:350px;padding:14px 8px 12px;border:1px solid rgba(148,163,184,.35);border-radius:24px;background:rgba(255,255,255,.8)}
+.cr-coverage-radar h2{margin:0;text-align:center;font-size:15px;line-height:24px;font-weight:600;color:var(--cr-secondary)}
+.cr-coverage-radar svg{display:block;width:100%;height:auto;overflow:visible}
+.cr-coverage-radar p{margin:0;text-align:center;font-size:11px;line-height:16px;color:#64748b}
+
+.cr-reference .cr-cover>.cr-coverage-radar{width:280px;padding:0;border:0;border-radius:0;background:transparent}
+
+.cr-reference .cr-cover-dashboard{display:grid;width:100%;max-width:none;grid-template-columns:minmax(0,1fr) 280px;gap:12px;align-items:stretch;margin:28px 0 0}
+.cr-reference .cr-cover-dashboard>.cr-cover-panels{display:block;width:100%;min-width:0;max-width:none;margin:0}
+.cr-reference .cr-cover-dashboard .cr-cover-contracts{width:100%;min-width:0;max-width:none}
+.cr-reference .cr-cover-dashboard .cr-cover-contracts{grid-template-columns:minmax(0,1fr) 136px;padding-inline:22px;column-gap:12px}
+.cr-reference .cr-cover-dashboard .cr-cover-contracts .cr-donut{width:136px;height:136px;transform:translateX(-6px)}
+.cr-reference .cr-cover-dashboard>.cr-coverage-radar{position:static;width:280px;height:264px;padding:0;border:1px solid rgba(148,163,184,.35);border-radius:24px;background:rgba(255,255,255,.72);display:flex;align-items:center;justify-content:center}
+.cr-reference .cr-cover-dashboard>.cr-coverage-radar svg{width:250px;height:224px}
+
+.cr-reference .cr-cover-dashboard{position:absolute;left:38px;right:38px;top:50%;width:auto;height:264px;margin:0;transform:translateY(-50%);align-items:stretch}
+.cr-reference .cr-cover-dashboard>.cr-cover-panels{height:264px;transform:none;margin:0;align-self:stretch}
+.cr-reference .cr-cover-dashboard .cr-cover-contracts,.cr-reference .cr-cover-dashboard>.cr-coverage-radar{box-sizing:border-box;height:264px;min-height:264px;max-height:264px;margin-block:0;align-self:stretch}
+
+.cr-reference .cr-cover-dashboard>.cr-coverage-radar svg{transform:none}
+.cr-reference .cr-cover-dashboard .cr-cover-contracts dl{transform:translateY(-20px)}
+.cr-reference .cr-cover-dashboard .cr-cover-contracts .cr-donut{transform:translate(-6px,-20px)}
+
+/* Center the complete overview, including its heading, within the card. */
+.cr-reference .cr-cover-dashboard .cr-cover-contracts{grid-template-rows:28px auto;align-content:center;justify-content:center;row-gap:16px;padding:20px 22px}
+.cr-reference .cr-cover-dashboard .cr-cover-contracts dl{transform:none;justify-self:center;align-self:center}
+.cr-reference .cr-cover-dashboard .cr-cover-contracts .cr-donut{transform:none;justify-self:center;align-self:center}
+.cr-reference .cr-cover-dashboard>.cr-coverage-radar{align-items:center;justify-content:center}
+.cr-reference .cr-cover-dashboard>.cr-coverage-radar svg{transform:none;margin:0}
+.cr-reference .cr-cover-dashboard .cr-cover-contracts h2{transform:translateY(-8px)}
+.cr-reference .cr-cover-dashboard .cr-cover-contracts h2>strong{font-weight:800}
+.cr-reference .cr-cover-name{padding-left:8px}
+
+.cr-reference .cr-cover-name strong,.cr-reference .cr-cover .cr-cover-contracts h2>strong{color:var(--cr-name,#243f60)}
+
+/* Footer contrast follows the actual light/dark areas of each cover image. */
+.cr-reference .cr-cover-photographic>.cr-set-footer{color:#1e293b;text-shadow:0 1px 2px rgba(255,255,255,.75)}
+.cr-reference .cr-cover-photographic:has(>.cr-cover-photo[data-background="home-photo"])>.cr-set-footer>span:first-child{color:#fff;text-shadow:0 1px 3px rgba(15,23,42,.95),0 0 2px rgba(15,23,42,.7)}
+.cr-reference .cr-cover p.cr-cover-description{color:#475569}
+
+.cr-reference .cr-card>h2,.cr-reference .cr-card:nth-child(2n)>h2{background:var(--cr-soft)}
+
+.cr-reference .cr-comparison .cr-compare-table th,.cr-reference .cr-comparison .cr-compare-table td{text-align:center;vertical-align:middle;padding-inline:6px}
+.cr-reference .cr-comparison-hero>div{text-align:center}
+.cr-reference .cr-comparison-foot{display:grid;grid-template-columns:1.3fr 1fr 24px 1fr 1.2fr;gap:12px;text-align:center;align-items:center}
+
+.cr-reference .cr-comparison-hero span{font-size:15px;line-height:22px}
+
+.cr-reference .cr-remodel-summary .cr-contract-total{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:stretch;min-height:64px;margin:0 0 16px;padding:0;font-size:15px}
+.cr-reference .cr-remodel-summary .cr-contract-total span{display:flex;align-items:center;justify-content:center;min-width:0;padding:12px 8px;font-size:15px;line-height:22px;text-align:center}
+.cr-reference .cr-remodel-summary .cr-contract-total strong{display:flex;align-items:center;justify-content:center;padding:12px 10px;font-size:16px;line-height:22px;white-space:nowrap}
+.cr-reference .cr-remodel-summary .cr-savings{padding:18px 14px;margin-top:24px}
+.cr-reference .cr-remodel-summary .cr-savings p{font-size:16px;line-height:32px;margin:5px 0}
+.cr-reference .cr-remodel-summary .cr-savings strong{font-size:24px;margin:0 8px;white-space:nowrap}
+.cr-reference .cr-remodel-summary .cr-summary-columns th,.cr-reference .cr-remodel-summary .cr-summary-columns td{height:56px;padding:6px}
+
+.cr-reference .cr-comparison-foot{grid-template-columns:1.15fr 1.2fr 20px 1.2fr 1.4fr;gap:10px;padding:20px 12px;font-size:15px;line-height:24px}
+.cr-reference .cr-comparison-foot b,.cr-reference .cr-comparison-foot strong{font-size:20px;line-height:28px;white-space:normal;overflow-wrap:normal;word-break:keep-all}
+
+.cr-reference .coverage-report-page .cr-set-footer{font-size:13px;line-height:18px}
+
+.cr-reference .cr-remodel-summary .cr-contract-total{grid-template-columns:minmax(0,1fr) minmax(124px,42%)}
+.cr-reference .cr-remodel-summary .cr-contract-total strong{min-width:0;padding-inline:8px;white-space:nowrap}
+
+.cr-reference .cr-remodel-summary .cr-contract-text{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;line-height:16px;max-height:48px;overflow-wrap:anywhere;white-space:normal}
+
+.cr-reference .cr-comparison-arrow{display:flex;align-items:center;justify-content:center;color:var(--cr-secondary)}
+.cr-reference .cr-comparison-arrow svg{display:block;flex-shrink:0}
+
+.cr-reference .cr-comparison-foot strong{font-size:15px;line-height:24px;font-weight:400}
 
 `;
 

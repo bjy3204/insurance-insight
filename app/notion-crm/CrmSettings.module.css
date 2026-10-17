@@ -7,3 +7,5 @@
 .providerChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.providerChoices>button{flex-direction:row;height:44px;padding:0 15px;gap:8px;font-size:14px;white-space:nowrap}.existingChoices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.existingChoices>button[aria-pressed=true]{border-color:#195dff;color:#195dff;background:#eff6ff}.existingForm{display:grid;gap:8px;margin-top:12px}.existingForm>label{padding-left:4px;font-size:14px;font-weight:700}.existingForm>input{box-sizing:border-box;width:100%;min-width:0;height:44px;padding:0 12px;border:1px solid #dce4ef;border-radius:12px;font-size:14px;color:#284261}.existingForm>p{margin:0}.existingForm>button{width:100%}
 
 .providerChoices{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+.connectionPair{display:flex;align-items:center;justify-content:center;gap:0;min-width:0}.connectionPair>button:not([data-connection-guide]){height:44px;padding:0 15px;gap:8px;font-size:14px;white-space:nowrap}

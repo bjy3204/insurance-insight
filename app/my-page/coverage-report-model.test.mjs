@@ -67,3 +67,22 @@ test('status totals default to analysis totals but edits never change analysis',
   assert.equal(coverageFieldLabel(status,field('cancer-0')),'암 보장');
   assert.equal(coverageTotal(coverageStatusReport({...analysis,statusOverrides:{'cancer-0':''}}),field('cancer-0')),'');
 });
+
+test('radar converts units, preserves ratios above 100 and excludes unset targets',()=>{
+  const r={policies:[{...newReportPolicy('chart'),amounts:{'cancer-0':'2','hospital-0':'50000'},units:{'cancer-0':'억','hospital-0':'원'}}],overrides:{},chartTargets:{'cancer-0':'10000','hospital-0':'10','surgery-0':''}};
+  const rows=module.exports.reportChartValues(r);
+  assert.equal(rows.find(row=>row.id==='cancer-0').percent,200);
+  assert.equal(rows.find(row=>row.id==='hospital-0').percent,50);
+  assert.equal(rows.find(row=>row.id==='surgery-0').percent,null);
+});
+
+test('radar includes related diagnoses and disease/injury coverage without treatment double counting',()=>{
+  const r={policies:[{...newReportPolicy('all'),amounts:{'cancer-0':'100','cancer-1':'20','cancer-2':'999','brain-0':'10','brain-1':'20','brain-2':'30','heart-0':'10','heart-1':'20','heart-2':'30','disability-0':'10','disability-1':'20','disability-2':'30','disability-3':'40','surgery-0':'100','surgery-3':'100','hospital-0':'10','hospital-1':'20','custom-high':'30','custom-small':'40','custom-infarct':'50'}}],overrides:{},customFields:{'암':[{id:'custom-high',label:'고액암 진단'},{id:'custom-small',label:'소액암 진단'}],'뇌':[{id:'custom-infarct',label:'뇌경색 진단'}]}};
+  const rows=module.exports.reportChartValues(r),amount=id=>rows.find(row=>row.id===id).amount;
+  assert.equal(amount('cancer-0'),190);
+  assert.equal(amount('brain-0'),110);
+  assert.equal(amount('heart-0'),60);
+  assert.equal(amount('disability-0'),100);
+  assert.equal(amount('surgery-0'),200);
+  assert.equal(amount('hospital-0'),30);
+});

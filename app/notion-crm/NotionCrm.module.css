@@ -370,3 +370,7 @@
 
 .page .directorySortButtons>button[aria-pressed=false]{color:#a3acb9;background:transparent}
 .page .directorySortButtons>button[aria-pressed=true],.page .directorySortButtons>button:is(:hover,:focus-visible){color:#4b5563;background:transparent}
+
+.sideItem[aria-disabled=true]{opacity:.45;cursor:not-allowed}
+
+.connectionPair{display:inline-flex;align-items:center;gap:0;flex-shrink:0}

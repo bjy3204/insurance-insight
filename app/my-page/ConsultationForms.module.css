@@ -1,0 +1,22 @@
+.root{min-width:0;color:#243957}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.toolbar h1{font-size:20px;margin:0;font-weight:700}.toolbar>div{display:flex;gap:8px}.toolbar button{display:flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 12px;border:1px solid #dce5f0;border-radius:12px;background:#fff;color:#42618d;cursor:pointer;font-size:14px}.toolbar button:hover,.toolbar button[aria-pressed=true]{background:#eff5fc}.toolbar button:disabled{opacity:.5}.previews{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}.preview{position:relative;min-width:0;border:1px solid #dce5f0;border-radius:12px;overflow:hidden;background:white}.preview>div{position:absolute;top:0;left:0;width:794px}.pageSelection[data-page-index="0"]>:nth-child(2),.pageSelection[data-page-index="1"]>:nth-child(1){display:none}.capture{position:absolute;left:-12000px;top:0;width:794px;visibility:hidden;pointer-events:none}.hint{font-size:13px;color:#64748b;margin:0 0 16px}.error{font-size:13px;color:#dc2626}@media(max-width:767px){.previews{grid-template-columns:minmax(0,1fr)}.toolbar{flex-wrap:wrap}.toolbar h1{font-size:18px}.toolbar>div{margin-left:auto}.toolbar button{font-size:13px;padding:0 10px}}
+
+.root .toolbar{justify-content:flex-end}
+.root .previews{gap:12px}
+.root .preview{box-sizing:border-box;padding:0 16px;border-radius:16px;background:#e9eef5}
+.root .preview>div{left:16px}
+.pagePrint{position:absolute;top:15px;right:15px;z-index:2;display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;background:transparent;color:#94a3b8;cursor:pointer}
+.pagePrint:hover,.pagePrint:focus-visible{color:#334155;background:transparent}
+.pagePrint:disabled{opacity:.5;cursor:default}
+@media(max-width:767px){.root .preview{border-radius:20px}}
+
+.root .toolbar{justify-content:space-between}
+.colorControl{position:relative}
+.colorMenu{position:absolute;top:52px;left:0;z-index:10;display:flex;gap:12px;padding:14px;border:1px solid #dce5f0;border-radius:14px;background:white;box-shadow:0 8px 24px #24395718}
+.root .colorMenu button{width:28px;height:28px;min-width:28px;padding:0;border:1px solid #00000015;border-radius:50%}
+.root .colorMenu button[aria-pressed=true]{outline:2px solid #94a3b8;outline-offset:3px}
+
+@media(max-width:767px){.root .preview>.pagePrint{top:8px}}
+
+@media(max-width:767px){.root .toolbar>.colorControl{margin-left:0;margin-right:auto}.root .toolbar>div:last-child{margin-left:0}}
+
+@media(min-width:768px){.root .preview>.pagePrint{right:21px}}

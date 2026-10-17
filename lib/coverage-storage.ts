@@ -1,4 +1,4 @@
-import { COVERAGE_GROUPS, REPORT_COVERAGE_GROUPS, REPORT_THEMES, REPORT_DESIGNS, type ReportDesign, type CoverageReport, type ReportTheme } from "@/app/my-page/coverage-report-model";
+import { REPORT_BACKGROUNDS, COVERAGE_GROUPS, REPORT_COVERAGE_GROUPS, REPORT_THEMES, REPORT_DESIGNS, type ReportDesign, type CoverageReport, type ReportTheme } from "@/app/my-page/coverage-report-model";
 export type CoverageSet = { before: CoverageReport; after: CoverageReport; theme: ReportTheme;design?:ReportDesign };
 const fields = new Set(COVERAGE_GROUPS.flatMap(group=>group.fields.map(field=>field.id)));
 const text=(value:unknown,max:number)=>{if(typeof value!=="string"||value.length>max)throw new Error("입력 내용을 확인해 주세요");return value;};
@@ -10,6 +10,15 @@ export function validateCoverageSet(value:unknown):CoverageSet {
     const r=value as Record<string,unknown>;
     function map(value:unknown,max:number){const result:Record<string,string>={};if(value===undefined)return result;if(!value||typeof value!=="object"||Array.isArray(value))throw new Error("담보를 확인해 주세요");for(const [id,v]of Object.entries(value)){if(fields.has(id)||/^custom-[a-zA-Z0-9-]{1,80}$/.test(id))result[id]=text(v,max);}return result;}
     if(!Array.isArray(r.policies)||!r.policies.length||r.policies.length>200)throw new Error("보험 목록을 확인해 주세요");
+    const backgroundAliases:Record<string,string>={advisor:"protection","blue-photo":"protection","forest-photo":"forest","umbrella-network":"protection","family-flat":"protection","orange-warm":"home-photo",mono:"insurance-photo",cream:"yellow-care"};
+    const backgroundId=backgroundAliases[String(r.coverBackground)]??r.coverBackground;
+    const coverBackground=REPORT_BACKGROUNDS.find(item=>item.id===backgroundId)?.id;
+    if(r.coverBackground!==undefined&&!coverBackground)throw new Error("배경을 확인해 주세요");
+    const coverLayout:NonNullable<CoverageReport['coverLayout']>={};
+    if(r.coverLayout!==undefined){
+      if(!r.coverLayout||typeof r.coverLayout!=="object"||Array.isArray(r.coverLayout))throw new Error("표지 배치를 확인해 주세요");
+      for(const key of ['image','overview'] as const){const box=(r.coverLayout as Record<string,unknown>)[key];if(box===undefined)continue;if(!box||typeof box!=="object")throw new Error("표지 배치를 확인해 주세요");const {x,y,scale}=box as Record<string,unknown>;if(typeof x!=="number"||typeof y!=="number"||typeof scale!=="number"||![x,y,scale].every(Number.isFinite)||Math.abs(x)>1588||Math.abs(y)>2246||scale<.4||scale>2)throw new Error("표지 배치를 확인해 주세요");coverLayout[key]={x,y,scale};}
+    }
     const removedGroups:string[]=r.removedGroups===undefined?[]:Array.isArray(r.removedGroups)&&r.removedGroups.length<=53?r.removedGroups.map(title=>text(title,60)):(()=>{throw new Error("분류를 확인해 주세요");})();
     const removedFields:string[]=r.removedFields===undefined?[]:Array.isArray(r.removedFields)&&r.removedFields.length<=253?r.removedFields.map(id=>text(id,100)):(()=>{throw new Error("삭제 항목을 확인해 주세요");})();
     const customFields:NonNullable<CoverageReport['customFields']>={};
@@ -30,11 +39,12 @@ export function validateCoverageSet(value:unknown):CoverageSet {
       if(!r.categoryLabels||typeof r.categoryLabels!=="object"||Array.isArray(r.categoryLabels))throw new Error("분류명을 확인해 주세요");
       for(const [key,value] of Object.entries(r.categoryLabels)){if(key.length<=60)categoryLabels[key]=text(value,60);}
     }
-    return {name:text(r.name,60),birth:text(r.birth,20),date:text(r.date,10),advisor:text(r.advisor,60),organization:text(r.organization??"",60),phone:text(r.phone??"",60),fax:text(r.fax??"",60),email:text(r.email??"",100),memo:"",fieldUnits:map(r.fieldUnits,10),removedGroups,removedFields,customFields,categoryLabels,fieldLabels:map(r.fieldLabels,40),statusLabels:map(r.statusLabels,40),statusOverrides:map(r.statusOverrides,100),chartTargets:map(r.chartTargets,20),overrides:map(r.overrides,100),policies:r.policies.map(p=>{
+    return {name:text(r.name,60),birth:text(r.birth,20),date:text(r.date,10),advisor:text(r.advisor,60),organization:text(r.organization??"",60),phone:text(r.phone??"",60),fax:text(r.fax??"",60),email:text(r.email??"",100),memo:"",coverBackground,coverLayout,fieldUnits:map(r.fieldUnits,10),removedGroups,removedFields,customFields,categoryLabels,fieldLabels:map(r.fieldLabels,40),statusLabels:map(r.statusLabels,40),statusOverrides:map(r.statusOverrides,100),chartTargets:map(r.chartTargets,20),overrides:map(r.overrides,100),policies:r.policies.map(p=>{
       if(!p||typeof p!=="object")throw new Error("보험을 확인해 주세요");return {id:text(p.id,100),insurer:text(p.insurer,60),product:text(p.product,120),years:text(p.years,10),start:text(p.start,10),end:text(p.end,10),premium:text(p.premium,20),units:map(p.units,10),amounts:map(p.amounts,100)};
     })};
   }
-  if(!REPORT_THEMES.some(theme=>theme.id===source.theme))throw new Error("색상을 확인해 주세요");
+  const theme=source.theme;
+  if(!REPORT_THEMES.some(item=>item.id===theme))throw new Error("색상을 확인해 주세요");
   if(source.design!==undefined&&!REPORT_DESIGNS.some(design=>design.id===source.design))throw new Error('디자인을 확인해 주세요');
-  return {before:report(source.before),after:report(source.after),theme:source.theme as ReportTheme,design:(source.design||'simple') as ReportDesign};
+  return {before:report(source.before),after:report(source.after),theme:theme as ReportTheme,design:(source.design||'simple') as ReportDesign};
 }
