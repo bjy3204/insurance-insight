@@ -95,7 +95,7 @@ export async function GET() {
     });
   } catch {
     return NextResponse.json(
-      { error: "환율 정보를 불러오지 못했습니다." },
+      { error: "환율 정보를 불러오지 못했습니다" },
       { status: 500 }
     );
   }

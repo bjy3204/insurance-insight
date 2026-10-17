@@ -5,7 +5,7 @@ import { logTrafficFailure } from '@/lib/traffic-server-log';
 
 export async function GET() {
   const key = process.env.ITS_API_KEY?.trim();
-  if (!key) return NextResponse.json({ error: 'CCTV 서버 설정이 필요합니다.' }, { status: 503 });
+  if (!key) return NextResponse.json({ error: 'CCTV 서버 설정이 필요합니다' }, { status: 503 });
   const url = new URL('https://openapi.its.go.kr:9443/cctvInfo');
   url.search = new URLSearchParams({ apiKey: key, type: 'ex', cctvType: '1', minX: '124', maxX: '132', minY: '33', maxY: '39', getType: 'json' }).toString();
   try {
@@ -28,6 +28,6 @@ export async function GET() {
     return NextResponse.json({ cameras });
   } catch (failure) {
     logTrafficFailure('cctv', failure);
-    return NextResponse.json({ error: 'CCTV 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 502 });
+    return NextResponse.json({ error: 'CCTV 정보를 불러오지 못했습니다 잠시 후 다시 시도해 주세요' }, { status: 502 });
   }
 }

@@ -19,48 +19,48 @@ const callbackUrl = (request: NextRequest) => `${request.nextUrl.origin}/api/goo
 const configured = () => !!(process.env.GOOGLE_SHEETS_CLIENT_ID && process.env.GOOGLE_SHEETS_CLIENT_SECRET && process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 export async function POST(request: NextRequest) {
-  if (request.headers.get("origin") !== request.nextUrl.origin) return json({ error: "잘못된 요청입니다." }, 403);
-  if (!configured()) return json({ error: "구글 시트 자동 생성 설정이 아직 완료되지 않았습니다. 관리자에게 문의해 주세요." }, 503);
+  if (request.headers.get("origin") !== request.nextUrl.origin) return json({ error: "잘못된 요청입니다" }, 403);
+  if (!configured()) return json({ error: "구글 시트 자동 생성 설정이 아직 완료되지 않았습니다 관리자에게 문의해 주세요" }, 503);
   try {
     const db = admin();
     const token = request.headers.get("authorization")?.replace(/^Bearer /, "");
-    if (!token) return json({ error: "보험인사이트 로그인이 필요합니다." }, 401);
+    if (!token) return json({ error: "보험인사이트 로그인이 필요합니다" }, 401);
     const { data: { user }, error } = await db.auth.getUser(token);
-    if (error || !user) return json({ error: "로그인이 만료되었습니다. 다시 로그인해 주세요." }, 401);
+    if (error || !user) return json({ error: "로그인이 만료되었습니다 다시 로그인해 주세요" }, 401);
     const { data: profile, error: profileError } = await db.from("profiles").select("nickname,instagram_id,role").eq("id", user.id).maybeSingle();
-    if (profileError || !hasCompletedMembership(profile)) return json({ error: "회원가입을 먼저 완료해 주세요." }, 403);
+    if (profileError || !hasCompletedMembership(profile)) return json({ error: "회원가입을 먼저 완료해 주세요" }, 403);
     const { data: settings, error: settingsError } = await db.from("customer_settings").select("customer_url").eq("user_id", user.id).maybeSingle();
-    if (settingsError) return json({ error: "기존 시트 정보를 확인하지 못했습니다." }, 500);
+    if (settingsError) return json({ error: "기존 시트 정보를 확인하지 못했습니다" }, 500);
     const body = await request.json().catch(() => ({}));
     let returnPath: "/my-page"|"/notion-crm"|"/personal-space"="/my-page";try{const path=new URL(request.headers.get("referer")||"").pathname;if(path==="/notion-crm"||path==="/personal-space")returnPath=path;}catch{}
     const pending = readSheetState(request.cookies.get(pickerCookie)?.value);
     const calendarAction = body.action === "calendar-connect" || (body.action === "picker-complete" || body.action === "picker-cancel") && pending?.purpose === "calendar";
     if (settings?.customer_url && !calendarAction) return json({ existing: true });
-    if (body.action === "calendar-connect" && !spreadsheetIdFromUrl(settings?.customer_url)) return json({ error: "먼저 스프레드시트를 연결해 주세요." }, 400);
+    if (body.action === "calendar-connect" && !spreadsheetIdFromUrl(settings?.customer_url)) return json({ error: "먼저 스프레드시트를 연결해 주세요" }, 400);
     if (body.action === "picker-complete" || body.action === "picker-cancel") {
       const ticket = readSheetState(request.cookies.get(pickerCookie)?.value);
-      if (!ticket?.accessToken || !ticket.creationId || ticket.userId !== user.id || ticket.state !== "picker") return json({ error: "구글 인증 시간이 만료되었습니다. 다시 시도해 주세요." }, 401);
+      if (!ticket?.accessToken || !ticket.creationId || ticket.userId !== user.id || ticket.state !== "picker") return json({ error: "구글 인증 시간이 만료되었습니다 다시 시도해 주세요" }, 401);
       const clear = (response: NextResponse) => { response.cookies.set(pickerCookie, "", { ...cookieOptions, maxAge: 0 }); return response; };
       if (body.action === "picker-cancel") return clear(json({ cancelled: true }));
       const expected = ticket.purpose === "calendar" ? ticket.pickerFileId : template;
-      if (!expected || body.fileId !== expected) return json({ error: "표시된 시트를 선택해 주세요." }, 400);
+      if (!expected || body.fileId !== expected) return json({ error: "표시된 시트를 선택해 주세요" }, 400);
       if (ticket.purpose === "calendar") {
-        if (expected !== spreadsheetIdFromUrl(settings?.customer_url)) return clear(json({ error: "연결할 시트가 변경되었습니다. 다시 시도해 주세요." }, 409));
+        if (expected !== spreadsheetIdFromUrl(settings?.customer_url)) return clear(json({ error: "연결할 시트가 변경되었습니다 다시 시도해 주세요" }, 409));
         const check = await fetch(`https://www.googleapis.com/drive/v3/files/${expected}?fields=id`, { headers: { Authorization: `Bearer ${ticket.accessToken}` }, cache: "no-store", signal: AbortSignal.timeout(15000) });
-        if (!check.ok) return json({ error: "시트에 접근하지 못했습니다. 다시 선택해 주세요." }, 400);
+        if (!check.ok) return json({ error: "시트에 접근하지 못했습니다 다시 선택해 주세요" }, 400);
         const saved = await saveSheetConnection(user.id, expected, { accessToken: ticket.accessToken, refreshToken: ticket.refreshToken, accessExpires: ticket.accessExpires });
-        if (!saved) return json({ error: "일정 연결을 저장하지 못했습니다. 관리자 설정 확인 후 다시 연결해 주세요." }, 503);
+        if (!saved) return json({ error: "일정 연결을 저장하지 못했습니다 관리자 설정 확인 후 다시 연결해 주세요" }, 503);
         return clear(json({ ready: true, tab: "calendar" }));
       }
       const result = await findOrCopy(ticket.accessToken, user.id, ticket.creationId);
-      if (result.status) return json({ error: result.status === "template_not_found" || result.status === "template_app_access" || result.status === "template" ? "선택한 원본에 아직 접근할 수 없습니다. 원본의 공유·복사 허용 설정을 확인해 주세요." : "시트 생성에 실패했습니다. 잠시 후 다시 시도해 주세요." }, 400);
+      if (result.status) return json({ error: result.status === "template_not_found" || result.status === "template_app_access" || result.status === "template" ? "선택한 원본에 아직 접근할 수 없습니다 원본의 공유·복사 허용 설정을 확인해 주세요" : "시트 생성에 실패했습니다 잠시 후 다시 시도해 주세요" }, 400);
       const url = `https://docs.google.com/spreadsheets/d/${result.id}/edit`;
       const { error: saveError } = await db.from("customer_settings").upsert({ user_id: user.id, customer_url: url }, { onConflict: "user_id" });
-      if (saveError) return json({ error: "시트는 생성됐지만 저장하지 못했습니다. 다시 시도하면 기존 사본을 연결합니다." }, 500);
+      if (saveError) return json({ error: "시트는 생성됐지만 저장하지 못했습니다 다시 시도하면 기존 사본을 연결합니다" }, 500);
       await saveSheetConnection(user.id, result.id!, { accessToken: ticket.accessToken, refreshToken: ticket.refreshToken, accessExpires: ticket.accessExpires }).catch(() => false);
       return clear(json({ ready: true }));
     }
-    if (body.action && body.action !== "start" && body.action !== "calendar-connect") return json({ error: "잘못된 요청입니다." }, 400);
+    if (body.action && body.action !== "start" && body.action !== "calendar-connect") return json({ error: "잘못된 요청입니다" }, 400);
     const state = randomBytes(32).toString("base64url");
     const verifier = randomBytes(48).toString("base64url");
     const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
@@ -69,20 +69,20 @@ export async function POST(request: NextRequest) {
     response.cookies.set(pickerCookie, "", { ...cookieOptions, maxAge: 0 });
     response.cookies.set(cookieName, sealSheetState({ returnPath, userId: user.id, state, verifier, ...(body.action === "calendar-connect" ? { purpose: "calendar" as const } : {}), expires: Date.now() + 600000 }), cookieOptions);
     return response;
-  } catch { return json({ error: "구글 연결을 시작하지 못했습니다. 잠시 후 다시 시도해 주세요." }, 500); }
+  } catch { return json({ error: "구글 연결을 시작하지 못했습니다 잠시 후 다시 시도해 주세요" }, 500); }
 }
 
 export async function GET(request: NextRequest) {
   if (request.nextUrl.searchParams.get("action") === "picker") {
-    if (!configured()) return json({ error: "구글 설정이 필요합니다." }, 503);
+    if (!configured()) return json({ error: "구글 설정이 필요합니다" }, 503);
     const token = request.headers.get("authorization")?.replace(/^Bearer /, "");
-    if (!token) return json({ error: "보험인사이트 로그인이 필요합니다." }, 401);
+    if (!token) return json({ error: "보험인사이트 로그인이 필요합니다" }, 401);
     const { data: { user }, error } = await admin().auth.getUser(token);
     const ticket = readSheetState(request.cookies.get(pickerCookie)?.value);
-    if (error || !user || ticket?.userId !== user.id || ticket.state !== "picker" || !ticket.accessToken) return json({ error: "구글 인증 시간이 만료되었습니다. 다시 시도해 주세요." }, 401);
+    if (error || !user || ticket?.userId !== user.id || ticket.state !== "picker" || !ticket.accessToken) return json({ error: "구글 인증 시간이 만료되었습니다 다시 시도해 주세요" }, 401);
     const key = process.env.GOOGLE_PICKER_API_KEY;
     const appId = process.env.GOOGLE_CLOUD_PROJECT_NUMBER || process.env.GOOGLE_SHEETS_CLIENT_ID?.split("-")[0];
-    if (!key || !appId) return json({ error: "원본 선택창을 위한 Google Picker API 키 설정이 필요합니다. 관리자에게 문의해 주세요." }, 503);
+    if (!key || !appId) return json({ error: "원본 선택창을 위한 Google Picker API 키 설정이 필요합니다 관리자에게 문의해 주세요" }, 503);
     return json({ accessToken: ticket.accessToken, developerKey: key, appId, templateId: ticket.pickerFileId || template, title: ticket.purpose === "calendar" ? "연결할 시트를 선택해 주세요" : "고객관리 원본 시트를 선택해 주세요" });
   }
   const state = readSheetState(request.cookies.get(cookieName)?.value);

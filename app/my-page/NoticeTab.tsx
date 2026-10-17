@@ -183,7 +183,7 @@ export default function NoticeTab({ active = true, compactNavigation = false }: 
       setSignature(data.signature ?? "든든한 보험 파트너");
       setFontFamily(data.font_family || "serif"); setTextColor(data.text_color || "#4a4a4a"); setSignatureColor(data.signature_color || "#9a7a3a");
     };
-    void loadNotice().then(() => { if (active && selectionRevision.current === revision) setNoticeLoaded(true); }).catch(() => { if (active) setSaveMsg("저장된 안내장을 불러오지 못했습니다. 새로고침해 주세요."); }); return () => { active = false; };
+    void loadNotice().then(() => { if (active && selectionRevision.current === revision) setNoticeLoaded(true); }).catch(() => { if (active) setSaveMsg("저장된 안내장을 불러오지 못했습니다 새로고침해 주세요"); }); return () => { active = false; };
   }, [authUser?.id]);
   const draft = JSON.stringify({ user_id: authUser?.id, notice_type: noticeType, month: noticeType === "claim" ? claimKind : month, customer_name: customerName, content: noticeType === "claim" ? JSON.stringify({ version: 2, content: claimContents[claimKind] }) : content, signature, font_family: fontFamily, text_color: textColor, signature_color: signatureColor });
   useEffect(() => {
@@ -196,11 +196,11 @@ export default function NoticeTab({ active = true, compactNavigation = false }: 
       try {
         const { error } = await supabase.from("notice_settings").upsert({ ...record, updated_at: new Date().toISOString() }, { onConflict: "user_id,notice_type,month" });
         if (error) throw error;
-      } catch { setSaveMsg("자동 저장하지 못했습니다. 내용을 다시 수정해 주세요."); }
+      } catch { setSaveMsg("자동 저장하지 못했습니다 내용을 다시 수정해 주세요"); }
     });
   }, [draft, noticeLoaded, authUser?.id]);
   const captureNotice = useCallback(async () => {
-    if (!previewRef.current) throw new Error("안내장 미리보기를 확인해 주세요.");
+    if (!previewRef.current) throw new Error("안내장 미리보기를 확인해 주세요");
     return captureNoticeImage(previewRef.current);
   }, []);
   const imageName = `${customerName || "고객"}_${noticeType === "claim" ? `${getClaimNotice(claimKind).label}_청구서류` : noticeType === "exemption" ? "면책종료" : "감액종료"}_안내장.png`;
@@ -224,20 +224,20 @@ export default function NoticeTab({ active = true, compactNavigation = false }: 
   const handleKakaoShare = async () => {
     const prepared = shareFileRef.current;
     if (!navigator.share || !navigator.canShare) {
-      setSaveMsg("이 브라우저는 사진 공유를 지원하지 않습니다. 이미지 저장 후 카카오톡에서 사진으로 보내 주세요."); return;
+      setSaveMsg("이 브라우저는 사진 공유를 지원하지 않습니다 이미지 저장 후 카카오톡에서 사진으로 보내 주세요"); return;
     }
     if (!prepared || prepared.key !== shareKey || !navigator.canShare({ files: [prepared.file] })) {
-      setSaveMsg("사진 공유를 준비하지 못했습니다. 이미지 저장 후 카카오톡에서 사진으로 보내 주세요."); return;
+      setSaveMsg("사진 공유를 준비하지 못했습니다 이미지 저장 후 카카오톡에서 사진으로 보내 주세요"); return;
     }
     setSharing(true); setSaveMsg("");
     try { await navigator.share({ files: [prepared.file] }); }
-    catch (error) { if (!(error instanceof Error && error.name === "AbortError")) setSaveMsg("사진 공유 창을 열지 못했습니다. 이미지 저장 후 카카오톡에서 사진으로 보내 주세요."); }
+    catch (error) { if (!(error instanceof Error && error.name === "AbortError")) setSaveMsg("사진 공유 창을 열지 못했습니다 이미지 저장 후 카카오톡에서 사진으로 보내 주세요"); }
     finally { setSharing(false); }
   };
   const handleDownload = () => {
     if (captureBusy.current) return;
     const prepared = shareFileRef.current;
-    if (!prepared || prepared.key !== shareKey) { setSaveMsg("이미지 준비가 끝난 뒤 다시 저장해 주세요."); return; }
+    if (!prepared || prepared.key !== shareKey) { setSaveMsg("이미지 준비가 끝난 뒤 다시 저장해 주세요"); return; }
     captureBusy.current = true;
     setIsCapturing(true);
     try {
@@ -248,7 +248,7 @@ export default function NoticeTab({ active = true, compactNavigation = false }: 
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
       if (window.matchMedia("(max-width: 767px)").matches) setMobileSaveImage(prepared.previewUrl);
       setSaveMsg("");
-    } catch { setSaveMsg("이미지를 저장하지 못했습니다. 다시 시도해 주세요."); } finally { setIsCapturing(false); captureBusy.current = false; }
+    } catch { setSaveMsg("이미지를 저장하지 못했습니다 다시 시도해 주세요"); } finally { setIsCapturing(false); captureBusy.current = false; }
   };
     const noticeNavigation=<nav data-unified-side-menu={compactNavigation?undefined:"true"} aria-label="안내장 종류" className={styles.menu}>
         {noticeTypes.map(type => (
@@ -338,10 +338,10 @@ export default function NoticeTab({ active = true, compactNavigation = false }: 
 
         {noticeType === "claim" ? <div className="space-y-2"><p className="text-base font-bold">청구 종류</p><div id="notice-claim-options" className="grid grid-cols-3 gap-2">{claimNotices.map(item => <button aria-pressed={claimKind === item.id} data-personal-choice="true" data-action-height="44" type="button" key={item.id} onClick={() => { setClaimKind(item.id); setSaveMsg(""); }} className={`h-11 rounded-xl text-sm font-semibold cursor-pointer ${claimKind === item.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600"}`}>{item.label}</button>)}</div></div> : (<div className="space-y-2"><p className="text-base font-bold">월 선택</p><div className="grid grid-cols-3 lg:grid-cols-3 gap-2 max-w-[800px]">{monthTabs.map(item => <button aria-pressed={month === item.id} data-personal-choice="true" data-action-height="44" type="button" key={item.id} onClick={() => setMonth(item.id)} className={`h-11 rounded-xl text-sm font-semibold cursor-pointer ${month === item.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600"}`}>{item.label}</button>)}</div></div>)}
         <div className="grid sm:grid-cols-2 gap-4">
-          <div><label htmlFor="notice-customer" className="block text-base font-bold mb-2">고객명</label><div className="relative"><ClearableSearchInput onClear={() => setCustomerName("")} data-ui-field="true" id="notice-customer" aria-label="고객명" value={customerName} onChange={event => setCustomerName(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-600" /></div></div>
-          <div><label htmlFor="notice-signature" className="block text-base font-bold mb-2">설계사</label><div className="relative"><ClearableSearchInput onClear={() => setSignature("")} data-ui-field="true" id="notice-signature" aria-label="설계사" value={signature} onChange={event => setSignature(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-600" /></div></div>
+          <div><label data-field-caption="true" htmlFor="notice-customer" className="block text-base font-bold mb-2">고객명</label><div className="relative"><ClearableSearchInput onClear={() => setCustomerName("")} data-ui-field="true" id="notice-customer" aria-label="고객명" value={customerName} onChange={event => setCustomerName(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-600" /></div></div>
+          <div><label data-field-caption="true" htmlFor="notice-signature" className="block text-base font-bold mb-2">설계사</label><div className="relative"><ClearableSearchInput onClear={() => setSignature("")} data-ui-field="true" id="notice-signature" aria-label="설계사" value={signature} onChange={event => setSignature(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-600" /></div></div>
         </div>
-          <div className="flex flex-col flex-1"><label htmlFor="notice-content" className="block text-base font-bold mb-3">안내 내용</label><textarea data-ui-field="true" id="notice-content" value={noticeType === "claim" ? claimContents[claimKind] : content} onChange={event => { const value = event.target.value; if (noticeType === "claim") setClaimContents(previous => ({ ...previous, [claimKind]: value })); else setContent(value); setSaveMsg(""); }} rows={6} className="block w-full flex-1 min-h-[180px] p-4 rounded-xl border border-gray-200 text-sm leading-7 outline-none resize-none focus:border-blue-600" /></div>
+          <div className="flex flex-col flex-1"><label data-field-caption="true" htmlFor="notice-content" className="block text-base font-bold mb-3">안내 내용</label><textarea data-ui-field="true" id="notice-content" value={noticeType === "claim" ? claimContents[claimKind] : content} onChange={event => { const value = event.target.value; if (noticeType === "claim") setClaimContents(previous => ({ ...previous, [claimKind]: value })); else setContent(value); setSaveMsg(""); }} rows={6} className="block w-full flex-1 min-h-[180px] p-4 rounded-xl border border-gray-200 text-sm leading-7 outline-none resize-none focus:border-blue-600" /></div>
           <div data-notice-design-card="true" data-ui-card="true" className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
             <h3 data-personal-card-title="true" className="text-base font-bold">디자인 설정</h3>
             <div id="notice-design-settings" className="grid grid-cols-3 gap-3 mt-4">
@@ -352,7 +352,7 @@ export default function NoticeTab({ active = true, compactNavigation = false }: 
           </div>
         </div>
       </div>
-      {mobileSaveImage && createPortal(<div role="dialog" aria-modal="true" aria-label="안내장 이미지 저장" className="fixed inset-0 z-[6000] bg-black/60 flex items-center justify-center p-4" onClick={() => setMobileSaveImage(null)}><div className="bg-white rounded-2xl w-full max-w-md max-h-[90dvh] overflow-y-auto p-4" onClick={event => event.stopPropagation()}><div className="flex items-center justify-between mb-3"><h3 className="font-bold">이미지 저장</h3><button data-icon-only="true" type="button" aria-label="닫기" onClick={() => setMobileSaveImage(null)} className="p-2 cursor-pointer"><X className="w-5 h-5" /></button></div><p className="text-sm text-gray-600 mb-3">아래 이미지를 길게 눌러 사진에 저장할 수 있어요.</p><img src={mobileSaveImage} alt="저장할 안내장" className="w-full h-auto rounded-lg" style={{ WebkitTouchCallout: "default", userSelect: "auto" }} /><a href={mobileSaveImage} download={imageName} className="mt-3 flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer"><Download className="w-4 h-4" />파일 다운로드</a></div></div>, document.body)}
+      {mobileSaveImage && createPortal(<div role="dialog" aria-modal="true" aria-label="안내장 이미지 저장" className="fixed inset-0 z-[6000] bg-black/60 flex items-center justify-center p-4" onClick={() => setMobileSaveImage(null)}><div className="bg-white rounded-2xl w-full max-w-md max-h-[90dvh] overflow-y-auto p-4" onClick={event => event.stopPropagation()}><div className="flex items-center justify-between mb-3"><h3 className="font-bold">이미지 저장</h3><button data-icon-only="true" type="button" aria-label="닫기" onClick={() => setMobileSaveImage(null)} className="p-2 cursor-pointer"><X className="w-5 h-5" /></button></div><p className="text-sm text-gray-600 mb-3">아래 이미지를 길게 눌러 사진에 저장할 수 있어요</p><img src={mobileSaveImage} alt="저장할 안내장" className="w-full h-auto rounded-lg" style={{ WebkitTouchCallout: "default", userSelect: "auto" }} /><a href={mobileSaveImage} download={imageName} className="mt-3 flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer"><Download className="w-4 h-4" />파일 다운로드</a></div></div>, document.body)}
     </div>
   );
 }

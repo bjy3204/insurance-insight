@@ -12,8 +12,8 @@ return (<>{(passwordResultOpen || passwordResultRef.current) && (
       </h2>
       <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
         {(passwordResultSuccess || passwordResultSuccessRef.current)
-          ? "계정설정이 저장되었습니다."
-          : "저장에 실패했습니다. 다시 시도해주세요."}
+          ? "계정설정이 저장되었습니다"
+          : "저장에 실패했습니다 다시 시도해주세요"}
       </p>
 
       <div className="flex gap-3 mt-6">

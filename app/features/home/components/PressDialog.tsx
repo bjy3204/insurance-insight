@@ -222,7 +222,7 @@ return (<>{pressOpen && (
       />
 
       <p className="text-xs text-gray-400 mt-2">
-        일부 모바일 환경에서는 PDF 미리보기가 지원되지 않을 수 있습니다.
+        일부 모바일 환경에서는 PDF 미리보기가 지원되지 않을 수 있습니다
       </p>
     </div>
   )}

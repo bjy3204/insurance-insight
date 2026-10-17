@@ -269,7 +269,7 @@ const [headlineNews, setHeadlineNews] = useState<TickerNewsItem[]>([]);
         originallink: breakingNews[0].originallink,
        description:
   news[0]?.description ||
-  "실시간 주요 뉴스입니다.",
+  "실시간 주요 뉴스입니다",
         pubDate: new Date().toString(),
       },
     ];
@@ -560,7 +560,7 @@ useEffect(() => {
   <div className="px-0 py-0 overflow-hidden">
     {weatherItems.length === 0 ? (
       <div className="text-sm text-gray-400 text-center py-1">
-        날씨 정보를 불러오지 못했습니다.
+        날씨 정보를 불러오지 못했습니다
       </div>
     ) : (
       <>
@@ -707,11 +707,11 @@ useEffect(() => {
 
     {loading ? (
       <div className="bg-white border border-gray-200 rounded-3xl p-10 text-center text-sm text-gray-400">
-        뉴스를 불러오는 중입니다.
+        뉴스를 불러오는 중입니다
       </div>
     ) : news.length === 0 ? (
       <div className="bg-white border border-gray-200 rounded-3xl p-10 text-center text-sm text-gray-400">
-        표시할 뉴스가 없습니다.
+        표시할 뉴스가 없습니다
       </div>
     ) : (
       <>

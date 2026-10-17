@@ -307,7 +307,7 @@ const toggleType = (type: string) => {
   </p>
 
   <p className="text-xs text-gray-400 mt-2 leading-relaxed">
-    시·도 또는 진료과목을 다시 확인해 주세요.
+    시·도 또는 진료과목을 다시 확인해 주세요
   </p>
 </div>
               ) : (
@@ -382,9 +382,9 @@ const toggleType = (type: string) => {
   </div>
 
   <p className="text-[11px] text-center text-gray-400 mt-3 leading-relaxed">
-    본 의료기관 정보는 보건의료빅데이터개방시스템 자료를 기반으로 제공됩니다.
+    본 의료기관 정보는 보건의료빅데이터개방시스템 자료를 기반으로 제공됩니다
   
-    실제 진료 여부 및 운영 정보는 의료기관에 직접 확인해 주세요.
+    실제 진료 여부 및 운영 정보는 의료기관에 직접 확인해 주세요
   </p>
 </div>
         </div>

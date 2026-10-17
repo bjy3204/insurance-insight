@@ -31,11 +31,11 @@ export function calculatePension(input: PensionInput) {
   const fields = input.tab === "nps" ? [input.npsPremium] : input.tab === "lump" ? [input.currentAge, input.monthly, input.savingYears, input.rate] : input.tab === "retire" ? [input.currentAge, input.pensionStartAge, input.pensionYears, input.targetPension, input.rate] : [input.currentAge, input.pensionStartAge, input.pensionYears, input.monthly, input.savingYears, input.rate];
   if (fields.some(value => value !== "" && (!Number.isFinite(Number(value)) || Number(value) < 0))) error = "입력값을 확인해 주세요";
   else if ((input.tab === "retire" || input.tab === "pension") && input.currentAge && input.pensionStartAge && startAge <= current) error = "연금 개시 나이는 현재 나이보다 높게 입력해 주세요";
-  else if (input.tab === "pension" && input.currentAge && input.pensionStartAge && input.savingYears && current + saveYears > startAge) error = "저축 종료 시점이 연금 개시보다 늦습니다. 저축기간이나 연금 개시 나이를 조정해 주세요";
+  else if (input.tab === "pension" && input.currentAge && input.pensionStartAge && input.savingYears && current + saveYears > startAge) error = "저축 종료 시점이 연금 개시보다 늦습니다 저축기간이나 연금 개시 나이를 조정해 주세요";
   else if ((input.tab === "retire" || input.tab === "pension") && input.pensionYears && receiveYears <= 0) error = "연금 수령기간은 1년 이상 입력해 주세요";
   else if ((input.tab === "pension" || input.tab === "lump") && input.savingYears && saveYears <= 0) error = "저축기간은 1년 이상 입력해 주세요";
   else if (input.tab === "nps" && input.npsPremium && (premium < 38950 || premium > 626050)) error = "월 납입보험료는 총 보험료 기준 38,950원~626,050원으로 입력해 주세요";
-  else if (![needRetireMoney, requiredMonthlySaving, lumpTotal, pensionTotal, estimatedMonthlyPension].every(Number.isFinite)) error = "입력값이 너무 큽니다. 금액과 기간을 확인해 주세요";
+  else if (![needRetireMoney, requiredMonthlySaving, lumpTotal, pensionTotal, estimatedMonthlyPension].every(Number.isFinite)) error = "입력값이 너무 큽니다 금액과 기간을 확인해 주세요";
   return { error, current, startAge, receiveYears, pensionEndAge: startAge + receiveYears, savingEndAge: current + saveYears, needRetireMoney, requiredMonthlySaving, pensionTotal, estimatedMonthlyPension, lumpTotal,
     nps: { incomeBase, oldAge: [10, 20, 30].map(years => ({ years, amount: tableValue(tables.oldAge, `year${years}`) })),
       disability: ["grade1", "grade2", "grade3", "grade4Lump"].map((key, index) => ({ label: ["장애 1급", "장애 2급", "장애 3급", "장애 4급(일시금)"][index], amount: tableValue(tables.disability, key) })),

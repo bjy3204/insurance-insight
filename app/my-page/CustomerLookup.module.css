@@ -121,7 +121,7 @@
 .directoryList::-webkit-scrollbar { display:none; }
 .directoryList button { display:flex; flex-direction:column; gap:4px; width:100%; margin-bottom:6px; padding:12px; border:1px solid transparent; border-radius:8px; background:#fff; color:#64748b; font-size:14px; text-align:left; cursor:pointer; }
 .directoryList button strong { color:#334968; font-weight:600; }
-.directoryList button:hover { background:#f8faff; }
+.directoryList button:is(:hover,:focus-visible) { background:#f8faff; }
 .directoryList button[aria-pressed="true"] { border-color:#bfdbfe; background:#eff6ff; }
 .directoryList p { margin:12px 0; color:#94a3b8; font-size:14px; }
 .directoryList .directoryRow { display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:8px; min-height:44px; padding:10px 18px; border:1px solid #e6ebf3; touch-action:pan-y; }
@@ -138,7 +138,7 @@
 }
 .contractActions { display:flex; align-items:center; justify-content:flex-end; gap:6px; white-space:nowrap; }
 .contractActions button { display:grid; place-items:center; width:28px; height:28px; border:0; border-radius:6px; background:transparent; color:#8795a9; cursor:pointer; }
-.contractActions button:hover { background:#eff6ff; color:#195DFF; }.contractActions button:last-child:hover { background:#fff1f2; color:#dc2626; }.contractActions button:disabled { opacity:.4; cursor:default; }
+.contractActions button:is(:hover,:focus-visible) { background:#eff6ff; color:#195DFF; }.contractActions button:last-child:is(:hover,:focus-visible) { background:#fff1f2; color:#dc2626; }.contractActions button:disabled { opacity:.4; cursor:default; }
 
 .directorySearch input{font-size:14px}
 .detailTabs button{font-size:16px !important}
@@ -253,3 +253,5 @@
  .cards>.medicalBlock{order:2}
  .cards>.card:nth-child(3){order:3}
 }
+
+.matches[data-customer-suggestions=true]{display:flex;flex-direction:column;gap:0;max-height:190px;overflow-y:auto;scrollbar-width:none}.matches[data-customer-suggestions=true]::-webkit-scrollbar{display:none}.matches[data-customer-suggestions=true]>button{box-sizing:border-box;flex:0 0 36px;min-height:36px;height:36px;justify-content:flex-start;padding:0 12px}

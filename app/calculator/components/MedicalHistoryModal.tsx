@@ -52,7 +52,7 @@ export default function MedicalHistoryModal({ onClose }: { onClose: () => void }
           {period ? <div ref={contentRef} className={styles.content}><MedicalGenerationContent column={period.column} /></div> : <MedicalOverview />}
         </div>
       </div>
-      <p className={styles.disclaimer}>세부 보장내용은 가입하신 보험상품의 약관을 참조하시기 바랍니다.</p>
+      <p className={styles.disclaimer}>세부 보장내용은 가입하신 보험상품의 약관을 참조하시기 바랍니다</p>
     </div>
   </div>;
 }

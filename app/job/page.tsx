@@ -510,7 +510,7 @@ const currentCompanies = filteredCompanies.slice(
           <div className={styles.recruitIntro}>
             <p className={styles.recruitEyebrow}>RECRUIT</p>
             <h2><span>새로운 시작</span>을 찾고 있다면</h2>
-            <p>보험업계의 다양한 채용 기회를 확인해보세요.</p>
+            <p>보험업계의 다양한 채용 기회를 확인해보세요</p>
           </div>
           <div className={styles.recruitSearch}>
             <div data-page-search-wrapper="true" className="flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 transition focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100">
@@ -529,7 +529,7 @@ const currentCompanies = filteredCompanies.slice(
           <div data-page-card-grid="true" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {filteredCompanies.length === 0 && (
               <div className="col-span-full flex-1 flex items-center justify-center text-gray-400 text-sm min-h-[470px]">
-                검색 결과가 없습니다.
+                검색 결과가 없습니다
               </div>
             )}
 
@@ -567,7 +567,7 @@ const currentCompanies = filteredCompanies.slice(
             </h2>
 
             <p className="text-sm text-gray-500 leading-relaxed mb-6">
-              {readyService} 서비스는 현재 준비중입니다.
+              {readyService} 서비스는 현재 준비중입니다
             </p>
 
             <button data-popup-action="true"

@@ -16,8 +16,8 @@ export default function CustomerIdentityFields({ customers, name, birth, onNameC
   const [position, setPosition] = useState<{ top: number; left: number; width: number; maxHeight: number } | null>(null);
   const [target, setTarget] = useState<"name" | "birth">("name");
   const [index, setIndex] = useState(-1);
-  const matches = customers.filter(customer => target === "name" ? customerNameStartsWith(customer.name, name) : !!name.trim() && customer.name.trim() === name.trim());
-  const visible = suggestions && !!position && matches.length > 0;
+  const matches = customers.filter(customer => target === "name" ? (name.trim()?customerNameStartsWith(customer.name, name):!!birth) && (!birth || shortCustomerBirth(customer.birth).startsWith(shortCustomerBirth(birth))) : !!name.trim() && customer.name.trim() === name.trim() && (!birth || shortCustomerBirth(customer.birth).startsWith(shortCustomerBirth(birth))));
+  const visible = suggestions && !!position && matches.length > 0 && (target === "name" || !!name.trim());
   const close = () => { setPosition(null); setIndex(-1); };
   const open = (field: "name" | "birth") => {
     if (!suggestions) return;
@@ -25,7 +25,7 @@ export default function CustomerIdentityFields({ customers, name, birth, onNameC
     if (!input) return;
     const rect = input.getBoundingClientRect();
     const below = window.innerHeight - rect.bottom - 12;
-    const height = Math.min(240, Math.max(80, below >= 160 ? below : rect.top - 12));
+    const height = Math.min(190, Math.max(80, below >= 160 ? below : rect.top - 12));
     setTarget(field); setIndex(-1);
     setPosition({ top: below >= 160 ? rect.bottom + 4 : Math.max(8, rect.top - height - 4), left: Math.max(8, Math.min(rect.left, window.innerWidth - rect.width - 8)), width: rect.width, maxHeight: height });
   };
@@ -42,7 +42,7 @@ export default function CustomerIdentityFields({ customers, name, birth, onNameC
   }, [position]);
   useEffect(() => { menu.current?.querySelector('[data-active="true"]')?.scrollIntoView({ block: "nearest" }); }, [index]);
   const input = (field: "name" | "birth", label: string) => <div className={styles.field}>
-    <label htmlFor={`${id}-${field}`} className={styles.label}>{label}</label>
+    <label data-field-caption="true" htmlFor={`${id}-${field}`} className={styles.label}>{label}</label>
     <input ref={field === "name" ? nameInput : birthInput} id={`${id}-${field}`} className={styles.identityInput} role="combobox" aria-autocomplete={suggestions ? "list" : "none"} aria-expanded={visible && target === field} aria-controls={visible && target === field ? `${id}-options` : undefined} aria-activedescendant={visible && target === field && matches[index] ? `${id}-option-${index}` : undefined}
       value={field === "name" ? name : birth} autoComplete="off" inputMode={field === "birth" ? "numeric" : undefined} maxLength={field === "birth" ? 6 : 80}
       onFocus={() => open(field)} onBlur={() => close()} onChange={event => { if (field === "name") onNameChange(event.target.value); else onBirthChange(shortCustomerBirth(event.target.value)); open(field); }}
@@ -56,9 +56,9 @@ export default function CustomerIdentityFields({ customers, name, birth, onNameC
   </div>;
   return <>
     {input("name", "계약자")}{input("birth", "생년월일")}
-    {visible && createPortal(<div ref={menu} data-mini-dropdown="true" id={`${id}-options`} role="listbox" aria-label={target === "name" ? "계약자 후보" : "생년월일 후보"} className={styles.options} style={{...position!,boxSizing:"border-box",minWidth:0,maxWidth:position!.width}}>
+    {visible && createPortal(<div ref={menu} data-mini-dropdown="true" id={`${id}-options`} role="listbox" aria-label={target === "name" ? "계약자 후보" : "생년월일 후보"} className={`${styles.options} ${styles.identitySuggestions}`} style={{...position!,boxSizing:"border-box",minWidth:0,maxWidth:position!.width}}>
       {matches.map((customer, optionIndex) => <button key={`${customer.name}:${customer.birth}:${optionIndex}`} id={`${id}-option-${optionIndex}`} type="button" role="option" tabIndex={-1} aria-selected={optionIndex === index} data-active={optionIndex === index} onPointerDown={event => event.preventDefault()} onMouseEnter={() => setIndex(optionIndex)} onClick={() => choose(customer)}>
-        <span className={styles.identityOption}><span>{customer.name}</span><small>{shortCustomerBirth(customer.birth)}</small></span>
+        <span>{target === "name" ? customer.name : shortCustomerBirth(customer.birth)}</span>
       </button>)}
     </div>, document.body)}
   </>;

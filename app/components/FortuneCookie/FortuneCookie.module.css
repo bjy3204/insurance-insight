@@ -85,7 +85,7 @@
   right: 10px;
 }
 
-.closeButton:hover {
+.closeButton:is(:hover,:focus-visible) {
   background: transparent;
   color: #111827;
 }

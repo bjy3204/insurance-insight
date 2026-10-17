@@ -36,7 +36,7 @@ function ReminderPopup({ items, desktop, onConfirm, busy, error }: { items: Due;
   }, [desktop]);
   return createPortal(<div className={styles.reminderOverlay}><div ref={panel} className={styles.reminderPanel} style={position} role="dialog" aria-modal="true" aria-label="일정 알림">
     <h2 data-popup-heading="true" className={styles.reminderHeader}><Bell />일정 알림</h2>
-    <div className={`${styles.reminderList} ${styles.scroll}`}>{items.map(({ event, reminder, key }) => <div key={key} className={styles.reminderItem}><strong>{event.icon} {event.title}</strong><p>{event.date} {event.time || "종일"}</p><p className={styles.muted}>{reminder.lead_days === 0 ? "오늘 일정이에요." : `${reminder.lead_days}일 후 일정이에요.`}</p></div>)}</div>
+    <div className={`${styles.reminderList} ${styles.scroll}`}>{items.map(({ event, reminder, key }) => <div key={key} className={styles.reminderItem}><strong>{event.icon} {event.title}</strong><p>{event.date} {event.time || "종일"}</p><p className={styles.muted}>{reminder.lead_days === 0 ? "오늘 일정이에요" : `${reminder.lead_days}일 후 일정이에요`}</p></div>)}</div>
     {error && <p className={styles.error} role="alert">{error}</p>}
     <button data-popup-action="true" className={`${styles.primary} ${styles.confirmReminder}`} disabled={busy} onClick={onConfirm}>{busy ? "확인 중" : "확인"}</button>
   </div></div>, document.body);
@@ -82,7 +82,7 @@ function ReminderSession({ userId, desktop }: { userId: string | null; desktop: 
     if (busy) return;
     setBusy(true); setError("");
     try { await acknowledgeReminders(visible.map(item => item.reminder), userId); setPending([]); }
-    catch (e) { setError(e instanceof Error ? e.message : "알림을 확인하지 못했습니다."); }
+    catch (e) { setError(e instanceof Error ? e.message : "알림을 확인하지 못했습니다"); }
     finally { setBusy(false); }
   };
   return visible.length ? <ReminderPopup items={visible} desktop={desktop} onConfirm={() => void confirm()} busy={busy} error={error} /> : null;

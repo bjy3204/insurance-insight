@@ -251,7 +251,7 @@ const currentReviews = selectedReviews.slice(
           {lectureGroups.length === 0 && (
             <div className="bg-white rounded-3xl border border-gray-200 py-16 text-center">
               <p className="text-gray-400 text-sm">
-                등록된 강의 후기가 없습니다.
+                등록된 강의 후기가 없습니다
               </p>
             </div>
           )}
@@ -516,7 +516,7 @@ const currentReviews = selectedReviews.slice(
           <div className="flex-1 overflow-y-auto px-5 pt-0 pb-5 space-y-4">
             {currentReviews.length === 0 && (
               <div className="text-center text-sm text-gray-400 py-16">
-                검색 결과가 없습니다.
+                검색 결과가 없습니다
               </div>
             )}
 
@@ -699,7 +699,7 @@ const currentReviews = selectedReviews.slice(
           <div className="flex-1 overflow-y-auto p-6">
             {!selectedInstructorInfo && (
               <div className="text-center text-sm text-gray-400 py-16">
-                등록된 강사 정보가 없습니다.
+                등록된 강사 정보가 없습니다
               </div>
             )}
 

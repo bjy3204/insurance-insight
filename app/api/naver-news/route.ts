@@ -53,7 +53,7 @@ return NextResponse.json({
 
   } catch {
     return NextResponse.json(
-      { error: "뉴스 정보를 불러오지 못했습니다." },
+      { error: "뉴스 정보를 불러오지 못했습니다" },
       { status: 500 }
     );
   }

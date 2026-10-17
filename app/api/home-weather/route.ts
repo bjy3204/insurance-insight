@@ -9,7 +9,7 @@ const condition = (id: number) => id >= 600 && id < 700 ? "snow" : id >= 200 && 
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   const key = process.env.OPENWEATHER_API_KEY;
-  if (!key) return NextResponse.json({ error: "날씨 연결 설정을 확인해 주세요." }, { status: 503 });
+  if (!key) return NextResponse.json({ error: "날씨 연결 설정을 확인해 주세요" }, { status: 503 });
   const read = async (url: string, revalidate=600) => {
     const response = await fetch(url, { next: { revalidate }, signal: AbortSignal.timeout(12000) });
     if (!response.ok) throw new Error("Weather service unavailable");
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   try {
     const query = params.get("q")?.trim();
     if (query) {
-      if (query.length > 80) return NextResponse.json({ error: "검색어가 너무 깁니다." }, { status: 400 });
+      if (query.length > 80) return NextResponse.json({ error: "검색어가 너무 깁니다" }, { status: 400 });
       // Photon supplies parent administrative areas; existing geocoders are fallbacks.
       let places: { name: string; displayName?:string; lat: number; lon: number; id?: number }[] = [];
       const sources = await Promise.allSettled([
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     }
     const lat = Number(params.get("lat") ?? 37.5665);
     const lon = Number(params.get("lon") ?? 126.978);
-    if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) return NextResponse.json({ error: "위치를 확인해 주세요." }, { status: 400 });
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) return NextResponse.json({ error: "위치를 확인해 주세요" }, { status: 400 });
     const base = `lat=${lat}&lon=${lon}&appid=${key}&units=metric&lang=kr`;
     const [current, forecast] = await Promise.all([
       read(`https://api.openweathermap.org/data/2.5/weather?${base}`),
@@ -75,6 +75,6 @@ export async function GET(request: Request) {
     });
     return NextResponse.json({ region, temp: Math.round(current.main.temp), condition: condition(current.weather[0].id), sunrise: current.sys.sunrise, sunset: current.sys.sunset, days });
   } catch {
-    return NextResponse.json({ error: "날씨를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요." }, { status: 502 });
+    return NextResponse.json({ error: "날씨를 불러오지 못했습니다 잠시 후 다시 시도해 주세요" }, { status: 502 });
   }
 }

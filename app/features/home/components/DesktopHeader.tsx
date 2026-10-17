@@ -38,5 +38,5 @@ export default function DesktopHeader({ controller: c }: { controller: HomeContr
         </div>}
       </div>
     </div>
-  </SiteHeader>{installHelp && <div className={styles.installOverlay} onClick={() => setInstallHelp(false)}><div role="dialog" aria-modal="true" aria-label="바로가기 만들기" onClick={e => e.stopPropagation()}><button data-popup-close="true" aria-label="닫기" onClick={() => setInstallHelp(false)}><X size={20} /></button><h2 data-popup-heading="true">바로가기 만들기</h2><p>크롬 또는 엣지의 브라우저 메뉴에서 ‘앱 설치’ 또는 ‘바로가기 만들기’를 선택해 주세요.</p><button data-popup-action="true" onClick={() => setInstallHelp(false)}>확인</button></div></div>}</div>;
+  </SiteHeader>{installHelp && <div className={styles.installOverlay} onClick={() => setInstallHelp(false)}><div role="dialog" aria-modal="true" aria-label="바로가기 만들기" onClick={e => e.stopPropagation()}><button data-popup-close="true" aria-label="닫기" onClick={() => setInstallHelp(false)}><X size={20} /></button><h2 data-popup-heading="true">바로가기 만들기</h2><p>크롬 또는 엣지의 브라우저 메뉴에서 ‘앱 설치’ 또는 ‘바로가기 만들기’를 선택해 주세요</p><button data-popup-action="true" onClick={() => setInstallHelp(false)}>확인</button></div></div>}</div>;
 }

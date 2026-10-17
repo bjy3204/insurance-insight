@@ -558,7 +558,7 @@ const handleOpen = () => {
 
                     {displayList.length === 0 && (
                       <tr><td colSpan={4} className="py-16 text-center text-sm text-gray-400">
-                        검색 결과가 없습니다.
+                        검색 결과가 없습니다
                       </td></tr>
                     )}
                   </tbody></table>

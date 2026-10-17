@@ -1171,7 +1171,7 @@ const pagedMemos = filteredMemos.slice(
       <h2 data-popup-heading="true" className="text-xl font-black text-gray-900">저장 완료</h2>
 
       <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
-        변경한 설정이 저장되었습니다.
+        변경한 설정이 저장되었습니다
       </p>
 
       <div className="flex justify-center mt-6">

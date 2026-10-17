@@ -34,17 +34,17 @@ export default function CustomerTab({ spreadsheetUrl, onSaveUrl, basePath="/my-p
       return;
     }
     const messages: Record<string, string> = {
-      cancelled: "구글 연결을 취소했습니다. 다시 시도할 수 있습니다.",
-      expired: "연결 시간이 만료되었습니다. 다시 시작해 주세요.",
-      template: "원본 시트를 복사할 권한이 없습니다. 관리자의 원본 시트·앱 접근 설정 확인이 필요합니다.",
-      template_app_access: "구글에서 원본 시트에 대한 앱 접근 승인이 필요하다고 응답했습니다. 최초 원본 시트 선택 단계가 필요합니다.",
-      template_not_found: "구글 앱에서 원본 시트에 접근하지 못했습니다. 원본 공유 설정과 앱의 파일 접근 승인을 확인해야 합니다.",
-      storage_full: "구글 드라이브 용량이 부족해 사본을 만들지 못했습니다.",
-      drive_disabled: "구글 프로젝트에서 Google Drive API를 활성화해야 합니다.",
-      permission: "시트 생성 권한을 확인하지 못했습니다. 구글 권한 동의 후 다시 시도해 주세요.",
-      copy_error: "시트를 복사하지 못했습니다. 구글 드라이브 용량과 원본 접근 권한을 확인해 주세요.",
-      save_error: "시트 연결 정보를 저장하지 못했습니다. 다시 시도해 주세요.",
-      error: "구글 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+      cancelled: "구글 연결을 취소했습니다 다시 시도할 수 있습니다",
+      expired: "연결 시간이 만료되었습니다 다시 시작해 주세요",
+      template: "원본 시트를 복사할 권한이 없습니다 관리자의 원본 시트·앱 접근 설정 확인이 필요합니다",
+      template_app_access: "구글에서 원본 시트에 대한 앱 접근 승인이 필요하다고 응답했습니다 최초 원본 시트 선택 단계가 필요합니다",
+      template_not_found: "구글 앱에서 원본 시트에 접근하지 못했습니다 원본 공유 설정과 앱의 파일 접근 승인을 확인해야 합니다",
+      storage_full: "구글 드라이브 용량이 부족해 사본을 만들지 못했습니다",
+      drive_disabled: "구글 프로젝트에서 Google Drive API를 활성화해야 합니다",
+      permission: "시트 생성 권한을 확인하지 못했습니다 구글 권한 동의 후 다시 시도해 주세요",
+      copy_error: "시트를 복사하지 못했습니다 구글 드라이브 용량과 원본 접근 권한을 확인해 주세요",
+      save_error: "시트 연결 정보를 저장하지 못했습니다 다시 시도해 주세요",
+      error: "구글 연결에 실패했습니다 잠시 후 다시 시도해 주세요",
     };
     setMessage(messages[status] ?? messages.error);
     params.delete("google_sheet");
@@ -56,21 +56,21 @@ export default function CustomerTab({ spreadsheetUrl, onSaveUrl, basePath="/my-p
     setMessage("");
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("보험인사이트에 먼저 로그인해 주세요.");
+      if (!session) throw new Error("보험인사이트에 먼저 로그인해 주세요");
       const headers = { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" };
       const configResponse = await fetch("/api/google/customer-sheet?action=picker", { headers, cache: "no-store" });
       const config = await configResponse.json();
       if (!configResponse.ok) {
         if (configResponse.status === 401) setPickerPending(false);
-        throw new Error(config.error || "구글 선택창을 준비하지 못했습니다.");
+        throw new Error(config.error || "구글 선택창을 준비하지 못했습니다");
       }
       const fileId = await chooseCustomerTemplate(config);
       const response = await fetch("/api/google/customer-sheet", { method: "POST", headers, body: JSON.stringify({ action: fileId ? "picker-complete" : "picker-cancel", fileId }) });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "시트 생성에 실패했습니다.");
-      if (!fileId) { setPickerPending(false); setMessage("시트 선택을 취소했습니다."); return; }
+      if (!response.ok) throw new Error(result.error || "시트 생성에 실패했습니다");
+      if (!fileId) { setPickerPending(false); setMessage("시트 선택을 취소했습니다"); return; }
       window.location.assign(result.tab === "calendar" ? basePath+"?tab=calendar" : basePath+"?tab=customer");
-    } catch (error) { setMessage(error instanceof Error ? error.message : "시트 생성에 실패했습니다."); }
+    } catch (error) { setMessage(error instanceof Error ? error.message : "시트 생성에 실패했습니다"); }
     finally { setConnecting(false); }
   }
 
@@ -80,14 +80,14 @@ export default function CustomerTab({ spreadsheetUrl, onSaveUrl, basePath="/my-p
     setMessage("");
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("보험인사이트에 먼저 로그인해 주세요.");
+      if (!session) throw new Error("보험인사이트에 먼저 로그인해 주세요");
       const response = await fetch("/api/google/customer-sheet", { method: "POST", headers: { Authorization: `Bearer ${session.access_token}` } });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "구글 연결을 시작하지 못했습니다.");
+      if (!response.ok) throw new Error(result.error || "구글 연결을 시작하지 못했습니다");
       if (result.existing) { window.location.assign(basePath+"?tab=customer"); return; }
       window.location.assign(result.url);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "구글 연결을 시작하지 못했습니다.");
+      setMessage(error instanceof Error ? error.message : "구글 연결을 시작하지 못했습니다");
       setConnecting(false);
     }
   };
@@ -107,7 +107,7 @@ export default function CustomerTab({ spreadsheetUrl, onSaveUrl, basePath="/my-p
       setRemoveConfirmOpen(false);
       setMessage("");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "시트를 화면에서 없애지 못했습니다. 다시 시도해 주세요.");
+      setMessage(error instanceof Error ? error.message : "시트를 화면에서 없애지 못했습니다 다시 시도해 주세요");
     } finally { setSaving(false); }
   };
 

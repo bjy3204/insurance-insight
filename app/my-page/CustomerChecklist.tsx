@@ -25,7 +25,7 @@ export default function CustomerChecklist({customer,onSave,renewalDate=""}:{rene
   if(value===savedValue.current)return;
   busy.current=true;setSaving(true);setError("");
   try{parseCustomerSchedules(value);await onSave(customer,value);savedValue.current=value;setChecked(next);window.dispatchEvent(new Event("customer-schedules-updated"));}
-  catch(error){setError(error instanceof Error?error.message:"체크리스트를 저장하지 못했습니다.");}
+  catch(error){setError(error instanceof Error?error.message:"체크리스트를 저장하지 못했습니다");}
   finally{busy.current=false;setSaving(false);}
  };
  const update=(id:string,patch:Partial<CustomerSchedule>,persist=false)=>{const next=rows.map(row=>row.id===id?{...row,...patch,...(id==="schedule-0"&&patch.date!==undefined&&(patch.date.length===10||patch.date==="")?{annualMonthDay:patch.date.slice(5)}:{})}:row);setRows(next);if(persist)void save(checked,next);};

@@ -16,7 +16,7 @@ export default function HomeGreeting(){
  useEffect(()=>{setPreviewTime(new Date());setMessageIndex(Math.floor(Math.random()*greetings.length));},[]);
  const message=greetings[messageIndex];
  const change=()=>{setMessageIndex(index=>(index+1+Math.floor(Math.random()*(greetings.length-1)))%greetings.length);setCopied(false);setError("");setPreviewTime(new Date());};
- const copy=async()=>{try{await navigator.clipboard.writeText(message);setCopied(true);setError("");}catch{setError("복사하지 못했습니다. 문구를 선택해 복사해 주세요.");}};
+ const copy=async()=>{try{await navigator.clipboard.writeText(message);setCopied(true);setError("");}catch{setError("복사하지 못했습니다 문구를 선택해 복사해 주세요");}};
  return <section data-ui-card="true" className="personal-grid min-w-0 rounded-2xl border border-gray-200 bg-white p-4">
   <div className="flex items-center justify-between gap-2 mb-3"><h2 data-personal-card-title="true" className="flex items-center gap-2"><MessageCircle size={19}/>안부 카톡</h2><button type="button" aria-label="다른 안부 문구" title="다른 안부 문구" className="shrink-0 p-1 text-slate-400 hover:text-blue-600" onClick={change}><RefreshCw size={17}/></button></div>
   <div className="overflow-hidden rounded-2xl border border-gray-200 bg-[#b2c7d9] shadow-sm">

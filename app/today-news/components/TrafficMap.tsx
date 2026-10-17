@@ -85,9 +85,9 @@ export default function TrafficMap() {
     const controller=new AbortController();
     fetch('/api/traffic-cctv',{signal:controller.signal}).then(async response=>{
       const data=await response.json();
-      if(!response.ok||!Array.isArray(data.cameras))throw new Error(data.error||'CCTV 정보를 불러오지 못했습니다.');
+      if(!response.ok||!Array.isArray(data.cameras))throw new Error(data.error||'CCTV 정보를 불러오지 못했습니다');
       setCameras(data.cameras);
-    }).catch(failure=>{if(!controller.signal.aborted)setCameraError(failure instanceof Error?failure.message:'CCTV 정보를 불러오지 못했습니다.');});
+    }).catch(failure=>{if(!controller.signal.aborted)setCameraError(failure instanceof Error?failure.message:'CCTV 정보를 불러오지 못했습니다');});
     return ()=>controller.abort();
   },[]);
 
@@ -150,7 +150,7 @@ export default function TrafficMap() {
       map.current = instance;
       setReady(true);
     }).catch(() => {
-      if (!cancelled) setError('지도를 불러오지 못했습니다. 카카오맵 사용 설정과 등록 도메인을 확인해 주세요.');
+      if (!cancelled) setError('지도를 불러오지 못했습니다 카카오맵 사용 설정과 등록 도메인을 확인해 주세요');
     });
     return () => {
       cancelled = true;
@@ -162,9 +162,9 @@ export default function TrafficMap() {
   }, [attempt]);
 
   function locate() {
-    if (!navigator.geolocation) { setMessage('이 브라우저에서는 위치를 확인할 수 없습니다.'); return; }
+    if (!navigator.geolocation) { setMessage('이 브라우저에서는 위치를 확인할 수 없습니다'); return; }
     setLocating(true);
-    setMessage('내 위치를 확인하고 있습니다.');
+    setMessage('내 위치를 확인하고 있습니다');
     navigator.geolocation.getCurrentPosition(({ coords }) => {
       if (!mounted.current) return;
       const sdk = getSdk();
@@ -174,14 +174,14 @@ export default function TrafficMap() {
         map.current.panTo(point);
         marker.current?.setMap(null);
         marker.current = new sdk.Marker({ position: point, map: map.current });
-        setMessage('내 주변 교통정보를 표시하고 있습니다.');
+        setMessage('내 주변 교통정보를 표시하고 있습니다');
         setNearby({ latitude: coords.latitude, longitude: coords.longitude });
       }
       setLocating(false);
     }, failure => {
       if (!mounted.current) return;
       setLocating(false);
-      setMessage(failure.code === 1 ? '위치 권한을 허용한 뒤 다시 눌러 주세요.' : '현재 위치를 확인하지 못했습니다. 다시 시도해 주세요.');
+      setMessage(failure.code === 1 ? '위치 권한을 허용한 뒤 다시 눌러 주세요' : '현재 위치를 확인하지 못했습니다 다시 시도해 주세요');
     }, { timeout: 10000, maximumAge: 60000 });
   }
 
@@ -206,7 +206,7 @@ export default function TrafficMap() {
     </div>
     <div className={styles.layout}><div className={styles.mapWrap}>
       <div ref={container} className={styles.map} aria-label="실시간 도로 교통지도" />
-      {!ready && <div className={styles.status} role="status">{error || '교통지도를 불러오는 중입니다.'}{error && <button type="button" onClick={() => setAttempt(value => value + 1)}>다시 시도</button>}</div>}
+      {!ready && <div className={styles.status} role="status">{error || '교통지도를 불러오는 중입니다'}{error && <button type="button" onClick={() => setAttempt(value => value + 1)}>다시 시도</button>}</div>}
       {selectedCamera&&<TrafficCctvPlayer camera={selectedCamera} onClose={closeCamera} onPrevious={()=>nextCamera(-1)} onNext={()=>nextCamera(1)}/>}
     </div><TrafficEventList onSelect={selectEvent} nearby={nearby} cameras={cameras} onCamera={showEventCamera}/></div>
     {cameraError&&<p className={styles.message} role="status">{cameraError}</p>}

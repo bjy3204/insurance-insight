@@ -9,7 +9,7 @@ export type KakaoSignupTicket = {
 
 function key() {
   const secret = process.env.KAKAO_SIGNUP_COOKIE_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!secret) throw new Error("카카오 임시 인증 설정이 필요합니다.");
+  if (!secret) throw new Error("카카오 임시 인증 설정이 필요합니다");
   return createHash("sha256").update(secret).digest();
 }
 

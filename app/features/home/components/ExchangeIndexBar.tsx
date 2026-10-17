@@ -30,7 +30,7 @@ export default function ExchangeIndexBar() {
     return (
       <div className="hidden md:block max-w-[1500px] mx-auto px-5 mb-22">
         <div className="rounded-2xl px-4 py-3 text-center text-sm text-block-500">
-          환율 정보를 불러오지 못했습니다.
+          환율 정보를 불러오지 못했습니다
         </div>
       </div>
     );

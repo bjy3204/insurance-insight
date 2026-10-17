@@ -423,7 +423,7 @@ useEffect(() => {
   // ─── 일기 저장 ───
   const handleSaveDiary = async () => {
     
-    if (!diaryForm.date) { setDiaryError("날짜를 선택해주세요."); return; }
+    if (!diaryForm.date) { setDiaryError("날짜를 선택해주세요"); return; }
     const payload = { user_id: authUser!.id, date: diaryForm.date, content: diaryForm.content, mood: diaryForm.mood };    if (editingDiary) {
       const { error } = await supabase.from("cm_diaries").update({ content: payload.content, mood: payload.mood }).eq("id", editingDiary.id);
       if (!error) setDiaries((prev) => prev.map((d) => d.id === editingDiary.id ? { ...d, ...payload } : d));
@@ -623,7 +623,7 @@ const diaryEndPage = Math.min(
     return filtered.length === 0 ? (
       <div className="text-center py-6">
         <BookOpen className="w-7 h-7 mx-auto mb-1.5 text-gray-200" />
-        <p className="text-sm text-gray-400 cursor-default">이 달의 일기가 없어요.</p>
+        <p className="text-sm text-gray-400 cursor-default">이 달의 일기가 없어요</p>
       </div>
     ) : (
       <div className="space-y-2.5">
@@ -677,7 +677,7 @@ const diaryEndPage = Math.min(
             </div>
             <div className="px-7 pt-6 pb-7 space-y-6 flex-1">
               <div>
-                <label className="text-sm font-bold text-gray-500 mb-1 block">날짜</label>
+                <label data-field-caption="true" className="text-sm font-bold text-gray-500 mb-1 block">날짜</label>
                 <div className="relative">
   <button
     type="button"
@@ -708,7 +708,7 @@ const diaryEndPage = Math.min(
 </div>
               </div>
               <div>
-                <label className="text-sm font-bold text-gray-500 mb-2 block">오늘의 기분</label>
+                <label data-field-caption="true" className="text-sm font-bold text-gray-500 mb-2 block">오늘의 기분</label>
                 <div className="flex gap-2">
                   {MOOD_OPTIONS.map((mood) => (
                     <button
@@ -727,7 +727,7 @@ const diaryEndPage = Math.min(
                 </div>
               </div>
               <div>
-                <label className="text-sm font-bold text-gray-500 mb-1 block">내용</label>
+                <label data-field-caption="true" className="text-sm font-bold text-gray-500 mb-1 block">내용</label>
                 <textarea data-ui-field="true"
                   value={diaryForm.content}
                   onChange={(e) => setDiaryForm((f) => ({ ...f, content: e.target.value }))}
@@ -795,7 +795,7 @@ const diaryEndPage = Math.min(
   <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
     <div data-confirm-dialog="true" className="bg-white rounded-3xl shadow-2xl w-full max-w-xs p-6 space-y-4 text-center">
       <p className="font-bold text-gray-900 text-base">정말 삭제할까요?</p>
-      <p className="text-sm text-gray-400">삭제하면 복구할 수 없습니다.</p>
+      <p className="text-sm text-gray-400">삭제하면 복구할 수 없습니다</p>
       <div className="flex gap-2">
         <button data-popup-action="true"
           onClick={() => setConfirmDelete(null)}

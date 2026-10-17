@@ -58,7 +58,7 @@ return (<><DesktopHeader controller={controller} /><div data-mobile-main-header=
         return;
       }
 
-      alert("크롬 또는 엣지에서 브라우저 메뉴 → 앱 설치를 눌러주세요.");
+      alert("크롬 또는 엣지에서 브라우저 메뉴 → 앱 설치를 눌러주세요");
     }}
     className="
       px-4

@@ -25,7 +25,7 @@ function loadPicker() {
   if (loading) return loading;
   const googleWindow = window as GoogleWindow;
   loading = new Promise<void>((resolve, reject) => {
-    const fail = () => reject(new Error("구글 선택창을 불러오지 못했습니다. 다시 시도해 주세요."));
+    const fail = () => reject(new Error("구글 선택창을 불러오지 못했습니다 다시 시도해 주세요"));
     const load = () => googleWindow.gapi?.load("picker", { callback: resolve, onerror: fail, timeout: 15000, ontimeout: fail });
     if (googleWindow.gapi) { load(); return; }
     const script = document.createElement("script");
@@ -42,7 +42,7 @@ function loadPicker() {
 export async function chooseCustomerTemplate(config: { developerKey: string; appId: string; accessToken: string; templateId: string; title?: string }): Promise<string | null> {
   await loadPicker();
   const api = (window as GoogleWindow).google?.picker;
-  if (!api) throw new Error("구글 선택창 초기화에 실패했습니다.");
+  if (!api) throw new Error("구글 선택창 초기화에 실패했습니다");
   return new Promise((resolve, reject) => {
     let picker: Picker;
     const close = () => { picker.setVisible(false); picker.dispose(); };
@@ -57,7 +57,7 @@ export async function chooseCustomerTemplate(config: { developerKey: string; app
         if (data.action === api.Action.PICKED) {
           const id = data.docs?.[0]?.id;
           close();
-          if (id !== config.templateId) reject(new Error("표시된 시트를 선택해 주세요."));
+          if (id !== config.templateId) reject(new Error("표시된 시트를 선택해 주세요"));
           else resolve(id);
         }
       }).build();

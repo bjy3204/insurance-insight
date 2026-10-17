@@ -92,7 +92,7 @@ return (<>{lifeOpen && (
     />
 
     <p className="text-sm text-gray-400 leading-relaxed">
-      나이를 입력하면 기대여명과 건강기간을 확인할 수 있습니다.
+      나이를 입력하면 기대여명과 건강기간을 확인할 수 있습니다
     </p>
    
   </div>
@@ -114,7 +114,7 @@ return (<>{lifeOpen && (
         <span className="text-blue-600 font-black">
           {expectAge.toFixed(1)}세
         </span>
-        입니다.
+        입니다
       </p>
     </div>
 
@@ -162,7 +162,7 @@ return (<>{lifeOpen && (
   <span className="font-bold text-blue-600">
     {expectYears.toFixed(1)}년
   </span>
-  입니다.
+  입니다
   <br />
   건강기간은 약{" "}
   <span className="font-bold text-blue-600">
@@ -176,7 +176,7 @@ return (<>{lifeOpen && (
   <span className="font-bold text-blue-600">
     {sickYears.toFixed(1)}년
   </span>
-  동안 유병기간이 이어질 수 있습니다.
+  동안 유병기간이 이어질 수 있습니다
 </p>
     </div>
   </div>
@@ -184,7 +184,7 @@ return (<>{lifeOpen && (
 <p data-reference-note="true" className="text-xs text-gray-500 leading-relaxed mt-3 px-1">
   본 자료는 통계청 「2024년 생명표」 및
   유병기간 제외 기대수명(건강수명) 통계를 참고하여 계산한 추정값이며,
-  개인의 건강상태 · 생활습관 · 질병 이력 등에 따라 실제 결과와 다를 수 있습니다.
+  개인의 건강상태 · 생활습관 · 질병 이력 등에 따라 실제 결과와 다를 수 있습니다
 </p>
       </div>
     </div>

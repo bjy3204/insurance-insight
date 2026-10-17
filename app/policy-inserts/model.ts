@@ -26,12 +26,12 @@ export function customerNames(value: string) {
   return value.split(/\r?\n/).map(name => name.trim()).filter(Boolean);
 }
 export function printJobs(names: string[], pages: number[], category: TemplateId = "family", petKind?: PetKind) {
-  if (!names.length || names.length > MAX_CUSTOMERS) throw new Error(`고객 이름을 1~${MAX_CUSTOMERS}명 입력해 주세요.`);
-  if (names.some(name => name.length > 30)) throw new Error("고객 이름은 30자 이내로 입력해 주세요.");
+  if (!names.length || names.length > MAX_CUSTOMERS) throw new Error(`고객 이름을 1~${MAX_CUSTOMERS}명 입력해 주세요`);
+  if (names.some(name => name.length > 30)) throw new Error("고객 이름은 30자 이내로 입력해 주세요");
   const selected = [...new Set(pages)].sort((a, b) => a - b);
-  if (!selected.length || selected.some(page => !Number.isInteger(page) || page < 1 || page > TEMPLATES[category].titles.length)) throw new Error("인쇄할 페이지를 선택해 주세요.");
+  if (!selected.length || selected.some(page => !Number.isInteger(page) || page < 1 || page > TEMPLATES[category].titles.length)) throw new Error("인쇄할 페이지를 선택해 주세요");
   const printable = category === "pet" && petKind ? selected.filter(page => templatePages(category, petKind).some(item => item.page === page)) : selected;
-  if (!printable.length) throw new Error("인쇄할 페이지를 선택해 주세요.");
+  if (!printable.length) throw new Error("인쇄할 페이지를 선택해 주세요");
   return names.flatMap(customer => printable.map(page => ({ customer, page })));
 }
 export function escapeHtml(value: string) {

@@ -1,4 +1,4 @@
-.editor{min-width:0}.controls{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.controls>span{font-size:11px;color:#8291a4}.scroll{overflow:auto;max-height:76vh;border:1px solid #bcc3cc;background:white;scrollbar-width:thin;scrollbar-color:#c7d0dc transparent;outline:none}.table{table-layout:fixed;border-collapse:separate;border-spacing:0;color:#182536;font-size:12px}.table th,.table td{border-right:1px solid #b7bcc4;border-bottom:1px dotted #b7bcc4;height:27px;padding:0;text-align:center;vertical-align:middle;background:white}.table th{font-weight:500}.table tbody:last-child tr:last-child>*{border-bottom:0}.table tbody tr:last-child>*{border-bottom-style:solid}.first,.second,.total{position:sticky;z-index:2}.first{left:0}.second{left:64px}.total{left:244px;box-shadow:3px 0 0 #c8cdd4}.table .category{background:#f5f5f5;font-weight:600;white-space:normal;padding:8px;line-height:1.5}.table .label{background:#fafafa;font-size:12px;white-space:nowrap}.table .total{background:#f7f7f7}.table .amountTotal{color:#ec8500;font-weight:700}.table .summary{background:#fff;padding:0;vertical-align:bottom;border-bottom:1px solid #969da6}.summaryTitle{min-height:115px;padding:20px;font-size:14px;color:#57667a}.summaryTitle strong{display:block;margin-top:6px;font-size:20px;color:#24394f}.monthlyLabel{background:#f5f5f5;padding:12px;font-size:12px}.monthly{background:#fbe5d5;padding:13px;font-size:16px;font-weight:700;color:#172436}.table .productCell{height:65px}.table input{width:100%!important;min-width:0!important;height:26px!important;border:1px solid transparent!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;outline:none!important;padding:3px 8px!important;font-size:12px!important;line-height:18px!important;text-align:left;color:inherit!important}.table input:hover{background:#f3f7fd!important}.table input:focus{border:1px solid #195DFF!important;background:#fff!important;box-shadow:inset 0 0 0 1px #bcd1ff!important}.cellInput{display:flex;align-items:center;position:relative;min-width:0;justify-content:center}.cellInput>input{flex:1}.cellInput>span{font-size:11px;flex-shrink:0;padding-right:8px;color:#7b8797}.table .productCell input{height:64px!important}.table .premium{color:#e38700;font-weight:600}.payment{font-size:11px;color:#8994a4}.table .delete{padding:3px!important;position:absolute;right:3px;top:0;border:0!important;border-radius:3px!important;opacity:0;background:#fff!important;color:#a2aabb!important}.cellInput:hover .delete,.table .delete:focus-visible{opacity:1}.table .delete:hover{background:#fff0f0!important;color:#c34b58!important}
+.editor{min-width:0}.controls{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.controls>span{font-size:11px;color:#8291a4}.scroll{overflow:auto;max-height:76vh;border:1px solid #bcc3cc;background:white;scrollbar-width:thin;scrollbar-color:#c7d0dc transparent;outline:none}.table{table-layout:fixed;border-collapse:separate;border-spacing:0;color:#182536;font-size:12px}.table th,.table td{border-right:1px solid #b7bcc4;border-bottom:1px dotted #b7bcc4;height:27px;padding:0;text-align:center;vertical-align:middle;background:white}.table th{font-weight:500}.table tbody:last-child tr:last-child>*{border-bottom:0}.table tbody tr:last-child>*{border-bottom-style:solid}.first,.second,.total{position:sticky;z-index:2}.first{left:0}.second{left:64px}.total{left:244px;box-shadow:3px 0 0 #c8cdd4}.table .category{background:#f5f5f5;font-weight:600;white-space:normal;padding:8px;line-height:1.5}.table .label{background:#fafafa;font-size:12px;white-space:nowrap}.table .total{background:#f7f7f7}.table .amountTotal{color:#ec8500;font-weight:700}.table .summary{background:#fff;padding:0;vertical-align:bottom;border-bottom:1px solid #969da6}.summaryTitle{min-height:115px;padding:20px;font-size:14px;color:#57667a}.summaryTitle strong{display:block;margin-top:6px;font-size:20px;color:#24394f}.monthlyLabel{background:#f5f5f5;padding:12px;font-size:12px}.monthly{background:#fbe5d5;padding:13px;font-size:16px;font-weight:700;color:#172436}.table .productCell{height:65px}.table input{width:100%!important;min-width:0!important;height:26px!important;border:1px solid transparent!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;outline:none!important;padding:3px 8px!important;font-size:12px!important;line-height:18px!important;text-align:left;color:inherit!important}.table input:hover{background:#f3f7fd!important}.table input:focus{border:1px solid #dce4ef!important;background:#fff!important;box-shadow:inset 0 0 0 1px #bcd1ff!important}.cellInput{display:flex;align-items:center;position:relative;min-width:0;justify-content:center}.cellInput>input{flex:1}.cellInput>span{font-size:11px;flex-shrink:0;padding-right:8px;color:#7b8797}.table .productCell input{height:64px!important}.table .premium{color:#e38700;font-weight:600}.payment{font-size:11px;color:#8994a4}.table .delete{padding:3px!important;position:absolute;right:3px;top:0;border:0!important;border-radius:3px!important;opacity:0;background:#fff!important;color:#a2aabb!important}.cellInput:hover .delete,.table .delete:focus-visible{opacity:1}.table .delete:hover{background:#fff0f0!important;color:#c34b58!important}
 @media(max-width:650px){.table .first{position:static}.table .second{left:0}.table .total{left:180px}.table .summary{position:static}.controls>span{font-size:10px}.scroll{max-height:72vh}}
 
 .scroll{max-height:none;overflow-x:auto;overflow-y:hidden}@media(max-width:650px){.scroll{max-height:none}}
@@ -23,7 +23,7 @@
 .table tbody:first-of-type th,.table tbody:first-of-type .total{background:white;color:#6b7786}.table .summary{vertical-align:middle}.monthlyLabel{background:#f7f8fa;color:#6b7786}.monthly{background:var(--cr-soft);color:var(--cr-secondary)}
 
 
-.scroll,.table th,.table td{border-color:var(--cr-line,#dce5f0)}.table input:focus{border-color:var(--cr-accent)!important;box-shadow:none!important}
+.scroll,.table th,.table td{border-color:var(--cr-line,#dce5f0)}.table input:focus{border-color:#dce4ef!important;box-shadow:none!important}
 
 
 .totalContracts{padding:14px;text-align:center;color:#718194;font-size:13px}.totalContracts strong{font-size:24px;margin:0 5px;color:var(--cr-secondary)}.table .groupHeader th{height:36px;background:var(--cr-tint);color:var(--cr-secondary);font-weight:600}
@@ -40,3 +40,222 @@
 @media(max-width:767px){.monthly{font-size:16px}}
 
 @media(max-width:767px){.monthlyLabel{font-size:12px}}
+
+/* Compact table fields fill their cells, including the shared clearable wrapper. */
+.editor .table th,.editor .table td{height:30px}
+.editor .table .productCell{height:30px}
+.editor .table [data-clearable-search=true]{display:block;width:100%;min-width:0;height:30px;box-sizing:border-box}
+.editor .table .cellInput>[data-clearable-search=true]{flex:1 1 0;padding:0}
+.editor .table.table input{display:block;box-sizing:border-box;width:100%!important;height:30px!important;min-height:30px!important;max-height:30px!important;border-radius:0!important;padding:0 8px!important;line-height:28px!important}
+.editor .table.table input[data-field-outline]:focus,.editor .table.table input:focus{border-color:#dce4ef!important;outline:none!important;box-shadow:none!important;background:#f8fbff!important}
+.editor .table.table [data-clearable-search=true]:focus-within{outline:none!important;box-shadow:none!important}
+
+.editor{border-radius:16px}@media(max-width:767px){.editor{border-radius:20px}}
+
+.table .premiumSummary{padding:0;background:#fff;vertical-align:middle}.table .amountTotal{color:#dd8a16;font-weight:700;text-align:center}.table .total{left:244px}@media(max-width:650px){.table .total{left:180px}}
+
+.table tr.productRow>th,.table tr.productRow>td{background:var(--cr-soft,#edf4ff)}
+.table tr.premium>th,.table tr.premium>td{background:var(--cr-tint,#f5f8fd)}
+
+.editor .table th.label{padding:0}
+.editor .table [data-clearable-search=true]{max-width:100%;margin:0}
+.editor .table .cellInput{width:100%}
+
+.editor .table td input{text-align:center!important;font-variant-numeric:tabular-nums}
+.editor .table .cellInput[data-has-unit=true]{justify-content:center;font-size:13px;font-variant-numeric:tabular-nums}
+.editor .table .cellInput[data-has-unit=true]>[data-clearable-search=true]{flex:0 1 auto;width:calc(var(--cell-char-count)*1ch + 16px);max-width:calc(100% - 32px)}
+.editor .table .cellInput[data-has-unit=true]>span:not([data-clearable-search]){padding-right:0;font-size:13px}
+
+.reportHeaderActions{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}.reportHeaderActions>span{font-size:13px;color:#8799af}.reportHeaderActions>button{min-height:44px}@media(max-width:650px){.reportHeading{display:flex;align-items:flex-end}.reportHeading h3{white-space:normal}.reportHeaderActions>span{font-size:12px}}
+
+.editor .table .cellInput[data-has-unit=true]{gap:4px}
+.editor .table .cellInput[data-has-unit=true]>[data-clearable-search=true]{font-size:13px;width:calc((var(--cell-char-count) + 1)*1ch);padding:0;flex:0 1 auto}
+.editor .table.table .cellInput[data-has-unit=true] input{padding-left:0!important;padding-right:0!important;font-size:13px!important}
+
+.editor .table .cellInput[data-has-unit=true]{gap:2px}
+.editor .table .cellInput[data-has-unit=true]>[data-clearable-search=true]{width:calc(var(--cell-char-count)*1ch + 2px)}
+.editor .table.table .cellInput[data-has-unit=true] input{text-align:right!important}
+
+.headerButtons{display:flex;align-items:center;gap:8px}.headerButtons button{height:44px;white-space:nowrap}@media(max-width:650px){.reportHeading{flex-wrap:wrap}.reportHeaderActions{margin-left:auto}}
+
+
+.editor .table .productRow>th,.editor .table .productRow>td{height:60px!important}
+.editor .table .productRow .cellInput,.editor .table .productRow [data-clearable-search=true],.editor .table .productRow input{height:60px!important;min-height:60px}
+
+
+.editor .table textarea.productInput{display:block;box-sizing:border-box;width:100%;height:60px;min-height:60px;max-height:60px;margin:0;padding:10px 8px;border:1px solid transparent;border-radius:0;background:transparent;resize:none;overflow:auto;font-family:inherit;font-size:13px;line-height:19px;text-align:center;color:inherit;white-space:pre-wrap;overflow-wrap:anywhere;outline:none;box-shadow:none}
+.editor .table textarea.productInput:focus{border-color:#dce4ef;background:#f8fbff;box-shadow:none}
+
+.editor .table .productRow>th,.editor .table .productRow>td{height:78px!important}
+.editor .table textarea.productInput{height:78px;min-height:78px;max-height:78px;line-height:19px}
+
+.editor .table th.category{line-height:1.4;white-space:pre-line}
+
+.editor .table th.category{padding:0}
+.editor .table textarea.categoryInput{box-sizing:border-box;display:block;width:100%;height:100%;min-height:68px;padding:6px 2px;margin:0;border:1px solid transparent;border-radius:0;resize:none;background:transparent;box-shadow:none;color:inherit;font:inherit;font-weight:600;line-height:1.4;text-align:center;white-space:pre-wrap;overflow-wrap:anywhere;outline:none}
+.editor .table textarea.categoryInput:focus{border-color:#dce4ef;background:#f8fbff;box-shadow:none}
+
+.editor .table th.category{vertical-align:middle;position:sticky}
+.editor .table textarea.categoryInput{min-height:0;padding:0 2px;max-height:none;overflow:hidden}
+.editor .table .label{position:sticky}
+.editor .table .label input{padding-right:26px!important}
+.editor .table button.removeField,.editor .table button.addField{padding:2px;border:0;background:transparent;min-width:20px;height:20px;color:#94a3b8}
+.editor .table button.removeField{position:absolute;right:2px;top:50%;transform:translateY(-50%)}
+.editor .table button.addField{display:flex;margin:3px auto 0}
+.editor .table button.removeField:is(:hover,:focus-visible){color:#dc5662}
+
+.controls{flex-wrap:wrap}
+.addFieldControls{display:flex;align-items:center;gap:8px;margin-right:auto;min-width:0}
+.addFieldControls select{height:44px;max-width:180px;padding:0 12px;border:1px solid #dce5f0;border-radius:12px;background:#fff;color:#284261;font:inherit;font-size:13px}
+.addFieldControls button{height:44px;white-space:nowrap}
+.addFieldControls button span{font-size:12px;color:#94a3b8}
+@media(max-width:650px){.addFieldControls{flex-wrap:wrap;gap:6px}.addFieldControls select{max-width:140px}}
+
+.addFieldControls{flex-wrap:wrap}
+.editor .addFieldControls input.newCategory{width:130px;height:44px;padding:0 12px;border:1px solid #dce5f0;border-radius:12px;font-size:13px;background:#fff;color:#284261}
+
+.categorySelect{width:160px;min-width:0}.categorySelect>button{width:100%;height:44px;justify-content:space-between}.fieldCount{font-size:12px;color:#94a3b8}.addFieldControls>button[data-icon-only=true]{width:44px;padding:0}
+
+.selectedCategory{font-size:13px;color:#284261;white-space:nowrap;padding-left:8px}
+
+.categoryCombo{display:flex;align-items:center;height:44px;width:220px;max-width:100%;border:1px solid #dce5f0;border-radius:12px;background:#fff;overflow:hidden}
+.editor .categoryCombo input.newCategory{flex:1;width:0;min-width:0;border:0;border-radius:0;background:transparent;box-shadow:none;outline:none}
+.categoryCombo>button{width:36px;min-width:36px;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important}
+.categoryCombo>button>span{display:none}
+.categoryCombo:focus-within{border-color:#dce4ef;box-shadow:0 0 0 3px #195DFF0d}
+
+.categoryField{width:220px;max-width:100%;min-width:0}
+.editor .categoryField>div{box-sizing:border-box;height:44px;border-radius:12px;overflow:hidden}
+.editor .categoryField input{height:100%;border:0!important;border-radius:0;background:transparent;padding:0 0 0 12px;font:inherit;box-shadow:none!important}
+.editor .categoryField button{box-sizing:border-box;width:36px;height:100%;padding:0;border:0;border-radius:0;background:transparent;color:#8896aa}
+.editor .categoryField>div:focus-within{border-color:#dce4ef;box-shadow:0 0 0 3px #195DFF0d}
+.addFieldControls{gap:8px}
+
+.editor .categoryField button,.editor .categoryField button:is(:hover,:focus-visible),.editor .categoryField button:focus,.editor .categoryField button:focus-visible,.editor .categoryField button:active{background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;outline:none!important}
+
+
+.editor .table th.label,.editor .table th.label input{text-align:center!important}
+
+.editor .table th.category{position:sticky}.editor .table button.removeCategory{position:absolute;top:2px;right:2px;display:flex;align-items:center;justify-content:center;width:18px;height:18px;min-width:0;padding:0;border:0;border-radius:0;background:transparent;color:#94a3b8}.editor .table button.removeCategory:is(:hover,:focus-visible){background:transparent;color:#52618b}
+
+/* Equal reserves on both sides keep captions centered independently of the delete icon. */
+.editor .table.table th.label input{box-sizing:border-box;padding-left:26px!important;padding-right:26px!important;text-align:center!important}
+.editor .table th.label>[data-clearable-search=true]{width:100%;padding:0!important}
+
+@media(hover:hover) and (pointer:fine){
+.editor .table button.removeCategory,.editor .table button.removeField{opacity:0;pointer-events:none;transition:opacity .15s}
+.editor .table th.category:is(:hover,:focus-visible) button.removeCategory,.editor .table th.category:focus-within button.removeCategory,.editor .table th.label:is(:hover,:focus-visible) button.removeField,.editor .table th.label:focus-within button.removeField{opacity:1;pointer-events:auto}
+}
+
+
+.editor{padding-top:16px}.editor .controls{margin-top:0;margin-bottom:16px;align-items:center}.editor .controls>button,.editor .addFieldControls>button{height:44px;box-sizing:border-box}
+
+
+.fieldNotice{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#fff8ed;color:#9a651c;font-size:13px;line-height:1.5}
+
+.categoryField{position:relative}.categoryField .fieldNotice{position:absolute;top:calc(100% + 4px);left:0;z-index:20;width:max-content;max-width:min(320px,calc(100vw - 48px));margin:0;padding:6px 8px;font-size:12px;box-shadow:0 3px 10px #24395712}
+
+.categoryField .fieldNotice{padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;color:#9a651c}
+
+
+.categoryField .fieldNotice{color:#dc2626}
+
+
+.categoryField .fieldNotice{position:static;width:auto;max-width:none;margin:4px 0 0;padding:0;font-size:12px;line-height:18px}.editor .controls:has(.fieldNotice){align-items:flex-start}.editor .controls:has(.fieldNotice) .addFieldControls{align-items:flex-start}
+
+
+.categoryField .fieldNotice{font-size:13px}
+
+
+.categoryField .fieldNotice{padding-left:4px}
+
+.categoryField .fieldNotice{margin-top:8px}
+
+
+.categoryField{width:190px}
+
+
+.categoryField .fieldNotice{margin-top:8px;padding-left:12px;width:max-content;max-width:calc(100vw - 64px);white-space:nowrap}.editor .controls:has(.fieldNotice){margin-bottom:8px}
+
+.editor .table .first{left:0}.editor .table .second{left:72px}
+.editor .table .metadataLabel,.editor .table th.label{padding-left:0;padding-right:0;text-align:center}
+.editor .table .cellInput:has(button.delete)>[data-clearable-search=true] input{padding-left:32px!important;padding-right:32px!important}
+.editor .table button.delete{top:50%;right:6px;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:24px;height:24px;min-width:24px;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#94a3b8}
+.editor .table button.delete:is(:hover,:focus-visible){background:transparent!important;color:#dc5662}
+
+/* Identical delete controls across category, coverage and policy cells. */
+.editor .table button.removeCategory,.editor .table button.removeField,.editor .table button.delete{position:absolute;top:2px;right:2px;transform:none;display:flex;align-items:center;justify-content:center;width:18px;height:18px;min-width:18px;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#94a3b8}
+.editor .table button.removeCategory svg,.editor .table button.removeField svg,.editor .table button.delete svg{width:12px;height:12px}
+.editor .table button.removeCategory:is(:hover,:focus-visible),.editor .table button.removeField:is(:hover,:focus-visible),.editor .table button.delete:is(:hover,:focus-visible){background:transparent!important;color:#52618b}
+
+
+.editor .table{max-width:none;table-layout:fixed}
+
+.editor .table button.removeField,.editor .table button.delete{top:50%;right:2px;transform:translateY(-50%)}
+.editor .table button.removeCategory{top:2px;right:2px;transform:none}
+
+
+.editor .table button[data-coverage-delete=true]{width:18px!important;height:18px!important;min-width:18px!important;min-height:18px!important;max-width:18px!important;max-height:18px!important;padding:0!important}.editor .table button[data-coverage-delete=true]>svg{width:12px!important;height:12px!important;min-width:12px!important;min-height:12px!important;max-width:12px!important;max-height:12px!important;flex:0 0 12px!important;stroke-width:2!important}
+
+.editor .controls{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:12px}
+.editor .controls>.addFieldControls{grid-column:1;margin-right:0}
+
+.editor .controls>button:last-child{grid-column:3;justify-self:end}
+@media(max-width:1000px){.editor .controls{grid-template-columns:minmax(0,1fr) auto}.editor .controls>.addFieldControls{grid-column:1;grid-row:1}.editor .controls>button:last-child{grid-column:2;grid-row:1}}
+
+.editor .controls>nav{grid-column:2;justify-self:center;align-self:center}@media(max-width:1000px){.editor .controls>nav{grid-column:1/-1;grid-row:2}}
+
+.editor .controls>.insuranceActions{grid-column:3;justify-self:end;display:flex;align-items:center;gap:8px}.insuranceActions>button{height:44px;white-space:nowrap}@media(max-width:1000px){.editor .controls>.insuranceActions{grid-column:2;grid-row:1}}
+
+.editor .controls>.insuranceActions{grid-column:3;grid-row:1;justify-self:end;align-self:start;margin-left:0}@media(max-width:1000px){.editor .controls>.insuranceActions{grid-column:2;grid-row:1;justify-self:end}}
+
+.editor .table .cellInput[data-has-unit=true]{gap:2px}.editor .table .cellInput[data-has-unit=true]>[data-clearable-search=true]{width:calc(var(--cell-char-count)*1ch);flex:0 1 auto}.editor .table.table .cellInput[data-has-unit=true] input{padding:0!important;font-variant-numeric:tabular-nums;letter-spacing:0}.editor .table .cellInput[data-has-unit=true]>span{margin:0;padding:0;font-size:13px;font-weight:inherit}
+
+.editor .table .cellInput[data-has-unit=true]>[data-clearable-search=true]{width:calc((var(--cell-char-count) + 1)*1ch);max-width:calc(100% - 44px)}
+.editor .table .cellInput button.unitButton{height:28px;min-width:0;padding:0;border:0;border-radius:0;background:transparent;color:#7b8797;font-size:13px;line-height:28px;font-weight:400;flex-shrink:0}
+.editor .table .cellInput button.unitButton:hover{color:#52618b;background:transparent}
+.editor .table.table input.unitEdit{width:42px!important;max-width:50px;height:28px!important;padding:0 2px!important;text-align:left!important;border:1px solid #dce4ef!important;flex:0 0 42px}
+
+/* Measure the displayed text with a matching grid mirror, not character estimates. */
+.editor .table .cellInput[data-has-unit=true]{display:grid;grid-template-columns:max-content max-content;justify-content:center;align-items:center;gap:2px;font-size:13px;font-variant-numeric:tabular-nums;font-family:inherit;font-weight:inherit;line-height:28px}
+.editor .table .cellInput[data-has-unit=true]::before{content:attr(data-number-text);visibility:hidden;white-space:pre;grid-column:1;grid-row:1;font:inherit;font-variant-numeric:tabular-nums;padding:0 1px}
+.editor .table .cellInput[data-has-unit=true]>[data-clearable-search=true]{grid-column:1;grid-row:1;width:100%!important;min-width:0!important;max-width:none!important;overflow:visible}
+.editor .table.table .cellInput[data-has-unit=true] input{width:100%!important;max-width:none!important;padding:0 1px!important;font:inherit!important;font-variant-numeric:tabular-nums;line-height:28px!important;text-align:right!important}
+.editor .table .cellInput[data-has-unit=true]>span:not([data-clearable-search]),.editor .table .cellInput[data-has-unit=true]>button.unitButton{grid-column:2;grid-row:1;margin:0;padding:0;line-height:28px;font:inherit}
+
+.editor .table .cellInput[data-has-unit=true]{position:relative;display:grid;grid-template-columns:max-content max-content;gap:1px;justify-content:center;align-items:center}
+.editor .table .cellInput[data-has-unit=true]::before{padding:0;grid-area:1/1;line-height:30px}
+.editor .table .cellInput[data-has-unit=true]>[data-clearable-search=true]{position:absolute!important;grid-column:1;grid-row:1;inset:0!important;width:100%!important;min-width:0!important;max-width:none!important;height:30px!important;margin:0!important;padding:0!important}
+.editor .table.table .cellInput[data-has-unit=true] input:not(.unitEdit){position:static!important;box-sizing:border-box;width:100%!important;min-width:0!important;padding:0!important;margin:0!important;text-align:right!important;height:30px!important;line-height:30px!important}
+.editor .table .cellInput[data-has-unit=true]>.unitButton,.editor .table .cellInput[data-has-unit=true]>span:not([data-clearable-search]){grid-area:1/2;padding:0!important;margin:0!important;height:30px;line-height:30px}
+.editor .table.table .cellInput[data-has-unit=true] input.unitEdit{grid-area:1/2;width:42px!important;padding:0!important;margin:0!important;height:30px!important;line-height:30px!important}
+
+
+/* Number and suffix are ordinary flex siblings; no overlapping grid placement. */
+.editor .table .cellInput[data-has-unit=true]{display:flex;justify-content:center;align-items:center;gap:1px}
+.editor .table .cellInput[data-has-unit=true]::before{display:none;content:none}
+.editor .numberBox{position:relative;display:block;flex:1;min-width:0;height:30px;font-size:13px;font-family:inherit;font-weight:inherit;font-variant-numeric:tabular-nums;line-height:30px}
+.editor .numberMirror{visibility:hidden;display:block;white-space:pre;font:inherit;line-height:30px;min-width:1px}
+.editor .cellInput:not([data-has-unit=true]) .numberMirror{display:none}
+.editor .cellInput[data-has-unit=true]>.numberBox{flex:0 0 auto;width:max-content;max-width:calc(100% - 44px)}
+.editor .numberBox>[data-clearable-search=true]{position:absolute!important;inset:0!important;width:100%!important;min-width:0!important;max-width:none!important;height:30px!important;margin:0!important;padding:0!important}
+.editor .table.table .numberBox input{position:static!important;box-sizing:border-box;width:100%!important;min-width:0!important;max-width:none!important;height:30px!important;padding:0!important;margin:0!important;font:inherit!important;line-height:30px!important;text-align:center!important}
+.editor .table .cellInput[data-has-unit=true]>.unitButton,.editor .table .cellInput[data-has-unit=true]>span:not([data-clearable-search]){display:block;position:static;flex:0 0 auto;height:30px;line-height:30px;padding:0!important;margin:0!important}
+
+/* Let native text measurement size the number; do not clip to estimated widths. */
+.editor .table .cellInput[data-has-unit=true]{display:flex;gap:1px;justify-content:center;align-items:center;overflow:visible}
+.editor .table .cellInput[data-has-unit=true]>.numberBox{display:contents!important;width:auto!important;max-width:none!important}
+.editor .table .cellInput[data-has-unit=true] .numberMirror{display:none!important}
+.editor .table .cellInput[data-has-unit=true] .numberBox>[data-clearable-search=true]{display:contents!important;position:static!important;width:auto!important;max-width:none!important}
+.editor .table.table .cellInput[data-has-unit=true] .numberBox input{field-sizing:content!important;display:block!important;position:static!important;width:auto!important;min-width:1ch!important;max-width:none!important;flex:0 0 auto!important;padding:0!important;margin:0!important;border:0!important;font-family:inherit!important;font-size:13px!important;line-height:30px!important;text-align:right!important;letter-spacing:0!important}
+.editor .table .premium,.editor .table .premium input,.editor .table .premium .cellInput,.editor .table .premium .numberMirror{color:#284261!important;font-weight:400!important}
+
+
+.editor .table .cellInput[data-has-unit=true]{column-gap:1px!important;row-gap:0!important}
+
+
+.editor .table.table .cellInput[data-has-unit=true] input.unitEdit{field-sizing:content!important;display:block;position:static!important;flex:0 0 auto!important;width:auto!important;min-width:1ch!important;max-width:none!important;height:30px!important;min-height:30px!important;max-height:30px!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;outline:none!important;box-shadow:none!important;font:inherit!important;font-size:13px!important;line-height:30px!important;text-align:left!important}
+
+
+.editor .insuranceActions button:has(>svg.lucide-printer):is(:hover,:focus-visible):not(:disabled){color:#195DFF}
+

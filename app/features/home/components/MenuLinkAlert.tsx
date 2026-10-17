@@ -11,7 +11,7 @@ return (<>{menuLinkAlertOpen && (
       </h2>
 
       <p className="text-sm text-gray-500 leading-relaxed mt-2 break-keep">
-        메뉴로 연결할 링크를 입력해주세요.
+        메뉴로 연결할 링크를 입력해주세요
       </p>
 
       <div className="flex justify-center mt-6">

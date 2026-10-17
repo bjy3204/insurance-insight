@@ -612,7 +612,7 @@ const goBackMainScreen = () => {
 
 const deletePersonalMenu = () => {
   if (selectedDeleteMenuIds.length === 0) {
-    alert("삭제할 메뉴를 선택해주세요.");
+    alert("삭제할 메뉴를 선택해주세요");
     return;
   }
 
@@ -714,7 +714,7 @@ const addPersonalMenu = () => {
   resetNewMenuForm();
 
   setSaveConfirmType("popup");
-  setSaveConfirmMessage("메뉴가 추가되었습니다.");
+  setSaveConfirmMessage("메뉴가 추가되었습니다");
   setSaveConfirmOpen(true);
 };
 
@@ -837,7 +837,7 @@ const openCmPinPopup = async () => {
   setCmPinStep("enter");
   if (error) {
     setCmPinState("locked");
-    setCmPinError("비밀번호 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    setCmPinError("비밀번호 정보를 불러오지 못했습니다 잠시 후 다시 시도해 주세요");
   } else if (!data?.pin_hash) {
     setCmPinState("no-pin");
   } else {
@@ -877,7 +877,7 @@ const handleCmKeypad = async (val: string) => {
           if (next.length === 4) {
             setTimeout(async () => {
               if (cmPinInputRef.current !== next) {
-                setCmPinError("PIN이 일치하지 않습니다. 다시 시도해주세요.");
+                setCmPinError("PIN이 일치하지 않습니다 다시 시도해주세요");
                 cmPinInputRef.current = "";
                 cmPinStepRef.current = "enter";
                 setCmPinStep("enter");
@@ -924,7 +924,7 @@ const handleCmKeypad = async (val: string) => {
             .eq("user_id", authUser!.id)
             .maybeSingle();
           if (hash !== data?.pin_hash) {
-            setCmPinError("PIN이 올바르지 않습니다.");
+            setCmPinError("PIN이 올바르지 않습니다");
             cmPinInputRef.current = "";
             setCmPinInput("");
             return;
@@ -1053,7 +1053,7 @@ const handleCheckPin = async () => {
     password: pinCheckPassword,
   });
   if (error) {
-    setPinCheckResult("비밀번호가 올바르지 않습니다.");
+    setPinCheckResult("비밀번호가 올바르지 않습니다");
     return;
   }
   const { data } = await supabase
@@ -1062,7 +1062,7 @@ const handleCheckPin = async () => {
   .eq("user_id", authUser.id)
   .maybeSingle();
 if (!data?.pin_plain) {
-  setPinCheckResult("설정된 PIN이 없습니다.");
+  setPinCheckResult("설정된 PIN이 없습니다");
   return;
 }
 setPinCheckResult(`비밀번호: ${data.pin_plain}`);
@@ -1071,38 +1071,38 @@ setPinCheckResult(`비밀번호: ${data.pin_plain}`);
 
 const saveProfileSettings = async () => {
   if (!authUser?.email) {
-    alert("로그인이 필요합니다.");
+    alert("로그인이 필요합니다");
     return;
   }
 
   if (!editNickname.trim()) {
-    alert("닉네임을 입력해주세요.");
+    alert("닉네임을 입력해주세요");
     return;
   }
 
   if (!editInstagram.trim()) {
-    alert("인스타그램 아이디를 입력해주세요.");
+    alert("인스타그램 아이디를 입력해주세요");
     return;
   }
 
   if (newPassword || newPasswordConfirm || currentPassword) {
     if (!currentPassword.trim()) {
-      alert("현재 비밀번호를 입력해주세요.");
+      alert("현재 비밀번호를 입력해주세요");
       return;
     }
 
     if (!newPassword.trim()) {
-      alert("새 비밀번호를 입력해주세요.");
+      alert("새 비밀번호를 입력해주세요");
       return;
     }
 
     if (newPassword.length < 6) {
-      alert("새 비밀번호는 6자 이상 입력해주세요.");
+      alert("새 비밀번호는 6자 이상 입력해주세요");
       return;
     }
 
     if (newPassword !== newPasswordConfirm) {
-      alert("새 비밀번호가 일치하지 않습니다.");
+      alert("새 비밀번호가 일치하지 않습니다");
       return;
     }
 
@@ -1113,7 +1113,7 @@ const saveProfileSettings = async () => {
       });
 
     if (checkPasswordError) {
-      alert("현재 비밀번호가 일치하지 않습니다.");
+      alert("현재 비밀번호가 일치하지 않습니다");
       return;
     }
 
@@ -1160,9 +1160,9 @@ const saveProfileSettings = async () => {
 const handleKakaoConnect = async () => {
   if (!authUser?.id || kakaoConnecting) return;
   const { data, error: identityError } = await supabase.auth.getUserIdentities();
-  if (identityError) { alert("카카오 연결 상태를 확인하지 못했습니다."); return; }
+  if (identityError) { alert("카카오 연결 상태를 확인하지 못했습니다"); return; }
   if (data.identities.some(identity => identity.provider === "kakao")) {
-    setKakaoConnected(true); alert("이미 카카오 계정이 연결되어 있습니다."); return;
+    setKakaoConnected(true); alert("이미 카카오 계정이 연결되어 있습니다"); return;
   }
   setKakaoConnecting(true);
   const { error } = await supabase.auth.linkIdentity({
@@ -1189,7 +1189,7 @@ const handleKakaoDisconnect = async () => {
   );
 
   if (!kakaoIdentity) {
-    alert("카카오 연결 정보를 찾을 수 없습니다.");
+    alert("카카오 연결 정보를 찾을 수 없습니다");
     return;
   }
 
@@ -1206,12 +1206,12 @@ const handleKakaoDisconnect = async () => {
     .eq("id", authUser.id);
 
   setKakaoConnected(false);
-  alert("카카오 연결이 해제되었습니다.");
+  alert("카카오 연결이 해제되었습니다");
 };
 
 const sendMessage = async () => {
   if (!fixMessage.trim() && !addMessage.trim()) {
-    alert("수정할 내용 또는 추가하고 싶은 내용을 입력해주세요.");
+    alert("수정할 내용 또는 추가하고 싶은 내용을 입력해주세요");
     return;
   }
 
@@ -1227,7 +1227,7 @@ const sendMessage = async () => {
       "1aQRC4TK_8wwBgPgw"
     );
 
-    alert("메세지가 전송되었습니다.");
+    alert("메세지가 전송되었습니다");
 
     setFixMessage("");
     setAddMessage("");
@@ -1237,7 +1237,7 @@ const sendMessage = async () => {
   } catch (error) {
   console.log(error);
 
-  alert("메세지 전송에 실패했습니다.");
+  alert("메세지 전송에 실패했습니다");
 }
 };
 useHomeEffects({ menus, setMenus, setHiddenMenuIds, setTempHiddenMenuIds, today, setToday, total, setTotal, setShowInstall, setDeferredPrompt, weatherRegion, setWeatherRegion, weatherOpen, setWeatherOpen, setWeather, userMenuOpen, setUserMenuOpen, setKakaoConnected, settingOpen, setSettingOpen, memoOpen, setMemoOpen, memoOpenRef, setTempMenus, setPersonalMenus, setSelectedMemo, bankRateMonth, setBankRates, setBankBaseDate, cmPinOpen, cmPinState, setQuickMenuKeys, setContextMenu, setHasUpdate, setHasSalesBookUpdate, setReadNoticeIds, setDbNotices, setDbCategories, setPopupNotice, setReadPressIds, authUser, authStatus, memos, resetPopupPosition, handleCmKeypad });

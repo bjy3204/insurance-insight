@@ -65,13 +65,13 @@ export default function WeatherCard({ onFortune }: { onFortune: () => void }) {
         if (place.locate) params.set("locate", "1");
         const response = await fetch(`/api/home-weather?${params}`, { signal: controller.signal });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "날씨 조회에 실패했습니다.");
+        if (!response.ok) throw new Error(data.error || "날씨 조회에 실패했습니다");
         if (!controller.signal.aborted) {
           setWeather(data);
           try { localStorage.setItem(storageKey, JSON.stringify({ ...place, displayName: data.region, locate: false })); } catch { /* Weather is usable even when browser storage is disabled. */ }
         }
       } catch (e) {
-        if (!controller.signal.aborted) setError(e instanceof Error ? e.message : "날씨 조회에 실패했습니다.");
+        if (!controller.signal.aborted) setError(e instanceof Error ? e.message : "날씨 조회에 실패했습니다");
       } finally { if (!controller.signal.aborted) setBusy(false); }
     };
     void load();
@@ -87,11 +87,11 @@ export default function WeatherCard({ onFortune }: { onFortune: () => void }) {
     return () => window.removeEventListener("keydown", close);
   }, [searchOpen]);
   const locate = () => {
-    if (!navigator.geolocation) { setError("이 브라우저에서는 현재 위치를 사용할 수 없습니다."); return; }
+    if (!navigator.geolocation) { setError("이 브라우저에서는 현재 위치를 사용할 수 없습니다"); return; }
     setBusy(true);
     navigator.geolocation.getCurrentPosition(position => {
       setPlace({ name: "현재 위치", lat: position.coords.latitude, lon: position.coords.longitude, locate: true });
-    }, () => { setBusy(false); setError("위치를 확인하지 못했습니다. 기존 지역을 유지합니다. 지역 검색도 이용할 수 있어요."); }, { timeout: 10000, maximumAge: 600000 });
+    }, () => { setBusy(false); setError("위치를 확인하지 못했습니다 기존 지역을 유지합니다 지역 검색도 이용할 수 있어요"); }, { timeout: 10000, maximumAge: 600000 });
   };
   const search = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,8 +104,8 @@ export default function WeatherCard({ onFortune }: { onFortune: () => void }) {
       if (!response.ok) throw new Error(data.error);
       if (request !== searchRequest.current) return;
       setResults(data.places);
-      if (!data.places.length) setSearchMessage("검색 결과가 없습니다. 시·군 이름으로 다시 검색해 주세요.");
-    } catch { if (request === searchRequest.current) setSearchMessage("지역을 검색하지 못했습니다. 다시 시도해 주세요."); }
+      if (!data.places.length) setSearchMessage("검색 결과가 없습니다 시·군 이름으로 다시 검색해 주세요");
+    } catch { if (request === searchRequest.current) setSearchMessage("지역을 검색하지 못했습니다 다시 시도해 주세요"); }
     finally { if (request === searchRequest.current) setSearching(false); }
   };
   const light = daylightWeights(now,weather?.sunrise ?? 0,weather?.sunset ?? 0);

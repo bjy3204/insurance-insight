@@ -16,7 +16,7 @@ export function detailCustomer(row?:CrmRow):{customer?:CustomerRecord;error?:str
   const consultations=text(row,detailProperties.consultations);
   if(consultations){parseConsultations(consultations);parseConsultationRecords(consultations);}
   return{customer:{id:row.id,name:text(row,"이름"),birth:text(row,"주민번호").replace(/\D/g,"").slice(0,7),updatedAt:row.edited,checklist,disclosure,consultations}};
- }catch{return{error:"저장된 고객 상세정보를 읽지 못했습니다. 노션 원본을 확인해 주세요."};}
+ }catch{return{error:"저장된 고객 상세정보를 읽지 못했습니다 노션 원본을 확인해 주세요"};}
 }
 export function detailValues(field:keyof typeof detailProperties,value:string):Record<string,CrmValue>{
  const result:Record<string,CrmValue>={[detailProperties[field]]:value};

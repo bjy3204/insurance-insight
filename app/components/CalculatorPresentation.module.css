@@ -23,7 +23,7 @@
   box-shadow: none;
 }
 
-.page [data-tab-style="rounded"] > button:not(:global(.bg-blue-600)):hover {
+.page [data-tab-style="rounded"] > button:not(:global(.bg-blue-600)):is(:hover,:focus-visible) {
   background-color: #eff6ff;
   color: #195DFF;
 }
@@ -80,7 +80,7 @@
   color: #334155;
 }
 
-.page [data-tab-style="subtle"] > button:hover {
+.page [data-tab-style="subtle"] > button:is(:hover,:focus-visible) {
   background-color: #e8edf2;
   color: #334155;
 }
@@ -107,7 +107,7 @@
   transition: transform .2s, box-shadow .2s;
 }
 
-.calculateButton:hover {
+.calculateButton:is(:hover,:focus-visible) {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px #195DFF30;
 }
@@ -136,7 +136,7 @@
   .result { animation: none; }
   .page [data-tab-style="rounded"] > button { transition: none; }
   .calculateButton { transition: none; }
-  .calculateButton:hover { transform: none; }
+  .calculateButton:is(:hover,:focus-visible) { transform: none; }
 }
 
 .page [data-calculator-primary-tabs="true"] > button,
@@ -155,7 +155,7 @@
 }
 @media(min-width:768px){
  .calculateButton{transform:none;box-shadow:none;transition:background-color .2s}
- .calculateButton:hover{transform:none;translate:none;box-shadow:none;background:#195DFF}
+ .calculateButton:is(:hover,:focus-visible){transform:none;translate:none;box-shadow:none;background:#195DFF}
  .panel:has(>[data-calculator-footer="true"]){padding-bottom:24px}
  .panel>[data-calculator-footer="true"]{margin-top:24px;margin-bottom:0}
 }

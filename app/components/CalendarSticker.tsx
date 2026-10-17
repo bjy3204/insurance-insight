@@ -7,7 +7,7 @@ import {useWidgetSessionState} from './useWidgetSessionState';
 import {CALENDAR_STICKER_OPEN,fitCalendarSticker,type StickerGeometry} from '@/lib/calendar-sticker';
 import styles from './CalendarSticker.module.css';
 import {MEMO_BACKGROUNDS} from '@/lib/memos/model';
-const Calendar=dynamic(()=>import('./calendar/Calendar'),{ssr:false,loading:()=> <p className={styles.loading}>캘린더를 불러오고 있습니다.</p>});
+const Calendar=dynamic(()=>import('./calendar/Calendar'),{ssr:false,loading:()=> <p className={styles.loading}>캘린더를 불러오고 있습니다</p>});
 const palette=[['흰색',MEMO_BACKGROUNDS.white],['파랑',MEMO_BACKGROUNDS.blue],['노랑',MEMO_BACKGROUNDS.yellow],['분홍',MEMO_BACKGROUNDS.red],['투명','clear']];
 type Dock='left'|'right'|null;
 export default function CalendarSticker(){

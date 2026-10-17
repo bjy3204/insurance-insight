@@ -10,19 +10,19 @@ export function emptyDisclosure(): DisclosureRow[] {
 }
 export function parseDisclosure(serialized: string): DisclosureRow[] {
   const value = JSON.parse(serialized);
-  if(value.memo!==undefined&&(typeof value.memo!=="string"||value.memo.length>12000))throw new Error("알릴의무 메모를 확인해 주세요.");
-  if (value?.version !== 1 || !Array.isArray(value.rows) || value.rows.length !== DISCLOSURE_ITEMS.length) throw new Error("알릴의무 내용을 확인해 주세요.");
+  if(value.memo!==undefined&&(typeof value.memo!=="string"||value.memo.length>12000))throw new Error("알릴의무 메모를 확인해 주세요");
+  if (value?.version !== 1 || !Array.isArray(value.rows) || value.rows.length !== DISCLOSURE_ITEMS.length) throw new Error("알릴의무 내용을 확인해 주세요");
   return DISCLOSURE_ITEMS.map(item => {
     const matches = value.rows.filter((row: unknown) => row && typeof row === "object" && (row as {id?:unknown}).id === item.id);
     const row = matches[0];
-    if (matches.length !== 1 || typeof row.question !== "string" || !row.question.trim() || row.question.length > 2000 || typeof row.details !== "string" || row.details.length > 6000 || !["", "yes", "no"].includes(row.answer) || !Array.isArray(row.selected) || row.selected.some((option: unknown) => typeof option !== "string" || !(item.options as readonly string[]).includes(option)) || new Set(row.selected).size !== row.selected.length || row.answer !== "yes" && row.selected.length) throw new Error("알릴의무 내용을 확인해 주세요.");
+    if (matches.length !== 1 || typeof row.question !== "string" || !row.question.trim() || row.question.length > 2000 || typeof row.details !== "string" || row.details.length > 6000 || !["", "yes", "no"].includes(row.answer) || !Array.isArray(row.selected) || row.selected.some((option: unknown) => typeof option !== "string" || !(item.options as readonly string[]).includes(option)) || new Set(row.selected).size !== row.selected.length || row.answer !== "yes" && row.selected.length) throw new Error("알릴의무 내용을 확인해 주세요");
     return { id:item.id, question:row.question.trim(), answer:row.answer, selected:[...row.selected], details:row.details.trim() };
   });
 }
 export function disclosureMemo(serialized?:string):string {
   if(!serialized)return "";
   const value=JSON.parse(serialized);
-  if(value.memo!==undefined&&(typeof value.memo!=="string"||value.memo.length>12000))throw new Error("알릴의무 메모를 확인해 주세요.");
+  if(value.memo!==undefined&&(typeof value.memo!=="string"||value.memo.length>12000))throw new Error("알릴의무 메모를 확인해 주세요");
   return value.memo||"";
 }
 export type MedicalHistoryRow={date:string;name:string;detail:string;hospital:string;note:string};
@@ -34,12 +34,12 @@ export function parseMedicalHistories(serialized?:string):MedicalHistories{
   const value=JSON.parse(serialized),result=emptyMedicalHistories();
   for(const key of ["hospitalizations","surgeries"] as const){
     if(value[key]===undefined)continue;
-    if(!Array.isArray(value[key])||value[key].length>100)throw new Error("입원·수술 이력을 확인해 주세요.");
+    if(!Array.isArray(value[key])||value[key].length>100)throw new Error("입원·수술 이력을 확인해 주세요");
     result[key]=value[key].map((row:MedicalHistoryRow)=>{
-      if(!row||typeof row!=="object")throw new Error("입원·수술 이력을 확인해 주세요.");
+      if(!row||typeof row!=="object")throw new Error("입원·수술 이력을 확인해 주세요");
       const next=emptyMedicalHistoryRow();
       for(const field of Object.keys(next) as (keyof MedicalHistoryRow)[]){
-        if(typeof row[field]!=="string"||row[field].length>1000)throw new Error("입원·수술 이력을 확인해 주세요.");
+        if(typeof row[field]!=="string"||row[field].length>1000)throw new Error("입원·수술 이력을 확인해 주세요");
         next[field]=row[field];
       }
       return next;

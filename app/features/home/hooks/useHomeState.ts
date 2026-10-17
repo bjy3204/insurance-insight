@@ -271,7 +271,7 @@ const [saveConfirmType, setSaveConfirmType] =
   useState<"main" | "popup">("main");
 
 const [saveConfirmMessage, setSaveConfirmMessage] =
-  useState("변경 내용이 저장되었습니다.");
+  useState("변경 내용이 저장되었습니다");
 
 const [menuLinkAlertOpen, setMenuLinkAlertOpen] = useState(false);
 

@@ -46,9 +46,9 @@ export default function useCalendarExtras(identity: Identity, month: Date, activ
         if(!session||session.user.id!==userId)return;
         const response=await fetch(`/api/customers?${new URLSearchParams({view:"calendar",from,to})}`,{headers:{Authorization:`Bearer ${session.access_token}`},cache:"no-store",signal:controller.signal});
         const result=await response.json();
-        if(!response.ok)throw new Error("고객 일정을 불러오지 못했습니다.");
+        if(!response.ok)throw new Error("고객 일정을 불러오지 못했습니다");
         if(!stopped){setCustomerEvents(result.events||[]);setCustomerError("");}
-      }catch{if(!stopped)setCustomerError("고객 일정을 불러오지 못했습니다.");}
+      }catch{if(!stopped)setCustomerError("고객 일정을 불러오지 못했습니다");}
     };
     void load();window.addEventListener("focus",load);window.addEventListener("customer-schedules-updated",load);
     return()=>{stopped=true;controller.abort();window.removeEventListener("focus",load);window.removeEventListener("customer-schedules-updated",load);};
@@ -70,7 +70,7 @@ export default function useCalendarExtras(identity: Identity, month: Date, activ
       setSheetLoading(true);
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) throw Error("자동 일정을 확인하려면 다시 로그인해 주세요.");
+        if (!session) throw Error("자동 일정을 확인하려면 다시 로그인해 주세요");
         const response = await fetch(`/api/google/calendar?${new URLSearchParams({ from, to })}`, { headers: { Authorization: `Bearer ${session.access_token}` }, cache: "no-store", signal });
         const result = await response.json();
         if (stopped || signal.aborted) return;
@@ -78,7 +78,7 @@ export default function useCalendarExtras(identity: Identity, month: Date, activ
         setNeedsConnection(!!result.needsConnection);
         setSheetError(result.error || "");
       } catch (error) {
-        if (!stopped && !signal.aborted) { setSheetEvents([]); setSheetError(error instanceof Error ? error.message : "자동 일정을 불러오지 못했습니다."); }
+        if (!stopped && !signal.aborted) { setSheetEvents([]); setSheetError(error instanceof Error ? error.message : "자동 일정을 불러오지 못했습니다"); }
       } finally { if (!stopped && !signal.aborted) setSheetLoading(false); }
     };
     void load();
@@ -102,7 +102,7 @@ export default function useCalendarExtras(identity: Identity, month: Date, activ
           value = data?.calendar_completed;
         } else value = JSON.parse(localStorage.getItem(localKey) || "{}");
         if (!stopped && version === generation.current) { setCompleted(normalize(value)); setCompletionReady(true); setCompletionError(""); }
-      } catch { if (!stopped) setCompletionError("확인 상태를 불러오지 못했습니다."); }
+      } catch { if (!stopped) setCompletionError("확인 상태를 불러오지 못했습니다"); }
     };
     void load();
     window.addEventListener(CALENDAR_UPDATED, load);
@@ -124,19 +124,19 @@ export default function useCalendarExtras(identity: Identity, month: Date, activ
         if (error) throw error;
       } else localStorage.setItem(localKey, JSON.stringify(next));
       if (ownerRef.current === requestOwner) calendarUpdated();
-    } catch { if (ownerRef.current === requestOwner) { setCompleted(before); setCompletionError("확인 상태를 저장하지 못했습니다. 다시 시도해 주세요."); } }
+    } catch { if (ownerRef.current === requestOwner) { setCompleted(before); setCompletionError("확인 상태를 저장하지 못했습니다 다시 시도해 주세요"); } }
     finally { busy.current = false; if (ownerRef.current === requestOwner) setCompletionBusy(false); }
   }, [approved, userId, completed, completionReady]);
   const connect = async () => {
     setConnecting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw Error("로그인이 필요합니다.");
+      if (!session) throw Error("로그인이 필요합니다");
       const response = await fetch("/api/google/customer-sheet", { method: "POST", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ action: "calendar-connect" }) });
       const result = await response.json();
-      if (!response.ok) throw Error(result.error || "일정 연결을 시작하지 못했습니다.");
+      if (!response.ok) throw Error(result.error || "일정 연결을 시작하지 못했습니다");
       window.location.assign(result.url);
-    } catch (error) { setSheetError(error instanceof Error ? error.message : "일정 연결을 시작하지 못했습니다."); setConnecting(false); }
+    } catch (error) { setSheetError(error instanceof Error ? error.message : "일정 연결을 시작하지 못했습니다"); setConnecting(false); }
   };
   const crmEvents=useMemo(()=>crm&&approved?buildCrmCalendar(crm.data,from,to):[],[crm,approved,from,to]);
   return { sheetEvents:usingCrm?crmEvents:[...customerEvents,...sheetEvents], sheetError:usingCrm?"":sheetError||customerError, needsConnection:usingCrm?false:needsConnection, connect, connecting, sheetLoading, reloadSheet: () => crm?crm.reload():setRefresh(value => value + 1), completed, completionReady, completionBusy, completionError, toggleCompleted };

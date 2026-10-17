@@ -81,7 +81,7 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        error: "네이버 환율 정보를 불러오지 못했습니다.",
+        error: "네이버 환율 정보를 불러오지 못했습니다",
         items: [],
       },
       { status: 500 }

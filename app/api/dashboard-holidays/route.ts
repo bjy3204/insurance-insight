@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const year = Number(new URL(request.url).searchParams.get("year"));
-  if (!Number.isInteger(year) || year < 2000 || year > 2100) return NextResponse.json({ error: "연도를 확인해 주세요." }, { status: 400 });
+  if (!Number.isInteger(year) || year < 2000 || year > 2100) return NextResponse.json({ error: "연도를 확인해 주세요" }, { status: 400 });
   const key = process.env.DATA_GO_KR_API_KEY;
   if (key) {
     try {
@@ -20,5 +20,5 @@ export async function GET(request: Request) {
     if (!response.ok) throw new Error("Holiday service unavailable");
     const data = await response.json();
     return NextResponse.json({ holidays: data.map((item: { date: string; localName: string }) => ({ date: item.date, name: item.localName })) });
-  } catch { return NextResponse.json({ error: "공휴일 정보를 불러오지 못했습니다.", holidays: [] }, { status: 502 }); }
+  } catch { return NextResponse.json({ error: "공휴일 정보를 불러오지 못했습니다", holidays: [] }, { status: 502 }); }
 }

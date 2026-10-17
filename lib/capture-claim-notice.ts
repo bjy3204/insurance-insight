@@ -17,7 +17,7 @@ async function embeddedFonts(element: HTMLElement): Promise<string> {
     } catch {
       if (sheet.href) {
         const response = await fetch(sheet.href);
-        if (!response.ok) throw new Error("안내장 폰트를 불러오지 못했습니다.");
+        if (!response.ok) throw new Error("안내장 폰트를 불러오지 못했습니다");
         css.push(...((await response.text()).match(/@font-face\s*\{[^}]*\}/g) ?? []));
       }
     }
@@ -38,7 +38,7 @@ async function embeddedFonts(element: HTMLElement): Promise<string> {
     const replacements = await Promise.all([...rule.matchAll(/url\(["']?([^)'"\s]+)["']?\)/g)].map(async match => {
       const url = new URL(match[1], location.href).href;
       if (!fontData.has(url)) fontData.set(url, fetch(url).then(async response => {
-        if (!response.ok) throw new Error("안내장 폰트를 불러오지 못했습니다.");
+        if (!response.ok) throw new Error("안내장 폰트를 불러오지 못했습니다");
         const blob = await response.blob();
         return new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result as string); reader.onerror = reject; reader.readAsDataURL(blob); });
       }).catch(error => { fontData.delete(url); throw error; }));
@@ -70,7 +70,7 @@ export async function captureNoticeImage(element: HTMLElement, dimensions?: { wi
     const raster = document.createElement("canvas");
     raster.width = photo.naturalWidth; raster.height = photo.naturalHeight;
     const context = raster.getContext("2d");
-    if (!context) throw new Error("배경 이미지를 준비하지 못했습니다.");
+    if (!context) throw new Error("배경 이미지를 준비하지 못했습니다");
     context.drawImage(photo, 0, 0);
     clonedPhotos[index].remove();
     return raster;
@@ -84,13 +84,13 @@ export async function captureNoticeImage(element: HTMLElement, dimensions?: { wi
   const image = new Image();
   await new Promise<void>((resolve, reject) => {
     image.onload = () => resolve();
-    image.onerror = () => reject(new Error("안내장 이미지를 준비하지 못했습니다."));
+    image.onerror = () => reject(new Error("안내장 이미지를 준비하지 못했습니다"));
     image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   });
   const canvas = document.createElement("canvas");
   canvas.width = outputWidth; canvas.height = outputHeight;
   const context = canvas.getContext("2d");
-  if (!context) throw new Error("안내장 이미지를 저장하지 못했습니다.");
+  if (!context) throw new Error("안내장 이미지를 저장하지 못했습니다");
   for (const background of backgroundLayers) context.drawImage(background, 0, 0, outputWidth, outputHeight);
   context.drawImage(image, 0, 0, outputWidth, outputHeight);
   return canvas;

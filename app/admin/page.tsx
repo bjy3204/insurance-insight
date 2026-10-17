@@ -440,7 +440,7 @@ useEffect(() => {
   const updateStatus = async (id: string, newStatus: string) => {
     setUpdating(id);
     const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("id", id);
-    if (error) { setUpdating(null); alert("회원 상태를 저장하지 못했습니다. 상태 설정을 확인해 주세요."); return; }
+    if (error) { setUpdating(null); alert("회원 상태를 저장하지 못했습니다 상태 설정을 확인해 주세요"); return; }
     setProfiles((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status: newStatus } : p))
     );
@@ -491,7 +491,7 @@ useEffect(() => {
     }));
   } catch (error) {
     console.error("Error uploading image:", error);
-    alert("이미지 업로드에 실패했습니다.");
+    alert("이미지 업로드에 실패했습니다");
   } finally {
     setImageUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -645,7 +645,7 @@ useEffect(() => {
     .eq("id", sub.id);
 
   if (error) {
-    alert("체크 저장에 실패했습니다.");
+    alert("체크 저장에 실패했습니다");
     fetchAllSubscribers();
   }
   } finally { subscriberCheckLocks.current.delete(sub.id); }
@@ -673,7 +673,7 @@ const toggleAllSubscriberChecks = async () => {
     .in("id", targetIds)
 
   if (error) {
-    alert("전체 체크 저장에 실패했습니다.")
+    alert("전체 체크 저장에 실패했습니다")
     fetchAllSubscribers()
   }
 }
@@ -699,28 +699,28 @@ const toggleAllSubscriberChecks = async () => {
 
   const saveSubscriber = async () => {
     const instagramId = normalizeInstagramId(subForm.subscriber_id);
-    if (!instagramId) return alert("아이디를 입력해주세요.");
+    if (!instagramId) return alert("아이디를 입력해주세요");
     if (subscriberSaveLock.current) return;
     subscriberSaveLock.current = true; setSubscriberSaving(true);
     try {
       const latest = await readAllSubscribers();
-      if (!latest) throw new Error("기존 구독자를 확인하지 못했습니다. 다시 시도해 주세요.");
+      if (!latest) throw new Error("기존 구독자를 확인하지 못했습니다 다시 시도해 주세요");
       const duplicates = latest.filter(sub => sub.id !== subForm.id && normalizeInstagramId(sub.subscriber_id) === instagramId);
-      if (duplicates.length > 1) throw new Error("동일한 아이디로 등록된 구독자가 여러 명입니다. 전체목록에서 확인해 주세요.");
+      if (duplicates.length > 1) throw new Error("동일한 아이디로 등록된 구독자가 여러 명입니다 전체목록에서 확인해 주세요");
       if (duplicates.length === 1) {
         setAllSubscribers(latest);
         openSubPopup(duplicates[0]);
-        alert("이미 등록된 아이디입니다. 기존 구독자 수정으로 전환했습니다.");
+        alert("이미 등록된 아이디입니다 기존 구독자 수정으로 전환했습니다");
         return;
       }
       const values = { subscriber_id: instagramId, name: subForm.name, data_room: subForm.data_room, video_room: subForm.video_room, pay_app: subForm.pay_app, pay_app_code: subForm.pay_app_code, memo: subForm.memo };
       const { error } = subForm.id
         ? await supabase.from("subscribers").update(values).eq("id", subForm.id)
         : await supabase.from("subscribers").insert({ ...values, status: "active", is_checked: true });
-      if (error) throw new Error("구독자 저장에 실패했습니다. 다시 시도해 주세요.");
+      if (error) throw new Error("구독자 저장에 실패했습니다 다시 시도해 주세요");
       setIsSubPopupOpen(false);
       await Promise.all([fetchAllSubscribers(), fetchSubscribers()]);
-    } catch (error) { alert(error instanceof Error ? error.message : "구독자 저장에 실패했습니다."); }
+    } catch (error) { alert(error instanceof Error ? error.message : "구독자 저장에 실패했습니다"); }
     finally { subscriberSaveLock.current = false; setSubscriberSaving(false); }
   };
 
@@ -741,12 +741,12 @@ console.log(
 );
 
   if (activeSubscribers.length === 0) {
-    alert("저장할 구독중 구독자가 없습니다.");
+    alert("저장할 구독중 구독자가 없습니다");
     return;
   }
 
   const ok = await confirmAction(
-    `${saveTargetYear}년 ${saveTargetMonth}월에 구독중 ${activeSubscribers.length}명을 저장할까요?\n이미 등록된 구독자는 자동으로 건너뜁니다.`
+    `${saveTargetYear}년 ${saveTargetMonth}월에 구독중 ${activeSubscribers.length}명을 저장할까요?\n이미 등록된 구독자는 자동으로 건너뜁니다`
   );
 
   if (!ok) return;
@@ -771,14 +771,14 @@ console.log(
 
   if (error) {
     console.error(error);
-    alert("월별 구독자 저장에 실패했습니다.");
+    alert("월별 구독자 저장에 실패했습니다");
     return;
   }
 
   await fetchSubscribers();
 
   alert(
-    `${saveTargetYear}년 ${saveTargetMonth}월 저장 완료\n신규 저장: ${data?.length || 0}명\n기존 등록자는 자동 제외되었습니다.`
+    `${saveTargetYear}년 ${saveTargetMonth}월 저장 완료\n신규 저장: ${data?.length || 0}명\n기존 등록자는 자동 제외되었습니다`
   );
 };
 
@@ -829,22 +829,22 @@ console.log(
     let changed = 0;
     try {
       const latest = await readAllSubscribers();
-      if (!latest) throw new Error("구독자 체크 상태를 확인하지 못했습니다. 처리하지 않았습니다.");
+      if (!latest) throw new Error("구독자 체크 상태를 확인하지 못했습니다 처리하지 않았습니다");
       const ids = uncheckedActiveSubscriberIds(latest);
-      if (!ids.length) { alert("해지할 미체크 구독자가 없습니다."); return; }
-      if (!await confirmAction(`전체 구독자 중 체크하지 않은 구독중 ${ids.length}명을 해지 처리할까요?\n\n검색·탭·필터와 관계없이 전체목록이 대상입니다.\n체크된 구독자는 제외됩니다.\n사이트 상태만 변경하며 페이앱 실제 정기결제는 해지되지 않습니다.`)) return;
+      if (!ids.length) { alert("해지할 미체크 구독자가 없습니다"); return; }
+      if (!await confirmAction(`전체 구독자 중 체크하지 않은 구독중 ${ids.length}명을 해지 처리할까요?\n\n검색·탭·필터와 관계없이 전체목록이 대상입니다\n체크된 구독자는 제외됩니다\n사이트 상태만 변경하며 페이앱 실제 정기결제는 해지되지 않습니다`)) return;
       for (let start = 0; start < ids.length; start += 100) {
         const { data, error } = await supabase.from("subscribers").update({ status: "canceled" }).in("id", ids.slice(start, start + 100)).eq("status", "active").or("is_checked.eq.false,is_checked.is.null").select("id");
-        if (error) throw new Error("일괄 해지 중 오류가 발생했습니다. 남은 구독자를 확인해 주세요.");
+        if (error) throw new Error("일괄 해지 중 오류가 발생했습니다 남은 구독자를 확인해 주세요");
         const updatedIds = (data || []).map(row => row.id);
         changed += updatedIds.length;
         if (updatedIds.length) {
           const { error: monthlyError } = await supabase.from("subscriber_monthly").update({ status: "canceled" }).in("subscriber_id", updatedIds).eq("month_key", monthKey);
-          if (monthlyError) throw new Error("구독자 상태는 변경됐지만 선택 월 명단 반영에 실패했습니다. 월별 명단을 확인해 주세요.");
+          if (monthlyError) throw new Error("구독자 상태는 변경됐지만 선택 월 명단 반영에 실패했습니다 월별 명단을 확인해 주세요");
         }
       }
-      alert(`${changed}명을 사이트에서 해지 처리했습니다. 체크 상태는 변경하지 않았습니다.`);
-    } catch (error) { alert(`${error instanceof Error ? error.message : "일괄 해지에 실패했습니다."}${changed ? `\n이미 상태가 변경된 구독자: ${changed}명` : ""}`); }
+      alert(`${changed}명을 사이트에서 해지 처리했습니다 체크 상태는 변경하지 않았습니다`);
+    } catch (error) { alert(`${error instanceof Error ? error.message : "일괄 해지에 실패했습니다"}${changed ? `\n이미 상태가 변경된 구독자: ${changed}명` : ""}`); }
     finally {
       await Promise.allSettled([fetchAllSubscribers(), fetchSubscribers()]);
       bulkCancelLock.current = false; setBulkCanceling(false);
@@ -1003,7 +1003,7 @@ const linkProfileToSubscriber = async (
     .eq("id", profileId);
 
   if (error) {
-    alert("구독자 연결에 실패했습니다.");
+    alert("구독자 연결에 실패했습니다");
     return;
   }
 
@@ -1030,7 +1030,7 @@ const unlinkProfileSubscriber = async (profileId: string) => {
     .eq("id", profileId);
 
   if (error) {
-    alert("구독자 연결 해제에 실패했습니다.");
+    alert("구독자 연결 해제에 실패했습니다");
     return;
   }
 
@@ -1278,7 +1278,7 @@ const matchSearch =
 </div>
 
             {filteredProfiles.length === 0 ? (
-              <div className="flex justify-center items-center py-20 text-sm text-gray-400">회원이 없습니다.</div>
+              <div className="flex justify-center items-center py-20 text-sm text-gray-400">회원이 없습니다</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                 {pagedProfiles.map((profile) => {
@@ -1620,7 +1620,7 @@ c === "gray" ? "bg-gray-300" :
                 <h3 className="font-black text-gray-900">등록된 공지 ({noticesDB.length})</h3>
               </div>
               {noticesDB.length === 0 ? (
-                <div className="py-10 text-center text-sm text-gray-400">등록된 공지가 없습니다.</div>
+                <div className="py-10 text-center text-sm text-gray-400">등록된 공지가 없습니다</div>
               ) : (
                 <div className="divide-y divide-gray-100">
                   {noticesDB.map((notice, noticeIndex) => {
@@ -1794,7 +1794,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                 {/* 리스트 바디 */}
                 <div className="divide-y divide-gray-100">
                   {activeMonthly.length === 0 ? (
-                    <div className="p-10 text-center text-gray-400 text-sm">등록된 구독자가 없습니다.</div>
+                    <div className="p-10 text-center text-gray-400 text-sm">등록된 구독자가 없습니다</div>
                   ) : (
                     pagedActiveMonthly.map((item: SubscriberMonthly) => (
                      <div data-subscriber-row="true" key={item.id} className="flex flex-col md:flex-row md:items-center py-3 px-5 hover:bg-blue-50/30 transition gap-2 md:gap-0">
@@ -1868,11 +1868,11 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                   <AlertCircle className="w-5 h-5 text-yellow-600" />
                   <h3 className="font-bold text-yellow-800">이번 달 누락된 구독자</h3>
                 </div>
-                <p className="text-xs text-yellow-700 mb-4">저번 달에는 있었으나 이번 달에 아직 등록되지 않은 목록입니다.</p>
+                <p className="text-xs text-yellow-700 mb-4">저번 달에는 있었으나 이번 달에 아직 등록되지 않은 목록입니다</p>
                 
                 <div className="space-y-2 max-h-[1000px] overflow-y-auto pr-1">
                   {missingData.length === 0 ? (
-                    <div className="text-center py-6 text-sm text-yellow-600/70">누락된 구독자가 없습니다.</div>
+                    <div className="text-center py-6 text-sm text-yellow-600/70">누락된 구독자가 없습니다</div>
                   ) : (
                     missingData.map((sub) => (
                       <div key={sub.id} className="bg-white rounded-xl p-3 shadow-sm border border-yellow-100 flex items-center justify-between">
@@ -1922,7 +1922,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
     onClick={() => {
       if (selectedProfile.email) {
         navigator.clipboard.writeText(selectedProfile.email);
-        alert("이메일이 복사되었습니다.");
+        alert("이메일이 복사되었습니다");
       }
     }}
   >
@@ -2094,7 +2094,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
             <div className="flex-1 overflow-y-auto space-y-2 pr-1">
               {availableToSelect.length === 0 ? (
-                <div className="text-center py-10 text-sm text-gray-400">추가할 수 있는 구독자가 없습니다.  
+                <div className="text-center py-10 text-sm text-gray-400">추가할 수 있는 구독자가 없습니다  
 </div>
               ) : (
                 availableToSelect.map((sub) => (
@@ -2345,7 +2345,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                 {/* 리스트 바디 */}
                 <div ref={subscriberKeyboard.listRef} className="subscriber-keyboard-list flex-1 overflow-y-auto divide-y divide-gray-100">
                   {filteredAllSubs.length === 0 ? (
-                    <div className="p-10 text-center text-gray-400 text-sm">데이터가 없습니다.</div>
+                    <div className="p-10 text-center text-gray-400 text-sm">데이터가 없습니다</div>
                   ) : (
                     filteredAllSubs.map((sub) => (
                       <div key={sub.id} data-subscriber-row={sub.id} data-subscriber-name={sub.name || sub.subscriber_id} className={`flex flex-col md:flex-row md:items-center py-3 px-3 md:px-5 hover:bg-gray-50 transition gap-1 md:gap-0 ${sub.status === "canceled" ? "opacity-60 bg-gray-50/50" : ""}`}>
@@ -2442,7 +2442,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
       </div>
             <div className="flex-1 overflow-y-auto px-4 pt-0 pb-4">
         {filteredMemos.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-sm text-gray-400 py-20">저장된 메모가 없습니다.</div>
+          <div className="h-full flex items-center justify-center text-sm text-gray-400 py-20">저장된 메모가 없습니다</div>
         ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleMemoDragEnd}>

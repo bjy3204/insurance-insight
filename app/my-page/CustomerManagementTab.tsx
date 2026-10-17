@@ -39,10 +39,10 @@ export default function CustomerManagementTab({openContractRequested=false,onCon
   const closeDelete = useCallback(() => { if (!savingRef.current) { setDeleting(null); setDeleteError(""); } }, []);
   const request = useCallback(async (body?: object) => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error("다시 로그인해 주세요.");
+    if (!session) throw new Error("다시 로그인해 주세요");
     const response = await fetch("/api/customers", { method: body ? "POST" : "GET", cache: "no-store", headers: { Authorization: `Bearer ${session.access_token}`, ...(body ? { "Content-Type": "application/json" } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || "요청을 처리하지 못했습니다.");
+    if (!response.ok) throw new Error(result.error || "요청을 처리하지 못했습니다");
     return result;
   }, []);
   const generation = useRef(0);
@@ -50,7 +50,7 @@ export default function CustomerManagementTab({openContractRequested=false,onCon
     const run = ++generation.current;
     setLoading(true); setError("");
     try { const result = await request(); if (run === generation.current) { setCustomers(result.customers); setContracts(result.contracts); } }
-    catch (error) { if (run === generation.current) setError(error instanceof Error ? error.message : "고객정보를 불러오지 못했습니다."); }
+    catch (error) { if (run === generation.current) setError(error instanceof Error ? error.message : "고객정보를 불러오지 못했습니다"); }
     finally { if (run === generation.current) setLoading(false); }
   }, [request]);
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function CustomerManagementTab({openContractRequested=false,onCon
     if (!dialog || savingRef.current) return;
     setSaveError("");
     const owners = customers.filter(record => record.name === contract.owner && shortCustomerBirth(record.birth) === shortCustomerBirth(contract.ownerBirth || ""));
-    if (dialog === "contract" && owners.length !== 1) { setSaveError("계약자와 생년월일이 일치하는 고객을 먼저 등록하거나 선택해 주세요."); return; }
+    if (dialog === "contract" && owners.length !== 1) { setSaveError("계약자와 생년월일이 일치하는 고객을 먼저 등록하거나 선택해 주세요"); return; }
     savingRef.current = true; setSaving(true);
     const run = generation.current;
     submissionId.current ??= crypto.randomUUID();
@@ -76,7 +76,7 @@ export default function CustomerManagementTab({openContractRequested=false,onCon
       if (dialog === "customer") { setCustomers(previous => editing ? previous.map(record => record.id === result.record.id ? result.record : record) : [...previous, result.record]); setCustomer({}); }
       else { setContracts(previous => editing?previous.map(record=>record.id===result.record.id?result.record:record):[...previous, result.record]); setContract({}); }
       setDialog(null); setEditing(null);
-    } catch (error) { if (run === generation.current) setSaveError(error instanceof Error ? error.message : "저장하지 못했습니다."); }
+    } catch (error) { if (run === generation.current) setSaveError(error instanceof Error ? error.message : "저장하지 못했습니다"); }
     finally { savingRef.current = false; setSaving(false); }
   };
   const reorder = async (ids: string[]) => {
@@ -86,7 +86,7 @@ export default function CustomerManagementTab({openContractRequested=false,onCon
     const positions = new Map(ids.map((id, index) => [id, String(index)]));
     setCustomers(rows => rows.map(row => ({ ...row, sortOrder: positions.get(row.id) ?? row.sortOrder })));
     try { await request({ action: "reorder", ids }); }
-    catch (error) { if (run === generation.current) { setCustomers(previous); setReorderError(error instanceof Error ? error.message : "순서를 저장하지 못했습니다."); } }
+    catch (error) { if (run === generation.current) { setCustomers(previous); setReorderError(error instanceof Error ? error.message : "순서를 저장하지 못했습니다"); } }
     finally { reorderingRef.current = false; setReordering(false); }
   };
   const deleteCustomer = async () => {
@@ -99,23 +99,23 @@ export default function CustomerManagementTab({openContractRequested=false,onCon
       setCustomers(rows => rows.filter(row => row.id !== deleting.id));
       setContracts(rows => rows.filter(row => row.customerId !== deleting.id));
       setDeleting(null);
-    } catch (error) { if (run === generation.current) setDeleteError(error instanceof Error ? error.message : "삭제하지 못했습니다."); }
+    } catch (error) { if (run === generation.current) setDeleteError(error instanceof Error ? error.message : "삭제하지 못했습니다"); }
     finally { savingRef.current = false; setSaving(false); }
   };
   const deleteContract=async()=>{
     if(!deletingContract||savingRef.current)return;
     savingRef.current=true;setSaving(true);setDeleteError("");const run=generation.current;
     try{await request({action:"delete",kind:"contract",recordId:deletingContract.id,revision:Number(deletingContract.revision)});if(run!==generation.current)return;setContracts(rows=>rows.filter(row=>row.id!==deletingContract.id));setDeletingContract(null);}
-    catch(error){if(run===generation.current)setDeleteError(error instanceof Error?error.message:"삭제하지 못했습니다.");}
+    catch(error){if(run===generation.current)setDeleteError(error instanceof Error?error.message:"삭제하지 못했습니다");}
     finally{savingRef.current=false;setSaving(false);}
   };
   const saveCustomerSection = async (record: CustomerRecord, field: "disclosure" | "consultations" | "checklist", value: string) => {
-    if(savingRef.current||reorderingRef.current)throw new Error("저장이 끝난 뒤 다시 시도해 주세요.");
+    if(savingRef.current||reorderingRef.current)throw new Error("저장이 끝난 뒤 다시 시도해 주세요");
     savingRef.current=true;setSaving(true);
     const run=generation.current;
     try {
       const result=await request({action:"update",kind:"customer",recordId:record.id,revision:Number(record.revision),values:withCustomerClaimDefaults({...record,[field]:value})});
-      if(run!==generation.current)throw new Error("로그인 상태가 변경되었습니다.");
+      if(run!==generation.current)throw new Error("로그인 상태가 변경되었습니다");
       setCustomers(previous=>previous.map(customer=>customer.id===record.id?result.record:customer));
       window.dispatchEvent(new Event("customer-schedules-updated"));
     } finally {savingRef.current=false;setSaving(false);}
@@ -135,7 +135,7 @@ export default function CustomerManagementTab({openContractRequested=false,onCon
     {dialog && <CustomerEntryDialog kind={dialog} editing={!!editing} customers={customers} values={dialog === "customer" ? customer : contract} saving={saving} error={saveError} onSubmit={save} onChange={(field, value) => { submissionId.current = null; setSaveError(""); if (dialog === "customer") setCustomer(previous => ({ ...previous, [field]: value })); else setContract(previous => updateContractDraft(previous, field, value)); }} onClose={close} />}
     {deletingContract&&<DashboardDialog confirmation title="계약을 삭제할까요?" onClose={()=>{if(!savingRef.current)setDeletingContract(null);}}><p>선택한 계약을 삭제하시겠습니까?</p>{deleteError&&<p role="alert" className="text-sm text-red-600">{deleteError}</p>}<div className="mt-5 flex justify-end gap-2"><button data-popup-action="true" data-action-height="44" type="button" disabled={saving} onClick={()=>setDeletingContract(null)} className="h-11 rounded-xl bg-gray-100 px-5 text-sm font-bold cursor-pointer">취소</button><button data-action-height="44" type="button" disabled={saving} onClick={()=>void deleteContract()} className="h-11 rounded-xl bg-red-500 px-5 text-sm font-bold text-white cursor-pointer">{saving?"삭제 중":"삭제"}</button></div></DashboardDialog>}
     {deleting && <DashboardDialog confirmation title="고객을 삭제할까요?" onClose={closeDelete}>
-      <div><p className="text-sm text-gray-600">등록된 계약도 함께 삭제됩니다.</p>{deleteError && <p role="alert" className="mt-3 text-sm text-red-600">{deleteError}</p>}
+      <div><p className="text-sm text-gray-600">등록된 계약도 함께 삭제됩니다</p>{deleteError && <p role="alert" className="mt-3 text-sm text-red-600">{deleteError}</p>}
         <div className="mt-5 flex justify-end gap-2"><button data-popup-action="true" data-action-height="44" type="button" disabled={saving} onClick={closeDelete} className="h-11 rounded-xl bg-gray-100 px-5 text-sm font-bold cursor-pointer">취소</button><button data-action-height="44" type="button" disabled={saving} onClick={() => void deleteCustomer()} className="h-11 rounded-xl bg-red-500 px-5 text-sm font-bold text-white cursor-pointer disabled:opacity-40">{saving ? "삭제 중" : "삭제"}</button></div>
       </div>
     </DashboardDialog>}

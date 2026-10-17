@@ -253,8 +253,8 @@ sm:pb-4
       </h2>
 
       <p className="text-sm text-gray-500 mt-1 leading-relaxed break-keep">
-        PC 빠른메뉴에서 바로 실행할 메뉴를 최대 4개까지 선택할 수 있습니다.
-        추후 기능이 추가되면 선택 가능한 메뉴도 함께 추가됩니다.
+        PC 빠른메뉴에서 바로 실행할 메뉴를 최대 4개까지 선택할 수 있습니다
+        추후 기능이 추가되면 선택 가능한 메뉴도 함께 추가됩니다
       </p>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
@@ -524,7 +524,7 @@ hover:-translate-y-1
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3">
       {personalMenus.length === 0 ? (
         <div className="col-span-full min-h-[380px] flex items-center justify-center pt-16 text-center text-sm text-gray-400">
-  삭제할 개인 메뉴가 없습니다.
+  삭제할 개인 메뉴가 없습니다
 </div>
       ) : (
         personalMenus.map((menu) => {

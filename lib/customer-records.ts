@@ -32,30 +32,30 @@ export function openCustomerData(payload: string, owner: string, kind: string, i
 const customerFields = ["category", "name", "birth", "phone", "carrier", "job", "email", "address", "memo", "medicalInsurer", "medicalJoined", "medicalGeneration", "medicalMaturity", "accountOwner", "accountBirth", "bank", "accountNumber", "vehicleNumber", "vehicleType", "renewal", "insurer", "driver", "discount", "vehicles", "disclosure", "consultations", "checklist", "consentConfirmed"];
 const contractFields = ["owner", "ownerBirth", "insured", "insuredBirth", "sameInsured", "date", "maturity", "insurer", "premium", "product", "immunity", "reduction", "memo", "consentConfirmed"];
 export function validateCustomerValues(input: unknown, kind: "customer" | "contract"): CustomerValues {
-  if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("입력 내용을 확인해 주세요.");
+  if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("입력 내용을 확인해 주세요");
   const source = input as Record<string, unknown>, values: CustomerValues = {};
   for (const field of kind === "customer" ? customerFields : contractFields) {
     if (source[field] === undefined) continue;
-    if (typeof source[field] !== "string" || source[field].length > (field === "vehicles" || field === "consultations" || field === "checklist" || field === "disclosure" ? 200000 : field === "memo" ? 6000 : 300)) throw new Error("입력 내용이 너무 길거나 올바르지 않습니다.");
+    if (typeof source[field] !== "string" || source[field].length > (field === "vehicles" || field === "consultations" || field === "checklist" || field === "disclosure" ? 200000 : field === "memo" ? 6000 : 300)) throw new Error("입력 내용이 너무 길거나 올바르지 않습니다");
     values[field] = source[field].trim();
   }
   const name = kind === "customer" ? "name" : "owner", birth = kind === "customer" ? "birth" : "ownerBirth";
-  if (!values[name] || !(kind === "customer" ? /^\d{6}-[1-8]$/ : /^\d{6}$/).test(values[birth] || "")) throw new Error(kind === "customer" ? "이름과 생년월일 7자리를 확인해 주세요." : "계약자 이름과 생년월일 6자리를 확인해 주세요.");
+  if (!values[name] || !(kind === "customer" ? /^\d{6}-[1-8]$/ : /^\d{6}$/).test(values[birth] || "")) throw new Error(kind === "customer" ? "이름과 생년월일 7자리를 확인해 주세요" : "계약자 이름과 생년월일 6자리를 확인해 주세요");
   for (const field of ["birth", "accountBirth", "ownerBirth", "insuredBirth"]) {
-    if (values[field] && !(field === "birth" ? /^\d{6}-[1-8]$/ : /^\d{6}$/).test(values[field])) throw new Error(field === "birth" ? "고객 생년월일은 7자리로 입력해 주세요." : "생년월일은 6자리로 입력해 주세요.");
+    if (values[field] && !(field === "birth" ? /^\d{6}-[1-8]$/ : /^\d{6}$/).test(values[field])) throw new Error(field === "birth" ? "고객 생년월일은 7자리로 입력해 주세요" : "생년월일은 6자리로 입력해 주세요");
   }
   if (values.vehicles !== undefined) {
-    try { values.vehicles = JSON.stringify(parseCustomerVehicles(values.vehicles)); } catch { throw new Error("차량정보를 확인해 주세요."); }
+    try { values.vehicles = JSON.stringify(parseCustomerVehicles(values.vehicles)); } catch { throw new Error("차량정보를 확인해 주세요"); }
   }
   if(values.disclosure !== undefined) {
-    try {values.disclosure=serializeDisclosure(parseDisclosure(values.disclosure),disclosureMemo(values.disclosure),parseMedicalHistories(values.disclosure));}catch{throw new Error("알릴의무 내용을 확인해 주세요.");}
+    try {values.disclosure=serializeDisclosure(parseDisclosure(values.disclosure),disclosureMemo(values.disclosure),parseMedicalHistories(values.disclosure));}catch{throw new Error("알릴의무 내용을 확인해 주세요");}
   }
   if(values.consultations!==undefined){
-    try{values.consultations=serializeConsultations(parseConsultations(values.consultations),parseConsultationRecords(values.consultations));}catch{throw new Error("상담일지의 날짜·시간·내용을 확인해 주세요.");}
+    try{values.consultations=serializeConsultations(parseConsultations(values.consultations),parseConsultationRecords(values.consultations));}catch{throw new Error("상담일지의 날짜·시간·내용을 확인해 주세요");}
   }
   if(values.checklist!==undefined){
-    try{values.checklist=serializeCustomerChecklist(parseCustomerChecklist(values.checklist),parseCustomerSchedules(values.checklist));}catch{throw new Error("체크리스트의 예정일과 내용을 확인해 주세요.");}
+    try{values.checklist=serializeCustomerChecklist(parseCustomerChecklist(values.checklist),parseCustomerSchedules(values.checklist));}catch{throw new Error("체크리스트의 예정일과 내용을 확인해 주세요");}
   }
-  if (values.consentConfirmed !== "true") throw new Error("개인정보 수집·이용 확인을 체크해 주세요.");
+  if (values.consentConfirmed !== "true") throw new Error("개인정보 수집·이용 확인을 체크해 주세요");
   return values;
 }

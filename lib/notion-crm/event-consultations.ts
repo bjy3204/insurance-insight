@@ -11,7 +11,7 @@ export function consultationEventNotes(customer:CrmRow,event:CrmRow,remove=false
  if(remove||!selected||event.values['분류']!=='상담')return serializeConsultations(entries,others);
  const fields=eventCalendarFields(event.values),existing=records.find(record=>record.eventId===eventId);
  const record={...(existing||emptyConsultationRecord()),eventId,date:fields.date,content:fields.content,memo:fields.memo,nextContact:String(event.values['다음 연락일']||''),status:event.values['완료']?'완료':existing?.status||'상담 중'};
- if(record.content.length>2000||record.memo.length>2000)throw Error('상담내용과 메모는 각각 2,000자 이내로 입력해 주세요.');
- if(others.length>=200)throw Error('고객 상담일지 표는 최대 200행입니다.');
+ if(record.content.length>2000||record.memo.length>2000)throw Error('상담내용과 메모는 각각 2,000자 이내로 입력해 주세요');
+ if(others.length>=200)throw Error('고객 상담일지 표는 최대 200행입니다');
  return serializeConsultations(entries,[...others,record]);
 }

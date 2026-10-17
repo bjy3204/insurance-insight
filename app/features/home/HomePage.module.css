@@ -32,17 +32,17 @@
   .headerActions { display: flex; align-items: center; gap: 15px; margin-left: auto; }
   .headerMember { position: relative; }
   button.nickname { display: flex; align-items: center; gap: 8px; background: #f0f6ff; border: 1px solid #e3edfc; border-radius: 999px; padding: 7px 13px; color: #195DFF; font-weight: 700; font-size: 14px; max-width: 210px; margin-right: 16px; cursor: default; transition: transform .2s ease, box-shadow .2s ease; }
-  button.nickname:hover { transform: translateY(-2px); box-shadow: 0 4px 10px #24517a15; }
+  button.nickname:is(:hover,:focus-visible) { transform: translateY(-2px); box-shadow: 0 4px 10px #24517a15; }
   .headerActions button.nickname { cursor: default; }
   .nickname > div > span:first-child { padding: 0; height: auto; background: transparent; border: 0; font-size: 14px; color: inherit; transform: none; box-shadow: none; }
   .headerIcon { width: 40px; height: 40px; display: grid; place-items: center; position: relative; color: #52618b; border-radius: 10px; }
-  .headerIcon:hover { background: #f0f6ff; }
+  .headerIcon:is(:hover,:focus-visible) { background: #f0f6ff; }
   .headerIcon svg { width: 24px; height: 24px; }
   .headerIcon i { position: absolute; background: #ff254b; width: 8px; height: 8px; border-radius: 50%; top: 4px; right: 5px; }
   .headerDropdown { position: absolute; top: calc(100% + 12px); right: 0; width: 170px; background: white; border: 1px solid #e5ebf4; border-radius: 14px; box-shadow: 0 8px 24px #182b4820; overflow: hidden; z-index: 1000; }
   .headerDropdown button { display: block; width: 100%; padding: 13px 16px; font-size: 14px; font-weight: 600; text-align: center; color: #33405d; }
   .headerDropdown button + button { border-top: 1px solid #edf1f7; }
-  .headerDropdown button:hover { background: #f2f7ff; }
+  .headerDropdown button:is(:hover,:focus-visible) { background: #f2f7ff; }
   .headerAuth > div { display: flex; gap: 10px; }
   .headerAuth button { width: auto; min-width: 82px; padding: 9px 16px; border: 1px solid #cedaeb; border-radius: 9px; color: #195DFF; font-size: 14px; }
   .headerAuth button + button { background: #195DFF; color: white; border-color: #195DFF; }
@@ -63,7 +63,7 @@
   .quickMenuCard [data-pc-quick-menu] button { height: 51px; min-height: 50px; padding: 14px; font-size: 15px; line-height: 22px; font-weight: 600; }
   button.quickMenuTrigger { min-height: 64px; height: 100%; gap: 14px; font-size: 16px; font-weight: 400; border-radius: 24px; background: white; border-color: #eef2f7; color: #526a99; box-shadow: 0 2px 8px #24517a05; }
   .quickMenuTrigger > svg { flex-shrink: 0; }
-  button.quickMenuTrigger:hover { box-shadow: 0 6px 16px #24517a12; }
+  button.quickMenuTrigger:is(:hover,:focus-visible) { box-shadow: 0 6px 16px #24517a12; }
   button.quickMenuTrigger[aria-expanded="true"] { background: #195DFF; border-color: #195DFF; color: white; }
   .installOverlay { position: fixed; inset: 0; z-index: 9999; background: #0005; display: grid; place-items: center; padding: 24px; }
   .installOverlay > div { position: relative; background: white; border-radius: 18px; width: 380px; padding: 26px; font-size: 14px; }
@@ -85,7 +85,7 @@
 .menuSortDialog :global([data-card-highlight="true"]) { display:flex; flex-direction:column; justify-content:center; }
 
 button.quickMenuEdge {height:36px;padding:0 12px;border-radius:10px 0 0 10px;border-right:0;transform:none;background:#f8fafc;color:#334155;border-color:#dbe3ef;font-size:13px;font-weight:600;gap:6px;justify-content:flex-start;text-align:left;}
-button.quickMenuEdge:hover {background:#eff6ff;transform:none;}
+button.quickMenuEdge:is(:hover,:focus-visible) {background:#eff6ff;transform:none;}
 button.quickMenuEdge svg {color:#64748b;}
 
 .quickMenuFloating[data-quick-edge="left"] button.quickMenuEdge {border-radius:0 10px 10px 0;border-left:0;border-right:1px solid #dbe3ef;}
@@ -107,7 +107,7 @@ button.quickMenuEdge svg {color:#64748b;}
 
 .quickMenuFloating[data-quick-edge] [data-pc-quick-menu] {background:#fff;border-color:#dbe3ef;box-shadow:0 2px 8px #0f172a08;}
 .quickMenuFloating[data-quick-edge] [data-pc-quick-menu] button {height:36px;min-height:36px;padding:0 10px;font-size:12px;font-weight:600;line-height:18px;display:flex;align-items:center;justify-content:center;border-color:#e8edf4;}
-.quickMenuFloating[data-quick-edge] [data-pc-quick-menu] button:hover {background:#edf3fb;}
+.quickMenuFloating[data-quick-edge] [data-pc-quick-menu] button:is(:hover,:focus-visible) {background:#edf3fb;}
 .quickMenuFloating[data-quick-edge] [data-pc-quick-menu] > div:first-child {border-top:0;}
 
 .quickMenuFloating[data-quick-edge="right"] {right:calc(100% - 100vw) !important;}

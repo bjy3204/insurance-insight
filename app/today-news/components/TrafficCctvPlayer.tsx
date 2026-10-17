@@ -27,22 +27,22 @@ export default function TrafficCctvPlayer({ camera, onClose, onPrevious, onNext 
     } else {
       import('hls.js').then(({default:Hls})=>{
         if(cancelled) return;
-        if(!Hls.isSupported()) {setError('이 브라우저에서는 CCTV 영상을 재생할 수 없습니다.');return;}
+        if(!Hls.isSupported()) {setError('이 브라우저에서는 CCTV 영상을 재생할 수 없습니다');return;}
         const hls=new Hls({maxBufferLength:10});
         destroy=()=>hls.destroy();
-        hls.on(Hls.Events.ERROR,(_,data)=>{if(data.fatal&&!cancelled)setError('영상 연결이 원활하지 않습니다. 다른 CCTV를 선택해 주세요.');});
+        hls.on(Hls.Events.ERROR,(_,data)=>{if(data.fatal&&!cancelled)setError('영상 연결이 원활하지 않습니다 다른 CCTV를 선택해 주세요');});
         hls.loadSource(camera.url);
         hls.attachMedia(element);
         hls.on(Hls.Events.MANIFEST_PARSED,()=>{void element.play().catch(()=>{});});
-      }).catch(()=>{if(!cancelled)setError('영상 플레이어를 불러오지 못했습니다.');});
+      }).catch(()=>{if(!cancelled)setError('영상 플레이어를 불러오지 못했습니다');});
     }
     return ()=>{cancelled=true;destroy?.();element.pause();element.removeAttribute('src');element.load();};
   },[camera.id,camera.url]);
   return <div className={styles.cctvPopup} role="dialog" aria-label={`${camera.name} CCTV`}>
     <div className={styles.cctvHeader}><strong>{camera.name}</strong><button data-icon-only="true" ref={closeButton} type="button" onClick={onClose} aria-label="CCTV 닫기"><X size={18}/></button></div>
     <span className={styles.live}>● LIVE</span>
-    <video ref={video} controls autoPlay muted playsInline onError={()=>setError('영상을 불러오지 못했습니다. 다른 CCTV를 선택해 주세요.')} aria-label={`${camera.name} 실시간 영상`}/>
+    <video ref={video} controls autoPlay muted playsInline onError={()=>setError('영상을 불러오지 못했습니다 다른 CCTV를 선택해 주세요')} aria-label={`${camera.name} 실시간 영상`}/>
     {error&&<p role="status">{error}</p>}
-    <div className={styles.cctvFooter}><span>국가교통정보센터 제공<br/>실제 상황과 영상에 시간 차이가 있을 수 있습니다.</span><div><button data-icon-only="true" type="button" onClick={onPrevious} aria-label="이전 CCTV"><ChevronLeft size={18}/></button><button data-icon-only="true" type="button" onClick={onNext} aria-label="다음 CCTV"><ChevronRight size={18}/></button></div></div>
+    <div className={styles.cctvFooter}><span>국가교통정보센터 제공<br/>실제 상황과 영상에 시간 차이가 있을 수 있습니다</span><div><button data-icon-only="true" type="button" onClick={onPrevious} aria-label="이전 CCTV"><ChevronLeft size={18}/></button><button data-icon-only="true" type="button" onClick={onNext} aria-label="다음 CCTV"><ChevronRight size={18}/></button></div></div>
   </div>;
 }

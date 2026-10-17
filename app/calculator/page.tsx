@@ -1799,7 +1799,7 @@ const pagedMemos = filteredMemos.slice(
           </div>
 
           <p data-calculator-note="true" className="text-xs opacity-80 mt-4 leading-relaxed">
-            실제 보험금은 가입시기, 특약, 병원급, 한도, 약관에 따라 달라질 수 있습니다.
+            실제 보험금은 가입시기, 특약, 병원급, 한도, 약관에 따라 달라질 수 있습니다
           </p>
         </div>
       </CalculatorPageLayout>

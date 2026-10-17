@@ -113,7 +113,7 @@ export default function Calendar({
     userId: authUser?.id || null,
     approved: authStatus === "approved",
     loading: authLoading,
-    error: !authLoading && authUser && !authStatus ? "회원 상태를 확인하지 못했습니다. 새로고침해 주세요." : undefined,
+    error: !authLoading && authUser && !authStatus ? "회원 상태를 확인하지 못했습니다 새로고침해 주세요" : undefined,
   };
   const owner = account.loading
     ? "loading"
@@ -137,7 +137,7 @@ export default function Calendar({
   if (account.error || (account.approved && !account.userId))
     return (
       <div role="alert" className="p-6 text-center">
-        {account.error || "회원 정보를 확인하지 못했습니다."}
+        {account.error || "회원 정보를 확인하지 못했습니다"}
       </div>
     );
   return mode === "compact" ? (
@@ -195,8 +195,8 @@ function useCalendarData(identity: Identity) {
       if (active.current && token === generation.current)
         setError(
           cloud
-            ? "계정 캘린더를 불러오지 못했습니다. 다시 시도해 주세요."
-            : "브라우저 캘린더를 읽지 못했습니다. 저장 설정을 확인해 주세요.",
+            ? "계정 캘린더를 불러오지 못했습니다 다시 시도해 주세요"
+            : "브라우저 캘린더를 읽지 못했습니다 저장 설정을 확인해 주세요",
         );
     }
   }, [cloud, userId]);
@@ -266,7 +266,7 @@ function useCalendarData(identity: Identity) {
   }, [cloud, userId, reload]);
   const write = async (operation: () => Promise<void>) => {
     if (!active.current || !ready || busy.current)
-      throw Error("캘린더를 불러온 후 다시 시도해 주세요.");
+      throw Error("캘린더를 불러온 후 다시 시도해 주세요");
     busy.current = true;
     setSaving(true);
     try {
@@ -278,8 +278,8 @@ function useCalendarData(identity: Identity) {
     } catch {
       throw Error(
         cloud
-          ? "계정에 저장하지 못했습니다. 로컬에는 저장하지 않았습니다. 다시 시도해 주세요."
-          : "브라우저에 저장하지 못했습니다. 저장 공간과 설정을 확인해 주세요.",
+          ? "계정에 저장하지 못했습니다 로컬에는 저장하지 않았습니다 다시 시도해 주세요"
+          : "브라우저에 저장하지 못했습니다 저장 공간과 설정을 확인해 주세요",
       );
     } finally {
       busy.current = false;
@@ -295,7 +295,7 @@ function useCalendarData(identity: Identity) {
         dateKey(new Date(`${event.date}T12:00:00`)) !== event.date
       )
         throw Error("Invalid event");
-      if(crm){const row=id?.startsWith('crm:')?crm.data.events.find(item=>'crm:'+item.id===id):id?crm.accountEvents.find(item=>item.id==='calendar:'+id):undefined;if(id&&!row)throw Error('일정을 찾을 수 없습니다.');await crm.saveEvent(row,{'제목':event.title,'일정':event.date+(event.time?'T'+event.time+':00+09:00':''),'장소':event.place,'상담내용':event.content,'메모':event.memo,'분류':event.category||'개인','고객':event.customerId?[event.customerId]:[]});return;}
+      if(crm){const row=id?.startsWith('crm:')?crm.data.events.find(item=>'crm:'+item.id===id):id?crm.accountEvents.find(item=>item.id==='calendar:'+id):undefined;if(id&&!row)throw Error('일정을 찾을 수 없습니다');await crm.saveEvent(row,{'제목':event.title,'일정':event.date+(event.time?'T'+event.time+':00+09:00':''),'장소':event.place,'상담내용':event.content,'메모':event.memo,'분류':event.category||'개인','고객':event.customerId?[event.customerId]:[]});return;}
       const {customerId:_customerId,...nativeFields}=event;
       const fields = {
         ...nativeFields,
@@ -326,7 +326,7 @@ function useCalendarData(identity: Identity) {
     });
   const deleteEvent = (id: string) =>
     write(async () => {
-      if(crm){const row=id.startsWith('crm:')?crm.data.events.find(item=>'crm:'+item.id===id):crm.accountEvents.find(item=>item.id==='calendar:'+id);if(!row)throw Error('일정을 찾을 수 없습니다.');await crm.deleteEvent(row);return;}
+      if(crm){const row=id.startsWith('crm:')?crm.data.events.find(item=>'crm:'+item.id===id):crm.accountEvents.find(item=>item.id==='calendar:'+id);if(!row)throw Error('일정을 찾을 수 없습니다');await crm.deleteEvent(row);return;}
       if (cloud) {
         const result = await supabase
           .from("calendar_events")
@@ -518,7 +518,7 @@ function FullCalendar({ identity, beforeChecklist, active, sticker=false }: { id
   };
 
   const report = (failure: unknown) =>
-    alert(failure instanceof Error ? failure.message : "저장하지 못했습니다.");
+    alert(failure instanceof Error ? failure.message : "저장하지 못했습니다");
   const handleAddEvent = async () => {
     if (!formData.title.trim() || !formData.date) {
       alert("제목과 날짜를 입력해주세요");
@@ -1049,7 +1049,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
   const save = async (remove = false) => {
     if (!draft || saving || !ready) return;
     if (!remove && (!draft.title.trim() || !draft.date)) {
-      setFormError("일정 제목과 날짜를 입력해 주세요.");
+      setFormError("일정 제목과 날짜를 입력해 주세요");
       return;
     }
     setSaving(true);
@@ -1068,7 +1068,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
       }
     } catch (failure) {
       setFormError(
-        failure instanceof Error ? failure.message : "저장하지 못했습니다.",
+        failure instanceof Error ? failure.message : "저장하지 못했습니다",
       );
     } finally {
       setSaving(false);
@@ -1180,7 +1180,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
                 </div>
               ))
             ) : (
-              <p className={styles.empty}>일정이 없습니다.</p>
+              <p className={styles.empty}>일정이 없습니다</p>
             )}
           </div>
         </>

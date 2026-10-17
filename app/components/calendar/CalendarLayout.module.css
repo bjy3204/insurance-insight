@@ -25,7 +25,7 @@
 .scheduleTitle { font-weight:400; min-width:0; overflow:hidden; text-overflow:clip; flex:1; white-space:pre; }.scheduleLine > span:not(:first-child) { color:#718096; font-size:14px; }.schedulePlace { max-width:30%; overflow:hidden; text-overflow:ellipsis; }
 .scheduleActions { display:flex; align-items:center; gap:4px; flex-shrink:0; margin-left:10px; }
 .scheduleActions button { display:grid; place-items:center; width:25px; height:26px; padding:0; border:0; border-radius:5px; color:#93a0b2; background:transparent; cursor:pointer; }
-.scheduleActions button:hover { color:#195DFF; background:#eff6ff; }.scheduleActions button:last-child:hover { color:#ef4444; background:#fff1f2; }.scheduleActions button:disabled { opacity:.4; cursor:default; }
+.scheduleActions button:is(:hover,:focus-visible) { color:#195DFF; background:#eff6ff; }.scheduleActions button:last-child:is(:hover,:focus-visible) { color:#ef4444; background:#fff1f2; }.scheduleActions button:disabled { opacity:.4; cursor:default; }
 .scheduleRow { transition:background-color .15s,border-color .15s; }
 .scheduleRow{box-sizing:border-box;height:44px;min-height:44px;padding:0 12px!important}
 .scheduleRow:hover { background:#f0f6ff; border-color:#c9dbfa; }

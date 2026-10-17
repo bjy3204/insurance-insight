@@ -1,0 +1,3 @@
+export default function CoveragePremiumSummary({monthly}:{monthly:number}){
+ return <div className="cr-premium-summary"><svg viewBox="0 0 120 64" width="110" height="64" aria-hidden="true"><path d="M18 48h85" stroke="#cbd5e1" strokeWidth="2"/><rect x="25" y="29" width="10" height="19" rx="2" fill="#74cad1"/><rect x="43" y="19" width="10" height="29" rx="2" fill="#f6bd4b"/><rect x="61" y="32" width="10" height="16" rx="2" fill="#f39373"/><rect x="79" y="10" width="10" height="38" rx="2" fill="#7bafdb"/><path d="m22 22 24-12 21 7 24-14" stroke="#6eae91" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg><span>월 보험료 합계</span><strong>{monthly.toLocaleString('ko-KR')}원</strong></div>;
+}

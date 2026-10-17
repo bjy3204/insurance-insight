@@ -115,7 +115,7 @@ const [kospi, kosdaq, gold, silver] = await Promise.all([
 
     return NextResponse.json(
       {
-        error: "시장지표를 불러오지 못했습니다.",
+        error: "시장지표를 불러오지 못했습니다",
         items: [],
       },
       { status: 500 }

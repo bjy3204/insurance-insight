@@ -4,7 +4,7 @@ import { logTrafficFailure } from '@/lib/traffic-server-log';
 
 export async function GET() {
   const key = process.env.ITS_API_KEY?.trim();
-  if (!key) return NextResponse.json({ error: '교통정보 서버 설정이 필요합니다.' }, { status: 503 });
+  if (!key) return NextResponse.json({ error: '교통정보 서버 설정이 필요합니다' }, { status: 503 });
   const url = new URL('https://openapi.its.go.kr:9443/eventInfo');
   url.search = new URLSearchParams({ apiKey: key, type: 'ex', eventType: 'all', getType: 'json' }).toString();
   try {
@@ -15,6 +15,6 @@ export async function GET() {
   } catch (failure) {
     logTrafficFailure('events', failure);
     // Do not log the upstream URL: it contains the server API key.
-    return NextResponse.json({ error: '교통정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 502 });
+    return NextResponse.json({ error: '교통정보를 불러오지 못했습니다 잠시 후 다시 시도해 주세요' }, { status: 502 });
   }
 }

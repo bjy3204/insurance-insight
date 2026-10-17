@@ -22,7 +22,7 @@ export default function CustomerDisclosure({ customer, onSave }: { customer?:Cus
     if(!customer||!onSave||saving)return;
     setSaving(true);setError("");
     try {const raw=serializeDisclosure(rows,memo,histories);const value=serializeDisclosure(parseDisclosure(raw),memo,parseMedicalHistories(raw));await onSave(customer,value);setBaseline(value);}
-    catch(error){setError(error instanceof Error?error.message:"저장하지 못했습니다.");}
+    catch(error){setError(error instanceof Error?error.message:"저장하지 못했습니다");}
     finally{setSaving(false);}
   };
   useCustomerAutosave(serializeDisclosure(rows,memo,histories),baseline,!!customer&&!!onSave&&!saving,save);

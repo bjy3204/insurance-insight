@@ -1,5 +1,5 @@
 .sticker{position:fixed;z-index:1400;display:flex;flex-direction:column;box-sizing:border-box;overflow:hidden;border:1px solid #dce4ef;border-radius:16px;background:#fff;box-shadow:0 8px 30px #24395720;color:#284261}
-.header{display:flex;align-items:center;gap:8px;flex:0 0 48px;padding:0 8px 0 14px;border-bottom:1px solid #e5ebf4;cursor:move;touch-action:none;user-select:none}.header>svg{color:#195dff;flex-shrink:0}.header h2{flex:1;margin:0;font-size:14px;font-weight:700}.header button{display:grid;place-items:center;width:32px;height:36px;flex-shrink:0;padding:0;border:0;background:transparent;color:#94a3b8;cursor:pointer}.header button:hover{color:#195dff}
+.header{display:flex;align-items:center;gap:8px;flex:0 0 48px;padding:0 8px 0 14px;border-bottom:1px solid #e5ebf4;cursor:move;touch-action:none;user-select:none}.header>svg{color:#195dff;flex-shrink:0}.header h2{flex:1;margin:0;font-size:14px;font-weight:700}.header button{display:grid;place-items:center;width:32px;height:36px;flex-shrink:0;padding:0;border:0;background:transparent;color:#94a3b8;cursor:pointer}.header button:is(:hover,:focus-visible){color:#195dff}
 .content{flex:1;min-height:0;overflow:auto;padding:12px 12px 20px;scrollbar-width:none}.content::-webkit-scrollbar{display:none}.loading{padding:24px;font-size:13px;color:#8191a7;text-align:center}
 .resize{position:absolute;right:2px;bottom:2px;display:grid;place-items:center;width:20px;height:20px;padding:0;border:0;background:transparent;color:#94a3b8;cursor:se-resize;touch-action:none}
 .edge{position:fixed;z-index:1400;display:grid;place-items:center;width:36px;height:44px;padding:0;border:1px solid #dce4ef;background:#fff;color:#195dff;box-shadow:0 3px 12px #24395718;cursor:pointer}.left{left:0;border-radius:0 12px 12px 0}.right{right:0;border-radius:12px 0 0 12px}.sticker button:focus-visible,.edge:focus-visible{outline:2px solid #195dff;outline-offset:-2px}
@@ -12,7 +12,7 @@
 
 .header{border-bottom:0}
 
-.header button{background:transparent!important;color:#94a3b8!important}.header button:is(:hover,:active,:focus-visible),.header button:is(:hover,:active,:focus-visible) svg{background:transparent!important;color:#52618b!important}
+.header button{background:transparent!important;color:#94a3b8!important}.header button:is(:is(:hover,:focus-visible),:active,:focus-visible),.header button:is(:is(:hover,:focus-visible),:active,:focus-visible) svg{background:transparent!important;color:#52618b!important}
 
 .header{flex-basis:40px;padding-top:12px;box-sizing:content-box;align-items:flex-start}.header button{position:relative;z-index:2}.content{padding-top:8px}
 

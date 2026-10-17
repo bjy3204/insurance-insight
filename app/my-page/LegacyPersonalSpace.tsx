@@ -242,7 +242,7 @@ export default function PersonalSpacePage() {
     void controller.openCmPinPopup();
   }, [authLoading, authUser, authStatus, unlocked, controller]);
   if (authLoading) return null;
-  if (authUser && authStatus === "approved" && !unlocked) return <main className="flex min-h-screen items-center justify-center bg-gray-50 p-4"><div className="text-center"><p className="mb-4 text-sm text-gray-600">개인공간 비밀번호를 입력해 주세요.</p><button type="button" onClick={() => void controller.openCmPinPopup()} className="cursor-pointer rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">비밀번호 입력</button></div></main>;
+  if (authUser && authStatus === "approved" && !unlocked) return <main className="flex min-h-screen items-center justify-center bg-gray-50 p-4"><div className="text-center"><p className="mb-4 text-sm text-gray-600">개인공간 비밀번호를 입력해 주세요</p><button type="button" onClick={() => void controller.openCmPinPopup()} className="cursor-pointer rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">비밀번호 입력</button></div></main>;
   return <CustomerManagePage />;
 }
 
@@ -417,7 +417,7 @@ useEffect(() => {
       if (error) throw error;
     } catch {
       applyPersonalMenuOrder(previous);
-      setMenuSaveError("순서를 저장하지 못했습니다. 다시 시도해 주세요.");
+      setMenuSaveError("순서를 저장하지 못했습니다 다시 시도해 주세요");
     } finally {
       menuSavingRef.current = false;
       setMenuSaving(false);
@@ -553,12 +553,12 @@ if (!data) return;
 
     if (settingForm.new_pin) {
       if (settingForm.new_pin.length !== 4) {
-        setSettingMsg("새 PIN은 4자리여야 합니다.");
+        setSettingMsg("새 PIN은 4자리여야 합니다");
         setSettingSaving(false);
         return;
       }
       if (settingForm.new_pin !== settingForm.confirm_pin) {
-        setSettingMsg("새 PIN이 일치하지 않습니다.");
+        setSettingMsg("새 PIN이 일치하지 않습니다");
         setSettingSaving(false);
         return;
       }
@@ -575,7 +575,7 @@ updateData.pin_changed_at = new Date().toISOString();
     if (error) {
       setSettingMsg("저장 실패: " + error.message);
     } else {
-      setSettingMsg("저장되었습니다.");
+      setSettingMsg("저장되었습니다");
       setSettings((prev) => (prev ? { ...prev, ...updateData } : null));
       setSettingForm((f) => ({ ...f, new_pin: "", confirm_pin: "" }));
       setTimeout(() => setSettingMsg(""), 2000);
@@ -681,7 +681,7 @@ updateData.pin_changed_at = new Date().toISOString();
         { user_id: authUser.id, customer_url: url },
         { onConflict: "user_id" }
       );
-      if (error) throw new Error("시트 연결 정보를 저장하지 못했습니다. 다시 시도해 주세요.");
+      if (error) throw new Error("시트 연결 정보를 저장하지 못했습니다 다시 시도해 주세요");
       setSettings((prev) => prev ? { ...prev, customer_url: url } : null);
     }}
   />
@@ -700,7 +700,7 @@ updateData.pin_changed_at = new Date().toISOString();
              <section className="space-y-4">
               <AccountPinCheck controller={accountController} divider={false}/>
               <div className="pt-3">
-                <label className="text-xs text-gray-500 font-semibold mb-1 block">개인공간 PIN 변경 (4자리)</label>
+                <label data-field-caption="true" className="text-xs text-gray-500 font-semibold mb-1 block">개인공간 PIN 변경 (4자리)</label>
                 <div className="relative">
                   <ClearableSearchInput onClear={() => setSettingForm((f) => ({ ...f, new_pin: "".replace(/\D/g, "").slice(0, 4) }))} data-ui-field="true"
                     type={showNewPin ? "text" : "password"}

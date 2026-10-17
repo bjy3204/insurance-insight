@@ -20,4 +20,4 @@ export type CrmRow={id:string;created?:string;updated?:string;edited:string;valu
 export type CrmData=Record<Source,CrmRow[]>;
 export const emptyData=():CrmData=>({customers:[],contracts:[],cars:[],cards:[],events:[]});
 export function isSource(value:unknown):value is Source{return typeof value==="string"&&Object.hasOwn(sourceNames,value);}
-export function notionId(value:string){const match=value.match(/(?:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}|[a-f0-9]{32})(?=[?/#]|$)/i);if(!match)throw Error("노션 페이지 링크를 확인해 주세요.");return match[0].replace(/-/g,"");}
+export function notionId(value:string){const match=value.match(/(?:[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}|[a-f0-9]{32})(?=[?/#]|$)/i);if(!match)throw Error("노션 페이지 링크를 확인해 주세요");return match[0].replace(/-/g,"");}

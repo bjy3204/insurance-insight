@@ -10,10 +10,10 @@ export type CustomerChecklist = Record<(typeof CUSTOMER_CHECKLIST_ITEMS)[number]
 export const emptyCustomerChecklist = ():CustomerChecklist=>({ta:false,consultation:false,analysis:false,policy:false,referral:false,contact:false});
 export function parseCustomerChecklist(serialized:string):CustomerChecklist {
   const value=JSON.parse(serialized),checked=emptyCustomerChecklist();
-  if(value?.version!==1||!value.checked||typeof value.checked!=="object"||Array.isArray(value.checked))throw new Error("체크리스트를 확인해 주세요.");
+  if(value?.version!==1||!value.checked||typeof value.checked!=="object"||Array.isArray(value.checked))throw new Error("체크리스트를 확인해 주세요");
   for(const [id,state] of Object.entries(value.checked)){
     if((id==="renewal"||id==="anniversary")&&typeof state==="boolean")continue;
-    if(!CUSTOMER_CHECKLIST_ITEMS.some(item=>item.id===id)||typeof state!=="boolean")throw new Error("체크리스트를 확인해 주세요.");
+    if(!CUSTOMER_CHECKLIST_ITEMS.some(item=>item.id===id)||typeof state!=="boolean")throw new Error("체크리스트를 확인해 주세요");
     checked[id as keyof CustomerChecklist]=state;
   }
   return checked;
@@ -24,12 +24,12 @@ export function parseCustomerSchedules(serialized?:string):CustomerSchedule[]{
   if(!serialized)return emptyCustomerSchedules();
   const value=JSON.parse(serialized);
   if(value.schedules===undefined)return emptyCustomerSchedules();
-  if(!Array.isArray(value.schedules)||value.schedules.length>100)throw new Error("관리 일정을 확인해 주세요.");
+  if(!Array.isArray(value.schedules)||value.schedules.length>100)throw new Error("관리 일정을 확인해 주세요");
   const ids=new Set<string>();
   return value.schedules.map((row:CustomerSchedule)=>{
-    if(!row||typeof row.id!=="string"||!row.id||row.id.length>100||ids.has(row.id)||typeof row.label!=="string"||row.label.length>300||typeof row.memo!=="string"||row.memo.length>2000||typeof row.done!=="boolean"||typeof row.date!=="string")throw new Error("관리 일정을 확인해 주세요.");
-    if(row.date&&(!/^\d{4}-\d{2}-\d{2}$/.test(row.date)||!Number.isFinite(Date.parse(row.date))||new Date(row.date).toISOString().slice(0,10)!==row.date))throw new Error("예정일을 확인해 주세요.");
-    if(row.annualMonthDay!==undefined&&(typeof row.annualMonthDay!=="string"||row.annualMonthDay!==""&&(!/^\d{2}-\d{2}$/.test(row.annualMonthDay)||!Number.isFinite(Date.parse(`2000-${row.annualMonthDay}`))||new Date(`2000-${row.annualMonthDay}`).toISOString().slice(5,10)!==row.annualMonthDay)))throw new Error("생일을 확인해 주세요.");
+    if(!row||typeof row.id!=="string"||!row.id||row.id.length>100||ids.has(row.id)||typeof row.label!=="string"||row.label.length>300||typeof row.memo!=="string"||row.memo.length>2000||typeof row.done!=="boolean"||typeof row.date!=="string")throw new Error("관리 일정을 확인해 주세요");
+    if(row.date&&(!/^\d{4}-\d{2}-\d{2}$/.test(row.date)||!Number.isFinite(Date.parse(row.date))||new Date(row.date).toISOString().slice(0,10)!==row.date))throw new Error("예정일을 확인해 주세요");
+    if(row.annualMonthDay!==undefined&&(typeof row.annualMonthDay!=="string"||row.annualMonthDay!==""&&(!/^\d{2}-\d{2}$/.test(row.annualMonthDay)||!Number.isFinite(Date.parse(`2000-${row.annualMonthDay}`))||new Date(`2000-${row.annualMonthDay}`).toISOString().slice(5,10)!==row.annualMonthDay)))throw new Error("생일을 확인해 주세요");
     ids.add(row.id);return {id:row.id,label:emptyCustomerSchedules().find(item=>item.id===row.id)?.label||row.label,date:row.date,memo:row.memo,done:row.done,...(row.annualMonthDay!==undefined?{annualMonthDay:row.annualMonthDay}:{})};
   });
 }

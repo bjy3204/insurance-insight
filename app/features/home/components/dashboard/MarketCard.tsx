@@ -70,6 +70,6 @@ export default function MarketCard() {
       <span>{timestamp ? `${new Date(timestamp).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Seoul" })} 조회 · 네이버 증권` : "지표 확인 중"}</span>
     </div></div>
     <div className={styles.marketGrid}>{slots.map(slot => { const item = items.find(i => i.label === slot.key); return <MarketTile key={`${slot.key}:${item?.change}:${item?.direction}`} slot={slot} item={item} />; })}</div>
-    {failed && <span className={styles.visuallyHidden} role="status">일부 지표를 불러오지 못했습니다.</span>}
+    {failed && <span className={styles.visuallyHidden} role="status">일부 지표를 불러오지 못했습니다</span>}
   </article>;
 }

@@ -22,7 +22,7 @@
 .subTabs small { display:block; font-size:12px; margin-top:3px; }
 .sidebar .subTabs .activePeriod { background:#edf4ff; color:#195DFF; font-weight:600; }
 .sidebar button { text-align:left; font-size:15px; font-weight:600; padding:13px 16px; border-radius:9px; color:#52618b; }
-.sidebar button:hover { background:#f0f4fa; }
+.sidebar button:is(:hover,:focus-visible) { background:#f0f4fa; }
 .sidebar .activeGeneration { background:#e2edff; color:#355786; }
 .sidebar .activeGeneration[data-generation="2"] { background:#e9e3f8; color:#635382; }
 .sidebar .activeGeneration[data-generation="3"] { background:#ddf1eb; color:#3b7165; }

@@ -35,20 +35,20 @@ export function saveLocalEvents(events: CalendarEvent[]) {
 export async function loadReminders(userId: string | null): Promise<CalendarReminder[]> {
   if (!userId) return readLocalReminders();
   const { data, error } = await supabase.from("calendar_reminders").select("event_id,user_id,lead_days,notification_date,acknowledged_at").eq("user_id", userId);
-  if (error) throw new Error("계정 알림을 불러오지 못했습니다. 알림 SQL 적용 여부와 연결 상태를 확인해 주세요.");
+  if (error) throw new Error("계정 알림을 불러오지 못했습니다 알림 SQL 적용 여부와 연결 상태를 확인해 주세요");
   return data || [];
 }
 export async function saveReminder(reminder: CalendarReminder, userId: string | null) {
   if (userId) {
     const { error } = await supabase.from("calendar_reminders").upsert({ ...reminder, user_id: userId }, { onConflict: "event_id" });
-    if (error) throw new Error("계정에 알림을 저장하지 못했습니다. 알림 SQL 적용 여부를 확인해 주세요. 로컬에는 저장하지 않았습니다.");
+    if (error) throw new Error("계정에 알림을 저장하지 못했습니다 알림 SQL 적용 여부를 확인해 주세요 로컬에는 저장하지 않았습니다");
   } else localStorage.setItem(LOCAL_REMINDERS_KEY, JSON.stringify([...readLocalReminders().filter(r => r.event_id !== reminder.event_id), reminder]));
   calendarUpdated();
 }
 export async function removeReminder(eventId: string, userId: string | null) {
   if (userId) {
     const { error } = await supabase.from("calendar_reminders").delete().eq("event_id", eventId).eq("user_id", userId);
-    if (error) throw new Error("계정의 알림을 해제하지 못했습니다.");
+    if (error) throw new Error("계정의 알림을 해제하지 못했습니다");
   } else localStorage.setItem(LOCAL_REMINDERS_KEY, JSON.stringify(readLocalReminders().filter(r => r.event_id !== eventId)));
   calendarUpdated();
 }
@@ -58,7 +58,7 @@ export async function acknowledgeReminders(reminders: CalendarReminder[], userId
     // Match each exact configuration; acknowledging an old popup must not dismiss a rescheduled reminder.
     for (const reminder of reminders) {
       const { error, data } = await supabase.from("calendar_reminders").update({ acknowledged_at: acknowledgedAt }).eq("event_id", reminder.event_id).eq("user_id", userId).eq("notification_date", reminder.notification_date).eq("lead_days", reminder.lead_days).select("event_id");
-      if (error || !data?.length) throw new Error("알림 확인 상태를 계정에 저장하지 못했습니다. 다시 시도해 주세요.");
+      if (error || !data?.length) throw new Error("알림 확인 상태를 계정에 저장하지 못했습니다 다시 시도해 주세요");
     }
   } else {
     const records = readLocalReminders().map(record => reminders.some(r => r.event_id === record.event_id && r.notification_date === record.notification_date && r.lead_days === record.lead_days) ? { ...record, acknowledged_at: acknowledgedAt } : record);

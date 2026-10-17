@@ -57,7 +57,7 @@ export default function MemoEditor({ memo, onClose, kind = "memo", extraFields, 
   const save = async () => {
     if (busy) return;
     const clean = sanitizeMemoHtml(html); const text = memoHtmlText(clean);
-    if (!title.trim() && !text) { setNotice(kind === "diary" ? "제목이나 일기 내용을 입력하시기 바랍니다." : "제목이나 메모 내용을 입력해 주세요."); return; }
+    if (!title.trim() && !text) { setNotice(kind === "diary" ? "제목이나 일기 내용을 입력하시기 바랍니다" : "제목이나 메모 내용을 입력해 주세요"); return; }
     setBusy(true); setNotice("");
     const now = new Date().toISOString();
     const record: MemoItem = { ...(memo || { id: crypto.randomUUID(), pinned: false, visible: false, color: "white", createdAt: now }), title: title.trim(), content: encodeMemo({ ...original, text, html: clean, background, opacity, category }), updatedAt: now };
@@ -65,14 +65,14 @@ export default function MemoEditor({ memo, onClose, kind = "memo", extraFields, 
       const current = memosRef.current;
       if (onSaveRecord) await onSaveRecord(record); else await persistMemos(memo ? current.map(item => item.id === memo.id ? record : item) : [record, ...current]);
       onClose();
-    } catch (error) { setNotice(onSaveRecord && error instanceof Error ? error.message : "저장하지 못했습니다. 입력한 내용은 그대로 남아 있습니다."); }
+    } catch (error) { setNotice(onSaveRecord && error instanceof Error ? error.message : "저장하지 못했습니다 입력한 내용은 그대로 남아 있습니다"); }
     finally { setBusy(false); }
   };
   const remove = async () => {
     if (!memo || busy || !await confirmAction(kind === "diary" ? "이 일기를 삭제하시겠습니까?" : "이 메모를 삭제하시겠습니까?")) return;
     setBusy(true);
     try { if (onDeleteRecord) await onDeleteRecord(); else await persistMemos(memosRef.current.filter(item => item.id !== memo.id)); onClose(); }
-    catch { setNotice(kind === "diary" ? "일기를 삭제하지 못했습니다." : "메모를 삭제하지 못했습니다."); }
+    catch { setNotice(kind === "diary" ? "일기를 삭제하지 못했습니다" : "메모를 삭제하지 못했습니다"); }
     finally { setBusy(false); }
   };
   const content = <div className={inline ? "w-full" : "fixed inset-0 z-[6000] bg-black/40 flex items-center justify-center p-4"} onClick={() => { if (!busy) onClose(); }}>

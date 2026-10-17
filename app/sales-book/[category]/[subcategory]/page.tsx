@@ -248,7 +248,7 @@ const saveSlideNote = async () => {
   if (slides.length === 0) {
     return (
       <main className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-xl font-black text-gray-900">자료 제작중입니다.</div>
+        <div className="text-xl font-black text-gray-900">자료 제작중입니다</div>
       </main>
     );
   }

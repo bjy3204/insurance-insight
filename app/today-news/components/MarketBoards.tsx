@@ -24,5 +24,5 @@ function Tile({item,currency}:{item:Item;currency:boolean}) {
  </a>;
 }
 export default function MarketBoards({exchangeItems,marketItems}:{exchangeItems:Item[];marketItems:Item[]}) {
- return <>{[{title:'오늘의 환율',items:exchangeItems,currency:true},{title:'오늘의 시장지표',items:marketItems,currency:false}].map(board=><section key={board.title} className={styles.section}><div className={styles.heading}><h2>{board.title}</h2><span>네이버 증권 기준</span></div><div className={styles.grid}>{board.items.map(item=><Tile key={item.label} item={item} currency={board.currency}/>)}{!board.items.length&&<p className={styles.empty}>정보를 불러오는 중이거나 현재 조회할 수 없습니다.</p>}</div></section>)}</>;
+ return <>{[{title:'오늘의 환율',items:exchangeItems,currency:true},{title:'오늘의 시장지표',items:marketItems,currency:false}].map(board=><section key={board.title} className={styles.section}><div className={styles.heading}><h2>{board.title}</h2><span>네이버 증권 기준</span></div><div className={styles.grid}>{board.items.map(item=><Tile key={item.label} item={item} currency={board.currency}/>)}{!board.items.length&&<p className={styles.empty}>정보를 불러오는 중이거나 현재 조회할 수 없습니다</p>}</div></section>)}</>;
 }

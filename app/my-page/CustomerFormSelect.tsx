@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { Check, ChevronDown, Plus, X } from "lucide-react";
 import styles from "./CustomerEntryDialog.module.css";
 
-export default function CustomerFormSelect({ label, value, options, onChange, onAdd, onRemove, disabled, placeholder = "선택 또는 직접 입력" }: { placeholder?:string;
+export default function CustomerFormSelect({ label, value, options, onChange, onAdd, onRemove, disabled, allowRemove = true, showCheck = true, placeholder = "선택 또는 직접 입력" }: { placeholder?:string; allowRemove?:boolean; showCheck?:boolean;
   label: string; value: string; options: readonly string[]; onChange: (value: string) => void;
   onAdd: (value: string) => Promise<boolean>; onRemove: (value: string) => Promise<boolean>; disabled: boolean;
 }) {
@@ -67,11 +67,11 @@ export default function CustomerFormSelect({ label, value, options, onChange, on
     <button type="button" disabled={disabled} aria-label={`${label} 목록`} aria-haspopup="listbox" aria-expanded={!!position} onClick={() => { if (position) close(); else open(); input.current?.focus(); }}><ChevronDown size={15} /></button>
     {position && createPortal(<div ref={menu} data-mini-dropdown="true" id={id} role="listbox" aria-label={label} className={styles.options} style={position}>
       {choices.map((option, optionIndex) => <div className={styles.optionRow} key={option} role="presentation">
-        <button type="button" tabIndex={-1} id={`${id}-${optionIndex}`} role="option" aria-selected={option === value} data-active={optionIndex === index} onPointerDown={event => event.preventDefault()} onMouseEnter={() => setIndex(optionIndex)} onClick={() => choose(option)}><span>{option}</span>{option === value && <Check size={16} />}</button>
-        <button type="button" className={styles.removeOption} aria-label={`${label} ${option} 삭제`} disabled={disabled} onPointerDown={event => event.preventDefault()} onClick={async () => { if (await onRemove(option)) { if (currentValue.current === option) { dirty.current = false; onChange(""); } setIndex(-1); } }}><X size={15} /></button>
+        <button type="button" tabIndex={-1} id={`${id}-${optionIndex}`} role="option" aria-selected={option === value} data-active={optionIndex === index} onPointerDown={event => event.preventDefault()} onMouseEnter={() => setIndex(optionIndex)} onClick={() => choose(option)}><span>{option}</span>{showCheck && option === value && <Check size={16} />}</button>
+        {allowRemove&&<button type="button" className={styles.removeOption} aria-label={`${label} ${option} 삭제`} disabled={disabled} onPointerDown={event => event.preventDefault()} onClick={async () => { if (await onRemove(option)) { if (currentValue.current === option) { dirty.current = false; onChange(""); } setIndex(-1); } }}><X size={15} /></button>}
       </div>)}
       {canAdd && <button type="button" className={styles.addOption} disabled={disabled} onPointerDown={event => event.preventDefault()} onClick={() => { dirty.current = true; void commit(); }}><Plus size={15} /><span>{custom} 추가</span></button>}
-      {!choices.length && !canAdd && <p>직접 입력할 수 있어요.</p>}
+      {!choices.length && !canAdd && <p>직접 입력할 수 있어요</p>}
     </div>, document.body)}
   </div>;
 }

@@ -26,11 +26,11 @@ export default function useCustomerFormOptions(active = true) {
       try {
       const { data, error } = await supabase.from("customer_form_options").select("kind,options").eq("user_id", userId);
       if (cancelled) return;
-      if (error) { setError("유입경로 목록을 불러오지 못했습니다."); return; }
+      if (error) { setError("유입경로 목록을 불러오지 못했습니다"); return; }
       const next = { ...DEFAULT_CUSTOMER_OPTIONS };
       for (const row of data || []) if (row.kind in next && Array.isArray(row.options)) next[row.kind as CustomerOptionKind] = row.options.filter((value: unknown): value is string => typeof value === "string");
       setOptions(next); setReady(true);
-      } catch { if (!cancelled) setError("목록을 불러오지 못했습니다. 다시 시도해 주세요."); }
+      } catch { if (!cancelled) setError("목록을 불러오지 못했습니다 다시 시도해 주세요"); }
     };
     void load();
     return () => { cancelled = true; };
@@ -47,7 +47,7 @@ export default function useCustomerFormOptions(active = true) {
       setOptions(previous => ({ ...previous, [kind]: data }));
       return true;
     } catch {
-      if (owner.current === requestOwner) setError("목록을 저장하지 못했습니다. 다시 시도해 주세요.");
+      if (owner.current === requestOwner) setError("목록을 저장하지 못했습니다 다시 시도해 주세요");
       return false;
     } finally { busy.current = false; if (owner.current === requestOwner) setSaving(false); }
   }, [userId, ready]);

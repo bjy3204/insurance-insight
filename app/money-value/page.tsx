@@ -148,7 +148,7 @@ function InflationChart() {
   if (error || data.length === 0) {
     return (
       <div className="w-full h-[400px] bg-white flex items-center justify-center">
-        <p className="text-gray-400 text-sm">데이터를 불러올 수 없습니다.</p>
+        <p className="text-gray-400 text-sm">데이터를 불러올 수 없습니다</p>
       </div>
     );
   }
@@ -991,7 +991,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                     <p className="text-gray-600 text-sm mb-4 text-center leading-relaxed">
                       환율이 <span className="font-bold">{Number(compareRate).toLocaleString()}원</span>으로 오르기 전 지금(<span className="font-bold">{Number(currentRate).toLocaleString()}원</span>) 달러 자산을 준비하면{" "}
                       <span className="font-bold text-blue-600">{currDollar.toLocaleString()}달러</span>로,{" "}
-                      지금 준비하면 <span className="font-bold text-red-500">{diff.toLocaleString()}달러</span> 유리 합니다.
+                      지금 준비하면 <span className="font-bold text-red-500">{diff.toLocaleString()}달러</span> 유리 합니다
                     </p>
                   );
                 }

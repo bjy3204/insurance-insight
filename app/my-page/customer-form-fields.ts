@@ -12,13 +12,13 @@ export type CustomerVehicle = Record<(typeof VEHICLE_FIELDS)[number], string>;
 export const emptyCustomerVehicle = (): CustomerVehicle => ({ vehicleNumber:"", vehicleType:"", renewal:"", insurer:"", driver:"", discount:"" });
 export function parseCustomerVehicles(serialized: string): CustomerVehicle[] {
   const list: unknown = JSON.parse(serialized);
-  if (!Array.isArray(list) || list.length < 1 || list.length > 100) throw new Error("차량정보를 확인해 주세요.");
+  if (!Array.isArray(list) || list.length < 1 || list.length > 100) throw new Error("차량정보를 확인해 주세요");
   return list.map(item => {
-    if (!item || typeof item !== "object" || Array.isArray(item)) throw new Error("차량정보를 확인해 주세요.");
+    if (!item || typeof item !== "object" || Array.isArray(item)) throw new Error("차량정보를 확인해 주세요");
     const result = emptyCustomerVehicle();
     for (const key of VEHICLE_FIELDS) {
       const value = (item as Record<string, unknown>)[key] ?? "";
-      if (typeof value !== "string" || value.length > 300) throw new Error("차량정보를 확인해 주세요.");
+      if (typeof value !== "string" || value.length > 300) throw new Error("차량정보를 확인해 주세요");
       result[key] = value.trim();
     }
     return result;

@@ -128,22 +128,22 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
 
   const handleGenerate = async () => {
     if (generatingRef.current) return;
-    if (messageType === "car_renewal" && extraInfo && extraInfo !== "-") { const [month, day] = extraInfo.split("-").map(Number); if (!(month >= 1 && month <= 12 && day >= 1 && day <= new Date(2000, month, 0).getDate())) { setGenerationNotice("갱신일의 월과 일을 확인하시기 바랍니다."); return; } }
+    if (messageType === "car_renewal" && extraInfo && extraInfo !== "-") { const [month, day] = extraInfo.split("-").map(Number); if (!(month >= 1 && month <= 12 && day >= 1 && day <= new Date(2000, month, 0).getDate())) { setGenerationNotice("갱신일의 월과 일을 확인하시기 바랍니다"); return; } }
     generatingRef.current = true; setGenerating(true); setGenerationNotice(""); setCopied(false);
     const controller = new AbortController(); requestRef.current = controller;
     const timer = setTimeout(() => controller.abort(), 28000);
     const fallback = (notice: string) => { setGeneratedMessage(formatDisplayMessage(generateFallbackMessage(messageType, customerName.trim(), agentName, today, extraInfo))); setMessageCreated(true); rememberMessage(); setGenerationNotice(""); };
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setGenerationNotice("로그인 후 다시 이용해 주세요."); return; }
+      if (!session) { setGenerationNotice("로그인 후 다시 이용해 주세요"); return; }
       const response = await fetch("/api/ai-message", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + session.access_token }, body: JSON.stringify({ messageType, renewalDate: messageType === "car_renewal" ? extraInfo : "" }), signal: controller.signal });
       const result = await response.json();
-      if (response.status === 401 || response.status === 403) { setGenerationNotice(result.error || "로그인 상태를 확인해 주세요."); return; }
-      if (!response.ok || !Array.isArray(result.paragraphs) || result.paragraphs.length < 2 || result.paragraphs.some((p: unknown) => typeof p !== "string" || !p.trim())) { fallback(result.error || "AI 연결이 원활하지 않아 기본 문구를 준비했어요."); return; }
+      if (response.status === 401 || response.status === 403) { setGenerationNotice(result.error || "로그인 상태를 확인해 주세요"); return; }
+      if (!response.ok || !Array.isArray(result.paragraphs) || result.paragraphs.length < 2 || result.paragraphs.some((p: unknown) => typeof p !== "string" || !p.trim())) { fallback(result.error || "AI 연결이 원활하지 않아 기본 문구를 준비했어요"); return; }
       setGeneratedMessage(composeMessage(result.paragraphs, customerName, agentName));
       setMessageCreated(true);
       rememberMessage();
-    } catch { if (requestRef.current === controller) fallback("AI 연결이 원활하지 않아 기본 문구를 준비했어요."); }
+    } catch { if (requestRef.current === controller) fallback("AI 연결이 원활하지 않아 기본 문구를 준비했어요"); }
     finally { clearTimeout(timer); if (requestRef.current === controller) { requestRef.current = null; generatingRef.current = false; setGenerating(false); } }
   };
   const handleCopy = async () => {
@@ -156,14 +156,14 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
     if (!generatedMessage.trim() || generating) return;
     setShareNotice("");
     try {
-      if (Array.from(generatedMessage).length > 200) { setShareNotice("카카오톡 기본 공유는 200자까지 가능합니다. 긴 메시지는 복사해 카카오톡에 붙여 넣어 주세요."); return; }
+      if (Array.from(generatedMessage).length > 200) { setShareNotice("카카오톡 기본 공유는 200자까지 가능합니다 긴 메시지는 복사해 카카오톡에 붙여 넣어 주세요"); return; }
       const kakao = (window as Window & { Kakao?: KakaoSdk }).Kakao;
-      if (!kakao) { setShareNotice("카카오톡 공유를 준비하지 못했습니다. 잠시 후 다시 시도해 주세요."); return; }
+      if (!kakao) { setShareNotice("카카오톡 공유를 준비하지 못했습니다 잠시 후 다시 시도해 주세요"); return; }
       const key = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY || "518af1512d73dd3244aedb922e2a32ed";
       if (!kakao.isInitialized()) kakao.init(key);
       const url = window.location.origin;
       kakao.Share.sendDefault({ objectType: "text", text: generatedMessage, link: { webUrl: url, mobileWebUrl: url }, buttonTitle: "보험인사이트" });
-    } catch (error) { if (!(error instanceof Error && error.name === "AbortError")) setShareNotice("공유 창을 열지 못했습니다."); }
+    } catch (error) { if (!(error instanceof Error && error.name === "AbortError")) setShareNotice("공유 창을 열지 못했습니다"); }
   };
   const appendPreviewInput = () => {
     if (!previewInput.trim() || generating) return;
@@ -200,7 +200,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
           </div>
         );
       })}
-      <div className="hidden md:block mt-3 rounded-xl bg-gray-50 p-3"><h3 data-personal-card-title="true" className="flex items-center gap-2 text-base font-semibold text-gray-700 mb-2"><Clock className="w-4 h-4" />최근 사용한 메시지</h3>{recentMessages.length ? recentMessages.map(item => <div key={item.type} className="flex items-center gap-2 rounded-xl"><button data-action-height="44" type="button" disabled={generating} onClick={() => selectMessage(item.type)} className="flex-1 min-w-0 flex items-center justify-between gap-2 py-1 text-xs text-gray-600 cursor-default"><span>{MESSAGE_TYPES.find(type => type.id === item.type)?.label}</span><span className="text-gray-400">{new Date(item.date).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" }).replace(/\.$/, "")}</span></button><button type="button" data-item-remove="true" onClick={() => removeRecentMessage(item.type)} aria-label={`${MESSAGE_TYPES.find(type => type.id === item.type)?.label} 최근 사용 기록 삭제`} className="shrink-0 flex items-center justify-center w-6 h-6 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200 cursor-pointer"><X className="w-3.5 h-3.5" /></button></div>) : <p className="text-xs text-gray-400">아직 사용한 메시지가 없습니다.</p>}</div>
+      <div className="hidden md:block mt-3 rounded-xl bg-gray-50 p-3"><h3 data-personal-card-title="true" className="flex items-center gap-2 text-base font-semibold text-gray-700 mb-2"><Clock className="w-4 h-4" />최근 사용한 메시지</h3>{recentMessages.length ? recentMessages.map(item => <div key={item.type} className="flex items-center gap-2 rounded-xl"><button data-action-height="44" type="button" disabled={generating} onClick={() => selectMessage(item.type)} className="flex-1 min-w-0 flex items-center justify-between gap-2 py-1 text-xs text-gray-600 cursor-default"><span>{MESSAGE_TYPES.find(type => type.id === item.type)?.label}</span><span className="text-gray-400">{new Date(item.date).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" }).replace(/\.$/, "")}</span></button><button type="button" data-item-remove="true" onClick={() => removeRecentMessage(item.type)} aria-label={`${MESSAGE_TYPES.find(type => type.id === item.type)?.label} 최근 사용 기록 삭제`} className="shrink-0 flex items-center justify-center w-6 h-6 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200 cursor-pointer"><X className="w-3.5 h-3.5" /></button></div>) : <p className="text-xs text-gray-400">아직 사용한 메시지가 없습니다</p>}</div>
       </div>
     </aside>
     <div className={`${styles.messagePanels} min-w-0 xl:relative`} style={panelHeight ? { "--message-panel-height": `${panelHeight}px` } as CSSProperties : undefined}>
@@ -247,7 +247,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
       {/* 이름 입력 */}
 <div className="grid grid-cols-2 gap-3">
   <div className="min-w-0">
-    <label className="text-base font-bold text-gray-900 block mb-2">고객 이름</label>
+    <label data-field-caption="true" className="text-base font-bold text-gray-900 block mb-2">고객 이름</label>
     <div className="relative">
       <ClearableSearchInput onClear={() => {
           setCustomerName("");
@@ -267,7 +267,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
   </div>
 
   <div className="min-w-0">
-    <label className="text-base font-bold text-gray-900 block mb-2">설계사 이름</label>
+    <label data-field-caption="true" className="text-base font-bold text-gray-900 block mb-2">설계사 이름</label>
     <ClearableSearchInput onClear={() => {
   setAgentName("");
   localStorage.setItem("agent-name", "");
@@ -288,7 +288,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
 <div>
   {messageType === "car_renewal" && (
     <div className="mt-3">
-      <label className="text-xs text-gray-400 block mb-1.5">
+      <label data-field-caption="true" className="text-xs text-gray-400 block mb-1.5">
         자동차보험 갱신일
       </label>
       <div data-ui-field-wrapper="true" className="flex items-center gap-2 h-11 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus-within:border-blue-600">
@@ -301,8 +301,8 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
 
 {generationNotice && <p role="status" className="text-sm text-gray-500">{generationNotice}</p>}
       <div className="flex min-h-0 flex-1 flex-col">
-        <label htmlFor="generated-message-editor" className="block text-base font-bold text-gray-900 mb-3">생성된 메시지</label>
-        <textarea data-ui-field="true" id="generated-message-editor" value={generatedMessage} disabled={!messageCreated || generating} rows={10} placeholder="메시지를 생성한 뒤 여기에서 내용을 수정하세요." onChange={event => { setGeneratedMessage(event.target.value); setCopied(false); }} className="block w-full min-h-0 flex-1 resize-none overflow-y-auto rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-900 leading-7 outline-none focus:border-blue-600 disabled:bg-gray-50" />
+        <label data-field-caption="true" htmlFor="generated-message-editor" className="block text-base font-bold text-gray-900 mb-3">생성된 메시지</label>
+        <textarea data-ui-field="true" id="generated-message-editor" value={generatedMessage} disabled={!messageCreated || generating} rows={10} placeholder="메시지를 생성한 뒤 여기에서 내용을 수정하세요" onChange={event => { setGeneratedMessage(event.target.value); setCopied(false); }} className="block w-full min-h-0 flex-1 resize-none overflow-y-auto rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-900 leading-7 outline-none focus:border-blue-600 disabled:bg-gray-50" />
       </div>
 {/* 생성 버튼 */}
 <button

@@ -44,7 +44,7 @@ return (<>{open && (
   <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
     수정이 필요한 부분이나
     <br />
-    추가하고 싶은 기능이 있다면 편하게 남겨주세요.
+    추가하고 싶은 기능이 있다면 편하게 남겨주세요
   </p>
 </div>
 

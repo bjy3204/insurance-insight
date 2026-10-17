@@ -408,7 +408,7 @@ export default function MemoManager({ open, onClose }: Props) {
               {memosError && <p role="alert" className="text-sm text-red-500 mb-3">{memosError}<button onClick={reloadMemos} className="ml-3 underline">다시 시도</button></p>}
               {memosLoading ? null : filteredMemos.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-sm text-gray-400 py-20">
-                  저장된 메모가 없습니다.
+                  저장된 메모가 없습니다
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 content-start">
@@ -447,7 +447,7 @@ export default function MemoManager({ open, onClose }: Props) {
 
                                 <div className="memo-popup-card-content min-h-0 flex-1 overflow-y-auto text-sm text-gray-600 mt-2 leading-relaxed" onPointerDown={e=>e.stopPropagation()}><MemoBody memo={memo} onChange={content => persistMemos(memos.map(item => item.id === memo.id ? {...item, content, updatedAt: new Date().toISOString()} : item))}/></div>
 
-                                <p className="text-[11px] text-gray-400 shrink-0 pt-3">
+                                <p className="text-[13px] text-gray-400 shrink-0 pt-3">
                                   수정일{" "}
                                   {new Date(memo.updatedAt).toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" })}
                                 </p>
@@ -486,15 +486,7 @@ export default function MemoManager({ open, onClose }: Props) {
                                   <Pin className="w-4 h-4" />
                                 </button>
 
-                                <button data-memo-action="edit" aria-label="메모 수정" data-icon-only="true"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    openMemoEdit(memo);
-                                  }}
-                                  className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 bg-white text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition cursor-default"
-                                >
-                                  <Pencil className="w-4 h-4" />
-                                </button>
+
                               </div>
                             </div>
                           </div>

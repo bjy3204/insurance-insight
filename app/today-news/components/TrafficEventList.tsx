@@ -20,10 +20,10 @@ export default function TrafficEventList({ onSelect, nearby, cameras, onCamera }
       try {
         const response = await fetch('/api/traffic-events', { signal: controller.signal });
         const data = await response.json();
-        if (!response.ok || !Array.isArray(data.events)) throw new Error(data.error || '교통정보를 불러오지 못했습니다.');
+        if (!response.ok || !Array.isArray(data.events)) throw new Error(data.error || '교통정보를 불러오지 못했습니다');
         if (active) { setEvents(data.events); setUpdated(data.fetchedAt); setError(''); }
       } catch (failure) {
-        if (active) setError(failure instanceof Error ? failure.message : '교통정보를 불러오지 못했습니다.');
+        if (active) setError(failure instanceof Error ? failure.message : '교통정보를 불러오지 못했습니다');
       } finally { if (active) setLoading(false); }
     }
     setLoading(true);
@@ -39,7 +39,7 @@ export default function TrafficEventList({ onSelect, nearby, cameras, onCamera }
     <div className={styles.eventTitle}><h4>{nearby ? '내 주변 사고·공사' : '고속도로 교통정보'}</h4>{updated && <span>{new Date(updated).toLocaleTimeString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit' })} 조회</span>}</div>
     <div className={styles.eventScroll}>
     <div className={`${styles.eventBody} ${loading && !events.length || error || !visible.length ? styles.emptyBody : ''}`}>
-    {loading && !events.length ? <p className={`${styles.eventEmpty} ${styles.eventLoading}`}>교통정보를 불러오는 중입니다.</p> : error ? <div className={styles.eventEmpty} role="status">{error}<button type="button" onClick={() => setRetry(value => value + 1)}>다시 시도</button></div> : !visible.length ? <p className={styles.eventEmpty}>{nearby ? '주변 50km 안에 제공된 고속도로 사고·공사 정보가 없습니다.' : '현재 제공된 사고·공사 정보가 없습니다.'}</p> : [...groups].map(([road, items]) => <section key={road} className={styles.eventGroup}>
+    {loading && !events.length ? <p className={`${styles.eventEmpty} ${styles.eventLoading}`}>교통정보를 불러오는 중입니다</p> : error ? <div className={styles.eventEmpty} role="status">{error}<button type="button" onClick={() => setRetry(value => value + 1)}>다시 시도</button></div> : !visible.length ? <p className={styles.eventEmpty}>{nearby ? '주변 50km 안에 제공된 고속도로 사고·공사 정보가 없습니다' : '현재 제공된 사고·공사 정보가 없습니다'}</p> : [...groups].map(([road, items]) => <section key={road} className={styles.eventGroup}>
       <h4>{items[0].roadNo && <span className={styles.roadNumber}>{items[0].roadNo}</span>}{road}</h4>
       {items.map(event => <div key={event.id} className={styles.eventLine}><button type="button" className={styles.eventRow} onClick={() => onSelect(event)} disabled={event.latitude === null || event.longitude === null}>
         <div className={styles.eventContent}><p title={cleanMessage(event.message || event.detail)}>{cleanMessage(event.message || event.detail)}</p>{event.lanes && <small>{event.lanes}</small>}</div>

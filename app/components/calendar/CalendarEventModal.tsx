@@ -57,10 +57,10 @@ export default function CalendarEventModal({formData,setFormData,editingEvent,on
  </div></div>
  {crm&&formData.category==='상담'&&<EventCustomerPicker customers={crm.data.customers} value={formData.customerId||''} onChange={customerId=>update({customerId})} disabled={saving}/>}
  <div className={styles.dateTimeRow}>
- <label className={styles.field}><span>시간</span><div className={styles.inputWithIcon}><input aria-label="시간" disabled={saving} inputMode="numeric" maxLength={5} value={formData.time} onChange={event=>{const digits=event.target.value.replace(/\D/g,"").slice(0,4);update({time:digits.length>2?`${digits.slice(0,2)}:${digits.slice(2)}`:digits});}}/></div></label>
- <label className={styles.field}><span>장소</span><div className={styles.inputWithIcon}><input aria-label="장소" disabled={saving} value={formData.place} onChange={event=>update({place:event.target.value})}/></div></label>
+ <label className={styles.field}><span data-field-caption="true">시간</span><div className={styles.inputWithIcon}><input aria-label="시간" disabled={saving} inputMode="numeric" maxLength={5} value={formData.time} onChange={event=>{const digits=event.target.value.replace(/\D/g,"").slice(0,4);update({time:digits.length>2?`${digits.slice(0,2)}:${digits.slice(2)}`:digits});}}/></div></label>
+ <label className={styles.field}><span data-field-caption="true">장소</span><div className={styles.inputWithIcon}><input aria-label="장소" disabled={saving} value={formData.place} onChange={event=>update({place:event.target.value})}/></div></label>
  </div>
- <label className={styles.field}><span>메모</span><textarea aria-label="메모" maxLength={2000} spellCheck={false} disabled={saving} rows={2} value={formData.memo} onChange={event=>update({memo:event.target.value})}/></label>
+ <label className={styles.field}><span data-field-caption="true">메모</span><textarea aria-label="메모" maxLength={2000} spellCheck={false} disabled={saving} rows={2} value={formData.memo} onChange={event=>update({memo:event.target.value})}/></label>
  {error&&<p className={styles.error} role="alert">{error}</p>}
  </div>
  <footer className={styles.footer}>{editingEvent&&<button data-action-height="48" type="button" disabled={saving} className={styles.delete} onClick={onDelete}>삭제</button>}{!editingEvent&&<button data-popup-action="true" data-action-height="48" type="button" disabled={saving} onClick={onClose}>취소</button>}<button data-popup-action="true" data-action-height="48" type="button" className={styles.primary} disabled={saving||!!crm&&formData.category==='상담'&&!formData.customerId} onClick={onSave}>{saving?"저장 중":editingEvent?"저장":"추가"}</button></footer>

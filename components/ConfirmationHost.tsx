@@ -3,13 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import DashboardDialog from "@/app/features/home/components/dashboard/DashboardDialog";
 
-type Request = { message: string; resolve: (answer: boolean) => void };
+type ConfirmationOptions = { title?: string; confirmLabel?: string };
+type Request = { options?: ConfirmationOptions; message: string; resolve: (answer: boolean) => void };
 let enqueue: ((request: Request) => void) | null = null;
 
-export function confirmAction(message: string): Promise<boolean> {
+export function confirmAction(message: string, options?: ConfirmationOptions): Promise<boolean> {
   return new Promise(resolve => {
     if (!enqueue) { resolve(false); return; }
-    enqueue({ message, resolve });
+    enqueue({ message, options, resolve });
   });
 }
 
@@ -35,8 +36,8 @@ export default function ConfirmationHost() {
   };
   if (!current) return null;
   const deleting = current.message.includes("삭제");
-  return <DashboardDialog confirmation title={deleting ? "삭제 확인" : "변경 확인"} onClose={() => answer(false)}>
+  return <DashboardDialog confirmation title={current.options?.title ?? (deleting ? "삭제 확인" : "변경 확인")} onClose={() => answer(false)}>
     <p style={{ whiteSpace: "pre-line" }}>{current.message}</p>
-    <div><button data-popup-action="true" type="button" onClick={() => answer(false)}>취소</button><button data-popup-action="true" type="button" onClick={() => answer(true)}>{deleting ? "삭제" : "확인"}</button></div>
+    <div><button data-popup-action="true" type="button" onClick={() => answer(false)}>취소</button><button data-popup-action="true" type="button" onClick={() => answer(true)}>{current.options?.confirmLabel ?? (deleting ? "삭제" : "확인")}</button></div>
   </DashboardDialog>;
 }

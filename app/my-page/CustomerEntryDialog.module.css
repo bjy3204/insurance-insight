@@ -134,7 +134,7 @@
 
 .dialog .label{padding-left:4px;box-sizing:border-box}
 
-.optionRow{border-radius:8px}.optionRow:hover,.optionRow:has(>button[data-active=true]){background:#eff6ff}.optionRow>button:first-child,.optionRow>button:first-child:hover,.optionRow>button:first-child[data-active=true],.optionRow>.removeOption,.optionRow>.removeOption:hover{background:transparent}.optionRow:hover>button:first-child,.optionRow:has(>button[data-active=true])>button:first-child{color:#195DFF}
+.optionRow{border-radius:8px}.optionRow:is(:hover,:focus-visible),.optionRow:has(>button[data-active=true]){background:#eff6ff}.optionRow>button:first-child,.optionRow>button:first-child:is(:hover,:focus-visible),.optionRow>button:first-child[data-active=true],.optionRow>.removeOption,.optionRow>.removeOption:is(:hover,:focus-visible){background:transparent}.optionRow:is(:hover,:focus-visible)>button:first-child,.optionRow:has(>button[data-active=true])>button:first-child{color:#195DFF}
 
 .vehicleHeading{display:flex;align-items:center;gap:6px;margin-bottom:12px}.vehicleHeading h4{margin:0}.removeVehicle{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:0;border-radius:8px;background:transparent;color:#94a3b8;cursor:pointer}.removeVehicle:hover{background:#fff1f2;color:#e11d48}.removeVehicle:disabled{opacity:.45;cursor:default}
 
@@ -143,3 +143,5 @@
 @media(max-width:767px){
 .dialog[data-popup-frame]{min-width:0;width:calc(100vw - 24px);max-width:calc(100vw - 24px);height:auto;max-height:calc(100dvh - 24px);min-height:0}.dialog .body{padding:12px}.dialog .grid{gap:12px}.dialog .customerIdentityRow{grid-template-columns:100px minmax(0,1fr);gap:12px}.dialog .customerIdentityRow>.field:last-child{grid-column:1/-1}.dialog .customerIdentityRow>.field:first-child>.select{width:100%}.dialog .customerContactRow{grid-template-columns:minmax(0,1fr);gap:12px}.dialog .customerContactRow>.phoneField,.dialog .customerContactRow>.field:last-child{grid-column:1}.dialog .carrier{width:100px;flex-basis:100px}.dialog .customerCompanyRow{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 }
+
+.identitySuggestions{max-height:190px;overflow-y:auto;scrollbar-width:none}.identitySuggestions::-webkit-scrollbar{display:none}.identitySuggestions button{box-sizing:border-box;height:36px;min-height:36px;padding:0 12px;font-size:13px;font-weight:400}

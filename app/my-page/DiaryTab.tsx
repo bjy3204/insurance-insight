@@ -46,7 +46,7 @@ export default function DiaryTab() {
     if (!owner) { setLoading(false); return; }
     supabase.from("cm_diaries").select("id,date,content,mood,created_at").eq("user_id", owner).order("date", { ascending: false }).then(({ data, error }) => {
       if (!active) return;
-      if (error) setError("일기를 불러오지 못했습니다. 잠시 후 다시 시도하시기 바랍니다.");
+      if (error) setError("일기를 불러오지 못했습니다 잠시 후 다시 시도하시기 바랍니다");
       else setEntries(data || []);
       setLoading(false);
     });
@@ -65,9 +65,9 @@ export default function DiaryTab() {
   };
   const shiftMonth = async (offset: number) => { if (edit !== undefined && !await confirmAction("수정 중인 내용을 취소하고 다른 달로 이동하시겠습니까?")) return; setEdit(undefined); const [y, m] = month.split("-").map(Number); const next = new Date(y, m - 1 + offset, 1); setMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}`); setSelected(null); };
   const save = async (memo: MemoItem) => {
-    if (!owner || ownerRef.current !== owner) throw new Error("로그인이 필요합니다.");
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(new Date(date + "T12:00:00").getTime())) throw new Error("날짜를 선택하시기 바랍니다.");
-    if (entries.some(entry => entry.date === date && entry.id !== edit?.id)) throw new Error("이 날짜에는 이미 일기가 있습니다. 기존 일기를 수정하시기 바랍니다.");
+    if (!owner || ownerRef.current !== owner) throw new Error("로그인이 필요합니다");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(new Date(date + "T12:00:00").getTime())) throw new Error("날짜를 선택하시기 바랍니다");
+    if (entries.some(entry => entry.date === date && entry.id !== edit?.id)) throw new Error("이 날짜에는 이미 일기가 있습니다 기존 일기를 수정하시기 바랍니다");
     const payload = { date, mood, content: prefix + JSON.stringify({ title: memo.title, content: memo.content }) };
     const query = edit ? supabase.from("cm_diaries").update(payload).eq("id", edit.id).eq("user_id", owner) : supabase.from("cm_diaries").insert({ ...payload, user_id: owner });
     const { data, error } = await query.select("id,date,content,mood,created_at").single();
@@ -77,7 +77,7 @@ export default function DiaryTab() {
     setMonth(date.slice(0, 7)); setSelected(data.id);
   };
   const remove = async (entry: Entry) => {
-    if (!owner || ownerRef.current !== owner) throw new Error("로그인이 필요합니다.");
+    if (!owner || ownerRef.current !== owner) throw new Error("로그인이 필요합니다");
     const { error } = await supabase.from("cm_diaries").delete().eq("id", entry.id).eq("user_id", owner);
     if (error) throw error;
     if (ownerRef.current === owner) setEntries(previous => previous.filter(item => item.id !== entry.id));
@@ -97,7 +97,7 @@ export default function DiaryTab() {
         </div>
       </aside>
       <article data-diary-content-card="true" className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 md:p-8 min-w-0 min-h-[520px] flex flex-col">
-        {edit !== undefined ? editor : current ? <><div className="flex justify-between gap-4"><div><p className="text-gray-500 mb-3">{dateLabel(current.date)}</p><h3 className="text-2xl font-bold">{asMemo(current).title || "제목 없는 일기"}</h3></div><div className="flex items-center gap-2 self-center"><MoodFace mood={current.mood} large /><div><p className="text-xs text-gray-500">오늘의 기분</p><p className="font-bold mt-1">{moods.find(option => option.value === current.mood)?.label || "좋아요"}</p></div></div></div><div className="border-t border-gray-100 mt-6 pt-5 flex-1"><MemoBody memo={asMemo(current)} className="!max-h-none !p-0 !text-base !leading-8" /></div><div className="flex justify-end items-center gap-4 mt-6"><button data-icon-only="true" type="button" aria-label="일기 삭제" onClick={async () => { if (!await confirmAction("이 일기를 삭제하시겠습니까?")) return; try { await remove(current); } catch { setError("일기를 삭제하지 못했습니다."); } }} className="text-gray-400 hover:text-red-500 cursor-pointer"><Trash2 size={17} /></button><button data-icon-only="true" type="button" onClick={() => open(current)} aria-label="일기 수정" title="일기 수정" className="p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer"><Pencil size={17} /></button></div><p className="text-xs text-gray-400 text-right mt-3">{new Date(current.created_at).toLocaleString("ko-KR")}</p></> : null}
+        {edit !== undefined ? editor : current ? <><div className="flex justify-between gap-4"><div><p className="text-gray-500 mb-3">{dateLabel(current.date)}</p><h3 className="text-2xl font-bold">{asMemo(current).title || "제목 없는 일기"}</h3></div><div className="flex items-center gap-2 self-center"><MoodFace mood={current.mood} large /><div><p className="text-xs text-gray-500">오늘의 기분</p><p className="font-bold mt-1">{moods.find(option => option.value === current.mood)?.label || "좋아요"}</p></div></div></div><div className="border-t border-gray-100 mt-6 pt-5 flex-1"><MemoBody memo={asMemo(current)} className="!max-h-none !p-0 !text-base !leading-8" /></div><div className="flex justify-end items-center gap-4 mt-6"><button data-icon-only="true" type="button" aria-label="일기 삭제" onClick={async () => { if (!await confirmAction("이 일기를 삭제하시겠습니까?")) return; try { await remove(current); } catch { setError("일기를 삭제하지 못했습니다"); } }} className="text-gray-400 hover:text-red-500 cursor-pointer"><Trash2 size={17} /></button><button data-icon-only="true" type="button" onClick={() => open(current)} aria-label="일기 수정" title="일기 수정" className="p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 cursor-pointer"><Pencil size={17} /></button></div><p className="text-xs text-gray-400 text-right mt-3">{new Date(current.created_at).toLocaleString("ko-KR")}</p></> : null}
       </article>
     </div>
 

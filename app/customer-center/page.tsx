@@ -1713,7 +1713,7 @@ const pagedMemos = filteredMemos.slice(
   <p className="text-sm text-gray-500 leading-relaxed mb-5">
     모바일 · 태블릿에서는
     <br />
-    PDF 미리보기가 지원되지 않을 수 있습니다.
+    PDF 미리보기가 지원되지 않을 수 있습니다
   </p>
 
   <a

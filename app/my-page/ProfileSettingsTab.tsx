@@ -36,20 +36,20 @@ export default function ProfileSettingsTab({ onSaved, embedded = false }: { onSa
     setBusy("pin"); setPinResult("");
     try {
       const { error } = await supabase.auth.signInWithPassword({ email: authUser.email, password: pinPassword });
-      if (error) { setPinResult("회원가입 비밀번호가 올바르지 않습니다."); return; }
+      if (error) { setPinResult("회원가입 비밀번호가 올바르지 않습니다"); return; }
       const { data, error: pinError } = await supabase.from("customer_settings").select("pin_plain").eq("user_id", authUser.id).maybeSingle();
-      setPinResult(pinError ? "개인공간 비밀번호를 확인하지 못했습니다." : data?.pin_plain ? `개인공간 비밀번호: ${data.pin_plain}` : "설정된 개인공간 비밀번호가 없습니다.");
-    } catch { setPinResult("확인하지 못했습니다. 다시 시도해 주세요."); }
+      setPinResult(pinError ? "개인공간 비밀번호를 확인하지 못했습니다" : data?.pin_plain ? `개인공간 비밀번호: ${data.pin_plain}` : "설정된 개인공간 비밀번호가 없습니다");
+    } catch { setPinResult("확인하지 못했습니다 다시 시도해 주세요"); }
     finally { setPinPassword(""); setBusy(null); }
   };
 
   const save = async () => {
     if (busy || !authUser?.email) return;
     setNotice("");
-    if (!nickname.trim()) { setNotice("닉네임을 입력해 주세요."); return; }
+    if (!nickname.trim()) { setNotice("닉네임을 입력해 주세요"); return; }
     const changingPassword = !!(currentPassword || newPassword || confirmation);
     if (changingPassword && (!currentPassword || newPassword.length < 6 || newPassword !== confirmation)) {
-      setNotice(!currentPassword ? "현재 비밀번호를 입력해 주세요." : newPassword.length < 6 ? "새 비밀번호는 6자 이상 입력해 주세요." : "새 비밀번호가 일치하지 않습니다.");
+      setNotice(!currentPassword ? "현재 비밀번호를 입력해 주세요" : newPassword.length < 6 ? "새 비밀번호는 6자 이상 입력해 주세요" : "새 비밀번호가 일치하지 않습니다");
       return;
     }
     setBusy("save");
@@ -57,18 +57,18 @@ export default function ProfileSettingsTab({ onSaved, embedded = false }: { onSa
     try {
       if (changingPassword) {
         const { error: checkError } = await supabase.auth.signInWithPassword({ email: authUser.email, password: currentPassword });
-        if (checkError) { setNotice("현재 비밀번호가 일치하지 않습니다."); return; }
+        if (checkError) { setNotice("현재 비밀번호가 일치하지 않습니다"); return; }
         const { error } = await supabase.auth.updateUser({ password: newPassword });
-        if (error) { setNotice("비밀번호를 변경하지 못했습니다. 다시 확인해 주세요."); return; }
+        if (error) { setNotice("비밀번호를 변경하지 못했습니다 다시 확인해 주세요"); return; }
         passwordChanged = true;
         setCurrentPassword(""); setNewPassword(""); setConfirmation("");
       }
       const { error } = await supabase.from("profiles").update({ nickname: nickname.trim(), instagram_id: instagram.trim() }).eq("id", authUser.id);
-      if (error) { setNotice(passwordChanged ? "비밀번호는 변경됐지만 프로필을 저장하지 못했습니다. 다시 저장해 주세요." : "프로필을 저장하지 못했습니다. 다시 시도해 주세요."); return; }
+      if (error) { setNotice(passwordChanged ? "비밀번호는 변경됐지만 프로필을 저장하지 못했습니다 다시 저장해 주세요" : "프로필을 저장하지 못했습니다 다시 시도해 주세요"); return; }
       await refreshAuth();
       await onSaved();
-      setNotice("저장되었습니다.");
-    } catch { setNotice(passwordChanged ? "비밀번호는 변경됐습니다. 프로필 저장 상태를 다시 확인해 주세요." : "저장하지 못했습니다. 다시 시도해 주세요."); }
+      setNotice("저장되었습니다");
+    } catch { setNotice(passwordChanged ? "비밀번호는 변경됐습니다 프로필 저장 상태를 다시 확인해 주세요" : "저장하지 못했습니다 다시 시도해 주세요"); }
     finally { setBusy(null); }
   };
 
@@ -79,20 +79,20 @@ export default function ProfileSettingsTab({ onSaved, embedded = false }: { onSa
     try {
       if (!connected) {
         const { error } = await supabase.auth.linkIdentity({ provider: "kakao", options: { redirectTo: `${window.location.origin}/auth/callback` } });
-        if (error) setNotice("카카오 연결을 시작하지 못했습니다. 다시 시도해 주세요.");
+        if (error) setNotice("카카오 연결을 시작하지 못했습니다 다시 시도해 주세요");
         return;
       }
       const { data, error } = await supabase.auth.getUserIdentities();
-      if (error) { setNotice("카카오 연결 정보를 확인하지 못했습니다."); return; }
+      if (error) { setNotice("카카오 연결 정보를 확인하지 못했습니다"); return; }
       const identity = data?.identities.find(item => item.provider === "kakao");
-      if (!identity) { setNotice("카카오 연결 정보를 찾을 수 없습니다."); return; }
+      if (!identity) { setNotice("카카오 연결 정보를 찾을 수 없습니다"); return; }
       const { error: unlinkError } = await supabase.auth.unlinkIdentity(identity);
-      if (unlinkError) { setNotice("카카오 연결을 해제하지 못했습니다. 다른 로그인 수단이 연결돼 있는지 확인해 주세요."); return; }
+      if (unlinkError) { setNotice("카카오 연결을 해제하지 못했습니다 다른 로그인 수단이 연결돼 있는지 확인해 주세요"); return; }
       setConnected(false);
       const { error: profileError } = await supabase.from("profiles").update({ kakao_connected: false }).eq("id", authUser.id);
-      setNotice(profileError ? "카카오 연결은 해제됐지만 프로필 상태를 갱신하지 못했습니다." : "카카오 연결이 해제되었습니다.");
+      setNotice(profileError ? "카카오 연결은 해제됐지만 프로필 상태를 갱신하지 못했습니다" : "카카오 연결이 해제되었습니다");
       await refreshAuth();
-    } catch { setNotice("카카오 연결 설정을 변경하지 못했습니다. 다시 시도해 주세요."); }
+    } catch { setNotice("카카오 연결 설정을 변경하지 못했습니다 다시 시도해 주세요"); }
     finally { setBusy(null); }
   };
 
@@ -103,11 +103,11 @@ export default function ProfileSettingsTab({ onSaved, embedded = false }: { onSa
       <span className="text-sm font-semibold text-gray-700 break-all">{authUser?.email}</span>
     </div>
     <div className="space-y-3">
-      <label className="block text-sm font-semibold text-gray-600">닉네임<ClearableSearchInput onClear={() => setNickname("")} data-ui-field="true" disabled={!!busy} value={nickname} onChange={e => setNickname(e.target.value)} autoComplete="nickname" className={inputClass + " mt-2"} /></label>
-      <label className="block text-sm font-semibold text-gray-600">인스타그램 아이디<ClearableSearchInput onClear={() => setInstagram("")} data-ui-field="true" disabled={!!busy} value={instagram} onChange={e => setInstagram(e.target.value)} className={inputClass + " mt-2"} /></label>
+      <label className="block text-sm font-semibold text-gray-600"><span data-field-caption="true">닉네임</span><ClearableSearchInput onClear={() => setNickname("")} data-ui-field="true" disabled={!!busy} value={nickname} onChange={e => setNickname(e.target.value)} autoComplete="nickname" className={inputClass + " mt-2"} /></label>
+      <label className="block text-sm font-semibold text-gray-600"><span data-field-caption="true">인스타그램 아이디</span><ClearableSearchInput onClear={() => setInstagram("")} data-ui-field="true" disabled={!!busy} value={instagram} onChange={e => setInstagram(e.target.value)} className={inputClass + " mt-2"} /></label>
     </div>
     <div data-ui-field-wrapper="true" className="border-t border-gray-100 pt-4">
-      <label htmlFor="personal-pin-password" className="block text-sm font-semibold text-gray-600 mb-2">개인공간 비밀번호 확인</label>
+      <label data-field-caption="true" htmlFor="personal-pin-password" className="block text-sm font-semibold text-gray-600 mb-2">개인공간 비밀번호 확인</label>
       <div className="flex gap-2"><ClearableSearchInput onClear={() => { setPinPassword(""); setPinResult(""); }} data-ui-field="true" id="personal-pin-password" type="password" autoComplete="current-password" disabled={!!busy} value={pinPassword} onChange={e => { setPinPassword(e.target.value); setPinResult(""); }} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); void checkPin(); } }} placeholder="회원가입 비밀번호 입력" className={inputClass + " flex-1"} /><button type="button" onClick={checkPin} disabled={!!busy || !pinPassword} className={buttonClass + " shrink-0 bg-gray-900 text-white hover:bg-gray-800"}>{busy === "pin" ? "확인 중" : "확인"}</button></div>
       {pinResult && <p role="status" className="mt-2 text-sm text-blue-600">{pinResult}</p>}
     </div>

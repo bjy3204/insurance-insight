@@ -5,7 +5,7 @@
 
 .resetMessage{white-space:pre-line}
 
-.passwordField{position:relative}.passwordField input{padding-right:48px}.content form .eyeButton{position:absolute;right:4px;top:4px;display:flex;align-items:center;justify-content:center;width:40px;height:40px;margin:0;padding:0;border:0;border-radius:8px;background:transparent;color:#64748b;cursor:pointer}.content form .eyeButton:hover,.content form .eyeButton[aria-pressed=true]{background:transparent;color:#195DFF}.content form>button[type=submit]{background:#195DFF}
+.passwordField{position:relative}.passwordField input{padding-right:48px}.content form .eyeButton{position:absolute;right:4px;top:4px;display:flex;align-items:center;justify-content:center;width:40px;height:40px;margin:0;padding:0;border:0;border-radius:8px;background:transparent;color:#64748b;cursor:pointer}.content form .eyeButton:is(:hover,:focus-visible),.content form .eyeButton[aria-pressed=true]{background:transparent;color:#195DFF}.content form>button[type=submit]{background:#195DFF}
 
 .primaryLink{display:flex;align-items:center;justify-content:center;width:100%;height:48px;border-radius:12px;background:#195DFF;color:#fff;text-decoration:none;font-size:14px;font-weight:700}.primaryLink:hover{background:#195DFF;filter:brightness(.96)}
 

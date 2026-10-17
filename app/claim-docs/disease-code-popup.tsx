@@ -213,7 +213,7 @@ setItems(rows);
 
           <div data-reference-note="true" className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-3 shrink-0 text-xs">
             <p className="min-w-0 text-gray-500 leading-relaxed px-1">
-              상병코드는 건강보험심사평가원 에서 배포한 상병마스터(26.03) 기준으로 제공되며, 실제 보험금 청구 및 보험사 심사 결과와 다를 수 있습니다.
+              상병코드는 건강보험심사평가원 에서 배포한 상병마스터(26.03) 기준으로 제공되며, 실제 보험금 청구 및 보험사 심사 결과와 다를 수 있습니다
             </p>
             <div className="flex items-center justify-end gap-3 shrink-0 whitespace-nowrap">
             {!loaded ? null : <>

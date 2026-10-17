@@ -386,16 +386,16 @@ export default function ResourceExplorer({ onClose, authStatus, authRole }: Reso
       for (const item of toDownload) {
         const fileRec = fileRecords.find(file => file.display_name === item.displayName && file.storage_path.endsWith(item.storageName));
         const { data, error } = await signedPreview(fileRec ? fileRec.storage_path : prefix + item.storageName);
-        if (error || !data?.signedUrl) throw new Error("파일 다운로드 주소를 가져오지 못했습니다.");
+        if (error || !data?.signedUrl) throw new Error("파일 다운로드 주소를 가져오지 못했습니다");
         const response = await fetch(data.signedUrl);
-        if (!response.ok) throw new Error("파일을 다운로드하지 못했습니다.");
+        if (!response.ok) throw new Error("파일을 다운로드하지 못했습니다");
         const name = zip.file(item.displayName) ? String(Object.keys(zip.files).length + 1) + "_" + item.displayName : item.displayName;
         zip.file(name, await response.blob());
       }
       if (!toDownload.length) return;
       const url = URL.createObjectURL(await zip.generateAsync({ type: "blob" }));
       const link = document.createElement("a"); link.href = url; link.download = "선택자료.zip"; document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch { alert("선택 자료를 다운로드하지 못했습니다. 다시 시도하시기 바랍니다."); }
+    } catch { alert("선택 자료를 다운로드하지 못했습니다 다시 시도하시기 바랍니다"); }
     finally { setBulkDownloading(false); }
   };
 
@@ -406,7 +406,7 @@ const handleAllDownload = async () => {
   const filesToDownload = fileRecords.filter(f => f.folder_path === parentPath);
 
   if (filesToDownload.length === 0) {
-    alert("다운로드할 파일이 없습니다.");
+    alert("다운로드할 파일이 없습니다");
     setAllDownloading(false);
     return;
   }
@@ -448,7 +448,7 @@ const handleFolderDownload = async (item: DisplayItem) => {
   );
 
   if (allFiles.length === 0) {
-    alert("폴더에 다운로드할 파일이 없습니다.");
+    alert("폴더에 다운로드할 파일이 없습니다");
     setFolderDownloading(null);
     return;
   }
@@ -836,7 +836,7 @@ const fileRec = fileRecords.find(
           </div>
           <div className="hidden md:flex w-auto flex-1 justify-center px-4">
   <span className="text-red-500 font-semibold text-sm text-center">
-    ⭐ 구독자료는 무단배포, 공유, SNS게시 절대 불가능 합니다. 
+    ⭐ 구독자료는 무단배포, 공유, SNS게시 절대 불가능 합니다 
   </span>
 </div>
 
@@ -877,9 +877,9 @@ const fileRec = fileRecords.find(
             ) : displayItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-gray-400">
                 {searchResults !== null ? (
-                  <><Search className="w-12 h-12 mb-2 opacity-40" /><p className="text-sm">검색 결과가 없습니다.</p></>
+                  <><Search className="w-12 h-12 mb-2 opacity-40" /><p className="text-sm">검색 결과가 없습니다</p></>
                 ) : (
-                  <><FolderOpen className="w-12 h-12 mb-2 opacity-40" /><p className="text-sm">{isAdmin ? "파일을 업로드하거나 폴더를 만들어 보세요." : "아직 자료가 없습니다."}</p></>
+                  <><FolderOpen className="w-12 h-12 mb-2 opacity-40" /><p className="text-sm">{isAdmin ? "파일을 업로드하거나 폴더를 만들어 보세요" : "아직 자료가 없습니다"}</p></>
                 )}
               </div>
             ) : viewMode === "grid" ? (
@@ -1041,7 +1041,7 @@ const fileRec = fileRecords.find(
         </div>
 
 
-      <p className="md:hidden shrink-0 border-t border-gray-100 px-4 py-3 text-center text-sm font-semibold text-red-500">⭐ 구독자료는 무단배포, 공유, SNS게시 절대 불가능 합니다.</p>
+      <p className="md:hidden shrink-0 border-t border-gray-100 px-4 py-3 text-center text-sm font-semibold text-red-500">⭐ 구독자료는 무단배포, 공유, SNS게시 절대 불가능 합니다</p>
       </div>
 
       {/* ── 미리보기 팝업 ── */}
@@ -1136,7 +1136,7 @@ const fileRec = fileRecords.find(
             <p className="text-gray-800 font-bold text-center mb-2">선택 항목 삭제</p>
             <p className="text-gray-500 text-sm text-center mb-6">
               선택한 <span className="font-semibold text-gray-700">{selectedCount}개</span> 항목을 삭제하시겠습니까?
-              <span className="block text-red-400 text-xs mt-1">삭제된 파일은 복구할 수 없습니다.</span>
+              <span className="block text-red-400 text-xs mt-1">삭제된 파일은 복구할 수 없습니다</span>
             </p>
             <div className="flex gap-3">
               <button data-popup-action="true" onClick={() => setBulkDeleteConfirm(false)} className="flex-1 py-3 rounded-2xl bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200 transition cursor-default">취소</button>

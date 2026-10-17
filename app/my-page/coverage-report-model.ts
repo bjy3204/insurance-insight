@@ -14,11 +14,26 @@ export const COVERAGE_GROUPS: { title: string; fields: CoverageField[] }[] = [
   { title: "실손의료비", fields: ["질병입원 의료비", "질병통원 의료비", "상해입원 의료비", "상해통원 의료비"].map((label, i) => ({ id: `medical-${i}`, label })) },
   { title: "배상", fields: [{ id: "liability", label: "일상생활배상책임", unit: "억" }] },
 ];
-export type ReportPolicy = { id: string; insurer: string; product: string; years: string; start: string; end: string; premium: string; amounts: Record<string, string> };
-export type CoverageReport = { name: string; birth: string; date: string; advisor: string; organization?: string; phone?: string; fax?: string; email?: string; fieldLabels?: Record<string,string>; chartTargets?: Record<string,string>; statusOverrides?:Record<string,string>; statusLabels?:Record<string,string>; memo: string; policies: ReportPolicy[]; overrides: Record<string, string> };
+const careGroup = COVERAGE_GROUPS.find(group => group.title === "치매 / 간병")!;
+export const REPORT_COVERAGE_GROUPS = COVERAGE_GROUPS.filter(group => group.title !== "배상").map(group => {
+    if (group.title === "치매 / 간병") return { ...group, title: "치매 / 재가", fields: careGroup.fields.filter(field => ["care-0", "care-1", "care-2"].includes(field.id)) };
+    if (group.title === "입원") return { ...group, fields: group.fields.filter(field => !["hospital-2", "hospital-3"].includes(field.id)) };
+    if (group.title === "1인실") return { ...group, title: "간병", fields: [...careGroup.fields.filter(field => ["care-3", "care-4"].includes(field.id)), ...COVERAGE_GROUPS.find(item => item.title === "입원")!.fields.filter(field => ["hospital-2", "hospital-3"].includes(field.id))] };
+    if (group.title === "골절 / 화상") return { ...group, title: "골절 / 화상 / 배상", fields: [...group.fields, ...COVERAGE_GROUPS.find(item => item.title === "배상")!.fields] };
+    return group;
+  });
+
+export type ReportPolicy = { id: string; insurer: string; product: string; years: string; start: string; end: string; premium: string; units?: Record<string,string>; amounts: Record<string, string> };
+export type CoverageReport = { name: string; birth: string; date: string; advisor: string; organization?: string; phone?: string; fax?: string; email?: string; removedGroups?: string[]; removedFields?: string[]; customFields?: Record<string,CoverageField[]>; fieldUnits?: Record<string,string>; categoryLabels?: Record<string,string>; fieldLabels?: Record<string,string>; chartTargets?: Record<string,string>; statusOverrides?:Record<string,string>; statusLabels?:Record<string,string>; memo: string; policies: ReportPolicy[]; overrides: Record<string, string> };
 export const coverageStatusReport=(report:CoverageReport):CoverageReport=>({...report,overrides:{...report.overrides,...report.statusOverrides},fieldLabels:{...report.fieldLabels,...report.statusLabels}});
+export const reportCoverageGroups = (report: CoverageReport) => [
+  ...REPORT_COVERAGE_GROUPS.map(group=>({...group,fields:[...group.fields.filter(field=>!report.removedFields?.includes(field.id)),...(report.customFields?.[group.title]||[])]})),
+  ...Object.entries(report.customFields||{}).filter(([title])=>!REPORT_COVERAGE_GROUPS.some(group=>group.title===title)).map(([title,fields])=>({title,fields}))
+].filter(group=>!report.removedGroups?.includes(group.title));
+export const coverageGroupLabel = (report: CoverageReport, title: string) => report.categoryLabels?.[title] ?? title;
 export const coverageFieldLabel = (report: CoverageReport, field: CoverageField) => report.fieldLabels?.[field.id] ?? field.label;
 export const filledPolicyCount = (report:CoverageReport) => report.policies.filter(policy=>policy.insurer.trim()||policy.product.trim()||policy.premium.trim()||Object.values(policy.amounts).some(value=>value.trim())).length;
+export const DEFAULT_CHART_TARGETS:Record<string,string>={"disability-0":"20000","cancer-0":"10000","heart-0":"5000","brain-0":"5000","surgery-0":"100","hospital-0":"20"};
 export const REPORT_CHART_FIELDS = [
   {id:"disability-0",label:"후유장해"},{id:"cancer-0",label:"암"},{id:"heart-0",label:"심장"},
   {id:"brain-0",label:"뇌"},{id:"surgery-0",label:"수술"},{id:"hospital-0",label:"입원"},
@@ -31,15 +46,15 @@ export const REPORT_SECTIONS = [
 ] as const;
 export type ReportSection = typeof REPORT_SECTIONS[number]["id"] | "all";
 export const REPORT_THEMES = [
-  { id: "yellow", label: "노랑", primary: "#e4bd48", secondary: "#9b7d2b", soft: "#fffbed", tint: "#fff8df", line: "#ece2bc" },
-  { id: "orange", label: "주황", primary: "#eea468", secondary: "#b47b4b", soft: "#fff7ef", tint: "#fff1e5", line: "#efdbc9" },
-  { id: "sky", label: "하늘", primary: "#6a9bc6", secondary: "#426588", soft: "#eff5fc", tint: "#edf4fb", line: "#dce5f0" },
-  { id: "green", label: "초록", primary: "#7fa18a", secondary: "#587963", soft: "#f1f7f2", tint: "#eaf3ed", line: "#dbe7de" },
-  { id: "gray", label: "회색", primary: "#8a949f", secondary: "#626e7b", soft: "#f4f5f7", tint: "#eef0f3", line: "#dfe2e6" },
+  { id: "yellow", title: "#d2a02a", titleAccent: "#e7bd54", label: "노랑", primary: "#eab52a", secondary: "#34465b", soft: "#fffbed", tint: "#fff4cc", line: "#f2e3af" },
+  { id: "orange", title: "#d97d46", titleAccent: "#f1a56f", label: "주황", primary: "#f28b45", secondary: "#34465b", soft: "#fff8f2", tint: "#ffeadb", line: "#f8d7be" },
+  { id: "sky", title: "#426588", titleAccent: "#6a9bc6", label: "하늘", primary: "#6a9bc6", secondary: "#426588", soft: "#eff5fc", tint: "#edf4fb", line: "#dce5f0" },
+  { id: "green", title: "#428e79", titleAccent: "#72b6a0", label: "초록", primary: "#45a786", secondary: "#34465b", soft: "#f2fbf7", tint: "#e0f4ea", line: "#cbe8db" },
+  { id: "gray", title: "#252525", titleAccent: "#606060", label: "블랙", primary: "#353535", secondary: "#292929", soft: "#f8f8f8", tint: "#eeeeee", line: "#dedede" },
 ] as const;
 export type ReportTheme = typeof REPORT_THEMES[number]["id"];
 export function coverageCategoryLabel(title: string) {
-  return ({ "후유장해":"후유\n장해", "치매 / 간병":"치매\n간병", "입원 / 1인실":"입원\n1인실", "골절 / 화상":"골절\n화상", "실손의료비":"실손\n의료비", "배상책임":"배상\n책임" } as Record<string,string>)[title] || title;
+  return ({ "후유장해":"후유\n장해", "치매 / 간병":"치매\n간병", "입원 / 1인실":"입원\n1인실", "골절 / 화상":"골절\n화상", "실손의료비":"실손\n의료비", "배상책임":"배상\n책임" } as Record<string,string>)[title] || title.replace(/\s*\/\s*/g, "\n");
 }
 export function remodelingDifference(before: CoverageReport, after: CoverageReport) {
   const current = reportTotals(before), proposed = reportTotals(after);
@@ -62,13 +77,16 @@ export function coverageTotal(report: CoverageReport, field: CoverageField): str
     return number!==null&&!field.manual?amountText(number*(field.unit==="억"?10000:1)):value;
   }
   if (field.manual) return "";
-  const total = report.policies.reduce((sum, policy) => sum + (reportNumber(policy.amounts[field.id] || "") || 0), 0);
-  return amountText(total * (field.unit === "억" ? 10000 : 1));
+  const fallback=report.fieldUnits?.[field.id]||field.unit||"만원";
+  const total=report.policies.reduce((sum,policy)=>{const unit=policy.units?.[field.id]||fallback;return sum+(reportNumber(policy.amounts[field.id]||"")||0)*(unit==="억"?10000:unit==="천원"?.1:1);},0);
+  return amountText(total);
 }
-export function policyAmount(policy: ReportPolicy, field: CoverageField): string {
+export function policyAmount(policy: ReportPolicy, field: CoverageField, unitOverride?: string): string {
+  unitOverride=policy.units?.[field.id]??unitOverride;
   const value = policy.amounts[field.id] || "";
   if (field.manual) return value || "";
-  return amountText((reportNumber(value) || 0) * (field.unit === "억" ? 10000 : 1));
+  if(unitOverride&&unitOverride!=="만원"&&unitOverride!=="억")return value?`${formatCoverageNumber(value)}${unitOverride}`:"";
+  return amountText((reportNumber(value) || 0) * ((unitOverride||field.unit) === "억" ? 10000 : 1));
 }
 export function paymentValues(policy: ReportPolicy, today: string) {
   const years = reportNumber(policy.years), premium = reportNumber(policy.premium) || 0;
@@ -95,4 +113,17 @@ export function reportTotals(report: CoverageReport) {
 }
 export function detailPages(policies: ReportPolicy[]) {
   return Array.from({ length: Math.ceil(policies.length / 4) }, (_, i) => policies.slice(i * 4, i * 4 + 4));
+}
+
+export function formatCoverageNumber(value:string):string{
+ const [whole,...fraction]=value.replace(/,/g,'').split('.');
+ return whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+(fraction.length?'.'+fraction.join(''):'');
+}
+
+export const REPORT_DESIGNS=[{id:'simple',label:'심플'},{id:'diagonal',label:'사선'},{id:'grid',label:'격자'},{id:'dots',label:'도트'},{id:'frame',label:'프레임'}] as const;
+export type ReportDesign=typeof REPORT_DESIGNS[number]['id'];
+export function reportDesignStyle(design:ReportDesign,accent:string,soft:string,line:string):Record<string,string>{
+ const base=`linear-gradient(155deg,${soft},#fff 45%)`,ink=accent+'14';
+ const patterns={simple:[base,'auto'],diagonal:[`repeating-linear-gradient(135deg,transparent 0 32px,${ink} 32px 33px),${base}`,'auto'],grid:[`linear-gradient(${ink} 1px,transparent 1px),linear-gradient(90deg,${ink} 1px,transparent 1px),${base}`,'28px 28px,28px 28px,auto'],dots:[`radial-gradient(${ink} 1.2px,transparent 1.2px),${base}`,'22px 22px,auto'],frame:[base,'auto']};
+ return {'--cr-cover-background':patterns[design][0],'--cr-cover-background-size':patterns[design][1],'--cr-cover-frame':design==='frame'?'1px solid '+line:'0 solid transparent'};
 }

@@ -26,7 +26,7 @@ export async function loadMemberMemos(client: SupabaseClient, owner: string): Pr
   let imported: string[] = [];
   if (ledger) {
     const manifest = JSON.parse(ledger.content);
-    if (!Array.isArray(manifest.imported) || manifest.imported.some((id: unknown) => typeof id !== "string")) throw new Error("메모 이관 기록을 확인하지 못했습니다.");
+    if (!Array.isArray(manifest.imported) || manifest.imported.some((id: unknown) => typeof id !== "string")) throw new Error("메모 이관 기록을 확인하지 못했습니다");
     imported = manifest.imported;
   }
   const records = (outside.data || []).filter(row => row.id !== ledgerId);

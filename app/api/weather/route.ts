@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
   if (!apiKey) {
     return NextResponse.json(
-      { error: "OPENWEATHER_API_KEY가 없습니다." },
+      { error: "OPENWEATHER_API_KEY가 없습니다" },
       { status: 500 }
     );
   }
@@ -138,7 +138,7 @@ airQuality: {
     });
   } catch {
     return NextResponse.json(
-      { error: "날씨 정보를 불러오지 못했습니다." },
+      { error: "날씨 정보를 불러오지 못했습니다" },
       { status: 500 }
     );
   }

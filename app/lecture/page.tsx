@@ -684,7 +684,7 @@ const calendarDays = [
   </a>
 </section>
 <p className="text-[13px] text-gray-400 mb-3 px-1 break-keep">
-  강의 등록은 검수 후 승인된 일정만 노출되며 현재 무료 운영중입니다.
+  강의 등록은 검수 후 승인된 일정만 노출되며 현재 무료 운영중입니다
 </p>
 
         {/* 검색 */}
@@ -723,7 +723,7 @@ transition
           <div data-page-card-grid="true" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 {activeLectures.length === 0 && (
   <div className="col-span-full text-center py-16 text-gray-400 text-sm">
-    검색 결과가 없습니다.
+    검색 결과가 없습니다
   </div>
 )}
             {activeLectures.map((lecture) => (
@@ -1016,7 +1016,7 @@ transition
     <div className="flex-1 overflow-y-auto px-5 pt-0 pb-5 space-y-4">
       {currentReviews.length === 0 && (
         <div className="text-center text-sm text-gray-400 py-16">
-          등록된 후기가 없습니다.
+          등록된 후기가 없습니다
         </div>
       )}
 
@@ -1101,7 +1101,7 @@ transition
     <div className="p-6 overflow-y-auto flex-1 min-w-0">
       {!selectedInstructorInfo && (
         <div className="text-center text-sm text-gray-400 py-16">
-          등록된 강사 정보가 없습니다.
+          등록된 강사 정보가 없습니다
         </div>
       )}
 

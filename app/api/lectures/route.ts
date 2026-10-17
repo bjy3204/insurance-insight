@@ -8,7 +8,7 @@ const notion = new Client({
 export async function GET() {
   try {
     if (!process.env.NOTION_LECTURE_DATABASE_ID) {
-      throw new Error("NOTION_LECTURE_DATABASE_ID가 없습니다.");
+      throw new Error("NOTION_LECTURE_DATABASE_ID가 없습니다");
     }
 
     const response = await (notion as any).dataSources.query({
@@ -61,7 +61,7 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        error: "강의 데이터를 불러오지 못했습니다.",
+        error: "강의 데이터를 불러오지 못했습니다",
         detail: error.message,
       },
       { status: 500 }
