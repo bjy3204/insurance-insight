@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Search, X } from "lucide-react";
 
@@ -132,7 +133,7 @@ setItems(rows);
             상병코드 검색
           </div>
 
-          <button data-popup-close="true"
+          <button data-icon-only="true" data-popup-close="true"
             onClick={closePopup}
             className="cursor-pointer w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition"
           >
@@ -144,7 +145,7 @@ setItems(rows);
           <div data-popup-search-section="true" className="relative mb-4 shrink-0">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
-            <input data-ui-field="true" data-page-search-input="true"
+            <ClearableSearchInput onClear={() => setSearch("")} data-ui-field="true" data-page-search-input="true"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="상병코드 또는 질병명을 검색하세요"
@@ -154,9 +155,7 @@ setItems(rows);
 
           <div className="overflow-auto flex-1 border border-gray-200 rounded-2xl">
             {loading ? (
-              <div className="text-center text-sm text-gray-400 py-10">
-                상병코드 데이터를 불러오는 중입니다
-              </div>
+              null
             ) : (
               <table className="w-full text-sm table-fixed">
                 <thead className="bg-gray-50 text-gray-500 sticky top-0 z-10">
@@ -212,12 +211,12 @@ setItems(rows);
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-3 shrink-0 text-xs">
+          <div data-reference-note="true" className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-3 shrink-0 text-xs">
             <p className="min-w-0 text-gray-500 leading-relaxed px-1">
               상병코드는 건강보험심사평가원 에서 배포한 상병마스터(26.03) 기준으로 제공되며, 실제 보험금 청구 및 보험사 심사 결과와 다를 수 있습니다.
             </p>
             <div className="flex items-center justify-end gap-3 shrink-0 whitespace-nowrap">
-            {!loaded ? <span className="text-gray-400">상병코드 데이터 불러오는 중...</span> : <>
+            {!loaded ? null : <>
               <span className="text-slate-500">전체 <strong className="font-semibold text-slate-700">{items.length.toLocaleString()}</strong>개</span>
               <span className="rounded-lg bg-blue-50 px-3 py-1.5 text-blue-600">검색 결과 <strong>{filteredItems.length.toLocaleString()}</strong>개</span>
             </>}

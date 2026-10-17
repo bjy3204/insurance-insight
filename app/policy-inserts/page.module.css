@@ -21,7 +21,7 @@
 .pagination button[aria-haspopup="listbox"]{padding:8px 12px}
 .customerHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.customerHeading h2{margin:0}.customerHeading>span{flex-shrink:0;color:#8894a5;font-size:13px}
 .customerEntryRow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.customerEntryRow .customerAdd{display:inline-flex;flex:0 0 auto;width:auto;max-width:100%;gap:8px}.card .customerEntryRow .customerAdd input{flex:0 1 104px;width:104px;height:44px;margin:0}.customerEntryRow .customerCard{flex:0 1 auto;height:44px}.customerEntryRow .customerCard>button:first-child{padding:10px 12px}
-.customerAdd{display:flex;gap:8px;width:100%;max-width:290px}.card .customerAdd input{min-width:0;flex:1;margin-top:0}.customerAdd>button{display:flex;align-items:center;justify-content:center;gap:4px;flex-shrink:0;padding:0 13px;border-radius:10px;background:#2a65ab;color:white;font-size:14px;font-weight:700}.customerCards{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px;margin-top:14px}.customerCard{display:inline-flex;max-width:100%;min-width:0;align-items:center;border:1px solid #dbe3ee;border-radius:10px;background:#f8fafc;overflow:hidden}.customerCard[data-selected=true]{border-color:#86b0e5;background:#edf5ff}.customerCard>button:first-child{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:12px;text-align:left;font-size:15px;font-weight:600;color:#405674}.customerCard>button:last-child{display:flex;align-items:center;justify-content:center;width:28px;height:28px;margin-right:5px;border-radius:7px;color:#8796aa;flex-shrink:0}.customerCard>button:last-child:hover{background:#feecec;color:#d34545}.customerError{margin-top:8px;color:#c24141;font-size:13px}
+.customerAdd{display:flex;gap:8px;width:100%;max-width:290px}.card .customerAdd input{min-width:0;flex:1;margin-top:0}.customerAdd>button{display:flex;align-items:center;justify-content:center;gap:4px;flex-shrink:0;padding:0 13px;border-radius:10px;background:#2a65ab;color:white;font-size:14px;font-weight:700}.customerCards{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px;margin-top:14px}.customerCard{display:inline-flex;max-width:100%;min-width:0;align-items:center;border:1px solid #dbe3ee;border-radius:10px;background:#f8fafc;overflow:hidden}.customerCard[data-selected=true]{border-color:#86b0e5;background:#edf5ff}.customerCard>button:first-child{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:12px;text-align:left;font-size:15px;font-weight:600;color:#405674}.customerCard>button:last-child{display:flex;align-items:center;justify-content:center;width:28px;height:28px;margin-right:5px;border-radius:7px;color:#8796aa;flex-shrink:0}.customerCard>button:last-child:hover{background:#feecec;color:#000000}.customerError{margin-top:8px;color:#c24141;font-size:13px}
 .categories{display:flex;flex-direction:column;gap:6px;margin:0;padding:10px;background:white;border:1px solid #e0e6ee;border-radius:16px}
 .categories button{justify-content:flex-start;gap:7px;padding:12px 8px;white-space:nowrap;font-size:14px;border-color:transparent;border-radius:10px}
 .categories button svg{display:block;flex-shrink:0;width:17px;height:17px}
@@ -77,3 +77,38 @@
 .controls .card{padding-left:16px;padding-right:16px}
 
 .card,.preview,.categories{border-radius:16px}
+.pageChoices>button[data-action-height],.pageChoices>button[data-action-height]>span,.customerCard>button:first-child{font-weight:400 !important}
+.pageChoices>button[data-action-height],.pageChoices>button[data-action-height]>span,.customerCard>button:first-child{font-size:14px !important}
+.customerCard>button:last-child{background:transparent}
+.customerCard>button:last-child:hover{background:transparent;color:#000000}
+.customerEntryRow .customerCard>button:last-child>svg{width:15px !important;height:15px !important;min-width:15px !important}
+.card h2{font-size:15px}
+
+.card h2,.advisorGrid label{font-size:15px;color:#284261}
+
+@media(min-width:768px){.categories{gap:4px}}
+
+@media(min-width:768px){.categories{gap:6px}}
+
+@media(max-width:767px){.embedded .controls .card{padding-top:16px;padding-bottom:16px}.embedded .card h2{font-size:16px}}
+
+@media(max-width:767px){.advisorFields input,.preview h2{font-size:16px}}
+
+@media(max-width:767px){
+ .embedded .sectionHeading{position:relative;min-height:24px;padding-right:40px}
+ .embedded .sectionHeading h2{line-height:24px;margin-top:0;margin-bottom:0}
+ .embedded .sectionHeading .advisorToggle{position:absolute;right:0;top:50%;transform:translateY(-50%);background:transparent !important;border:0 !important;box-shadow:none !important}
+ .embedded .sectionHeading .advisorToggle:hover,.embedded .sectionHeading .advisorToggle:active,.embedded .sectionHeading .advisorToggle:focus{background:transparent !important;box-shadow:none !important}
+}
+
+@media(max-width:767px){
+ .embedded .controls .card{padding:16px}
+ .embedded .card>h2,.embedded .customerHeading,.embedded .sectionHeading{margin-top:0;margin-bottom:14px;min-height:24px;line-height:24px}
+ .embedded .customerHeading h2,.embedded .sectionHeading h2{margin:0;line-height:24px}
+ .embedded .sectionHeading.collapsedHeading{margin-bottom:0}
+ .embedded .advisorGrid{gap:14px}
+ .embedded .card .advisorGrid input{margin-top:14px}
+ .embedded .card>:last-child{margin-bottom:0}
+}
+
+@media(max-width:767px){.embedded .advisorGrid{row-gap:20px}.embedded .card .advisorGrid input{margin-top:8px}.embedded .advisorFields{gap:20px}.embedded .advisorFields label{gap:8px}}

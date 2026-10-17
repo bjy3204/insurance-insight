@@ -1,4 +1,5 @@
 "use client";
+import { ChevronLeft as TaskChevronLeft, ChevronRight as TaskChevronRight } from "lucide-react";
 
 import { X, Megaphone } from "lucide-react";
 import { noticeVersion } from "@/app/notice/notices";
@@ -13,7 +14,7 @@ return (<>{popupNotice && !popupNoticeClosed && (
                 <Megaphone className="w-5 h-5" />
                 공지사항
               </div>
-              <button data-popup-close="true"
+              <button data-icon-only="true" data-popup-close="true"
                 onClick={() => {
                   const seenIds: string[] = JSON.parse(localStorage.getItem("seen_popup_notice_ids") || "[]");
                   if (!seenIds.includes(popupNotice.id)) seenIds.push(popupNotice.id);
@@ -85,26 +86,26 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
       {images.length > 1 && (
         <>
-          <button
+          <button data-icon-only="true" data-prev-next="true"
             onClick={() =>
               setPopupNoticeImageIndex((prev) =>
                 prev === 0 ? images.length - 1 : prev - 1
               )
             }
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-blue-600/85 text-white flex items-center justify-center hover:bg-blue-700/90 transition cursor-pointer"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-blue-600/85 text-white flex items-center justify-center hover:bg-blue-700/90 transition cursor-pointer"
           >
-            ‹
+            <TaskChevronLeft data-arrow-size="24" size={24} role="img" aria-label="이전" style={{display:"inline-block",verticalAlign:"middle"}} />
           </button>
 
-          <button
+          <button data-icon-only="true" data-prev-next="true"
             onClick={() =>
               setPopupNoticeImageIndex((prev) =>
                 prev === images.length - 1 ? 0 : prev + 1
               )
             }
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-blue-600/85 text-white flex items-center justify-center hover:bg-blue-700/90 transition cursor-pointer"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-blue-600/85 text-white flex items-center justify-center hover:bg-blue-700/90 transition cursor-pointer"
           >
-            ›
+            <TaskChevronRight data-arrow-size="24" size={24} role="img" aria-label="다음" style={{display:"inline-block",verticalAlign:"middle"}} />
           </button>
 
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-blue-600/85 text-white text-xs font-bold">

@@ -28,13 +28,37 @@ export default function ClaimNoticePaper({ kind, customerName, content, signatur
   const accentColor = textColor.toLowerCase() === "#4a4a4a" ? palette.accent : textColor;
   const title = copy.title.replace(/\s*\n\s*/g, " ");
   const titleFont = Math.min(35, 620 / Math.max(title.replace(/\s/g, "").length, 1));
+  const numberedPaper = <div className={kind === "hospital" ? undefined : "hidden md:block"} style={{ position: "absolute", inset: 0, padding: 35, background: palette.background }}><article style={{ height: "100%", padding: "27px 36px", border: "1px solid #deded8", background: "#fff", fontFamily, color: textColor, display: "flex", flexDirection: "column" }}>
+      <header data-claim-paper-header="true" style={{ position: "relative", marginBottom: 28 }}>
+        <div data-claim-paper-mark="true" className="hidden md:flex" style={{ position: "absolute", right: 0, top: 0, width: 58, height: 58, borderRadius: "50%", border: `1px solid ${palette.background}`, alignItems: "center", justifyContent: "center", color: palette.accent }}><Icon size={32} strokeWidth={1.5} /></div>
+        <p data-claim-paper-customer="true" style={{ fontSize: 21, lineHeight: 1.5, margin: "0 0 10px", color: "#64748b" }}>{customerName.trim() ? `${customerName.trim()} 고객님` : "고객님"}</p>
+        <h2 data-claim-paper-title="true" style={{ fontSize: titleFont, fontWeight: 700, lineHeight: 1.4, letterSpacing: -1, margin: 0 }}>{title}</h2>
+        <p data-claim-paper-introduction="true" style={{ fontSize: 17, lineHeight: 1.6, margin: "12px 0 0", whiteSpace: "pre-wrap" }}>{copy.introduction}</p>
+      </header>
+      <div data-claim-document-list="true" data-claim-kind={kind} data-document-count={lines.length} style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1, minHeight: 0, justifyContent: "center" }}>
+        {lines.map((line, index) => {
+          const documentText = line.replace(/^\d{1,3}[.)]?\s+/, "");
+          return <div key={index} style={{ display: "flex", alignItems: "center", gap: 16, padding: lines.length > 4 ? "12px 22px" : "20px 22px", borderRadius: 16, background: palette.background, minHeight: lines.length > 4 ? 58 : 78 }}>
+            <span style={{ width: 34, height: 34, flexShrink: 0, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", background: palette.accent, color: "#fff", fontSize: 19, fontWeight: 700 }}>{index + 1}</span>
+            <span data-claim-paper-document="true" data-compact={compact ? "true" : "false"} style={{ fontSize: compact ? 19 : 23, fontWeight: 700, lineHeight: 1.5, letterSpacing: -0.5, overflowWrap: "anywhere" }}>{documentText}</span>
+          </div>;
+        })}
+      </div>
+      <footer data-claim-paper-footer="true" style={{ paddingTop: 28 }}>
+        <p data-claim-paper-additional="true" style={{ color: accentColor, fontSize: 15, lineHeight: 1.7, margin: "0 0 6px", whiteSpace: "pre-wrap" }}>{copy.additional}</p>
+        <p data-claim-paper-closing="true" data-hide-outpatient-closing={kind === "outpatient" ? "true" : undefined} style={{ fontSize: 17, lineHeight: 1.7, margin: "0 0 20px", whiteSpace: "pre-wrap" }}>{copy.closing}</p>
+        <div data-claim-paper-signature="true" style={{ fontSize: 18, fontWeight: 600, textAlign: "right", color: signatureColor }}>{signature}</div>
+      </footer>
+    </article></div>;
+  if (kind === "hospital") return numberedPaper;
   return (
-    <div style={{ position: "absolute", inset: 0, background: palette.background, padding: 35, fontFamily, color: textColor }}>
+    <>{numberedPaper}
+    <div className="md:hidden" style={{ position: "absolute", inset: 0, background: palette.background, padding: 35, fontFamily, color: textColor }}>
       <div style={{ position: "absolute", inset: 35, background: "#ffffff", transform: "translate(3px, 3px) rotate(-0.35deg)", boxShadow: "0 2px 5px #00000012" }} />
       <article style={{ position: "relative", height: "100%", padding: "27px 36px", display: "flex", flexDirection: "column", background: "#ffffff", border: "1px solid #eeeeee", boxShadow: "1px 2px 5px #0000000b" }}>
         <header style={{ position: "relative", paddingBottom: 14, borderBottom: "1px solid #606760" }}>
-          <p style={{ fontSize: 28, lineHeight: 1.4, margin: "0 0 10px", overflowWrap: "anywhere", paddingRight: 78 }}>{customerName.trim() ? `${customerName.trim()} 고객님` : "고객님"}</p>
-          <h2 style={{ fontSize: titleFont, fontWeight: 700, lineHeight: 1.35, letterSpacing: -1.1, margin: 0, whiteSpace: "nowrap" }}>{title}</h2>
+          <p data-claim-paper-customer="true" style={{ fontSize: 28, lineHeight: 1.4, margin: "0 0 10px", overflowWrap: "anywhere", paddingRight: 78 }}>{customerName.trim() ? `${customerName.trim()} 고객님` : "고객님"}</p>
+          <h2 data-claim-paper-title="true" style={{ fontSize: titleFont, fontWeight: 700, lineHeight: 1.35, letterSpacing: -1.1, margin: 0, whiteSpace: "nowrap" }}>{title}</h2>
           <div style={{ position: "absolute", right: 0, top: -3, width: 58, height: 58, borderRadius: "50%", border: `1px solid ${palette.background}`, display: "flex", alignItems: "center", justifyContent: "center", color: palette.accent }}><Icon size={32} strokeWidth={1.5} /></div>
         </header>
         <p style={{ fontSize: 17, lineHeight: 1.6, margin: "10px 0 12px", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{copy.introduction}</p>
@@ -54,6 +78,6 @@ export default function ClaimNoticePaper({ kind, customerName, content, signatur
           <div style={{ fontSize: 18, fontWeight: 600, textAlign: "center", color: signatureColor, overflowWrap: "anywhere" }}>{signature}</div>
         </footer>
       </article>
-    </div>
+    </div></>
   );
 }

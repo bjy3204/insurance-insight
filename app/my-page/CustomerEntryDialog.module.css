@@ -7,14 +7,14 @@
 .section:last-child { margin-bottom:0; }
 .section h3 { display:flex; align-items:center; gap:8px; margin:0 0 16px; color:#334968; font-size:14px; font-weight:700; }
 .section h3 svg { width:18px; height:18px; color:#5475a4; }
-.grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px 12px; }
+.grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
 .contractGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-.field { display:flex; min-width:0; flex-direction:column; gap:7px; }
+.field { display:flex; min-width:0; flex-direction:column; gap:8px; }
 .label { color:#52627a; font-size:12px; font-weight:600; }
 .gender { margin-left:8px; padding:2px 7px; border-radius:6px; background:#eff6ff; color:#2563eb; font-size:11px; }
 .wide { grid-column:1 / -1; }
-.field > input, .phoneRow > input, .field > textarea, .select { width:100%; min-width:0; border:1px solid #dce4ef; border-radius:12px; background:#fff; color:#24324a; font-size:14px; }
-.field > input, .phoneRow > input { height:44px; padding:0 12px; }
+:is(.field > input,.field > span[data-clearable-search] > input), :is(.phoneRow > input,.phoneRow > span[data-clearable-search] > input), .field > textarea, .select { width:100%; min-width:0; border:1px solid #dce4ef; border-radius:12px; background:#fff; color:#24324a; font-size:14px; }
+:is(.field > input,.field > span[data-clearable-search] > input), :is(.phoneRow > input,.phoneRow > span[data-clearable-search] > input) { height:44px; padding:0 12px; }
 .field > textarea { min-height:100px; padding:11px 12px; line-height:24px; resize:vertical; }
 .field input::placeholder, .field textarea::placeholder { color:#a0aabd; }
 .field input:focus, .field textarea:focus { outline:none; border-color:#86adff; box-shadow:0 0 0 3px #2563eb0d; }
@@ -37,7 +37,7 @@
   .body { padding:12px; }
   .section { padding:14px 12px; border-radius:12px; }
   .grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 10px; }
-  .field > input, .phoneRow > input, .field > textarea, .select { font-size:16px; }
+  :is(.field > input,.field > span[data-clearable-search] > input), :is(.phoneRow > input,.phoneRow > span[data-clearable-search] > input), .field > textarea, .select { font-size:16px; }
   .footer { padding:12px; }
   .footer button { flex:1; }
 }
@@ -49,13 +49,13 @@
 .optionRow > button:first-child { flex:1; min-width:0; }
 .optionRow > button:first-child > span { overflow-wrap:anywhere; }
 .options .removeOption { width:32px; height:32px; padding:6px; flex-shrink:0; justify-content:center; color:#94a3b8; }
-.options .removeOption:hover { background:#fff1f2; color:#ef4444; }
+.options .removeOption:hover { background:transparent; color:#000000; }
 .options .addOption { justify-content:flex-start; color:#2563eb; background:#eff6ff; }
 .options button:disabled { opacity:.45; cursor:default; }
 .select input:disabled { color:#94a3b8; }
 
 .phoneRow { display:flex; align-items:center; gap:8px; min-width:0; }
-.phoneRow > input { flex:1; min-width:0; }
+:is(.phoneRow > input,.phoneRow > span[data-clearable-search] > input) { flex:1; min-width:0; }
 .carrier { flex:0 0 88px; }
 .carrier > button { width:100%; height:44px; padding:0 8px; gap:4px; border-color:#dce4ef; border-radius:12px; color:#52627a; font-size:14px; }
 @media (max-width:767px) { .phoneField { grid-column:1 / -1; } }
@@ -63,7 +63,8 @@
 .fixedSelect > button { width:100%; height:44px; border-color:#dce4ef; border-radius:12px; color:#24324a; font-size:14px; }
 .suffixField { display:flex; align-items:center; gap:8px; height:44px; padding-right:12px; border:1px solid #dce4ef; border-radius:12px; color:#52627a; font-size:14px; }
 .suffixField input { flex:1; width:100%; min-width:0; height:100%; border:0; border-radius:12px; padding:0 12px; font:inherit; }
-.suffixField span { flex-shrink:0; margin-left:auto; }
+.suffixField > span[data-clearable-search] { flex:1 1 0; width:0; min-width:0; height:100%; margin-left:0; }
+.suffixField > span:not([data-clearable-search]) { flex:0 0 auto; margin-left:0; white-space:nowrap; }
 .suffixField:focus-within { border-color:#86adff; box-shadow:0 0 0 3px #2563eb0d; }
 @media (max-width:767px) { .suffixField input { font-size:16px; } }
 .identityInput { width:100%; min-width:0; height:44px; padding:0 12px; border:1px solid #dce4ef; border-radius:12px; color:#24324a; font-size:14px; }
@@ -92,3 +93,14 @@
 
 .addVehicle{width:30px;height:30px;padding:0;justify-content:center}.addVehicle svg{width:20px;height:20px}
 .section h3{font-size:16px}.label{font-size:14px}
+
+@media(max-width:767px){.label,.gender,.options button,.options p,.identityOption small{font-size:14px}}
+
+@media(max-width:767px){.section h3{font-size:16px}}
+
+/* Match desktop typography on mobile. */
+@media(max-width:767px){.field input,.phoneRow input,.field>textarea,.select,.identityInput{font-size:14px}}
+
+@media(max-width:767px){.field{gap:8px}.field>label{margin-bottom:0}.section{row-gap:20px}}
+
+.suffixField > span[data-clearable-search] > input { padding-right:12px !important; }

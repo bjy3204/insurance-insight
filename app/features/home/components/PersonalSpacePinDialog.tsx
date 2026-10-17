@@ -1,13 +1,13 @@
 "use client";
 
-import { X, Users } from "lucide-react";
+import { Delete as KeypadBackspace, X, Users } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
 export default function PersonalSpacePinDialog({ controller }: { controller: HomeController }) {
 const { authStatus, cmPinOpen, setCmPinOpen, cmPinState, cmPinStep, cmPinInput, cmPinConfirm, cmPinError, handleCmKeypad } = controller;
 return (<>{cmPinOpen && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50">
-          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm mx-4 px-8 pt-10 pb-8">
-<button data-popup-close="true"
+          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-[344px] mx-4 px-8 pt-10 pb-8">
+<button data-icon-only="true" data-popup-close="true"
   onClick={() => setCmPinOpen(false)}
   className="absolute right-4 top-4 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer"
 >
@@ -41,14 +41,14 @@ return (<>{cmPinOpen && (
                   ))}
                 </div>
                 {cmPinError && <p className="text-xs text-red-500 mb-3">{cmPinError}</p>}
-                <div className="grid grid-cols-3 gap-3 mb-3">
+                <div data-numeric-keypad="true" className="grid grid-cols-3 gap-2 mb-3">
                   {["1","2","3","4","5","6","7","8","9"].map((n) => (
-                    <button key={n} onClick={() => handleCmKeypad(n)} className="py-4 rounded-2xl bg-gray-50 text-xl font-semibold hover:bg-gray-100 transition cursor-pointer">{n}</button>
+                    <button key={n} onClick={() => handleCmKeypad(n)} className="py-4 rounded-2xl bg-gray-50 text-[18px] font-medium hover:bg-gray-100 transition cursor-pointer">{n}</button>
                   ))}
                   <div />
-                  <button onClick={() => handleCmKeypad("0")} className="py-4 rounded-2xl bg-gray-50 text-xl font-semibold hover:bg-gray-100 transition cursor-pointer">0</button>
+                  <button onClick={() => handleCmKeypad("0")} className="py-4 rounded-2xl bg-gray-50 text-[18px] font-medium hover:bg-gray-100 transition cursor-pointer">0</button>
                   <button onClick={() => handleCmKeypad("del")} className="py-4 rounded-2xl bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition cursor-pointer">
-                    <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" /></svg>
+                    <KeypadBackspace size={18} role="img" aria-label="한 자리 지우기" />
                   </button>
                 </div>
                 <button onClick={() => setCmPinOpen(false)} className="text-sm text-gray-400 hover:text-gray-600 transition cursor-pointer">돌아가기</button>
@@ -70,14 +70,14 @@ return (<>{cmPinOpen && (
                   ))}
                 </div>
                 {cmPinError && <p className="text-xs text-red-500 mb-3">{cmPinError}</p>}
-                <div className="grid grid-cols-3 gap-3 mb-3">
+                <div data-numeric-keypad="true" className="grid grid-cols-3 gap-2 mb-3">
                   {["1","2","3","4","5","6","7","8","9"].map((n) => (
-                    <button key={n} onClick={() => handleCmKeypad(n)} className="py-4 rounded-2xl bg-gray-50 text-xl font-semibold hover:bg-gray-100 transition cursor-pointer">{n}</button>
+                    <button key={n} onClick={() => handleCmKeypad(n)} className="py-4 rounded-2xl bg-gray-50 text-[18px] font-medium hover:bg-gray-100 transition cursor-pointer">{n}</button>
                   ))}
                   <div />
-                  <button onClick={() => handleCmKeypad("0")} className="py-4 rounded-2xl bg-gray-50 text-xl font-semibold hover:bg-gray-100 transition cursor-pointer">0</button>
+                  <button onClick={() => handleCmKeypad("0")} className="py-4 rounded-2xl bg-gray-50 text-[18px] font-medium hover:bg-gray-100 transition cursor-pointer">0</button>
                   <button onClick={() => handleCmKeypad("del")} className="py-4 rounded-2xl bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition cursor-pointer">
-                    <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" /></svg>
+                    <KeypadBackspace size={18} role="img" aria-label="한 자리 지우기" />
                   </button>
                 </div>
                 

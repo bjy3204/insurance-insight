@@ -19,7 +19,7 @@ return (<>{bankRateOpen && (
           주요 은행 {bankRateMonth}개월 예금 금리
         </h2>
 
-        <button type="button" data-popup-close="true" aria-label="예금 금리 닫기"
+        <button data-icon-only="true" type="button" data-popup-close="true" aria-label="예금 금리 닫기"
           onMouseDown={event => event.stopPropagation()}
           onClick={() => setBankRateOpen(false)}
           className="
@@ -37,7 +37,7 @@ return (<>{bankRateOpen && (
         </button>
       </div>
 
-      <div className="p-5 overflow-y-auto">
+      <div data-bank-rate-scroll="true" className="p-5 overflow-y-auto">
         <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
           <button
             onClick={() => setBankRateMonth("12")}
@@ -67,7 +67,7 @@ return (<>{bankRateOpen && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {bankRates.map((bank) => (
             <button
-              key={bank.name}
+              data-bank-rate-card="true" key={bank.name}
               type="button"
               onDoubleClick={() => {
                 if (bank.url) window.open(bank.url, "_blank");
@@ -111,7 +111,7 @@ return (<>{bankRateOpen && (
           ))}
         </div>
 
-       <div className="border-t border-gray-100 mt-3 pt-3">
+       <div data-reference-note="true" data-bank-rate-notes="true" className="border-t border-gray-100 mt-3 pt-3">
   <p className="text-xs font-medium text-gray-500 mb-2">금리 공시월 · {bankBaseDate}</p>
   <p className="text-xs text-gray-400 leading-relaxed break-keep">
     ※ 금리는 변동될 수 있으니 정확한 내용은 각 은행 홈페이지에서 확인해주세요.

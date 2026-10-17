@@ -180,7 +180,7 @@ function CompanyCard({
       target={disableLink ? undefined : "_blank"}
       rel={disableLink ? undefined : "noopener noreferrer"}
       className="
-        group relative bg-white rounded-3xl h-[152px] md:h-[168px] px-3 md:px-5
+        group relative bg-white rounded-[20px] h-[152px] md:h-[168px] px-3 md:px-5
         border border-gray-200 shadow-sm transition-all duration-200
         flex items-center justify-center animate-in fade-in zoom-in-95
         cursor-default
@@ -189,7 +189,7 @@ function CompanyCard({
       "
     >
       {showStar && (
-        <button
+        <button data-icon-only="true"
           type="button"
           onClick={(e) => {
             e.preventDefault();
@@ -280,7 +280,7 @@ function SortableCompanyCard({
     >
       <div data-card-lift="subtle" data-card-highlight="true"
         className={`
-          group relative bg-white rounded-3xl h-[152px] md:h-[168px] px-3 md:px-5
+          group relative bg-white rounded-[20px] h-[152px] md:h-[168px] px-3 md:px-5
           border border-gray-200 shadow-sm flex items-center justify-center
           md:border-0 md:rounded-[20px]
           transition-all duration-200 cursor-default
@@ -293,7 +293,7 @@ function SortableCompanyCard({
         `}
       >
         {showStar && (
-          <button
+          <button data-icon-only="true"
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
@@ -893,7 +893,7 @@ const pagedMemos = filteredMemos.slice(
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
               href="/"
               className="
                 absolute left-0 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl
@@ -920,7 +920,7 @@ const pagedMemos = filteredMemos.slice(
               }`}
             >
               <div className="relative">
-                <button data-header-control="true"
+                <button data-icon-only="true" data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
@@ -981,7 +981,7 @@ const pagedMemos = filteredMemos.slice(
       </header>
 
       <div data-page-content="true" className="w-full px-6 py-6 max-w-7xl mx-auto">
-        <div data-tab-style="rounded" className="grid grid-cols-2 gap-1 bg-white border border-gray-200 rounded-2xl p-1.5 mb-7">
+        <div data-tab-style="rounded" className="grid grid-cols-2 gap-1 bg-white border border-gray-200 rounded-2xl p-1.5 mb-5">
           <button
             onClick={() => setTab("nonlife")}
             className={`rounded-xl py-3 font-bold transition ${
@@ -1005,7 +1005,7 @@ const pagedMemos = filteredMemos.slice(
           </button>
         </div>
 
-        <div className="w-full grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-8 place-items-stretch">
+        <div data-page-card-grid="true" className="w-full grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-8 place-items-stretch">
          {currentItems.map((company) => (
   <CompanyCard
   key={company.id}
@@ -1071,7 +1071,7 @@ const pagedMemos = filteredMemos.slice(
                 즐겨찾기
               </div>
 
-             <button data-popup-close="true"
+             <button data-icon-only="true" data-popup-close="true"
   onMouseDown={(e) => e.stopPropagation()}
   onClick={closeManagePopup}
   className="
@@ -1124,7 +1124,7 @@ const pagedMemos = filteredMemos.slice(
                 onDragEnd={handleTempSortDragEnd}
               >
                 <SortableContext items={tempCurrentItems.map((company) => company.id)} strategy={rectSortingStrategy}>
-                  <div className="w-full grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6 place-items-stretch">
+                  <div data-page-card-grid="true" className="w-full grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6 place-items-stretch">
                     {tempCurrentItems.map((company) => (
                       <SortableCompanyCard
                         key={company.id}
@@ -1234,7 +1234,7 @@ const pagedMemos = filteredMemos.slice(
 
       <>
         <SiteFooter desktopOnly />
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
+        <div data-page-fixed-footer="true" className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a
             href="https://naver.me/xsZ8mk7H"

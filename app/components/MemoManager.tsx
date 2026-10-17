@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import Pagination from "@/app/components/Pagination";
 import { useMemoPreviews } from "@/lib/memos/preview";
 import MemoBody from "./memos/MemoBody";
@@ -370,7 +371,7 @@ export default function MemoManager({ open, onClose }: Props) {
                 메모장
               </div>
 
-              <button data-popup-close="true"
+              <button data-icon-only="true" data-popup-close="true"
                 onClick={onClose}
                 className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 hover:cursor-pointer transition"
               >
@@ -382,7 +383,7 @@ export default function MemoManager({ open, onClose }: Props) {
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
-                <input data-ui-field="true" data-page-search-input="true"
+                <ClearableSearchInput onClear={() => setMemoSearch("")} data-ui-field="true" data-page-search-input="true"
                   value={memoSearch}
                   onChange={(e) => setMemoSearch(e.target.value)}
                   placeholder="메모 검색" aria-label="메모 검색"
@@ -390,7 +391,7 @@ export default function MemoManager({ open, onClose }: Props) {
                 />
               </div>
 
-              <button
+              <button data-icon-only="true"
                 disabled={memosLoading || !!memosError}
                 onClick={() => {
                   setMemoAddPopupPos({ x: 0, y: 0 });
@@ -405,7 +406,7 @@ export default function MemoManager({ open, onClose }: Props) {
 
             <div className="flex-1 overflow-y-auto px-4 pt-0 pb-4">
               {memosError && <p role="alert" className="text-sm text-red-500 mb-3">{memosError}<button onClick={reloadMemos} className="ml-3 underline">다시 시도</button></p>}
-              {memosLoading ? <div className="text-center text-sm text-gray-400 py-20">메모를 불러오는 중입니다.</div> : filteredMemos.length === 0 ? (
+              {memosLoading ? null : filteredMemos.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-sm text-gray-400 py-20">
                   저장된 메모가 없습니다.
                 </div>
@@ -448,14 +449,12 @@ export default function MemoManager({ open, onClose }: Props) {
 
                                 <p className="text-[11px] text-gray-400 shrink-0 pt-3">
                                   수정일{" "}
-                                  {new Date(memo.updatedAt).toLocaleDateString(
-                                    "ko-KR"
-                                  )}
+                                  {new Date(memo.updatedAt).toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" })}
                                 </p>
                               </div>
 
                               <div className="flex flex-col gap-2">
-                                <button data-memo-visibility-control="true"
+                                <button data-memo-action="visibility" aria-label={memo.visible ? "메모 숨기기" : "메모 표시"} aria-pressed={memo.visible} data-icon-only="true" data-memo-visibility-control="true"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     toggleMemoVisible(memo.id);
@@ -473,7 +472,7 @@ export default function MemoManager({ open, onClose }: Props) {
                                   )}
                                 </button>
 
-                                <button
+                                <button data-memo-action="pin" aria-label={memo.pinned ? "메모 고정 해제" : "메모 고정"} aria-pressed={memo.pinned} data-icon-only="true"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     toggleMemoPinned(memo.id);
@@ -487,7 +486,7 @@ export default function MemoManager({ open, onClose }: Props) {
                                   <Pin className="w-4 h-4" />
                                 </button>
 
-                                <button
+                                <button data-memo-action="edit" aria-label="메모 수정" data-icon-only="true"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     openMemoEdit(memo);

@@ -84,7 +84,7 @@ const findInstructor = (name: string) =>
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
               href="/lecture"
               className="
                 w-11
@@ -268,7 +268,7 @@ const findInstructor = (name: string) =>
                 강의 상세
               </div>
 
-              <button data-popup-close="true"
+              <button data-icon-only="true" data-popup-close="true"
                 type="button"
                 onClick={() => setSelectedLecture(null)}
                 className="
@@ -402,7 +402,7 @@ const findInstructor = (name: string) =>
           강사정보보기
         </div>
 
-        <button data-popup-close="true"
+        <button data-icon-only="true" data-popup-close="true"
           type="button"
           onClick={() => setSelectedInstructor(null)}
           className="
@@ -500,7 +500,7 @@ const findInstructor = (name: string) =>
     </div>
   </div>
 )}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t shadow-lg">
+      <div data-page-fixed-footer="true" className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t shadow-lg">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <Link href="/lecture/instructor" className="py-3 flex flex-col items-center gap-1">
             <User className="w-5 h-5" />

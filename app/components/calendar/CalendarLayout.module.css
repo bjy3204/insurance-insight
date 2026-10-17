@@ -13,11 +13,11 @@
 .dayContent { position:absolute; inset:0; flex-direction:column; padding:6px; overflow:hidden; }
 .dayContent > :first-child { flex-shrink:0; }
 .dayContent > :nth-child(2) { min-height:0; overflow:hidden; }
-.dayEvent { display:flex; align-items:flex-start; gap:3px; width:100%; text-align:left; padding:4px 3px; border-radius:6px; font-size:14px; line-height:19px; cursor:pointer; }
-.dayEvent > span:first-child { flex-shrink:0; }.dayEvent > span:last-child { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dayEvent { display:flex; align-items:flex-start; gap:3px; width:100%; text-align:left; padding:4px 3px 4px 6px; border-radius:6px; font-size:14px; line-height:19px; cursor:pointer; }
+.dayEvent > span:first-child { flex-shrink:0; }.dayEvent > span:last-child { min-width:0; overflow:hidden; text-overflow:clip; white-space:pre; letter-spacing:normal; word-spacing:normal; }
 .customerIcons { flex-shrink:0; align-self:flex-end; margin-top:auto; padding-top:4px; font-size:17px; line-height:24px; text-align:right; }
 .scheduleLine { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:400; white-space:nowrap; min-width:0; }
-.scheduleTitle { font-weight:400; min-width:0; overflow:hidden; text-overflow:ellipsis; flex:1; white-space:pre; }.scheduleLine > span:not(:first-child) { color:#718096; font-size:14px; }.schedulePlace { max-width:30%; overflow:hidden; text-overflow:ellipsis; }
+.scheduleTitle { font-weight:400; min-width:0; overflow:hidden; text-overflow:clip; flex:1; white-space:pre; }.scheduleLine > span:not(:first-child) { color:#718096; font-size:14px; }.schedulePlace { max-width:30%; overflow:hidden; text-overflow:ellipsis; }
 .scheduleActions { display:flex; align-items:center; gap:4px; flex-shrink:0; margin-left:10px; }
 .scheduleActions button { display:grid; place-items:center; width:25px; height:26px; padding:0; border:0; border-radius:5px; color:#93a0b2; background:transparent; cursor:pointer; }
 .scheduleActions button:hover { color:#2563eb; background:#eff6ff; }.scheduleActions button:last-child:hover { color:#ef4444; background:#fff1f2; }.scheduleActions button:disabled { opacity:.4; cursor:default; }
@@ -29,3 +29,5 @@
 .dayContent:hover .dayAdd,.dayAdd:focus-visible { opacity:1; }
 .dayAdd:hover { color:#2563eb; }
 .dayAdd:focus-visible { outline:2px solid #bfdbfe; outline-offset:1px; border-radius:4px; }
+
+@media(max-width:767px){.layout{display:flex;flex-direction:column}.calendar,.sidebar{width:100%}.calendar{order:1}.sidebar{order:2}.sidebar .schedules{display:none}}

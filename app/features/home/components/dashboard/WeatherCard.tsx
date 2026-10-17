@@ -1,8 +1,9 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
-import { MapPin, ChevronDown, Cookie, X, Search } from "lucide-react";
+import { MapPin, Cookie, X, Search } from "lucide-react";
 import WeatherIcon from "./WeatherIcon";
 import WeatherBackdrop from "./WeatherBackdrop";
 import { daylightWeights } from "./weather-light";
@@ -27,6 +28,8 @@ export default function WeatherCard({ onFortune }: { onFortune: () => void }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchPosition, setSearchPosition] = useState({x:0,y:0});
+  const searchDrag = useRef<{x:number;y:number;originX:number;originY:number}|null>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Place[]>([]);
   const [searchMessage, setSearchMessage] = useState("");
@@ -110,15 +113,15 @@ export default function WeatherCard({ onFortune }: { onFortune: () => void }) {
   const darkBackgroundWeight = 1 - light.day;
   const mix = (day:number[],night:number[],alpha=1) => `rgb(${day.map((value,i) => Math.round(value+(night[i]-value)*darkBackgroundWeight)).join(" ")} / ${alpha})`;
   const appearance = {"--night-weight":light.night,"--day-weight":1-light.night,"--weather-text":mix([11,20,50],[255,255,255]),"--weather-secondary":mix([51,65,85],[241,245,255])} as CSSProperties;
-  return <article className={styles.card} aria-label="오늘의 날씨">
+  return <article data-ui-card="true" className={styles.card} aria-label="오늘의 날씨">
     <div key={weather ? 'weather-ready' : 'weather-loading'} className={styles.weatherTop} data-phase={weather ? phase : 'loading'} style={weather ? appearance : undefined}>
       {weather && <WeatherBackdrop condition={weather.condition} weights={light} />}
       <div className={styles.heading}>
         <div className={styles.weatherTitle}><h2>오늘의 날씨</h2><div className={styles.location}>
-          <button type="button" onClick={locate} title="현재 위치 날씨" aria-label="현재 위치 날씨" disabled={busy}><MapPin /></button>
-          <button type="button" onClick={() => setSearchOpen(true)} title={place.name}><span className={styles.locationLabel}>{weather?.region || place?.name || "서울"}</span><ChevronDown /></button>
+          <button data-icon-only="true" type="button" onClick={locate} title="현재 위치 날씨" aria-label="현재 위치 날씨" disabled={busy}><MapPin /></button>
+          <button type="button" onClick={() => setSearchOpen(true)} title={place.name}><span className={styles.locationLabel}>{weather?.region || place?.name || "서울"}</span></button>
         </div></div>
-        <button type="button" className={styles.iconButton} onClick={onFortune} title="오늘의 한마디" aria-label="오늘의 한마디"><Cookie /></button>
+        <button data-icon-only="true" type="button" className={styles.iconButton} onClick={onFortune} title="오늘의 한마디" aria-label="오늘의 한마디"><Cookie /></button>
       </div>
       <div className={styles.weatherMain}>{weather && <WeatherIcon condition={weather.condition} night={phase === "night"} />}<div><div className={styles.temperature}>{weather ? `${weather.temp}°C` : "—"}</div><div className={styles.description}>{weather ? names[weather.condition] : "날씨 확인 중"}</div></div></div>
       {error && <p role="status" className={styles.error} style={{ padding: "0 15px", marginTop: 0 }}>{error}</p>}
@@ -129,6 +132,6 @@ export default function WeatherCard({ onFortune }: { onFortune: () => void }) {
       const dateColor = holidays[day.date] || weekday === 0 ? styles.sunday : weekday === 6 ? styles.saturday : "";
       return <div key={day.date} className={styles.forecastDay}><div className={`${styles.forecastDate} ${dateColor}`} title={holidays[day.date]}>{`${date.getMonth() + 1}/${date.getDate()} (${["일", "월", "화", "수", "목", "금", "토"][weekday]})`}</div><WeatherIcon condition={day.condition} /><strong>{day.max ?? "—"}° / {day.min ?? "—"}°</strong></div>;
     })}</div>
-    {searchOpen && createPortal(<div className={styles.overlay} onClick={() => setSearchOpen(false)}><div data-popup-search-dialog="true" className={styles.dialog} role="dialog" aria-modal="true" aria-label="날씨 지역 검색" onClick={e => e.stopPropagation()}><div className={styles.dialogHeader}>지역 검색<button data-popup-close="true" className={styles.iconButton} onClick={() => setSearchOpen(false)} aria-label="닫기"><X /></button></div><form onSubmit={search}><label>전국 지역명<input data-ui-field="true" autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="예: 서울, 울산 삼산동" maxLength={80} /></label><div className={styles.formActions}><button className={styles.primary} disabled={searching}><Search size={14} style={{ display: "inline", marginRight: 5 }} />{searching ? "검색 중" : "검색"}</button></div></form><p className={styles.muted}>{searchMessage}</p>{results.map((result, index) => <button className={styles.searchResult} key={result.id ?? index} onClick={() => { setPlace(result); setSearchOpen(false); }}>{result.name}</button>)}</div></div>, document.body)}
+    {searchOpen && createPortal(<div className={styles.overlay} onClick={() => setSearchOpen(false)}><div data-popup-search-dialog="true" className={styles.dialog} style={{transform:`translate(${searchPosition.x}px,${searchPosition.y}px)`}} role="dialog" aria-modal="true" aria-label="날씨 지역 검색" onClick={e => e.stopPropagation()}><div className={styles.dialogHeader} style={{touchAction:"none",userSelect:"none"}} onPointerDown={event=>{if(event.button!==0||(event.target as HTMLElement).closest("button"))return;event.currentTarget.setPointerCapture(event.pointerId);searchDrag.current={x:event.clientX,y:event.clientY,originX:searchPosition.x,originY:searchPosition.y};}} onPointerMove={event=>{const drag=searchDrag.current;if(!drag)return;setSearchPosition({x:Math.max(-window.innerWidth/3,Math.min(window.innerWidth/3,drag.originX+event.clientX-drag.x)),y:Math.max(-window.innerHeight/3,Math.min(window.innerHeight/3,drag.originY+event.clientY-drag.y))});}} onPointerUp={()=>{searchDrag.current=null;}} onPointerCancel={()=>{searchDrag.current=null;}}>지역 검색<button data-icon-only="true" data-popup-close="true" className={styles.iconButton} onClick={() => setSearchOpen(false)} aria-label="닫기"><X /></button></div><form onSubmit={search}><label htmlFor="weather-region-query">전국 지역명</label><div className={styles.weatherSearchRow}><ClearableSearchInput onClear={() => setQuery("")} id="weather-region-query" data-ui-field="true" autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="예: 서울, 울산 삼산동" maxLength={80} /><button className={styles.primary} disabled={searching}><Search size={14} style={{ display: "inline", marginRight: 5 }} />{searching ? "검색 중" : "검색"}</button></div></form><p className={styles.muted}>{searchMessage}</p>{results.map((result, index) => <button className={styles.searchResult} key={result.id ?? index} onClick={() => { setPlace(result); setSearchOpen(false); }}>{result.name}</button>)}</div></div>, document.body)}
   </article>;
 }

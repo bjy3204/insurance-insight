@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import AccountPinCheck from "./AccountPinCheck";
 import { X } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
@@ -33,7 +34,7 @@ return (<>{profileSettingOpen && (
           계정설정
         </h2>
 
-        <button data-popup-close="true"
+        <button data-icon-only="true" data-popup-close="true"
           onClick={() => setProfileSettingOpen(false)}
           className="
     w-9
@@ -67,7 +68,7 @@ return (<>{profileSettingOpen && (
 
 <div className="space-y-3">
   
-        <input data-ui-field="true"
+        <ClearableSearchInput onClear={() => setEditNickname("")} data-ui-field="true"
           type="text"
           placeholder="닉네임"
           value={editNickname}
@@ -75,7 +76,7 @@ return (<>{profileSettingOpen && (
           className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
         />
 
-        <input data-ui-field="true"
+        <ClearableSearchInput onClear={() => setEditInstagram("")} data-ui-field="true"
           type="text"
           placeholder="인스타그램 아이디"
           value={editInstagram}
@@ -91,7 +92,7 @@ return (<>{profileSettingOpen && (
 
           </p>
 
-          <input data-ui-field="true"
+          <ClearableSearchInput onClear={() => setCurrentPassword("")} data-ui-field="true"
             type="password"
             placeholder="현재 비밀번호"
             value={currentPassword}
@@ -99,7 +100,7 @@ return (<>{profileSettingOpen && (
             className="mb-3 h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
           />
 
-          <input data-ui-field="true"
+          <ClearableSearchInput onClear={() => setNewPassword("")} data-ui-field="true"
             type="password"
             placeholder="새 비밀번호"
             value={newPassword}
@@ -107,7 +108,7 @@ return (<>{profileSettingOpen && (
             className="mb-3 h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
           />
 
-          <input data-ui-field="true"
+          <ClearableSearchInput onClear={() => setNewPasswordConfirm("")} data-ui-field="true"
             type="password"
             placeholder="새 비밀번호 확인"
             value={newPasswordConfirm}

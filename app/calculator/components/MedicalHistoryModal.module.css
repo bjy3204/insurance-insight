@@ -59,3 +59,36 @@
   .main.generationMode { min-height:0; overflow-y:auto; overscroll-behavior:contain; }
   .generationMode .content { flex:none; overflow:visible; }
 }
+.detailTableFrame{border:1px solid #dce5f0;border-radius:16px;overflow:hidden}
+.detailTableFrame .detailTable{border-style:hidden}
+@media(max-width:767px){.miniTabs{scrollbar-width:none;-ms-overflow-style:none}.miniTabs::-webkit-scrollbar{display:none;width:0;height:0}}
+@media(max-width:767px){.miniTabs button{height:40px;min-height:40px;max-height:40px;box-sizing:border-box;padding-top:0;padding-bottom:0}}
+@media(max-width:767px){.miniTabs.miniTabs button{border-radius:8px !important}}
+.mobileLabel { display:none; }
+@media(max-width:767px) {
+  .body { flex-direction:column; }
+  .sidebar,.sidebar.collapsed {
+    width:calc(100% - 24px); margin:12px 12px 0; padding:8px; box-sizing:border-box;
+    display:grid; grid-template-columns:1.5fr repeat(5,minmax(0,1fr));
+    gap:2px; border:1px solid #e5e7eb; border-radius:16px; background:#f8fafc; overflow:visible;
+  }
+  .sidebar.sidebar .collapseButton { display:none !important; }
+  .sidebar.sidebar > button:not(.collapseButton) {
+    display:flex; align-items:center; justify-content:center; width:100%; height:40px;
+    min-width:0; padding:0 2px; border:0; border-radius:12px !important;
+    background:transparent; color:#4b5563;
+    font-size:14px !important; font-weight:600; text-align:center; white-space:nowrap;
+  }
+  .sidebar.sidebar > button.activeGeneration:not(.collapseButton) { background:#e8f1ff; color:#2563eb; }
+  .desktopLabel { display:none; }
+  .mobileLabel { display:inline; }
+  .main { min-height:0; }
+  .generationHeading h3,.detailSection h3 { font-size:16px; }
+  .content,.detailTable,.finePrint,.note,.disclaimer { font-size:14px; }
+  .detailTableFrame { border-radius:12px; }
+  .miniTabs { flex-wrap:wrap; overflow:visible; margin:0 12px 12px; padding:6px; gap:6px; border:1px solid #e5e7eb; border-radius:16px; background:#f8fafc; }
+  .miniTabs button { min-width:0; white-space:normal; font-size:14px !important; border:0; background:transparent; color:#4b5563; }
+  .miniTabs button.activePeriod { background:#e8f1ff; color:#2563eb; border-color:transparent; box-shadow:none; }
+  .modal,.modal * { scrollbar-width:none; }
+  .modal::-webkit-scrollbar,.modal *::-webkit-scrollbar { display:none; width:0; height:0; }
+}

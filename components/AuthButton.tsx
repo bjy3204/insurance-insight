@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import AuthNotice from "./AuthNotice";
 import { authErrorMessage } from "@/lib/auth/error-message";
 
@@ -88,7 +89,7 @@ onKakaoLogin,
             {mode === "login" ? "로그인" : "회원가입"}
           </h2>
 
-          <button data-popup-close="true"
+          <button data-icon-only="true" data-popup-close="true"
             onClick={onClose}
              className="
     w-9
@@ -122,7 +123,7 @@ onKakaoLogin,
         <div className="space-y-3">
           {mode === "signup" && (
             <>
-              <input
+              <ClearableSearchInput onClear={() => setSignupNickname("")}
                 type="text"
                 placeholder="닉네임"
                 value={signupNickname}
@@ -130,7 +131,7 @@ onKakaoLogin,
                 className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
               />
 
-              <input
+              <ClearableSearchInput onClear={() => setSignupInstagram("")}
                 type="text"
                 placeholder="인스타 아이디"
                 value={signupInstagram}
@@ -149,7 +150,7 @@ onKakaoLogin,
             className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
           />
 
-          <input
+          <ClearableSearchInput onClear={() => setPassword("")}
   type="password"
   placeholder="비밀번호"
   value={password}

@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import styles from "../HomePage.module.css";
 import { X, Settings, Plus, Bell, Eye, EyeOff } from "lucide-react";
 import { NOTIFICATION_BANNER_ID } from "../notification-banner";
@@ -31,7 +32,7 @@ return (<>{menuSortOpen && (
 
 <div className="flex items-center gap-2">
   <div className="flex gap-2 shrink-0">
-   <button data-menu-action
+   <button data-compact-action="true" data-menu-action
       onClick={() => {
         setTempPersonalMenus(personalMenus);
         setSelectedPersonalMenuId("");
@@ -57,7 +58,7 @@ return (<>{menuSortOpen && (
       수정
     </button>
 
-    <button data-menu-action
+    <button data-compact-action="true" data-menu-action
       onClick={() => {
         setSelectedPersonalMenuId("");
         setSelectedDeleteMenuIds([]);
@@ -135,7 +136,7 @@ return (<>{menuSortOpen && (
 
   {menuManageMode === "sort" && <div className="mb-4 relative flex h-11 items-center justify-center gap-3 rounded-xl border border-blue-100 bg-[#edf4ff] px-4 text-sm font-semibold text-[#4572ad]" aria-label="일정 알림 배너 표시 설정">
     <span className="flex items-center justify-center gap-2"><Bell className="h-4 w-4" />일정 알림 배너</span>
-    <button type="button" aria-label={tempHiddenMenuIds.includes(NOTIFICATION_BANNER_ID) ? "알림 배너 표시" : "알림 배너 숨기기"} aria-pressed={!tempHiddenMenuIds.includes(NOTIFICATION_BANNER_ID)} onClick={() => setTempHiddenMenuIds(previous => previous.includes(NOTIFICATION_BANNER_ID) ? previous.filter(id => id !== NOTIFICATION_BANNER_ID) : [...previous, NOTIFICATION_BANNER_ID])} className="absolute right-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-blue-100">
+    <button data-icon-only="true" type="button" aria-label={tempHiddenMenuIds.includes(NOTIFICATION_BANNER_ID) ? "알림 배너 표시" : "알림 배너 숨기기"} aria-pressed={!tempHiddenMenuIds.includes(NOTIFICATION_BANNER_ID)} onClick={() => setTempHiddenMenuIds(previous => previous.includes(NOTIFICATION_BANNER_ID) ? previous.filter(id => id !== NOTIFICATION_BANNER_ID) : [...previous, NOTIFICATION_BANNER_ID])} className="absolute right-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-blue-100">
       {tempHiddenMenuIds.includes(NOTIFICATION_BANNER_ID) ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
     </button>
   </div>}
@@ -191,7 +192,7 @@ return (<>{menuSortOpen && (
 }}
   />
 ))}
-          <button data-card-lift="subtle" data-card-highlight="true"
+          <button data-menu-add-card="true" data-card-lift="subtle" data-card-highlight="true"
   onClick={() => {
   resetPopupPosition("menuAdd");
   setMenuAddOpen(true);
@@ -252,7 +253,7 @@ sm:pb-4
       </h2>
 
       <p className="text-sm text-gray-500 mt-1 leading-relaxed break-keep">
-        메인화면에서 바로 실행할 메뉴를 최대 4개까지 선택할 수 있습니다.
+        PC 빠른메뉴에서 바로 실행할 메뉴를 최대 4개까지 선택할 수 있습니다.
         추후 기능이 추가되면 선택 가능한 메뉴도 함께 추가됩니다.
       </p>
 
@@ -266,7 +267,7 @@ sm:pb-4
 
           if (!selectedMenu) {
             return (
-              <button
+              <button data-icon-only="true"
                 key={index}
                 onClick={() => setQuickMenuSelectOpen(true)}
                 className="
@@ -319,7 +320,7 @@ sm:pb-4
                 {selectedMenu.title}
               </span>
 
-              <button
+              <button data-mobile-quick-remove="true" data-icon-only="true"
                 onClick={() => {
                   setTempQuickMenuKeys((prev) =>
   prev.filter((key) => key !== selectedMenu.key)
@@ -461,21 +462,21 @@ sm:pb-4
                     </div>
                   )}
 
-                  <input data-ui-field="true"
+                  <ClearableSearchInput onClear={() => setNewMenuTitle("")} data-ui-field="true"
                     value={newMenuTitle}
                     onChange={(e) => setNewMenuTitle(e.target.value)}
                     placeholder="메뉴명"
                     className="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none mb-2"
                   />
 
-                  <input data-ui-field="true"
+                  <ClearableSearchInput onClear={() => setNewMenuDesc("")} data-ui-field="true"
                     value={newMenuDesc}
                     onChange={(e) => setNewMenuDesc(e.target.value)}
                     placeholder="설명글"
                     className="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none mb-2"
                   />
 
-                  <input data-ui-field="true"
+                  <ClearableSearchInput onClear={() => setNewMenuLink("")} data-ui-field="true"
                     value={newMenuLink}
                     onChange={(e) => setNewMenuLink(e.target.value)}
                     placeholder="링크"
@@ -487,7 +488,7 @@ sm:pb-4
           );
                 })}
 
-        <button data-card-lift="subtle" data-card-highlight="true"
+        <button data-menu-add-card="true" data-card-lift="subtle" data-card-highlight="true"
           onClick={() => {
   resetPopupPosition("menuAdd");
   setMenuAddOpen(true);

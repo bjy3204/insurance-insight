@@ -170,7 +170,7 @@ const calendarDays = [
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
               href="/lecture"
               className="
                 w-11 h-11 rounded-xl border border-gray-300 bg-white
@@ -204,7 +204,7 @@ const calendarDays = [
   </div>
 )}
           <div className="flex items-start justify-between mb-4">
-            <button
+            <button data-icon-only="true" data-prev-next="true"
               onClick={() =>
                 setCalendarDate(
                   new Date(currentYear, currentMonth - 1, 1)
@@ -249,7 +249,7 @@ const calendarDays = [
 </button>
             </div>
 
-            <button
+            <button data-icon-only="true" data-prev-next="true"
               onClick={() =>
                 setCalendarDate(
                   new Date(currentYear, currentMonth + 1, 1)
@@ -431,7 +431,7 @@ const numberColor =
           강의 상세
         </div>
 
-        <button data-popup-close="true"
+        <button data-icon-only="true" data-popup-close="true"
           onClick={() => setSelectedLecture(null)}
           className="
   cursor-pointer
@@ -605,7 +605,7 @@ rel={
   </div>
 )}
 
-<div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg">
+<div data-page-fixed-footer="true" className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg">
   <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
     <Link
       href="/lecture/instructor"

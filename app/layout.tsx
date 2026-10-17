@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import GlobalWidgets from "./components/GlobalWidgets";
+import NumberInputGuard from "./components/NumberInputGuard";
 import PopupInteractions from "./components/PopupInteractions";
+import MobileFooterSpacing from "./components/MobileFooterSpacing";
 import AuthProvider from "./components/AuthProvider";
 import PayappClaim from "./components/PayappClaim";
 import HomeControllerProvider from "./features/home/HomeControllerProvider";
@@ -79,7 +81,8 @@ export default function RootLayout({
 <HomeControllerProvider>
 {children}
 <GlobalWidgets />
-<PopupInteractions />
+<PopupInteractions /><NumberInputGuard />
+<MobileFooterSpacing />
 </HomeControllerProvider>
   </AuthProvider>
 </body>

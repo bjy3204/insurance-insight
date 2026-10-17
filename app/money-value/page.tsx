@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import presentation from "../components/CalculatorPresentation.module.css";
@@ -205,7 +206,7 @@ function InflationChart() {
           </ResponsiveContainer>
         </div>
       </div>
-      <p className="text-right text-xs text-gray-400 mt-1">출처: 한국은행 경제통계시스템(ECOS)</p>
+      <p data-source-caption="true" className="text-right text-xs text-gray-400 mt-1">출처: 한국은행 경제통계시스템(ECOS)</p>
     </div>
   );
 }
@@ -633,12 +634,12 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
 
   return (
     <>
-    <main className={`${presentation.page} min-h-screen pb-24`}>
+    <main data-calculator-page="true" className={`${presentation.page} min-h-screen pb-24`}>
       {/* 헤더 */}
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
   href="/"
   className="
     absolute
@@ -675,7 +676,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
               }`}
             >
               <div className="relative">
-                <button data-header-control="true"
+                <button data-icon-only="true" data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
@@ -691,7 +692,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                 </button>
 
                 {settingOpen && (
-                  <div
+                  <div data-ui-card="true"
                     onClick={(e) => e.stopPropagation()}
                     className="
                       absolute right-0 top-12 z-[999] w-40 rounded-2xl
@@ -762,7 +763,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
         </div>
 
         {/* 카드 */}
-        <div className={`${presentation.panel} rounded-3xl p-5 md:p-7`}>
+        <div data-ui-card="true" className={`${presentation.panel} rounded-3xl p-5 md:p-7`}>
           {/* 금액 */}
           <div className="mb-5">
             <label className="text-lg font-black text-gray-800 mb-3 block">
@@ -774,7 +775,10 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
             </label>
 
             <div data-calculator-field="true" className="relative">
-              <input
+              <ClearableSearchInput onClear={() => {
+                  const value = "".replaceAll(",", "");
+                  setMoney(value.replace(/[^0-9]/g, ""));
+                }}
                 type="text"
                 inputMode="numeric"
                 value={
@@ -808,7 +812,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                 </label>
 
                 <div data-calculator-field="true" className="relative">
-                  <input
+                  <ClearableSearchInput onClear={() => setRate("".replace(/[^0-9.]/g, ""))}
                     type="text"
                     inputMode="decimal"
                     value={rate}
@@ -835,7 +839,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                 </label>
 
                 <div data-calculator-field="true" className="relative">
-                  <input
+                  <ClearableSearchInput onClear={() => setYears("".replace(/[^0-9]/g, ""))}
                     type="text"
                     inputMode="numeric"
                     value={years}
@@ -866,7 +870,10 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                 </label>
 
                 <div data-calculator-field="true" className="relative">
-<input
+<ClearableSearchInput onClear={() => {
+                      const value = "".replaceAll(",", "");
+                      setCurrentRate(value.replace(/[^0-9]/g, ""));
+                    }}
   type="text"
   inputMode="numeric"
   placeholder={naverRate}
@@ -901,7 +908,10 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                 </label>
 
                 <div data-calculator-field="true" className="relative">
-                  <input
+                  <ClearableSearchInput onClear={() => {
+                      const value = "".replaceAll(",", "");
+                      setCompareRate(value.replace(/[^0-9]/g, ""));
+                    }}
                     type="text"
                     inputMode="numeric"
                     value={
@@ -989,7 +999,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 
                 {/* 현재달러가치 */}
-                <div className="bg-white rounded-2xl border border-blue-100 p-5 text-center">
+                <div data-ui-card="true" className="bg-white rounded-2xl border border-blue-100 p-5 text-center">
                   <p className="text-sm font-bold text-gray-500 mb-2">
                     현재달러가치
                   </p>
@@ -1004,7 +1014,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                 </div>
 
                 {/* 비교달러가치 */}
-                <div className="bg-white rounded-2xl border border-blue-100 p-5 text-center">
+                <div data-ui-card="true" className="bg-white rounded-2xl border border-blue-100 p-5 text-center">
                   <p className="text-sm font-bold text-gray-500 mb-2">
                     비교달러가치
                   </p>
@@ -1019,7 +1029,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
                 </div>
 
                 {/* 노동가치 */}
-                <div className="bg-white rounded-2xl border border-blue-100 p-5 text-center">
+                <div data-ui-card="true" className="bg-white rounded-2xl border border-blue-100 p-5 text-center">
                   <p className="text-sm font-bold text-gray-500 mb-2">
                     노동가치
                   </p>
@@ -1042,7 +1052,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
 
           }
         </div>
-        <section className="mt-6 rounded-3xl border border-[#e1e9fb] bg-white p-5 md:p-7" aria-label={type === "dollar" ? "달러 환율 그래프" : "소비자 물가상승률 그래프"}>
+        <section data-ui-card="true" className="mt-6 rounded-3xl border border-[#e1e9fb] bg-white p-5 md:p-7" aria-label={type === "dollar" ? "달러 환율 그래프" : "소비자 물가상승률 그래프"}>
           {type === "dollar" ? <ExchangeRateChart /> : <InflationChart />}
         </section>
       </CalculatorPageLayout>
@@ -1056,7 +1066,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
 
 
 {contextMenu && (
-  <div
+  <div data-ui-card="true"
     style={{ top: contextMenu.y, left: contextMenu.x }}
     className="fixed z-[2000] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-32"
     onPointerDown={(e) => e.stopPropagation()}
@@ -1089,7 +1099,7 @@ const getMemoColorClass = (color: MemoItem["color"]) => {
 
       {/* 하단 고정 메뉴 */}
       <>
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
+        <div data-page-fixed-footer="true" className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a
             href="https://naver.me/xsZ8mk7H"

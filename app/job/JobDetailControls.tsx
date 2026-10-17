@@ -20,7 +20,7 @@ export function JobHeaderTools() {
     return () => { window.removeEventListener("pointerdown", close); window.removeEventListener("keydown", escape); };
   }, [open]);
   return <div ref={ref} className="absolute right-0 top-1/2 -translate-y-1/2 z-[1000]">
-    <button data-header-control="true" type="button" aria-label="도구" aria-expanded={open} onClick={() => setOpen(!open)} className="w-10 h-10 border border-gray-200 bg-white rounded-xl flex items-center justify-center hover:bg-gray-50 cursor-pointer">
+    <button data-icon-only="true" data-header-control="true" type="button" aria-label="도구" aria-expanded={open} onClick={() => setOpen(!open)} className="w-10 h-10 border border-gray-200 bg-white rounded-xl flex items-center justify-center hover:bg-gray-50 cursor-pointer">
       <LayoutGrid className="w-5 h-5 text-gray-400" />
     </button>
     {open && <div className="absolute right-0 top-12 w-40 rounded-2xl bg-white border border-gray-200 shadow-xl overflow-hidden">

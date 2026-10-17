@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Car, FilePlus2, HeartPulse, Landmark, Plus, UserRound, UserRoundPlus, X } from "lucide-react";
@@ -47,11 +48,11 @@ export default function CustomerEntryDialog({ kind, values, onChange, onClose, c
     const currentValue = options.value ?? (options.birth && !fullBirth ? shortCustomerBirth(values[name] || "") : values[name] || "");
     const change = (value: string) => options.change ? options.change(value) : onChange(name, value);
     const inherited = kind === "contract" && values.sameInsured !== "false" && (name === "insured" || name === "insuredBirth");
-    const placeholder = inherited ? values[name === "insured" ? "owner" : "ownerBirth"] || options.placeholder || (options.birth ? "960901" : undefined) : options.placeholder || (options.birth ? fullBirth ? "960901-2" : "960901" : undefined);
+    const placeholder = fullBirth ? "960901-2" : inherited ? values[name === "insured" ? "owner" : "ownerBirth"] || options.placeholder : options.placeholder;
     return <div className={`${styles.field} ${options.wide ? styles.wide : ""}`} key={name}>
       <label htmlFor={id} className={styles.label}>{label}{options.birth && fullBirth && customerGender(values[name] || "") && <span aria-hidden="true" data-gender={customerGender(values[name] || "")} className={styles.gender}>{customerGender(values[name])}</span>}</label>
-      {options.suffix && <div data-popup-field-wrapper="true" className={styles.suffixField}><input id={id} name={name} aria-label={label} type="text" inputMode="numeric" autoComplete="off" value={values[name] || ""} onChange={event => onChange(name, event.target.value.replace(/\D/g, ""))} /><span>{options.suffix}</span></div>}
-      {!options.suffix && <input id={id} name={name} type={options.type === "number" ? "text" : options.type || "text"} value={inherited ? "" : currentValue} placeholder={placeholder} autoComplete="off"
+      {options.suffix && <div data-popup-field-wrapper="true" data-field-unit="true" className={styles.suffixField}><ClearableSearchInput showClearButton={false} onClear={() => onChange(name, "".replace(/\D/g, ""))} id={id} name={name} aria-label={label} type="text" inputMode="numeric" autoComplete="off" value={values[name] || ""} onChange={event => onChange(name, event.target.value.replace(/\D/g, ""))} /><span>{options.suffix}</span></div>}
+      {!options.suffix && <ClearableSearchInput onClear={() => change(options.dateInput ? formatCustomerDate("") : options.birth ? fullBirth ? formatCustomerBirth("") : shortCustomerBirth("") : options.phone ? formatCustomerPhone("") : options.type === "number" ? "".replace(/\D/g, "") : "")} id={id} name={name} type={options.type === "number" ? "text" : options.type || "text"} value={inherited ? "" : currentValue} placeholder={placeholder} autoComplete="off"
         inputMode={options.birth || options.phone || options.dateInput || options.type === "number" ? "numeric" : undefined} maxLength={options.birth ? fullBirth ? 8 : 6 : options.dateInput ? 10 : undefined}
         onChange={event => change(options.dateInput ? formatCustomerDate(event.target.value) : options.birth ? fullBirth ? formatCustomerBirth(event.target.value) : shortCustomerBirth(event.target.value) : options.phone ? formatCustomerPhone(event.target.value) : options.type === "number" ? event.target.value.replace(/\D/g, "") : event.target.value)} />}
     </div>;
@@ -60,7 +61,7 @@ export default function CustomerEntryDialog({ kind, values, onChange, onClose, c
     <label htmlFor={`${fieldPrefix}-phone`} className={styles.label}>전화번호</label>
     <div className={styles.phoneRow}>
       <div className={styles.carrier}><MemoSelect label="통신사" placeholder="통신사" value={values.carrier || ""} onChange={value => onChange("carrier", value)} options={["SKT", "KT", "LG U+", "SKT 알뜰", "KT 알뜰", "LG U+ 알뜰"].map(value => ({ value, label: value }))} /></div>
-      <input id={`${fieldPrefix}-phone`} name="phone" aria-label="전화번호" type="tel" inputMode="numeric" autoComplete="off" placeholder="010-1234-5678" value={values.phone || ""} onChange={event => onChange("phone", formatCustomerPhone(event.target.value))} />
+      <ClearableSearchInput onClear={() => onChange("phone", formatCustomerPhone(""))} id={`${fieldPrefix}-phone`} name="phone" aria-label="전화번호" type="tel" inputMode="numeric" autoComplete="off" placeholder="010-1234-5678" value={values.phone || ""} onChange={event => onChange("phone", formatCustomerPhone(event.target.value))} />
     </div>
   </div>;
   const select = (name: CustomerOptionKind | "medicalInsurer", label: string) => {
@@ -74,7 +75,7 @@ export default function CustomerEntryDialog({ kind, values, onChange, onClose, c
     <div ref={panel} className={styles.dialog} data-popup-frame="true" data-account-inputs="true" role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <header data-popup-header="true" className={styles.header}>
         <h2 id={titleId} data-popup-title="true" className={styles.title}><TitleIcon size={25} />{title}</h2>
-        <button type="button" data-popup-close="true" aria-label={`${title} 닫기`} onClick={onClose}><X size={20} /></button>
+        <button data-icon-only="true" type="button" data-popup-close="true" aria-label={`${title} 닫기`} onClick={onClose}><X size={20} /></button>
       </header>
       <div className={`${styles.body} overflow-y-auto`} inert={saving}>
         {kind === "customer" && savedOptions.error && <div role="alert" className="mb-3 flex items-center gap-2 text-sm text-red-500">{savedOptions.error}{!savedOptions.ready && <button type="button" onClick={savedOptions.reload} className="underline">다시 시도</button>}</div>}
@@ -87,7 +88,7 @@ export default function CustomerEntryDialog({ kind, values, onChange, onClose, c
           {section("실손의료비", <HeartPulse />, <>
             {field("medicalInsurer", "보험사")}{field("medicalJoined", "가입일", { dateInput: true })}
             <div className={`${styles.field} ${styles.fixedSelect}`}><span className={styles.label}>세대</span><MemoSelect label="실손 세대" placeholder="선택" value={values.medicalGeneration || ""} onChange={value => onChange("medicalGeneration", value)} options={[1, 2, 3, 4, 5].map(generation => ({ value: String(generation), label: `${generation}세대` }))} /></div>
-            <div className={styles.field}><label htmlFor={`${fieldPrefix}-medicalMaturity`} className={styles.label}>만기일</label><input id={`${fieldPrefix}-medicalMaturity`} name="medicalMaturity" type="text" autoComplete="off" value={values.medicalMaturity ?? medicalEnd?.text ?? ""} onChange={event => onChange("medicalMaturity", event.target.value)} /></div>
+            <div className={styles.field}><label htmlFor={`${fieldPrefix}-medicalMaturity`} className={styles.label}>만기일</label><ClearableSearchInput onClear={() => onChange("medicalMaturity", "")} id={`${fieldPrefix}-medicalMaturity`} name="medicalMaturity" type="text" autoComplete="off" value={values.medicalMaturity ?? medicalEnd?.text ?? ""} onChange={event => onChange("medicalMaturity", event.target.value)} /></div>
           </>, true)}
           {section("보험금 청구", <Landmark />, <>
             {field("accountOwner", "예금주")}{field("accountBirth", "생년월일", { birth: true })}{field("bank", "은행")}
@@ -99,7 +100,7 @@ export default function CustomerEntryDialog({ kind, values, onChange, onClose, c
                 {([['vehicleNumber','차량번호'],['vehicleType','차종'],['renewal','갱신일'],['insurer','보험사'],['driver','운전자지정'],['discount','할인']] as const).map(([key, label]) => field(`vehicle-${index}-${key}`, label, { value: vehicle[key], dateInput: key === "renewal", change: value => onChange("vehicles", JSON.stringify(vehicles.map((item, position) => position === index ? { ...item, [key]: value } : item))) }))}
               </div>
             </div>)}</div>
-          </>, false, <button type="button" aria-label="차량 추가" title="차량 추가" className={styles.addVehicle} disabled={vehicles.length >= 100} onClick={() => onChange("vehicles", JSON.stringify([...vehicles, emptyCustomerVehicle()]))}><Plus size={20} /></button>)}
+          </>, false, <button data-icon-only="true" type="button" aria-label="차량 추가" title="차량 추가" className={styles.addVehicle} disabled={vehicles.length >= 100} onClick={() => onChange("vehicles", JSON.stringify([...vehicles, emptyCustomerVehicle()]))}><Plus size={20} /></button>)}
         </> : <>
           {section("계약자·피보험자 정보", <UserRound />, <>
             <CustomerIdentityFields customers={customers} name={values.owner || ""} birth={values.ownerBirth || ""} onNameChange={value => onChange("owner", value)} onBirthChange={value => onChange("ownerBirth", value)} />

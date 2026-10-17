@@ -27,3 +27,7 @@
   .documentScroll { height: auto; max-height: none; overflow: visible; }
   .notice { margin-top: 20px; }
 }
+
+@media(min-width:768px){.tabScroll>div>div{gap:6px}}
+
+@media(min-width:768px){.documentHeading h2{font-size:25px;margin-left:12px}}

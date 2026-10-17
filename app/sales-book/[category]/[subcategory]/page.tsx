@@ -285,7 +285,7 @@ const saveSlideNote = async () => {
         <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
           <div className="max-w-7xl mx-auto px-6 py-6">
             <div className="relative flex items-center justify-center">
-              <Link data-header-control="true"
+              <Link data-icon-only="true" data-header-control="true"
                 href={`/sales-book/${encodeURIComponent(category)}`}
                 className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
               >
@@ -314,8 +314,8 @@ const saveSlideNote = async () => {
           {/* PC */}
 <div className="hidden md:grid md:grid-cols-[190px_minmax(0,1fr)] gap-3 items-stretch">
   <div className="relative min-h-0">
-  <aside className={`${styles.slideList} bg-white rounded-2xl border border-gray-200 px-4 py-6 flex flex-col min-w-0`}>
-    <div className="text-sm font-black text-gray-700 px-1 mb-5 shrink-0">
+  <aside className={`${styles.slideList} bg-white rounded-2xl border border-gray-200 p-4 flex flex-col min-w-0`}>
+    <div className="text-[15px] font-black text-gray-700 mb-3 shrink-0">
       슬라이드 목록
     </div>
 
@@ -354,15 +354,15 @@ const saveSlideNote = async () => {
   </aside>
   </div>
 
-  <section className="min-w-0 bg-white rounded-2xl border border-gray-200 p-6 flex flex-col">
-    <div className="flex items-center justify-between mb-5 shrink-0">
+  <section className="min-w-0 bg-white rounded-2xl border border-gray-200 p-4 flex flex-col">
+    <div className="flex items-center justify-between mb-3 shrink-0">
       <div>
-        <h2 className="text-sm font-black text-gray-700">
+        <h2 className="text-[15px] font-black text-gray-700">
           {subcategory}
         </h2>
       </div>
 
-      <div className="text-xs font-black text-gray-400">
+      <div className="text-[15px] font-black text-gray-400">
         {current + 1} / {slides.length}
       </div>
     </div>
@@ -371,12 +371,7 @@ const saveSlideNote = async () => {
       className="relative w-full overflow-hidden"
       style={{ flex: "0 0 auto" }}
     >
-      <button
-        onClick={prevSlide}
-        className="absolute left-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border border-gray-200 shadow flex items-center justify-center hover:bg-white transition cursor-pointer"
-      >
-        <ChevronLeft className="w-6 h-6" />
-      </button>
+      
 <img
   src={slides[current]}
   alt=""
@@ -384,12 +379,7 @@ const saveSlideNote = async () => {
   className="w-full h-auto rounded-2xl bg-white border-0 outline-none block"
   draggable={false}
 />
-      <button
-        onClick={nextSlide}
-        className="absolute right-5 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 border border-gray-200 shadow flex items-center justify-center hover:bg-white transition cursor-pointer"
-      >
-        <ChevronRight className="w-6 h-6" />
-      </button>
+      
     </div>
 
 
@@ -409,14 +399,14 @@ const saveSlideNote = async () => {
     </div>
 
      <div className="flex items-center gap-2">
-          <button
+          <button data-compact-corner="10" data-compact-action="true"
             onClick={() => setNoteEditing(true)}
             className="h-8 px-3 rounded-xl bg-white border border-gray-200 text-xs font-black text-gray-600 hover:bg-gray-100 transition"
           >
             수정
           </button>
 
-          <button
+          <button data-compact-corner="10" data-compact-action="true"
             onClick={saveSlideNote}
             disabled={noteSaving || slideNote === savedSlideNote}
             className="h-8 px-3 rounded-xl bg-blue-600 text-white text-xs font-black disabled:bg-gray-300 transition"
@@ -441,7 +431,7 @@ const saveSlideNote = async () => {
                   </p>
                 </div>
 
-                <div className="text-xs font-black text-gray-400">
+                <div className="text-[15px] font-black text-gray-400">
                   {current + 1} / {slides.length}
                 </div>
               </div>
@@ -498,20 +488,20 @@ const saveSlideNote = async () => {
 </div>
 
               <div className="mt-3 grid grid-cols-2 gap-2">
-                <button
+                <button data-prev-next="true"
                   onClick={prevSlide}
-                  className="h-11 rounded-2xl bg-white border border-gray-200 text-sm font-black text-gray-700 shadow-sm flex items-center justify-center gap-1"
+                  className="h-10 rounded-2xl bg-white border border-gray-200 text-sm font-black text-gray-700 shadow-sm flex items-center justify-center gap-1"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft data-arrow-size="24" className="w-4 h-4" />
                   이전
                 </button>
 
-                <button
+                <button data-prev-next="true"
                   onClick={nextSlide}
-                  className="h-11 rounded-2xl bg-blue-600 text-white text-sm font-black shadow-sm flex items-center justify-center gap-1"
+                  className="h-10 rounded-2xl bg-blue-600 text-white text-sm font-black shadow-sm flex items-center justify-center gap-1"
                 >
                   다음
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight data-arrow-size="24" className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -539,7 +529,7 @@ const saveSlideNote = async () => {
 >
 
             <div className="hidden md:flex absolute top-5 left-5 z-30 gap-2">
-  <button
+  <button data-icon-only="true"
   onClick={(e) => {
     e.stopPropagation();
     setDrawMode((prev) => !prev);
@@ -552,7 +542,7 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
     <Pencil className="w-5 h-5" />
   </button>
 
-<button
+<button data-icon-only="true"
   onClick={(e) => {
     e.stopPropagation();
     setDrawMode(true);
@@ -565,7 +555,7 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
     <Highlighter className="w-5 h-5" />
   </button>
 
-<button
+<button data-icon-only="true"
   onClick={(e) => {
     e.stopPropagation();
     setDrawMode(true);
@@ -578,7 +568,7 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
     <Eraser className="w-5 h-5" />
   </button>
 
- <button
+ <button data-icon-only="true"
   onClick={(e) => {
     e.stopPropagation();
     clearCanvas();
@@ -599,7 +589,7 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
   </button>
 </div>
 
-          <button data-popup-close="true"
+          <button data-icon-only="true" data-popup-close="true"
             onClick={(e) => {
   e.stopPropagation();
   closeFullscreen();
@@ -610,14 +600,14 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
           </button>
 
 {drawMode && (
-  <button
+  <button data-icon-only="true" data-prev-next="true"
     onClick={(e) => {
       e.stopPropagation();
       prevSlide();
     }}
-    className="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
+    className="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
   >
-    <ChevronLeft className="w-8 h-8" />
+    <ChevronLeft data-arrow-size="24" className="w-8 h-8" />
   </button>
 )}
 
@@ -753,14 +743,14 @@ className={`w-11 h-11 rounded-full text-white flex items-center justify-center t
 </div>
 
 {drawMode && (
-  <button
+  <button data-icon-only="true" data-prev-next="true"
     onClick={(e) => {
       e.stopPropagation();
       nextSlide();
     }}
-    className="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
+    className="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
   >
-    <ChevronRight className="w-8 h-8" />
+    <ChevronRight data-arrow-size="24" className="w-8 h-8" />
   </button>
 )}
 

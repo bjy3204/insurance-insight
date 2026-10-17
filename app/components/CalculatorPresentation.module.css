@@ -149,3 +149,14 @@
 @media (max-width: 767px) {
   .page { --calculator-control-height: 48px; }
 }
+/* Only desktop inputs on the four calculator pages use the 55px height. */
+@media(min-width:768px){
+ .page [data-page-content="true"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not(:where([data-popup-frame="true"] *,[data-popup-small="true"] *,[role="dialog"] *)){height:55px !important;min-height:55px !important;box-sizing:border-box;padding-top:0;padding-bottom:0}
+}
+@media(min-width:768px){
+ .calculateButton{transform:none;box-shadow:none;transition:background-color .2s}
+ .calculateButton:hover{transform:none;translate:none;box-shadow:none;background:#1d4ed8}
+ .panel:has(>[data-calculator-footer="true"]){padding-bottom:24px}
+ .panel>[data-calculator-footer="true"]{margin-top:24px;margin-bottom:0}
+}
+@media(max-width:767px){.page .panel{width:100%;min-width:0;box-sizing:border-box;padding-left:16px;padding-right:16px}.page [data-calculator-field="true"]{width:100%;min-width:0;box-sizing:border-box}}

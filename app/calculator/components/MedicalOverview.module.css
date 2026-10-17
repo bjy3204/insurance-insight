@@ -17,3 +17,7 @@
 .note { text-align:left; min-width:230px; }
 .line { display:block; }
 .fine { display:block; font-size:12px; line-height:1.5; font-weight:400; }
+@media(max-width:767px) {
+  .viewer { border-radius:12px; }
+  .fine { font-size:14px; }
+}

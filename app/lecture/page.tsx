@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import Pagination from "@/app/components/Pagination";
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -484,7 +485,7 @@ const calendarDays = [
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
 
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
               href="/"
               className="
                absolute
@@ -521,7 +522,7 @@ const calendarDays = [
               }`}
             >
               <div className="relative">
-                <button data-header-control="true"
+                <button data-icon-only="true" data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
@@ -690,7 +691,7 @@ const calendarDays = [
         <section className="relative mb-6">
           <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
 
-          <input data-ui-field="true" data-page-search-input="true"
+          <ClearableSearchInput onClear={() => setSearch("")} data-ui-field="true" data-page-search-input="true"
   value={search}
   onChange={(e) => setSearch(e.target.value)}
   placeholder="지역, 강의명, 분류를 검색하세요"
@@ -719,7 +720,7 @@ transition
             등록된 강의 일정
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div data-page-card-grid="true" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 {activeLectures.length === 0 && (
   <div className="col-span-full text-center py-16 text-gray-400 text-sm">
     검색 결과가 없습니다.
@@ -889,7 +890,7 @@ transition
           </button>
         )}
 
-        <button data-popup-close="true"
+        <button data-icon-only="true" data-popup-close="true"
           type="button"
           onClick={() => {
             setSelectedLecture(null);
@@ -997,7 +998,10 @@ transition
 
       <div className="relative">
         <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-        <input data-ui-field="true" data-page-search-input="true"
+        <ClearableSearchInput onClear={() => {
+            setReviewSearch("");
+            setReviewPage(1);
+          }} data-ui-field="true" data-page-search-input="true"
           value={reviewSearch}
           onChange={(e) => {
             setReviewSearch(e.target.value);
@@ -1145,7 +1149,7 @@ transition
               진행 강의
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div data-page-card-grid="true" className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {lectures
                 .filter(
                   (lecture) =>
@@ -1322,7 +1326,7 @@ transition
 
 
       {/* 하단 고정 등록 메뉴 */}
-<div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t shadow-lg">
+<div data-page-fixed-footer="true" className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t shadow-lg">
   <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
     <a
       href={lectureFormLinks.instructorRegister}

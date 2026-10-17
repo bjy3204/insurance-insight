@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import styles from "./CustomSelect.module.css";
 
-export default function CustomSelect({ value, options, onChange, label, disabled = false, matchTriggerWidth = false }: { value: string; options: { value: string; label: string }[]; onChange: (value: string) => void; label: string; disabled?: boolean; matchTriggerWidth?: boolean }) {
+export default function CustomSelect({ value, options, onChange, label, displayLabel, disabled = false, matchTriggerWidth = false }: { value: string; options: { value: string; label: string }[]; onChange: (value: string) => void; label: string; displayLabel?: string; disabled?: boolean; matchTriggerWidth?: boolean }) {
   const id = useId(), trigger = useRef<HTMLButtonElement>(null), menu = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ top: number; left: number; width: number; maxHeight: number } | null>(null);
   const [active, setActive] = useState(0);
@@ -30,7 +30,7 @@ export default function CustomSelect({ value, options, onChange, label, disabled
   }, [position]);
   useEffect(() => { menu.current?.querySelector(`[data-active="true"]`)?.scrollIntoView({ block: "nearest" }); }, [active, position]);
   const choose = (index: number) => { if (options[index]) onChange(options[index].value); close(); };
-  return <><button ref={trigger} type="button" className={styles.trigger} disabled={disabled} aria-label={label} aria-haspopup="listbox" aria-expanded={!!position} aria-controls={position ? id : undefined} onClick={() => position ? close() : open()} onKeyDown={event => { if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); open(); } }}><span>{options.find(option => option.value === value)?.label || "선택"}</span><ChevronDown size={16}/></button>{position && createPortal(<div ref={menu} id={id} role="listbox" tabIndex={-1} aria-label={label} aria-activedescendant={`${id}-${active}`} className={styles.menu} style={position} onKeyDown={event => {
+  return <><button ref={trigger} type="button" className={styles.trigger} disabled={disabled} aria-label={label} aria-haspopup="listbox" aria-expanded={!!position} aria-controls={position ? id : undefined} onClick={() => position ? close() : open()} onKeyDown={event => { if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); open(); } }}><span>{displayLabel ?? options.find(option => option.value === value)?.label ?? "선택"}</span><ChevronDown size={16}/></button>{position && createPortal(<div ref={menu} id={id} role="listbox" tabIndex={-1} aria-label={label} aria-activedescendant={`${id}-${active}`} className={styles.menu} style={position} onKeyDown={event => {
     event.stopPropagation();
     if (event.key === "Escape") { event.preventDefault(); close(); }
     if (event.key === "Tab") close(false);

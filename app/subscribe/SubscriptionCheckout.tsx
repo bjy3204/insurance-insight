@@ -25,7 +25,7 @@ export default function SubscriptionCheckout({ amount, enabled = false }: { amou
     <header className={styles.header}><Link href="/" className={styles.brand}><Sprout size={23} strokeWidth={1.8} />보험인사이트</Link></header>
     <div className={styles.content}>
       {!enabled && <p className={styles.preview}>디자인 미리보기 · 실제 결제는 아직 연결되지 않았습니다</p>}
-      <section className={styles.card}>
+      <section data-ui-card="true" className={styles.card}>
         <div className={styles.intro}><span className={styles.badge}>보험나무 정기구독</span><h1>보험 업무를<br />조금 더 가볍게.</h1><p>보험나무 자료와 보험인사이트를<br />하나의 구독으로 만나보세요.</p></div>
         <div className={styles.price}><span>월 구독료</span><div><strong>{money}</strong><b>원</b><small>/ 월</small></div></div>
         <div className={styles.benefits}><span><Check size={16} />보험나무 자료 구독</span><span><Check size={16} />결제 후 보험인사이트 가입·연결</span></div>

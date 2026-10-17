@@ -1,4 +1,5 @@
 "use client";
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import Pagination from "@/app/components/Pagination";
 import { useEffect, useRef, useState } from "react";
 import { loadHospitalData } from "./hospital-data";
@@ -178,7 +179,7 @@ const toggleType = (type: string) => {
             병원정보 검색
           </div>
 
-          <button data-popup-close="true"
+          <button data-icon-only="true" data-popup-close="true"
   onClick={closePopup}
   className="
     cursor-pointer
@@ -248,7 +249,7 @@ const toggleType = (type: string) => {
           {filterOpen && (
             <div id="hospital-search-filters" data-account-inputs="true" className="border-t border-gray-100 p-4">
               <div className="grid grid-cols-3 gap-2">
-            <input data-ui-field="true" data-page-search-input="true"
+            <ClearableSearchInput onClear={() => setSido("")} data-ui-field="true" data-page-search-input="true"
               value={sido}
               onChange={(e) => setSido(e.target.value)}
               
@@ -256,7 +257,7 @@ const toggleType = (type: string) => {
               className="w-full border border-gray-200 rounded-2xl bg-white px-4 py-3 outline-none text-sm focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition"
             />
 
-            <input data-ui-field="true" data-page-search-input="true"
+            <ClearableSearchInput onClear={() => setDong("")} data-ui-field="true" data-page-search-input="true"
               value={dong}
               onChange={(e) => setDong(e.target.value)}
               onKeyDown={(e) => {
@@ -268,7 +269,7 @@ const toggleType = (type: string) => {
              className="w-full border border-gray-200 rounded-2xl bg-white px-4 py-3 outline-none text-sm focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition"
             />
 
-            <input data-ui-field="true" data-page-search-input="true"
+            <ClearableSearchInput onClear={() => setDepartment("")} data-ui-field="true" data-page-search-input="true"
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
               onKeyDown={(e) => {
@@ -281,7 +282,7 @@ const toggleType = (type: string) => {
             />
           </div>
 
-<input data-ui-field="true" data-page-search-input="true"
+<ClearableSearchInput onClear={() => setHospitalName("")} data-ui-field="true" data-page-search-input="true"
   value={hospitalName}
   onChange={(e) => setHospitalName(e.target.value)}
   placeholder="병원명 검색"
@@ -294,9 +295,7 @@ const toggleType = (type: string) => {
 </div>
 
           {loading ? (
-            <div className="text-center py-16 text-gray-400 text-sm font-medium">
-              병원 정보를 불러오는 중입니다
-            </div>
+            null
           ) : (
             <div className="mt-3 space-y-3">
               {results.length === 0 ? (
@@ -329,19 +328,19 @@ const toggleType = (type: string) => {
     <div className="col-span-2 md:col-span-1 min-w-0">
       <div className="flex items-center gap-2 flex-wrap">
         <h2 data-popup-heading="true" className="text-[17px] font-black text-gray-900 break-words">{hospital.name}</h2>
-        <span className="px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600">{hospital.originalType || hospital.type}</span>
+        <span data-hospital-type="true" className="px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600">{hospital.originalType || hospital.type}</span>
       </div>
-      <div className="flex items-start gap-1.5 mt-1"><MapPin size={14} className="shrink-0 mt-0.5 text-slate-400" /><p className="text-xs text-slate-500 break-words">{hospital.address}</p></div>
+      <div className="flex items-start gap-1.5 mt-1"><MapPin size={14} className="shrink-0 mt-0.5 text-slate-400" /><p data-hospital-address="true" className="text-xs text-slate-500 break-words">{hospital.address}</p></div>
     </div>
-    <div className="flex items-center gap-3 min-w-0">
+    <div data-hospital-stat="phone" className="flex items-center gap-3 min-w-0">
       <Phone size={22} className="w-5 h-5 sm:w-[22px] sm:h-[22px] shrink-0 text-slate-400" />
       <div className="min-w-0"><p className="text-xs sm:text-sm text-slate-500">전화번호</p>{hospital.tel !== "-" ? <a href={`tel:${hospital.tel}`} className="inline-block rounded-md px-1 -mx-1 text-sm sm:text-base font-bold text-slate-900 break-words cursor-pointer hover:bg-blue-50 transition-colors">{hospital.tel}</a> : <p className="text-sm sm:text-base font-bold text-slate-900">{hospital.tel}</p>}</div>
     </div>
-    <div className="flex items-center gap-3 min-w-0"><UsersRound size={23} className="w-5 h-5 sm:w-[23px] sm:h-[23px] shrink-0 text-slate-400" /><div><p className="text-xs sm:text-sm text-slate-500">총 의사수</p><p className="text-base font-bold text-blue-600">{String(hospital.doctorCount).replace("명", "")}명</p></div></div>
-    <button data-action-height="44" type="button" onClick={() => setOpenedIndex(openedIndex === index ? null : index)} aria-expanded={openedIndex === index} className="flex items-center justify-center gap-1 rounded-xl bg-blue-50 px-2 py-2.5 text-xs font-bold text-slate-600 hover:bg-blue-100 transition cursor-pointer">
+    <div data-hospital-stat="doctors" className="flex items-center gap-3 min-w-0"><UsersRound size={23} className="w-5 h-5 sm:w-[23px] sm:h-[23px] shrink-0 text-slate-400" /><div><p className="text-xs sm:text-sm text-slate-500">총 의사수</p><p className="text-base font-bold text-blue-600">{String(hospital.doctorCount).replace("명", "")}명</p></div></div>
+    <button data-hospital-card-action="true" data-action-height="44" type="button" onClick={() => setOpenedIndex(openedIndex === index ? null : index)} aria-expanded={openedIndex === index} className="flex items-center justify-center gap-1 rounded-xl bg-blue-50 px-2 py-2.5 text-xs font-bold text-slate-600 hover:bg-blue-100 transition cursor-pointer">
       상세정보 {openedIndex === index ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
     </button>
-    <a data-action-height="44" href={hospital.homepage} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1 rounded-xl bg-blue-600 px-2 py-2.5 text-xs font-bold text-white hover:bg-blue-700 transition"><span>바로가기</span></a>
+    <a data-hospital-card-action="true" data-action-height="44" href={hospital.homepage} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1 rounded-xl bg-blue-600 px-2 py-2.5 text-xs font-bold text-white hover:bg-blue-700 transition"><span>바로가기</span></a>
   </div>
 
   {openedIndex === index && (

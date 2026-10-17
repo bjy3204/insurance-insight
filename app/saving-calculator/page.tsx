@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import presentation from "../components/CalculatorPresentation.module.css";
@@ -546,12 +547,12 @@ const principal = monthly * months;
   };
 
   return (
-    <main className={`${presentation.page} min-h-screen pb-24`}>
+    <main data-calculator-page="true" className={`${presentation.page} min-h-screen pb-24`}>
       {/* 헤더 */}
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
               href="/"
               className="
   absolute
@@ -586,7 +587,7 @@ const principal = monthly * months;
               }`}
             >
               <div className="relative">
-                <button data-header-control="true"
+                <button data-icon-only="true" data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
@@ -602,7 +603,7 @@ const principal = monthly * months;
                 </button>
 
                 {settingOpen && (
-                  <div
+                  <div data-ui-card="true"
                     onClick={(e) => e.stopPropagation()}
                     className="
                       absolute right-0 top-12 z-[999] w-40 rounded-2xl
@@ -674,7 +675,7 @@ const principal = monthly * months;
 </div>
 
 
-        <div className={`${presentation.panel} rounded-3xl p-5 md:p-7`}>
+        <div data-ui-card="true" className={`${presentation.panel} rounded-3xl p-5 md:p-7`}>
           {/* 이자방식 */}
 <div className="mb-6">
   <div className={`grid gap-3 ${type === "saving" ? "grid-cols-2" : "grid-cols-2 md:grid-cols-4"}`}>
@@ -744,7 +745,7 @@ const principal = monthly * months;
 
             <div className={`${presentation.taxOptions} grid grid-cols-3 gap-2`}>
   <CalculatorOptionButton
-    onClick={() => setTaxRate(15.4)}
+    data-tax-option="true" aria-pressed={taxRate === 15.4} onClick={() => setTaxRate(15.4)}
     className={`border ${
       taxRate === 15.4
         ? "bg-blue-50 text-blue-600 border-blue-600"
@@ -755,7 +756,7 @@ const principal = monthly * months;
   </CalculatorOptionButton>
 
   <CalculatorOptionButton
-    onClick={() => setTaxRate(9.5)}
+    data-tax-option="true" aria-pressed={taxRate === 9.5} onClick={() => setTaxRate(9.5)}
     className={`border ${
       taxRate === 9.5
         ? "bg-blue-50 text-blue-600 border-blue-600"
@@ -766,7 +767,7 @@ const principal = monthly * months;
   </CalculatorOptionButton>
 
   <CalculatorOptionButton
-    onClick={() => setTaxRate(0)}
+    data-tax-option="true" aria-pressed={taxRate === 0} onClick={() => setTaxRate(0)}
     className={`border ${
       taxRate === 0
         ? "bg-blue-50 text-blue-600 border-blue-600"
@@ -804,7 +805,7 @@ const principal = monthly * months;
           </div>
 
           }
-          <div className="mt-5 text-gray-500 text-sm space-y-1 leading-relaxed">
+          <div data-calculator-footer="true" data-reference-note="true" className="mt-5 text-gray-500 text-sm space-y-1 leading-relaxed">
   <p>
     실제 금융상품의 금리, 세율, 우대조건에 따라 결과는 달라질 수 있습니다. 이자소득세: 일반과세(15.4%), 세금우대(9.5%)
   </p>
@@ -847,7 +848,7 @@ const principal = monthly * months;
           주요 은행 {bankRateMonth}개월 예금 금리
         </h2>
 
-        <button type="button" data-popup-close="true" aria-label="예금 금리 닫기"
+        <button data-icon-only="true" type="button" data-popup-close="true" aria-label="예금 금리 닫기"
           onMouseDown={event => event.stopPropagation()}
           onClick={() => setBankRateOpen(false)}
           className="
@@ -866,7 +867,7 @@ const principal = monthly * months;
         </button>
       </div>
 
-      <div className="p-5 overflow-y-auto">
+      <div data-bank-rate-scroll="true" className="p-5 overflow-y-auto">
         <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-5">
   <button
     onClick={() => setBankRateMonth("12")}
@@ -895,7 +896,7 @@ const principal = monthly * months;
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {bankRates.map((bank) => (
            <button
-  key={bank.name}
+  data-bank-rate-card="true" key={bank.name}
   type="button"
   onDoubleClick={() => {
     if (bank.url) window.open(bank.url, "_blank");
@@ -939,7 +940,7 @@ const principal = monthly * months;
           ))}
         </div>
 
-        <div className="border-t border-gray-100 mt-3 pt-3">
+        <div data-reference-note="true" data-bank-rate-notes="true" className="border-t border-gray-100 mt-3 pt-3">
   <p className="text-xs font-medium text-gray-500 mb-2">금리 공시월 · {bankBaseDate}</p>
           <p className="text-xs text-gray-400 leading-relaxed break-keep">
             ※ 금리는 변동될 수 있으니 정확한 내용은 각 은행 홈페이지에서 확인해주세요.
@@ -960,7 +961,7 @@ const principal = monthly * months;
 
 
 {contextMenu && (
-  <div
+  <div data-ui-card="true"
     style={{ top: contextMenu.y, left: contextMenu.x }}
     className="fixed z-[2000] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-32"
     onPointerDown={(e) => e.stopPropagation()}
@@ -995,7 +996,7 @@ const principal = monthly * months;
 
       {/* 하단 고정 메뉴 */}
       <>
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
+        <div data-page-fixed-footer="true" className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a href="https://naver.me/xsZ8mk7H" className="py-3 flex flex-col items-center gap-1">
             <Newspaper className="w-5 h-5" />
@@ -1062,7 +1063,10 @@ function InputBox({
       </label>
 
       <div data-calculator-field="true" className="relative">
-        <input
+        <ClearableSearchInput onClear={() => {
+            const raw = "".replaceAll(",", "");
+            setValue(decimal ? raw.replace(/[^0-9.]/g, "") : raw.replace(/[^0-9]/g, ""));
+          }}
           type="text"
           inputMode={decimal ? "decimal" : "numeric"}
           value={
@@ -1100,7 +1104,7 @@ function SelectButton({
   return (
     <button
       type="button"
-      aria-pressed={active}
+      data-interest-option="true" aria-pressed={active}
       onClick={onClick}
       className={`
         rounded-2xl border p-4 text-center font-bold cursor-default
@@ -1120,7 +1124,7 @@ function ResultItem({
   value: number;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-3">
+    <div data-ui-card="true" className="bg-white rounded-2xl p-3">
       <p className="text-gray-500 text-base md:text-lg font-bold mb-2">{label}</p>
       <p className="text-gray-900 text-lg md:text-xl font-bold break-words">
         {Math.round(value / 10000).toLocaleString()}만원

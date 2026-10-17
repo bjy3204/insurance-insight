@@ -39,10 +39,10 @@ export default function TrafficCctvPlayer({ camera, onClose, onPrevious, onNext 
     return ()=>{cancelled=true;destroy?.();element.pause();element.removeAttribute('src');element.load();};
   },[camera.id,camera.url]);
   return <div className={styles.cctvPopup} role="dialog" aria-label={`${camera.name} CCTV`}>
-    <div className={styles.cctvHeader}><strong>{camera.name}</strong><button ref={closeButton} type="button" onClick={onClose} aria-label="CCTV 닫기"><X size={18}/></button></div>
+    <div className={styles.cctvHeader}><strong>{camera.name}</strong><button data-icon-only="true" ref={closeButton} type="button" onClick={onClose} aria-label="CCTV 닫기"><X size={18}/></button></div>
     <span className={styles.live}>● LIVE</span>
     <video ref={video} controls autoPlay muted playsInline onError={()=>setError('영상을 불러오지 못했습니다. 다른 CCTV를 선택해 주세요.')} aria-label={`${camera.name} 실시간 영상`}/>
     {error&&<p role="status">{error}</p>}
-    <div className={styles.cctvFooter}><span>국가교통정보센터 제공<br/>실제 상황과 영상에 시간 차이가 있을 수 있습니다.</span><div><button type="button" onClick={onPrevious} aria-label="이전 CCTV"><ChevronLeft size={18}/></button><button type="button" onClick={onNext} aria-label="다음 CCTV"><ChevronRight size={18}/></button></div></div>
+    <div className={styles.cctvFooter}><span>국가교통정보센터 제공<br/>실제 상황과 영상에 시간 차이가 있을 수 있습니다.</span><div><button data-icon-only="true" type="button" onClick={onPrevious} aria-label="이전 CCTV"><ChevronLeft size={18}/></button><button data-icon-only="true" type="button" onClick={onNext} aria-label="다음 CCTV"><ChevronRight size={18}/></button></div></div>
   </div>;
 }

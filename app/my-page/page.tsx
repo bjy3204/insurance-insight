@@ -1,4 +1,5 @@
 "use client";
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import PolicyInsertsIcon from "@/app/components/PolicyInsertsIcon";
 
 import DiaryTab from "./DiaryTab";
@@ -66,6 +67,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 import HomeTab from "./HomeTab";
+import { PERSONAL_HOME_ENABLED } from "./personal-features";
 import CustomerReminderNotice from "@/app/features/home/components/CustomerReminderNotice";
 import PersonalSidebar from "./PersonalSidebar";
 import { useSharedHomeController } from "@/app/features/home/HomeControllerProvider";
@@ -184,7 +186,7 @@ const TABS = [
   { id: "memo" as ActiveTab, label: "메모", icon: NotebookPen },
   { id: "diary" as ActiveTab, label: "일기", icon: BookOpen },
   { id: "calendar" as ActiveTab, label: "캘린더", icon: CalendarDays },
-].filter(tab => COVERAGE_ANALYSIS_ENABLED || tab.id !== "coverage-analysis");
+].filter(tab => (COVERAGE_ANALYSIS_ENABLED || tab.id !== "coverage-analysis") && (PERSONAL_HOME_ENABLED || tab.id !== "home"));
 const DEFAULT_MENU_ORDER = [...TABS.map(tab => tab.id), ...SHORTCUT_ORDER.map(id => `shortcut:${id}`)];
 
 const HOME_MENU_ITEMS = [
@@ -229,9 +231,9 @@ function SortableTab({ tab, activeTab, setActiveTab }: { tab: any; activeTab: st
 // ─────────────────────────────────────────────
 export default function PersonalSpacePage() {
   const controller = useSharedHomeController();
-  const { authUser, authStatus, authLoading } = useAuth();
+  const { authUser, authStatus, authRole, authLoading } = useAuth();
   const promptedUser = useRef<string | null>(null);
-  const unlocked = !!authUser && controller.personalSpaceUserId === authUser.id;
+  const unlocked = !!authUser && (authRole === "admin" || controller.personalSpaceUserId === authUser.id);
   useEffect(() => {
     if (authLoading || !authUser || authStatus !== "approved" || unlocked || promptedUser.current === authUser.id) return;
     promptedUser.current = authUser.id;
@@ -248,7 +250,7 @@ function CustomerManagePage() {
   const accountController = useSharedHomeController();
 
   const [settings, setSettings] = useState<CustomerSettings | null>(null);
-  const [activeTab, setActiveTab] = useState<ActiveTab>("home");
+  const [activeTab, setActiveTab] = useState<ActiveTab>(PERSONAL_HOME_ENABLED ? "home" : "customer-management");
   useEffect(() => {
     const tab = new URLSearchParams(window.location.search).get("tab");
     if (TABS.some(item => item.id === tab)) setActiveTab(tab as ActiveTab);
@@ -256,6 +258,10 @@ function CustomerManagePage() {
   const [plantPopupOpen, setPlantPopupOpen] = useState(false);
   const [sidebarPlantStage, setSidebarPlantStage] = useState<PlantStage>("seed");
   const [tabs, setTabs] = useState(TABS);
+  const [homeContractRequested,setHomeContractRequested]=useState(false);
+  const [homeCustomerRequested,setHomeCustomerRequested]=useState(false);
+  useEffect(()=>{const open=()=>{setHomeCustomerRequested(true);setActiveTab("customer-management");};window.addEventListener("personal-home-add-customer",open);return()=>window.removeEventListener("personal-home-add-customer",open);},[]);
+  useEffect(()=>{const open=()=>{setHomeContractRequested(true);setActiveTab("customer-management");};window.addEventListener("personal-home-add-contract",open);return()=>window.removeEventListener("personal-home-add-contract",open);},[]);
   const [shortcutOrder, setShortcutOrder] = useState(SHORTCUT_ORDER);
   const [menuSaving, setMenuSaving] = useState(false);
   const menuSavingRef = useRef(false);
@@ -605,7 +611,7 @@ updateData.pin_changed_at = new Date().toISOString();
 
 
   return (
-    <div data-personal-space="true" className="min-h-screen bg-gray-100">
+    <div data-personal-space="true" data-personal-focus={activeTab === "calendar" ? "off" : activeTab === "diary" ? "diary" : "blue"} className="min-h-screen bg-gray-100">
 
       {/* ── 헤더 ── */}
       <header data-page-header="true" className="sticky top-0 z-50 bg-white border-b border-black shadow-sm overflow-visible">
@@ -613,7 +619,7 @@ updateData.pin_changed_at = new Date().toISOString();
           <div className="relative flex items-center justify-center">
 
             {/* 메인으로 이동 */}
-            <button data-header-control="true"
+            <button data-icon-only="true" data-header-control="true"
               onClick={() => router.push("/")}
               className="absolute left-0 w-11 h-11 rounded-xl border border-gray-200 bg-white flex items-center justify-center hover:bg-gray-50 shadow-sm transition cursor-pointer"
             >
@@ -623,7 +629,7 @@ updateData.pin_changed_at = new Date().toISOString();
             {/* 타이틀 */}
 <div className="max-w-[calc(100%-184px)] text-center md:max-w-none">
   <div className="flex min-w-0 items-center justify-center gap-2">
-    <User className="hidden w-7 h-7 shrink-0 text-blue-600 md:block" />
+    <User className="w-7 h-7 shrink-0 text-blue-600" />
 
     <h1 className="truncate text-2xl font-black text-gray-900">
       {settings?.nickname
@@ -635,19 +641,19 @@ updateData.pin_changed_at = new Date().toISOString();
   
 </div>
 
-<div ref={settingRef} className="absolute right-0 flex items-center gap-2" onKeyDown={event => { if (event.key === "Escape") { setSettingOpen(false); } }}>
+<div ref={settingRef} className="absolute right-0 flex items-center gap-2 md:gap-[15px]" onKeyDown={event => { if (event.key === "Escape") { setSettingOpen(false); } }}>
   <div className="relative hidden md:block">
-    <button type="button" data-header-control="true" aria-label="설정" aria-haspopup="dialog" onClick={() => { setSettingsDialog("space"); setSettingOpen(false); setSettingMsg(""); }}><SlidersHorizontal /></button>
+    <button data-icon-only="true" type="button" data-header-control="true" aria-label="설정" aria-haspopup="dialog" onClick={() => { setSettingsDialog("space"); setSettingOpen(false); setSettingMsg(""); }}><SlidersHorizontal /></button>
   </div>
   <div className="relative hidden md:block">
-    <button type="button" data-header-control="true" aria-label="도구 메뉴" aria-expanded={settingOpen} aria-controls="personal-header-tools" onClick={() => { setSettingOpen(open => !open); }}><LayoutGrid /></button>
+    <button data-icon-only="true" type="button" data-header-control="true" aria-label="도구 메뉴" aria-expanded={settingOpen} aria-controls="personal-header-tools" onClick={() => { setSettingOpen(open => !open); }}><LayoutGrid /></button>
   {settingOpen && <div id="personal-header-tools" className="absolute right-0 top-12 z-[1000] w-40 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
     <button type="button" onClick={() => { window.dispatchEvent(new Event("open-memo-manager")); setSettingOpen(false); }} className="block w-full px-4 py-3 text-sm font-bold text-gray-700 text-center hover:bg-blue-50 hover:text-blue-600 cursor-pointer">메모장</button>
     {[{ label: "계산기", event: "open-calculator" }, { label: "환율변환기", event: "open-currency-converter" }].map(item => <button key={item.event} type="button" onClick={() => { setSettingOpen(false); window.dispatchEvent(new CustomEvent(item.event)); }} className="block w-full border-t border-gray-100 px-4 py-3 text-sm font-bold text-gray-700 text-center hover:bg-gray-50 cursor-pointer">{item.label}</button>)}
   </div>}
 
   </div>
-  <button data-header-control="true" aria-label="개인공간 메뉴" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(v => !v)} className="flex h-10 w-10 cursor-pointer items-center justify-center md:!hidden"><Menu className="h-5 w-5"/></button>
+  <button data-icon-only="true" data-header-control="true" aria-label="개인공간 메뉴" aria-expanded={sidebarOpen} onClick={() => setSidebarOpen(v => !v)} className="flex h-10 w-10 cursor-pointer items-center justify-center md:!hidden"><Menu className="h-5 w-5"/></button>
 </div>
           </div>
         </div>
@@ -655,8 +661,8 @@ updateData.pin_changed_at = new Date().toISOString();
 
 <PersonalSidebar onSettingsOpen={() => { setSettingsDialog("space"); setSettingOpen(false); setSettingMsg(""); }} collapsed={sidebarCollapsed} onCollapsedChange={setSidebarCollapsed} onPlantOpen={() => { setPlantPopupOpen(open => !open); }} nickname={settings?.nickname || "회원"} plantStage={sidebarPlantStage} mobileOpen={sidebarOpen} onMobileClose={() => setSidebarOpen(false)} activeTab={activeTab} tabs={tabs} onSelect={id => setActiveTab(id as ActiveTab)} onReorder={handlePersonalMenuReorder} reorderDisabled={menuSaving} reorderError={menuSaveError}
  />
-<div className={`transition-[padding] duration-200 motion-reduce:transition-none ${sidebarCollapsed ? "md:pl-0" : "md:pl-24"}`}><div className="min-w-0">
-      {activeTab === "home" && <CustomerReminderNotice />}
+<div data-personal-content="true" data-sidebar-collapsed={sidebarCollapsed} className="min-w-0"><div className="min-w-0">
+      {PERSONAL_HOME_ENABLED && activeTab === "home" && <div className="hidden md:block"><CustomerReminderNotice /></div>}
       {/* ── 탭 콘텐츠 ── */}
       <main data-page-content="true" className="max-w-7xl mx-auto px-4 md:px-6 pt-6 pb-8">
        {activeTab === "memo" && <MemoBoard />}
@@ -680,7 +686,7 @@ updateData.pin_changed_at = new Date().toISOString();
   <AiMessageTab active={activeTab === "ai"} />
 </div>
 
-{activeTab === "customer-management" && <CustomerManagementTab />}
+{activeTab === "customer-management" && <CustomerManagementTab openCustomerRequested={homeCustomerRequested} onCustomerRequestHandled={()=>setHomeCustomerRequested(false)} openContractRequested={homeContractRequested} onContractRequestHandled={()=>setHomeContractRequested(false)} />}
 {activeTab === "policy-inserts" && <PolicyInsertsEditor embedded />}
 {COVERAGE_ANALYSIS_ENABLED && activeTab === "coverage-analysis" && <CoverageAnalysisTab />}
 
@@ -711,17 +717,17 @@ updateData.pin_changed_at = new Date().toISOString();
      {settingsDialog && <PersonalSettingsDialog title="개인공간" onClose={() => { if (!settingSaving) { setSettingsDialog(null); } }}>
              <section className="space-y-4">
               <AccountPinCheck controller={accountController} divider={false}/>
-              <div className="border-t border-gray-100 pt-3">
+              <div className="pt-3">
                 <label className="text-xs text-gray-500 font-semibold mb-1 block">개인공간 PIN 변경 (4자리)</label>
                 <div className="relative">
-                  <input data-ui-field="true"
+                  <ClearableSearchInput onClear={() => setSettingForm((f) => ({ ...f, new_pin: "".replace(/\D/g, "").slice(0, 4) }))} data-ui-field="true"
                     type={showNewPin ? "text" : "password"}
                     value={settingForm.new_pin}
                     onChange={(e) => setSettingForm((f) => ({ ...f, new_pin: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
                     placeholder="새 PIN 4자리"
                     className="w-full h-11 px-4 pr-9 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 transition"
                   />
-                  <button
+                  <button data-icon-only="true"
                     onClick={() => setShowNewPin(!showNewPin)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"
                   >
@@ -729,7 +735,7 @@ updateData.pin_changed_at = new Date().toISOString();
                   </button>
                 </div>
                 {settingForm.new_pin && (
-                  <input data-ui-field="true"
+                  <ClearableSearchInput onClear={() => setSettingForm((f) => ({ ...f, confirm_pin: "".replace(/\D/g, "").slice(0, 4) }))} data-ui-field="true"
                     type="password"
                     value={settingForm.confirm_pin}
                     onChange={(e) => setSettingForm((f) => ({ ...f, confirm_pin: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
@@ -759,7 +765,7 @@ updateData.pin_changed_at = new Date().toISOString();
       <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between">
         <span data-popup-title="true" className="font-bold text-sm">홈 메뉴 변경</span>
 
-        <button data-popup-close="true"
+        <button data-icon-only="true" data-popup-close="true"
           onClick={() => setHomeMenuSettingOpen(false)}
          className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"
         >
@@ -825,7 +831,7 @@ className={`personal-grid relative rounded-3xl border border-gray-200 bg-white p
     : "hover:-translate-y-1 hover:shadow-lg"
 }`}
         >
-          <button
+          <button data-icon-only="true"
             onClick={async () => {
               const next = hidden
                 ? hiddenHomeMenus.filter(v => v !== item.id)
@@ -889,7 +895,7 @@ className={`personal-grid relative rounded-3xl border border-gray-200 bg-white p
     : "hover:-translate-y-1 hover:shadow-lg"
 }`}
         >
-          <button
+          <button data-icon-only="true"
             onClick={async () => {
               const next = hidden
                 ? hiddenHomeMenus.filter(v => v !== item.id)

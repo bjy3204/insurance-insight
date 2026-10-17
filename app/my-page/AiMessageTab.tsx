@@ -1,5 +1,7 @@
 "use client";
 
+import CustomSelect from "@/app/components/CustomSelect";
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useEffect, useState, useRef, type CSSProperties } from "react";
 import Script from "next/script";
 import styles from "./AiMessageTab.module.css";
@@ -26,12 +28,11 @@ import {
 type KakaoSdk = { isInitialized: () => boolean; init: (key: string) => void; Share: { sendDefault: (options: { objectType: "text"; text: string; link: { webUrl: string; mobileWebUrl: string }; buttonTitle: string }) => void } };
 
 const MESSAGE_GROUPS: { label: string; ids: MessageType[] }[] = [
-  { label: "자주 사용", ids: ["daily_check", "longtime", "family_health", "morning"] },
-  { label: "일상 · 안부", ids: ["moving", "travel", "vacation_return"] },
+  { label: "안부", ids: ["daily_check", "longtime", "family_health", "morning", "moving", "travel", "vacation_return"] },
   { label: "기념일", ids: ["birthday", "birth_congrats", "marriage", "newyear_holiday", "chuseok", "christmas", "yearend", "newyear"] },
-  { label: "계절 · 날씨", ids: ["spring", "summer", "autumn", "winter", "boknal", "heatwave", "rainy", "storm", "snow", "season_change", "first_snow", "dust"] },
-  { label: "건강 · 병원", ids: ["cancer_check", "tax", "surgery", "after_hospital", "after_discharge", "after_accident"] },
-  { label: "보험 · 업무", ids: ["policy_check", "car_renewal"] },
+  { label: "날씨", ids: ["spring", "summer", "autumn", "winter", "boknal", "heatwave", "rainy", "storm", "snow", "season_change", "first_snow", "dust"] },
+  { label: "건강", ids: ["cancer_check", "tax", "surgery", "after_hospital", "after_discharge", "after_accident"] },
+  { label: "보험", ids: ["policy_check", "car_renewal"] },
 ];
 type RecentMessage = { type: MessageType; date: string };
 
@@ -172,24 +173,25 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
  return (
   <div className="space-y-4">
     <Script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.2/kakao.min.js" strategy="afterInteractive" integrity="sha384-zt/G7/KfaRQ9dT/QIkS0ujMtzouJqzuSJcXVQu50x0rl/+mD1dc70AeOejVbMD9E" crossOrigin="anonymous" />
-    <h2 className="flex items-center gap-3 text-xl font-bold"><MessageCircle className="w-7 h-7 text-blue-500" />AI 메시지</h2>
-  <div className="grid grid-cols-1 xl:grid-cols-[265px_minmax(0,1fr)] gap-3 items-start overflow-visible">
+    <div><h2 data-personal-tab-title="true" className="flex items-center gap-3 text-xl font-bold"><MessageCircle className="w-7 h-7 text-blue-500" />AI 메시지</h2></div>
+  <div className="grid grid-cols-1 md:grid-cols-[265px_minmax(0,1fr)] gap-3 items-start overflow-visible">
 
-    <aside ref={messageMenuRef} className="personal-grid min-w-0 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-      <div className="relative mb-4"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" /><input data-ui-field="true" data-page-search-input="true" disabled={generating} value={searchQuery} onChange={event => setSearchQuery(event.target.value)} placeholder="메시지 종류 검색" className="w-full h-11 pl-9 pr-3 rounded-xl border border-gray-200 bg-gray-50 text-sm outline-none focus:border-blue-400" /></div>
+    <aside ref={messageMenuRef} className={`${styles.categoryMenu} personal-grid min-w-0 bg-white rounded-2xl border border-gray-100 shadow-sm p-4`}>
+      <div className={`${styles.mobileCategories} md:hidden`}>{MESSAGE_GROUPS.map(group => <CustomSelect key={group.label} label={`${group.label} 메시지 선택`} displayLabel={group.label} value={group.ids.includes(messageType) ? messageType : ""} disabled={generating} options={MESSAGE_TYPES.filter(type => group.ids.includes(type.id)).map(type => ({ value: type.id, label: type.label }))} onChange={value => selectMessage(value as MessageType)} />)}</div>
+      <div className="hidden md:block">
       {MESSAGE_GROUPS.map(group => {
         const options = filteredTypes.filter(type => group.ids.includes(type.id));
         if (!options.length) return null;
         const expanded = !!searchQuery || openGroups.includes(group.label);
         return (
-          <div key={group.label} className="border-b border-gray-100 pb-2 mb-2">
-            <button data-action-height="44" type="button" aria-expanded={expanded} onClick={() => setOpenGroups(previous => previous.includes(group.label) ? previous.filter(label => label !== group.label) : [...previous, group.label])} className="w-full flex items-center justify-between py-3 text-sm font-bold text-gray-900 cursor-pointer">
+          <div key={group.label} className="mb-1 md:mb-[6px] last:mb-0">
+            <button data-unified-menu-item="true" data-action-height="44" type="button" aria-expanded={expanded} onClick={() => setOpenGroups(previous => previous.includes(group.label) ? previous.filter(label => label !== group.label) : [...previous, group.label])} className="w-full flex items-center justify-between py-3 text-sm font-bold text-gray-900 cursor-pointer">
               {group.label}<ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${expanded ? "rotate-180" : ""}`} />
             </button>
             {expanded && (
-              <div data-message-group-options="true" className="flex flex-col gap-1.5">
+              <div data-message-group-options="true" className="mt-1 md:mt-[6px] flex flex-col gap-1">
                 {options.map(type => (
-                  <button data-action-height="44" type="button" key={type.id} disabled={generating} onClick={() => selectMessage(type.id)} className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer disabled:opacity-50 ${type.id === messageType ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}>
+                  <button data-unified-menu-item="true" aria-pressed={type.id === messageType} data-action-height="44" type="button" key={type.id} disabled={generating} onClick={() => selectMessage(type.id)} className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer disabled:opacity-50 ${type.id === messageType ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-600 hover:bg-gray-50"}`}>
                     {type.label}
                   </button>
                 ))}
@@ -198,12 +200,13 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
           </div>
         );
       })}
-      <div className="hidden md:block mt-3 rounded-xl bg-gray-50 p-3"><h3 className="flex items-center gap-2 text-base font-semibold text-gray-700 mb-2"><Clock className="w-4 h-4" />최근 사용한 메시지</h3>{recentMessages.length ? recentMessages.map(item => <div key={item.type} className="flex items-center gap-2"><button data-action-height="44" type="button" disabled={generating} onClick={() => selectMessage(item.type)} className="flex-1 min-w-0 flex items-center justify-between gap-2 py-1 text-xs text-gray-600 cursor-pointer"><span>{MESSAGE_TYPES.find(type => type.id === item.type)?.label}</span><span className="text-gray-400">{new Date(item.date).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })}</span></button><button type="button" onClick={() => removeRecentMessage(item.type)} aria-label={`${MESSAGE_TYPES.find(type => type.id === item.type)?.label} 최근 사용 기록 삭제`} className="shrink-0 flex items-center justify-center w-6 h-6 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200 cursor-pointer"><X className="w-3.5 h-3.5" /></button></div>) : <p className="text-xs text-gray-400">아직 사용한 메시지가 없습니다.</p>}</div>
+      <div className="hidden md:block mt-3 rounded-xl bg-gray-50 p-3"><h3 data-personal-card-title="true" className="flex items-center gap-2 text-base font-semibold text-gray-700 mb-2"><Clock className="w-4 h-4" />최근 사용한 메시지</h3>{recentMessages.length ? recentMessages.map(item => <div key={item.type} className="flex items-center gap-2 rounded-xl"><button data-action-height="44" type="button" disabled={generating} onClick={() => selectMessage(item.type)} className="flex-1 min-w-0 flex items-center justify-between gap-2 py-1 text-xs text-gray-600 cursor-default"><span>{MESSAGE_TYPES.find(type => type.id === item.type)?.label}</span><span className="text-gray-400">{new Date(item.date).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" }).replace(/\.$/, "")}</span></button><button type="button" data-item-remove="true" onClick={() => removeRecentMessage(item.type)} aria-label={`${MESSAGE_TYPES.find(type => type.id === item.type)?.label} 최근 사용 기록 삭제`} className="shrink-0 flex items-center justify-center w-6 h-6 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-200 cursor-pointer"><X className="w-3.5 h-3.5" /></button></div>) : <p className="text-xs text-gray-400">아직 사용한 메시지가 없습니다.</p>}</div>
+      </div>
     </aside>
     <div className={`${styles.messagePanels} min-w-0 xl:relative`} style={panelHeight ? { "--message-panel-height": `${panelHeight}px` } as CSSProperties : undefined}>
     <div className="grid min-w-0 grid-cols-1 xl:absolute xl:inset-0 xl:grid-rows-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_350px] gap-3 items-stretch">
     {/* 가운데: 입력 및 메시지 편집 */}
-    <div className="personal-grid flex flex-col min-w-0 h-[560px] md:h-[640px] xl:h-auto xl:min-h-0 xl:overflow-y-auto gap-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+    <div data-personal-message-form="true" className="personal-grid flex flex-col min-w-0 h-[560px] md:h-[640px] xl:h-auto xl:min-h-0 xl:overflow-y-auto gap-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
       {/* 오늘의 특별한 날 배지 */}
       {specialDays.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -244,8 +247,31 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
       {/* 이름 입력 */}
 <div className="grid grid-cols-2 gap-3">
   <div className="min-w-0">
+    <label className="text-base font-bold text-gray-900 block mb-2">고객 이름</label>
+    <div className="relative">
+      <ClearableSearchInput onClear={() => {
+          setCustomerName("");
+          setGeneratedMessage(""); setMessageCreated(false); setGenerationNotice("");
+        }} data-ui-field="true"
+        disabled={generating}
+        type="text"
+        value={customerName}
+        onChange={(e) => {
+          setCustomerName(e.target.value);
+          setGeneratedMessage(""); setMessageCreated(false); setGenerationNotice("");
+        }}
+        placeholder="고객 이름"
+        className="w-full h-11 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400 transition"
+      />
+    </div>
+  </div>
+
+  <div className="min-w-0">
     <label className="text-base font-bold text-gray-900 block mb-2">설계사 이름</label>
-    <input data-ui-field="true"
+    <ClearableSearchInput onClear={() => {
+  setAgentName("");
+  localStorage.setItem("agent-name", "");
+}} data-ui-field="true"
         disabled={generating}
       type="text"
       value={agentName}
@@ -257,24 +283,6 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
       className="w-full h-11 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400 transition"
     />
   </div>
-
-  <div className="min-w-0">
-    <label className="text-base font-bold text-gray-900 block mb-2">고객 이름</label>
-    <div className="relative">
-      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-      <input data-ui-field="true"
-        disabled={generating}
-        type="text"
-        value={customerName}
-        onChange={(e) => {
-          setCustomerName(e.target.value);
-          setGeneratedMessage(""); setMessageCreated(false); setGenerationNotice("");
-        }}
-        placeholder="고객 이름"
-        className="w-full h-11 pl-9 pr-3 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400 transition"
-      />
-    </div>
-  </div>
 </div>
 
 <div>
@@ -285,7 +293,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
       </label>
       <div data-ui-field-wrapper="true" className="flex items-center gap-2 h-11 px-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus-within:border-blue-400">
         <input data-ui-field="true" aria-label="갱신 월" inputMode="numeric" disabled={generating} value={extraInfo.split("-")[0] || ""} onChange={event => { const value = event.target.value.replace(/\D/g, "").slice(0, 2); setExtraInfo(value + "-" + (extraInfo.split("-")[1] || "")); if (value.length === 2) event.currentTarget.parentElement?.querySelector<HTMLInputElement>('[aria-label="갱신 일"]')?.focus(); }} placeholder="MM" className="w-10 bg-transparent text-center outline-none" /><span>월</span>
-        <input data-ui-field="true" aria-label="갱신 일" inputMode="numeric" disabled={generating} value={extraInfo.split("-")[1] || ""} onChange={event => setExtraInfo((extraInfo.split("-")[0] || "") + "-" + event.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="DD" className="w-10 bg-transparent text-center outline-none" /><span>일</span>
+        <ClearableSearchInput onClear={() => setExtraInfo((extraInfo.split("-")[0] || "") + "-" + "".replace(/\D/g, "").slice(0, 2))} data-ui-field="true" aria-label="갱신 일" inputMode="numeric" disabled={generating} value={extraInfo.split("-")[1] || ""} onChange={event => setExtraInfo((extraInfo.split("-")[0] || "") + "-" + event.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="DD" className="w-10 bg-transparent text-center outline-none" /><span>일</span>
       </div>
     </div>
   )}
@@ -298,7 +306,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
       </div>
 {/* 생성 버튼 */}
 <button
-  onClick={handleGenerate}
+  data-message-action="generate" onClick={handleGenerate}
   disabled={generating}
   className="mt-auto shrink-0 w-full h-12 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition bg-gray-900 text-white hover:bg-gray-800 shadow-sm cursor-pointer disabled:cursor-default"
 >
@@ -324,7 +332,7 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
 
     {/* 오른쪽: 대화창 미리보기 */}
     <div className="personal-grid flex flex-col items-center w-full min-w-0 h-[640px] xl:h-auto xl:min-h-0 bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-      <h3 className="w-full mb-3 text-base font-bold text-gray-900">미리보기</h3>
+      <h3 data-personal-card-title="true" className="w-full mb-3 text-base font-bold text-gray-900">미리보기</h3>
       <div className="relative flex min-h-0 flex-1 w-full max-w-[350px] mx-auto">
         <div className="flex flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm">
           <div className="flex flex-col flex-1 rounded-2xl overflow-hidden">
@@ -353,21 +361,20 @@ export default function AiMessageTab({ active = true }: { active?: boolean }) {
               ) : (
                 <div className="flex items-center justify-center min-h-[230px]">
 
-                  <p className="text-[13px] text-gray-600 text-center">메시지를 생성하면<br />여기에 표시됩니다</p>
                 </div>
               )}
               </div>
             </div>
             <div className="flex items-center gap-2 bg-white border-t border-gray-100 p-2">
-              <input data-ui-field="true" aria-label="미리보기 메시지 입력" value={previewInput} onChange={event => setPreviewInput(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); appendPreviewInput(); } }} disabled={generating} placeholder="메시지를 입력하세요" className="min-w-0 flex-1 h-11 px-3 rounded-lg bg-gray-50 border border-gray-200 text-sm outline-none focus:border-gray-400" />
-              <button type="button" aria-label="카카오톡 공유" title="카카오톡 공유" onClick={handleShare} disabled={!generatedMessage.trim() || generating} className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-[#fee500] text-gray-900 cursor-pointer disabled:opacity-40"><Send className="w-4 h-4" /></button>
+              <ClearableSearchInput onClear={() => setPreviewInput("")} data-ui-field="true" aria-label="미리보기 메시지 입력" value={previewInput} onChange={event => setPreviewInput(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.nativeEvent.isComposing) { event.preventDefault(); appendPreviewInput(); } }} disabled={generating} placeholder="메시지를 입력하세요" className="min-w-0 flex-1 h-11 px-3 rounded-lg bg-gray-50 border border-gray-200 text-sm outline-none focus:border-gray-400" />
+              <button data-icon-only="true" type="button" aria-label="카카오톡 공유" title="카카오톡 공유" onClick={handleShare} disabled={!generatedMessage.trim() || generating} className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg bg-[#fee500] text-gray-900 cursor-pointer disabled:opacity-40"><Send className="w-4 h-4" /></button>
             </div>
           </div>
         </div>
       </div>
 
         <button
-          onClick={handleCopy}
+          data-message-action="copy" data-copied={copied ? "true" : "false"} onClick={handleCopy}
           disabled={!generatedMessage.trim() || generating}
           className={`mt-4 shrink-0 w-full h-12 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm cursor-pointer disabled:cursor-default disabled:opacity-40 ${
             copied ? "bg-green-100 text-green-700" : "bg-gray-900 text-white hover:bg-gray-800"

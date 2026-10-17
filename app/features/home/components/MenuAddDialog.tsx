@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { X } from "lucide-react";
 import { personalMenuIcons, PersonalMenuIconKey } from "../data";
 import type { HomeController } from "../hooks/useHomeController";
@@ -7,10 +8,10 @@ export default function MenuAddDialog({ controller }: { controller: HomeControll
 const { menuAddOpen, setMenuAddOpen, newMenuTitle, setNewMenuTitle, newMenuDesc, setNewMenuDesc, newMenuLink, setNewMenuLink, newMenuIcon, setNewMenuIcon, startPopupDrag, getPopupStyle, addPersonalMenu } = controller;
 return (<>{menuAddOpen && (
   <div
-    className="fixed inset-0 z-[1400] bg-black/40 flex items-center justify-center p-4"
+    data-menu-add-overlay="true" className="fixed inset-0 z-[1400] bg-black/40 flex items-center justify-center p-4"
   >
     <div
-  data-menu-add-dialog="true" data-popup-padded="true" data-popup-resize="false" data-account-inputs="true"
+  id="home-menu-add-dialog" data-menu-add-dialog="true" data-popup-padded="true" data-popup-resize="false" data-account-inputs="true"
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("menuAdd")}
   className="bg-white w-full max-w-md rounded-3xl shadow-xl p-6"
@@ -24,7 +25,7 @@ return (<>{menuAddOpen && (
           메뉴 추가
         </h2>
 
-        <button data-popup-close="true"
+        <button data-icon-only="true" data-popup-close="true"
           onClick={() => setMenuAddOpen(false)}
           className="
             w-9
@@ -72,7 +73,7 @@ return (<>{menuAddOpen && (
         </div>
       </div>
 
-      <input data-ui-field="true"
+      <ClearableSearchInput onClear={() => setNewMenuTitle("")} data-ui-field="true"
         value={newMenuTitle}
         onChange={(e) => setNewMenuTitle(e.target.value)}
         placeholder="메뉴명"
@@ -89,7 +90,7 @@ return (<>{menuAddOpen && (
         "
       />
 
-      <input data-ui-field="true"
+      <ClearableSearchInput onClear={() => setNewMenuDesc("")} data-ui-field="true"
         value={newMenuDesc}
         onChange={(e) => setNewMenuDesc(e.target.value)}
         placeholder="설명글"
@@ -106,7 +107,7 @@ return (<>{menuAddOpen && (
         "
       />
 
-      <input data-ui-field="true"
+      <ClearableSearchInput onClear={() => setNewMenuLink("")} data-ui-field="true"
         value={newMenuLink}
         onChange={(e) => setNewMenuLink(e.target.value)}
         placeholder="링크"

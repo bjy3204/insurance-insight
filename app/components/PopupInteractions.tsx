@@ -43,6 +43,16 @@ export default function PopupInteractions() {
       }
     };
     const identify = () => {
+      // Some dialogs mark the overlay with role=dialog; move the inner panel.
+      document.querySelectorAll<HTMLElement>('[role="dialog"][aria-modal="true"], [role="alertdialog"]').forEach(dialog => {
+        if (dialog.matches('[data-inline-diary], [aria-label="모바일 메뉴"], [aria-label="개인공간 모바일 메뉴"]')) return;
+        if (dialog.matches('[data-popup-frame], [data-popup-small], [data-popup-padded]')) return;
+        const child = dialog.firstElementChild;
+        const rect = dialog.getBoundingClientRect();
+        const overlay = getComputedStyle(dialog).position === "fixed" && rect.width >= window.innerWidth - 2 && rect.height >= window.innerHeight - 2;
+        const panel = overlay && child instanceof HTMLElement ? child : dialog;
+        panel.setAttribute("data-popup-frame", "true");
+      });
       document.querySelectorAll<HTMLElement>("[data-popup-header]").forEach(header => {
         if (!header.closest("[data-popup-frame]")) header.parentElement?.setAttribute("data-popup-frame", "true");
       });
@@ -57,6 +67,28 @@ export default function PopupInteractions() {
           }
         }
       });
+      document.querySelectorAll<HTMLElement>('[data-popup-frame], [data-popup-small], [data-popup-padded]').forEach(panel => {
+        if (panel.matches('[data-inline-diary]')) return;
+        let header = panel.querySelector<HTMLElement>('[data-popup-header], [data-popup-drag-handle]');
+        if (!header) {
+          header = panel.querySelector<HTMLElement>('header');
+          if (!header) {
+            const close = panel.querySelector<HTMLElement>('[data-popup-close]');
+            header = close?.parentElement ?? null;
+            while (header && header !== panel && !header.querySelector('h1,h2,h3,[data-popup-title],[data-popup-heading]') && !header.textContent?.trim()) header = header.parentElement;
+            if (header === panel) header = null;
+          }
+          if (!header) header = panel.querySelector<HTMLElement>('h1,h2,h3,[data-popup-title],[data-popup-heading],[data-confirm-title]')?.parentElement ?? null;
+          if (!header && panel.hasAttribute('data-popup-small') && panel.firstElementChild instanceof HTMLElement && !panel.firstElementChild.matches('button,input,textarea,select')) header = panel.firstElementChild;
+          if (header && header !== panel) header.setAttribute('data-popup-drag-handle', 'true');
+        }
+        if (header) {
+          header.style.touchAction = 'none';
+          if (header !== panel && header.querySelector('[data-popup-close]') && header.querySelector('h1,h2,h3,[data-popup-title],[data-popup-heading]')) {
+            header.setAttribute('data-popup-titlebar', 'true');
+          }
+        }
+      });
       syncScroll();
     };
     identify();
@@ -65,7 +97,7 @@ export default function PopupInteractions() {
 
     const down = (event: PointerEvent | MouseEvent) => {
       const target = event.target as HTMLElement;
-      const frame = target.closest<HTMLElement>("[data-popup-frame], [data-mobile-movable]");
+      const frame = target.closest<HTMLElement>("[data-popup-frame], [data-popup-small], [data-popup-padded], [data-mobile-movable]");
       if (!frame || event.button !== 0) return;
       const mobile = window.innerWidth < 768;
       const movable = frame.hasAttribute("data-mobile-movable");

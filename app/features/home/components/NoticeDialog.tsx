@@ -1,4 +1,6 @@
 "use client";
+import { formatDisplayDate } from "@/lib/display-date";
+import { ChevronLeft as TaskChevronLeft, ChevronRight as TaskChevronRight } from "lucide-react";
 
 import Pagination from "@/app/components/Pagination";
 import { supabase } from "@/lib/supabase";
@@ -25,7 +27,7 @@ return (<>{noticeOpen && (
                 공지사항
               </div>
 
-              <button data-popup-close="true"
+              <button data-icon-only="true" data-popup-close="true"
   onClick={() => setNoticeOpen(false)}
   className="
   cursor-pointer
@@ -49,7 +51,7 @@ return (<>{noticeOpen && (
     {/* 모바일 카드형 */}
     <div className="p-4 space-y-2 md:hidden overflow-y-auto flex-1">
       {pagedNotices.map((notice) => (
-        <button
+        <button data-popup-news-card="true"
           key={notice.id}
           onClick={() => {
  setSelectedNotice(notice);
@@ -81,15 +83,15 @@ setNoticeImageIndex(0);
         >
           <div className="flex items-center justify-between gap-2 mb-1">
             {(notice as any).is_pinned ? (
-              <span className="text-xs font-bold text-orange-500">📌 고정</span>
+              <span data-news-pinned="true" className="text-xs font-bold text-orange-500">📌 고정</span>
             ) : (
-              <span className="text-xs font-bold text-gray-400">
+              <span data-news-number="true" className="text-xs font-bold text-gray-400">
                 NO. {allNotices.length - allNotices.indexOf(notice)}
               </span>
             )}
 
                               {!readNoticeIds.includes(notice.id) && notice.category && (
-  <span className={`px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap ${
+  <span data-news-badge="true" className={`px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap ${
     (notice as any).categoryColor === "yellow" || notice.category === "강의안내"
       ? "bg-yellow-100 text-yellow-700"
       : (notice as any).categoryColor === "red"
@@ -108,12 +110,12 @@ setNoticeImageIndex(0);
 
           </div>
 
-          <div className="font-bold text-gray-900 leading-tight break-keep">
+          <div data-news-title="true" className="font-bold text-gray-900 leading-tight break-keep">
             {notice.title}
           </div>
 
-          <div className="text-xs text-gray-500 mt-1">
-            {notice.date}
+          <div data-news-date="true" className="text-xs text-gray-500 mt-1">
+            <span className="hidden md:inline">{formatDisplayDate(notice.date)}</span><span className="md:hidden">{formatDisplayDate(notice.date)}</span>
           </div>
         </button>
       ))}
@@ -172,7 +174,7 @@ setNoticeImageIndex(0);
                   <span>{notice.title}</span>
 
                                    {!readNoticeIds.includes(notice.id) && notice.category && (
-  <span className={`px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap ${
+  <span data-news-badge="true" className={`px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap ${
     (notice as any).categoryColor === "yellow" || notice.category === "강의안내"
       ? "bg-yellow-100 text-yellow-700"
       : (notice as any).categoryColor === "red"
@@ -192,8 +194,8 @@ setNoticeImageIndex(0);
                 </div>
               </td>
 
-              <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">
-                {notice.date}
+              <td data-table-source-date="true" className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">
+                <span className="hidden md:inline">{formatDisplayDate(notice.date)}</span><span className="md:hidden">{formatDisplayDate(notice.date)}</span>
               </td>
             </tr>
           ))}
@@ -214,12 +216,12 @@ setNoticeImageIndex(0);
               <div className="px-6 md:px-10 pt-4 pb-6 flex-1 min-h-0 flex flex-col">
 
   <div className="overflow-y-auto overflow-x-hidden flex-1">
-    <h2 data-popup-heading="true" className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep">
+    <h2 data-news-detail-title="true" data-popup-heading="true" className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep">
       {selectedNotice.title}
     </h2>
 
-    <p className="text-xs md:text-sm text-gray-500 mt-2">
-      작성일: {selectedNotice.date}
+    <p data-news-detail-meta="true" className="text-xs md:text-sm text-gray-500 mt-2">
+      작성일: <span className="hidden md:inline">{formatDisplayDate(selectedNotice.date)}</span><span className="md:hidden">{formatDisplayDate(selectedNotice.date)}</span>
     </p>
 
    <div className="border-t border-gray-200 mt-3 pt-4 pb-6 text-[15px] leading-6 text-gray-800 break-keep">
@@ -262,26 +264,26 @@ setNoticeImageIndex(0);
 
         {images.length > 1 && (
           <>
-            <button
+            <button data-icon-only="true" data-prev-next="true"
               onClick={() =>
                 setNoticeImageIndex((prev) =>
                   prev === 0 ? images.length - 1 : prev - 1
                 )
               }
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-blue-600/85 text-white flex items-center justify-center hover:bg-blue-700/90 transition cursor-pointer"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-blue-600/85 text-white flex items-center justify-center hover:bg-blue-700/90 transition cursor-pointer"
             >
-              ‹
+              <TaskChevronLeft data-arrow-size="24" size={24} role="img" aria-label="이전" style={{display:"inline-block",verticalAlign:"middle"}} />
             </button>
 
-            <button
+            <button data-icon-only="true" data-prev-next="true"
               onClick={() =>
                 setNoticeImageIndex((prev) =>
                   prev === images.length - 1 ? 0 : prev + 1
                 )
               }
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-blue-600/85 text-white flex items-center justify-center hover:bg-blue-700/90 transition cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-blue-600/85 text-white flex items-center justify-center hover:bg-blue-700/90 transition cursor-pointer"
             >
-              ›
+              <TaskChevronRight data-arrow-size="24" size={24} role="img" aria-label="다음" style={{display:"inline-block",verticalAlign:"middle"}} />
             </button>
 
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-blue-600/85 text-white text-xs font-bold">

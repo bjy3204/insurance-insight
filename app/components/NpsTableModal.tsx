@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useRef, useState, type PointerEvent } from 'react';
 import { FileText, Search, X } from 'lucide-react';
 import npsTables from '@/app/pension-calculator/data/nps-tables.json';
@@ -30,16 +31,16 @@ export default function NpsTableModal({onClose}:{onClose:()=>void}) {
     <div data-popup-frame="true" data-account-inputs="true" onClick={event=>event.stopPropagation()} style={{transform:`translate(${position.x}px, ${position.y}px)`}} className="cursor-default bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col">
       <div data-popup-header="true" onPointerDown={startDrag} onPointerMove={event=>{const current=drag.current;if(current)setPosition({x:current.originX+event.clientX-current.x,y:current.originY+event.clientY-current.y});}} onPointerUp={()=>{drag.current=null;}} onPointerCancel={()=>{drag.current=null;}} className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between touch-none">
         <div data-popup-title="true" className="font-bold flex items-center gap-2"><FileText className="w-5 h-5"/>국민연금표</div>
-        <button type="button" data-popup-close="true" aria-label="닫기" onPointerDown={event=>event.stopPropagation()} onClick={onClose} className="cursor-pointer w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/10 transition"><X className="w-5 h-5"/></button>
+        <button data-icon-only="true" type="button" data-popup-close="true" aria-label="닫기" onPointerDown={event=>event.stopPropagation()} onClick={onClose} className="cursor-pointer w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/10 transition"><X className="w-5 h-5"/></button>
       </div>
       <div className="px-5 pt-4 pb-5 flex-1 min-h-0 flex flex-col">
         <div data-tab-group="true" className="grid grid-cols-3 bg-gray-200 rounded-2xl p-1 mb-5">{(Object.keys(tabs) as Tab[]).map(item=><button key={item} type="button" onClick={()=>{setTab(item);setSearch('');}} className={`cursor-pointer rounded-xl py-3 text-sm font-bold transition ${tab===item?'bg-white text-blue-600 shadow-sm':'text-gray-600'}`}>{item}</button>)}</div>
-        <div data-popup-search-section="true" className="relative mb-4 shrink-0"><Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"/><input data-ui-field="true" data-page-search-input="true" aria-label="보험료 또는 기준소득월액 검색" value={search?Number(search).toLocaleString():''} onChange={event=>setSearch(event.target.value.replace(/[^0-9]/g,''))} placeholder="보험료 또는 기준소득월액 검색" className="cursor-text w-full rounded-2xl border border-gray-200 pl-11 pr-4 py-3 text-sm outline-none"/></div>
+        <div data-popup-search-section="true" className="relative mb-4 shrink-0"><Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"/><ClearableSearchInput onClear={() => setSearch("".replace(/[^0-9]/g,''))} data-ui-field="true" data-page-search-input="true" aria-label="보험료 또는 기준소득월액 검색" value={search?Number(search).toLocaleString():''} onChange={event=>setSearch(event.target.value.replace(/[^0-9]/g,''))} placeholder="보험료 또는 기준소득월액 검색" className="cursor-text w-full rounded-2xl border border-gray-200 pl-11 pr-4 py-3 text-sm outline-none"/></div>
         <div className="overflow-auto flex-1 border border-gray-200 rounded-2xl">
           <table className="cursor-default w-full min-w-[900px] text-sm"><thead className="bg-gray-50 text-gray-500 sticky top-0 z-10"><tr>{columns.map(([key,label])=><th key={key} className="py-3 px-3 border-b border-gray-200 whitespace-nowrap">{label}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.no} className="hover:bg-gray-50">{columns.map(([key])=><td key={key} className="py-3 px-3 text-center border-b border-gray-100 whitespace-nowrap">{(row as unknown as Record<string,number>)[key].toLocaleString()}</td>)}</tr>)}</tbody></table>
           {!rows.length&&<div className="text-center text-sm text-gray-400 py-10">검색 결과가 없습니다</div>}
         </div>
-        <p className="text-xs text-gray-500 leading-relaxed mt-3 px-1">본 표는 {tables.effectiveMonth.replace('-','년 ')}월 국민연금 예상연금월액표 기준이며, 실제 수령액은 가입이력 · 재평가율 · 연금개시연령 · 부양가족연금액 및 제도 변경 등에 따라 달라질 수 있습니다. (단위 :원) <a href={tables.sourceUrl} target="_blank" rel="noopener noreferrer" className="cursor-pointer underline">국민연금공단 원문</a></p>
+        <p data-reference-note="true" className="text-xs text-gray-500 leading-relaxed mt-3 px-1">본 표는 {tables.effectiveMonth.replace('-','년 ')}월 국민연금 예상연금월액표 기준이며, 실제 수령액은 가입이력 · 재평가율 · 연금개시연령 · 부양가족연금액 및 제도 변경 등에 따라 달라질 수 있습니다. (단위 :원) <a href={tables.sourceUrl} target="_blank" rel="noopener noreferrer" className="cursor-pointer underline">국민연금공단 원문</a></p>
       </div>
     </div>
   </div>;

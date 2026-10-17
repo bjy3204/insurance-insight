@@ -43,7 +43,7 @@ export default function CompanyRegistration() {
         onLostPointerCapture={() => { drag.current = null; }}
       >
         <h2 data-popup-heading="true" id="company-register-title" className="text-lg font-bold flex items-center gap-2"><PlusCircle size={21} className="text-blue-600"/>회사 등록</h2>
-        <button type="button" data-popup-close="true" aria-label="닫기" onClick={close} disabled={busy} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 cursor-pointer disabled:opacity-40"><X size={20}/></button>
+        <button data-icon-only="true" type="button" data-popup-close="true" aria-label="닫기" onClick={close} disabled={busy} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 cursor-pointer disabled:opacity-40"><X size={20}/></button>
       </header>
       {success ? <div className="p-8 text-center"><CheckCircle2 className="mx-auto text-blue-600" size={40}/><h3 className="font-bold text-xl mt-4">등록 신청이 완료되었습니다</h3><p className="text-sm text-slate-500 mt-3">검토 후 승인된 조직만 채용공고에 게시됩니다.</p><button data-popup-action="true" onClick={close} className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-[46px] px-4 text-sm cursor-pointer">확인</button></div> : <form ref={form} className="flex flex-col min-h-0" onSubmit={async event => {
         event.preventDefault(); if (busyRef.current) return;
@@ -78,7 +78,7 @@ export default function CompanyRegistration() {
               event.target.value = "";
               if (next.length > 20 || next.some(file => file.size > 5 * 1024 * 1024)) { setError("이미지는 파일당 5MB 이하, 최대 20개까지 첨부할 수 있습니다."); return; }
               setFiles(next); setError("");
-            }}/></label><p className="mt-2 text-xs text-slate-400">파일당 5MB · 최대 20개</p>{files.map((file,index) => <div key={`${file.name}-${index}`} className="flex items-center justify-between text-xs text-slate-600 mt-2 gap-2"><span className="truncate">{file.name}</span><button type="button" aria-label={`${file.name} 제거`} onClick={() => setFiles(files.filter((_, i) => i !== index))} className="p-1 rounded hover:bg-red-50 hover:text-red-600 cursor-pointer"><X size={15}/></button></div>)}</div>
+            }}/></label><p className="mt-2 text-xs text-slate-400">파일당 5MB · 최대 20개</p>{files.map((file,index) => <div key={`${file.name}-${index}`} className="flex items-center justify-between text-xs text-slate-600 mt-2 gap-2"><span className="truncate">{file.name}</span><button data-icon-only="true" type="button" aria-label={`${file.name} 제거`} onClick={() => setFiles(files.filter((_, i) => i !== index))} className="p-1 rounded hover:bg-red-50 hover:text-red-600 cursor-pointer"><X size={15}/></button></div>)}</div>
             <label className="sm:col-span-2"><span className="block text-sm font-semibold mb-2">홈페이지 URL</span><input data-ui-field="true" type="url" name="website" maxLength={2000} placeholder="https://" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none"/></label>
           </fieldset>
           <p className="text-sm text-slate-500 leading-relaxed bg-slate-50 p-4 rounded-xl">입력된 정보는 검토 후 승인된 조직만 등록됩니다.</p>

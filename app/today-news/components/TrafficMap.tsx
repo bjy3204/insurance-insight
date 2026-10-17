@@ -199,9 +199,9 @@ export default function TrafficMap() {
   return <div className={styles.frame}>
     <div className={styles.heading}>
       <h3>전국 교통정보</h3>
-      <div className={styles.controls}>
+      <div data-ui-card="true" className={styles.controls}>
         <button type="button" onClick={nationwide} disabled={!ready}>전국</button>
-        <button type="button" onClick={locate} disabled={!ready || locating} aria-label="내 주변 정보" title="내 주변 정보"><LocateFixed size={20} /></button>
+        <button data-icon-only="true" type="button" onClick={locate} disabled={!ready || locating} aria-label="내 주변 정보" title="내 주변 정보"><LocateFixed size={20} /></button>
       </div>
     </div>
     <div className={styles.layout}><div className={styles.mapWrap}>

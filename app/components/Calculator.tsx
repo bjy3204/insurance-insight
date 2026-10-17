@@ -1,4 +1,5 @@
 "use client";
+import { Delete as KeypadBackspace, Percent, Equal as Equals, Diff as PlusMinus, Divide as TaskDivide, X as TaskX, Minus as TaskMinus, Plus as TaskPlus, History } from "lucide-react";
 import { useWidgetSessionState } from './useWidgetSessionState';
 import styles from './Calculator.module.css';
 
@@ -259,7 +260,7 @@ export default function Calculator() {
     setDisplay(formatNumber(String(-raw)));
   };
 
-  const btnBase = "flex items-center justify-center rounded-2xl font-medium select-none cursor-default transition-all active:scale-95";
+  const btnBase = "flex items-center justify-center rounded-2xl text-[18px] font-medium select-none cursor-default transition-all active:scale-95";
   const btnGray = `${btnBase} bg-[#f0f0f0] hover:bg-[#e0e0e0] text-black`;
   const btnDark = `${btnBase} bg-[#e8e8e8] hover:bg-[#d8d8d8] text-black`;
   const btnEqual = `${btnBase} bg-blue-600 hover:bg-blue-700 text-white`;
@@ -275,7 +276,7 @@ export default function Calculator() {
             {/* 계산기 본체 */}
       {isOpen && initialized && (
 
-                <div
+                <div data-ui-card="true"
           data-mobile-movable="true" data-popup-resize="custom" data-widget-kind="calculator" ref={calcRef}
           role="dialog"
           aria-label="계산기"
@@ -311,11 +312,11 @@ export default function Calculator() {
         
           {/* 히스토리 패널 */}
           {showHistory && (
-            <div className="absolute inset-0 bg-white rounded-3xl z-10 flex flex-col p-4">
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-semibold text-gray-700">계산 기록</span>
-                <button onClick={() => setShowHistory(false)} className="text-gray-400 hover:text-gray-600 calc-btn">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <div className="absolute inset-0 bg-white rounded-3xl z-10 flex flex-col px-5 pb-4">
+              <div className="flex items-center justify-between pt-3 pb-3 mb-3">
+                <span className="flex items-center gap-2 text-base font-semibold text-gray-700"><History data-popup-title-icon="true" size={18} className="text-gray-500" aria-hidden="true" />계산 기록</span>
+                <button data-icon-only="true" onClick={() => setShowHistory(false)} className="flex w-8 h-8 items-center justify-center text-gray-400 hover:text-gray-600 calc-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
               </div>
               {history.length === 0 ? (
@@ -350,9 +351,9 @@ export default function Calculator() {
           )}
 
           {/* 헤더 */}
-          <div className="flex items-center justify-between px-5 pt-5 pb-2">
+          <div className="flex items-center justify-between px-5 pt-3 pb-3">
             <div className="flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-popup-title-icon="true" className="text-gray-500">
                 <rect x="4" y="2" width="16" height="20" rx="2"/>
                 <line x1="8" y1="6" x2="16" y2="6"/>
                 <line x1="8" y1="10" x2="10" y2="10"/>
@@ -365,17 +366,17 @@ export default function Calculator() {
                 <line x1="12" y1="18" x2="14" y2="18"/>
                 <line x1="16" y1="18" x2="16" y2="18"/>
               </svg>
-              <span className="font-semibold text-gray-700 text-sm"> 계산기</span>
+              <span className="font-semibold text-gray-700 text-base"> 계산기</span>
             </div>
             <div className="flex items-center gap-2">
-              <button
+              <button data-icon-only="true"
                 onClick={() => setShowHistory(true)}
                 className="calc-btn w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-all"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               </button>
               <div className="w-px h-5 bg-gray-200" />
-              <button
+              <button data-icon-only="true"
                 onClick={() => setIsOpen(false)}
                 aria-label="계산기 닫기"
                 className="calc-btn w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all cursor-pointer"
@@ -402,38 +403,38 @@ export default function Calculator() {
 
 
           {/* 버튼 그리드 */}
-          <div className="flex-1 grid grid-cols-4 gap-2 px-4 pb-4" style={{ gridTemplateRows: "repeat(5, 1fr)" }}>
+          <div data-numeric-keypad="true" className="flex-1 grid grid-cols-4 gap-2 px-4 pb-4" style={{ gridTemplateRows: "repeat(5, 1fr)" }}>
             {/* Row 1 */}
             <button className={`${btnGray} calc-btn`} onClick={handleBackspace}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+              <KeypadBackspace size={18} role="img" aria-label="한 자리 지우기" />
             </button>
             <button className={`${btnGray} calc-btn`} onClick={clear}>AC</button>
-            <button className={`${btnGray} calc-btn`} onClick={handlePercent}>%</button>
-            <button className={`${btnDark} calc-btn`} onClick={() => handleOperator("÷")}>÷</button>
+            <button className={`${btnGray} calc-btn`} onClick={handlePercent}><Percent size={18} role="img" aria-label="퍼센트" /></button>
+            <button className={`${btnDark} calc-btn`} onClick={() => handleOperator("÷")}><TaskDivide size={18} role="img" aria-label="나누기" style={{display:"inline-block",verticalAlign:"middle"}} /></button>
 
             {/* Row 2 */}
             <button className={`${btnGray} calc-btn`} onClick={() => inputDigit("7")}>7</button>
             <button className={`${btnGray} calc-btn`} onClick={() => inputDigit("8")}>8</button>
             <button className={`${btnGray} calc-btn`} onClick={() => inputDigit("9")}>9</button>
-            <button className={`${btnDark} calc-btn`} onClick={() => handleOperator("×")}>×</button>
+            <button className={`${btnDark} calc-btn`} onClick={() => handleOperator("×")}><TaskX size={18} role="img" aria-label="곱하기" style={{display:"inline-block",verticalAlign:"middle"}} /></button>
 
             {/* Row 3 */}
             <button className={`${btnGray} calc-btn`} onClick={() => inputDigit("4")}>4</button>
             <button className={`${btnGray} calc-btn`} onClick={() => inputDigit("5")}>5</button>
             <button className={`${btnGray} calc-btn`} onClick={() => inputDigit("6")}>6</button>
-            <button className={`${btnDark} calc-btn`} onClick={() => handleOperator("-")}>−</button>
+            <button className={`${btnDark} calc-btn`} onClick={() => handleOperator("-")}><TaskMinus size={18} role="img" aria-label="빼기" style={{display:"inline-block",verticalAlign:"middle"}} /></button>
 
             {/* Row 4 */}
             <button className={`${btnGray} calc-btn`} onClick={() => inputDigit("1")}>1</button>
             <button className={`${btnGray} calc-btn`} onClick={() => inputDigit("2")}>2</button>
             <button className={`${btnGray} calc-btn`} onClick={() => inputDigit("3")}>3</button>
-            <button className={`${btnDark} calc-btn`} onClick={() => handleOperator("+")}>+</button>
+            <button className={`${btnDark} calc-btn`} onClick={() => handleOperator("+")}><TaskPlus size={18} role="img" aria-label="더하기" style={{display:"inline-block",verticalAlign:"middle"}} /></button>
 
             {/* Row 5 */}
-            <button className={`${btnGray} calc-btn`} onClick={toggleSign}>+/−</button>
+            <button className={`${btnGray} calc-btn`} onClick={toggleSign}><PlusMinus size={18} role="img" aria-label="부호 변경" /></button>
             <button className={`${btnGray} calc-btn`} onClick={() => inputDigit("0")}>0</button>
             <button className={`${btnGray} calc-btn`} onClick={inputDecimal}>.</button>
-            <button className={`${btnEqual} calc-btn`} onClick={calculate}>=</button>
+            <button className={`${btnEqual} calc-btn`} onClick={calculate}><Equals size={18} role="img" aria-label="계산 결과" /></button>
           </div>
 
           {/* 리사이즈 핸들 */}

@@ -1,10 +1,12 @@
 "use client";
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useAuth } from "@/app/components/AuthProvider";
 import { createPortal } from "react-dom";
 import {
   CalendarDays,
+  ChevronUp,
   ChevronLeft,
   ChevronRight,
   Plus,
@@ -120,7 +122,7 @@ export default function Calendar({
         : "local";
   if (account.loading)
     return (
-      <div
+      <div data-ui-card="true"
         className={
           mode === "compact"
             ? `${styles.card} ${styles.calendarCard} flex items-center justify-center text-sm text-slate-400`
@@ -618,14 +620,14 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
     const rows = [...normal.map(event => ({ key: `event:${event.id}`, title: event.title, detail: [event.content, event.memo].filter(Boolean).join(" · "), icon: event.icon, event, category:event.category||"개인" })), ...remote.map(event => ({ key: event.id, title: [event.category,event.name,event.birth.replace(/\D/g,"").slice(0,6)].filter(Boolean).join("    "), detail: [event.name, event.birth.replace(/\D/g,"").slice(0,6), event.memoContent??event.content].filter(Boolean).join(" · "), icon: event.icon, event: null, category:event.category }))].sort((a, b) => compareCalendarTimes(a.event?.time, b.event?.time));
     return <>
 
-      {rows.map(row => <div key={row.key} className={`${layoutStyles.scheduleRow} flex items-start gap-2 rounded-xl border p-3 ${extras.completed[row.key] ? "bg-gray-50 border-gray-100 text-gray-400" : "border-gray-200 text-gray-900"}`}>
-        <input type="checkbox" aria-label={`${row.title} 확인`} checked={!!extras.completed[row.key]} disabled={!extras.completionReady || extras.completionBusy} onChange={() => void extras.toggleCompleted(row.key)} className="mt-1 h-4 w-4 shrink-0 accent-blue-600" />
+      {rows.map(row => <div key={row.key} className={`${layoutStyles.scheduleRow} flex items-center gap-2 rounded-xl border p-3 ${extras.completed[row.key] ? "bg-gray-50 border-gray-100 text-gray-400" : "border-gray-200 text-gray-900"}`}>
+        <input type="checkbox" aria-label={`${row.title} 확인`} checked={!!extras.completed[row.key]} disabled={!extras.completionReady || extras.completionBusy} onChange={() => void extras.toggleCompleted(row.key)} className="h-4 w-4 shrink-0 accent-blue-600" />
         <button type="button" onClick={() => {setShowMobileDayPopup(false);setViewingEvent(row.event||{title:row.title,date,icon:row.icon,memo:row.detail,category:row.category});}} className={`min-w-0 flex-1 text-left ${extras.completed[row.key] ? "line-through" : ""}`}>
           <span className={layoutStyles.scheduleLine}><span className={layoutStyles.scheduleTitle}>{row.icon} {row.title}</span>{row.event?.time && <span>{formatCalendarTime(row.event.time)}</span>}</span>
         </button>
         {row.event&&<div className={layoutStyles.scheduleActions}>
-          <button type="button" aria-label={`${row.title} 수정`} title="수정" disabled={store.saving} onClick={()=>{setShowMobileDayPopup(false);setEditingEvent(row.event);setFormData(row.event!);setShowEventModal(true);}}><Pencil size={17}/></button>
-          <button type="button" aria-label={`${row.title} 삭제`} title="삭제" disabled={store.saving} onClick={()=>{setDeleteEventId(row.event!.id);setDeleteEventConfirmOpen(true);}}><Trash2 size={17}/></button>
+          <button data-icon-only="true" type="button" aria-label={`${row.title} 수정`} title="수정" disabled={store.saving} onClick={()=>{setShowMobileDayPopup(false);setEditingEvent(row.event);setFormData(row.event!);setShowEventModal(true);}}><Pencil size={17}/></button>
+          <button data-icon-only="true" type="button" aria-label={`${row.title} 삭제`} title="삭제" disabled={store.saving} onClick={()=>{setDeleteEventId(row.event!.id);setDeleteEventConfirmOpen(true);}}><Trash2 size={17}/></button>
         </div>}
       </div>)}
     </>;
@@ -653,9 +655,9 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
             {/* 월 네비게이션 */}
             <div className="relative flex items-center justify-center mb-4 min-h-9">
               <div className="flex items-center gap-3 sm:gap-4">
-                <button aria-label="이전 달" onClick={() => setCalendarDate(new Date(currentYear, currentMonth - 1, 1))} className="w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-50 transition"><ChevronLeft className="w-4 h-4" /></button>
-                <h2 className="text-xl sm:text-2xl font-black text-gray-900 whitespace-nowrap">{currentYear}년 {currentMonth + 1}월</h2>
-                <button aria-label="다음 달" onClick={() => setCalendarDate(new Date(currentYear, currentMonth + 1, 1))} className="w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-50 transition"><ChevronRight className="w-4 h-4" /></button>
+                <button data-icon-only="true" data-prev-next="true" aria-label="이전 달" onClick={() => setCalendarDate(new Date(currentYear, currentMonth - 1, 1))} className="w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-50 transition"><ChevronLeft data-arrow-size="20" className="w-4 h-4" /></button>
+                <h2 data-calendar-month-title="true" className="text-xl sm:text-2xl font-bold text-gray-900 whitespace-nowrap">{currentYear}년 {currentMonth + 1}월</h2>
+                <button data-icon-only="true" data-prev-next="true" aria-label="다음 달" onClick={() => setCalendarDate(new Date(currentYear, currentMonth + 1, 1))} className="w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-50 transition"><ChevronRight data-arrow-size="20" className="w-4 h-4" /></button>
               </div>
             </div>
 
@@ -676,7 +678,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                           ? "#3b82f6"
                           : "#374151",
                   }}
-                  className="text-sm font-bold py-2 border-r border-gray-100 last:border-r-0"
+                  className="text-[15px] font-bold py-2 border-r border-gray-100 last:border-r-0"
                 >
                   {day}
                 </div>
@@ -738,8 +740,8 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                     key={`${dateItem.type}-${displayDay}-${index}`}
                     onClick={() => {
                       setSelectedDate(fullDate);
-                      // 모바일: 날짜 클릭 시 팝업 표시
-                      if (window.innerWidth < 640) {
+                      // 모바일: 선택한 날짜의 일정을 달력 안에서 펼칩니다.
+                      if (window.innerWidth < 768) {
                         setMobileDayDate(fullDate);
                         setShowMobileDayPopup(true);
                       }
@@ -747,8 +749,8 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                     className={`
                     min-w-0 min-h-0 aspect-square overflow-hidden
                     border-r border-b border-gray-100
-                    ${!isToday && selectedDate === fullDate ? "bg-gray-50" : "bg-white"}
-                    hover:bg-gray-50 transition-colors relative group
+                    ${!isToday && selectedDate === fullDate ? "bg-blue-50 hover:bg-blue-50" : "bg-white hover:bg-gray-50"}
+                    transition-colors relative group
                   `}
                   >
                     {/* 모바일: 날짜 숫자만 중앙 표시 */}
@@ -771,18 +773,18 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-0.5">
                           <span
-                            className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold ${isToday ? holiday ? "ring-2 ring-blue-500" : "bg-blue-600 text-white" : ""}`}
+                            className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-[15px] font-semibold ${isToday ? holiday ? "ring-2 ring-blue-500" : "bg-blue-600 text-white" : ""}`}
                             style={{ color: holiday ? isOtherMonth ? "#fecaca" : "#ef4444" : isToday ? "#ffffff" : numberColor }}
                           >
                             {displayDay}
                           </span>
                           {holiday && (
-                            <span className="text-[12px] text-gray-400 truncate max-w-24 ml-2">
+                            <span className="text-[12px] text-gray-400 truncate max-w-24">
                               {holiday.name}
                             </span>
                           )}
                         </div>
-                        <button
+                        <button data-icon-only="true"
                           type="button"
                           aria-label={`${fullDate} 일정 추가`}
                           title="일정 추가"
@@ -819,7 +821,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                             }
                           `}
                           >
-                            <span aria-hidden="true">{event.icon}</span><span>{event.title}</span>
+                            <span aria-hidden="true">{event.icon}</span><span>{Array.from(event.title).slice(0, 6).join("")}</span>
                           </button>
                         ))}
                         {dayEvents.length > 3 && (
@@ -834,6 +836,10 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                 );
               })}
             </div>
+          {showMobileDayPopup && <section className="mt-4 border-t border-gray-200 pt-4 md:hidden" aria-label="선택한 날짜 일정">
+              <div className="flex items-center justify-between gap-2 mb-3"><h3 className="text-base font-bold">{mobileDayDate} 일정</h3><div className="flex items-center gap-2"><button type="button" data-action-height="44" className="rounded-xl bg-blue-50 px-3 text-sm text-blue-600" onClick={()=>openEventModal(mobileDayDate)}>일정 추가</button><button type="button" aria-label="일정 목록 접기" className="p-2 text-gray-400" onClick={()=>setShowMobileDayPopup(false)}><ChevronUp size={18}/></button></div></div>
+              <div className="space-y-2">{renderSchedules(mobileDayDate,getEventsForDate(mobileDayDate))}</div>
+            </section>}
           </div>
 
           {/* 왼쪽 컬럼: 체크리스트(위) + 일정목록(아래) — PC: order-1, 모바일: 아래 */}
@@ -842,7 +848,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
             {/* 체크리스트 — 모바일: order-2(아래), PC: order-1(왼쪽) */}
             <div className="personal-grid bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5">
               <div className="flex items-center justify-between gap-2 mb-3">
-                <h2 className="text-base font-bold text-gray-900">체크리스트</h2>
+                <h2 data-personal-card-title="true" className="text-base font-bold text-gray-900">체크리스트</h2>
 
               </div>
 
@@ -861,7 +867,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                       className="w-4 h-4 shrink-0 cursor-pointer"
                     />
                     {editingChecklistId === item.id ? (
-                      <input data-ui-field="true"
+                      <ClearableSearchInput onClear={() => setEditingChecklistText("")} data-ui-field="true"
                         type="text"
                         value={editingChecklistText}
                         onChange={(e) =>
@@ -890,7 +896,7 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
                       </span>
                     )}
 
-                    <button
+                    <button data-icon-only="true"
                       onClick={() => handleDeleteChecklist(item.id)}
                       className="text-gray-400 hover:text-red-500 transition cursor-pointer"
                     >
@@ -902,13 +908,13 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
 
               {checklists.length < 5 && (
                 <div className="flex items-center gap-2">
-                  {checklistInputOpen&&<input ref={checklistInput} autoFocus data-ui-field="true" type="text" value={checklistText}
+                  {checklistInputOpen&&<ClearableSearchInput onClear={() => setChecklistText("")} ref={checklistInput} autoFocus data-ui-field="true" type="text" value={checklistText}
                     aria-label="새 체크리스트" placeholder="체크리스트 입력" disabled={checklistSaving}
                     onChange={e => setChecklistText(e.target.value)}
                     onBlur={() => {if(checklistText.trim())void handleAddChecklist();else setChecklistInputOpen(false);}}
                     onKeyDown={e => { if (e.key === "Enter" && !e.nativeEvent.isComposing) { e.preventDefault(); void handleAddChecklist(); } }}
                     className="flex-1 min-w-0 h-11 px-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-gray-400" />}
-                  <button data-action-height="44" type="button" aria-label="체크리스트 추가" aria-expanded={checklistInputOpen} disabled={checklistSaving}
+                  <button data-icon-only="true" data-action-height="44" type="button" aria-label="체크리스트 추가" aria-expanded={checklistInputOpen} disabled={checklistSaving}
                     onMouseDown={event=>event.preventDefault()}
                     onClick={() => {if(!checklistInputOpen)setChecklistInputOpen(true);else if(checklistText.trim())void handleAddChecklist();else checklistInput.current?.focus();}}
                     className="ml-auto inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 px-0 text-sm font-semibold text-white hover:bg-blue-700 cursor-pointer disabled:opacity-60 disabled:cursor-default"><Plus className="w-5 h-5" /></button>
@@ -919,11 +925,11 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
 
             {/* 선택 날짜 일정은 체크리스트 아래에 나열한다. */}
             <div className={`${layoutStyles.schedules} personal-grid bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5`}>
-              <div className="flex items-center justify-between gap-3 mb-3"><h2 className="text-base font-bold text-gray-900">일정목록</h2><time className="text-sm text-gray-500">{selectedDate}</time></div>
+              <div className="flex items-center justify-between gap-3 mb-3"><h2 data-personal-card-title="true" className="text-base font-bold text-gray-900">일정목록</h2><time className="text-sm text-gray-500">{selectedDate}</time></div>
 
               <div className="mb-4 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input data-ui-field="true" data-page-search-input="true"
+                <ClearableSearchInput onClear={() => setSearchText("")} data-ui-field="true" data-page-search-input="true"
                   type="text"
                   placeholder="일정 검색"
                   value={searchText}
@@ -939,68 +945,6 @@ function FullCalendar({ identity, beforeChecklist, active }: { identity: Identit
           </div>
         </div>
       </div>
-
-      {/* ===== 모바일 날짜 일정 팝업 ===== */}
-      {showMobileDayPopup && (
-        <div
-          className="fixed inset-0 z-[60] bg-black/40 flex items-center justify-center sm:hidden"
-          onClick={() => setShowMobileDayPopup(false)}
-        >
-          <div
-            data-popup-frame="true"
-            className="bg-white w-[90%] rounded-3xl shadow-xl max-h-[70vh] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* 팝업 헤더 */}
-            <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-gray-100">
-              <div>
-                <p className="text-sm font-bold text-gray-800">
-                  {mobileDayDate
-                    ? new Date(mobileDayDate).toLocaleDateString("ko-KR", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        weekday: "short",
-                      })
-                    : ""}
-                </p>
-                {(() => {
-                  const holiday = getHolidayForDate(mobileDayDate);
-                  return holiday ? (
-                    <p className="text-xs text-red-400 font-bold mt-0.5">
-                      {holiday.name}
-                    </p>
-                  ) : null;
-                })()}
-              </div>
-              <div className="flex items-center gap-2">
-                <button data-action-height="44"
-                  onClick={() => {
-                    setShowMobileDayPopup(false);
-                    openEventModal(mobileDayDate);
-                  }}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-200 transition"
-                >
-                  <Plus className="w-3.5 h-3.5" strokeWidth={2} />
-                  일정 추가
-                </button>
-                <button
-                  data-popup-close="true"
-                  onClick={() => setShowMobileDayPopup(false)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* 일정 목록 */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
-              {renderSchedules(mobileDayDate, getEventsForDate(mobileDayDate))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {viewingEvent&&<CalendarEventDetails event={viewingEvent} onClose={()=>setViewingEvent(null)} onEdit={viewingEvent.id?()=>{const event=events.find(event=>event.id===viewingEvent.id);if(!event)return;setViewingEvent(null);setEditingEvent(event);setFormData(event);setShowEventModal(true);}:undefined} onDelete={viewingEvent.id?()=>{setDeleteEventId(viewingEvent.id!);setViewingEvent(null);setDeleteEventConfirmOpen(true);}:undefined}/>}
       {showEventModal && (
@@ -1139,7 +1083,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
 
   const today = koreaDate();
   return (
-    <article
+    <article data-ui-card="true"
       className={`${styles.card} ${styles.calendarCard}`}
       aria-label="내 일정 캘린더"
       data-calendar-card
@@ -1147,7 +1091,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
       {listDate ? (
         <>
           <div className={styles.heading}>
-            <button
+            <button data-icon-only="true"
               className={styles.iconButton}
               aria-label="달력으로 돌아가기"
               onClick={() => setListDate(null)}
@@ -1157,7 +1101,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
             <h2>
               {Number(listDate.slice(5, 7))}월 {Number(listDate.slice(8))}일
             </h2>
-            <button
+            <button data-icon-only="true"
               className={styles.iconButton}
               aria-label="일정 추가"
               title="일정 추가"
@@ -1193,7 +1137,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
                     )}
                   </div>
                   <div className={styles.eventActions}>
-                    {event.date >= today && <button
+                    {event.date >= today && <button data-icon-only="true"
                       onClick={() => void reminders.toggle(event)}
                       disabled={saving||reminders.saving||!reminders.ready}
                       aria-label={`${event.title} 알림 ${reminders.enabled[event.id]?"끄기":"켜기"}`}
@@ -1202,7 +1146,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
                     >
                       {reminders.enabled[event.id]?<Bell style={{color:"#2563eb"}}/>:<BellOff />}
                     </button>}
-                    <button
+                    <button data-icon-only="true"
                       onClick={() => open(event)}
                       disabled={saving}
                       aria-label={`${event.title} 수정`}
@@ -1210,7 +1154,7 @@ function CompactCalendar({ identity }: { identity: Identity }) {
                     >
                       <Pencil />
                     </button>
-                    <button
+                    <button data-icon-only="true"
                       onClick={() => {
                         open(event);
                         setConfirmDelete(true);
@@ -1232,11 +1176,11 @@ function CompactCalendar({ identity }: { identity: Identity }) {
       ) : (
         <>
           <div className={`${styles.heading} ${styles.calendarHeading}`}>
-            <Link className={styles.calendarPageLink} href="/calendar" aria-label="캘린더 페이지로 이동" title="캘린더 페이지로 이동"><CalendarDays /></Link>
+            <Link data-icon-only="true" className={styles.calendarPageLink} href="/calendar" aria-label="캘린더 페이지로 이동" title="캘린더 페이지로 이동"><CalendarDays /></Link>
             <div className={styles.calendarMonthNavigation}>
-              <button type="button" className={styles.iconButton} aria-label="이전 달" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}><ChevronLeft /></button>
+              <button data-icon-only="true" data-prev-next="true" type="button" className={styles.iconButton} aria-label="이전 달" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}><ChevronLeft data-arrow-size="20" /></button>
               <h2>{month.getFullYear()}년 {month.getMonth() + 1}월</h2>
-              <button type="button" className={styles.iconButton} aria-label="다음 달" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}><ChevronRight /></button>
+              <button data-icon-only="true" data-prev-next="true" type="button" className={styles.iconButton} aria-label="다음 달" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}><ChevronRight data-arrow-size="20" /></button>
             </div>
             <span aria-hidden="true" />
           </div>

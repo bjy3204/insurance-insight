@@ -15,8 +15,10 @@ function today() {
   return new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
 }
 
-export default function CustomerManagementTab() {
+export default function CustomerManagementTab({openContractRequested=false,onContractRequestHandled,openCustomerRequested=false,onCustomerRequestHandled}:{openContractRequested?:boolean;onContractRequestHandled?:()=>void;openCustomerRequested?:boolean;onCustomerRequestHandled?:()=>void}) {
+  const [mobileActionsHost, setMobileActionsHost] = useState<HTMLSpanElement | null>(null);
   const [dialog, setDialog] = useState<CustomerEntryKind | null>(null);
+  useEffect(()=>{if(openContractRequested){setDialog("contract");onContractRequestHandled?.();}},[openContractRequested,onContractRequestHandled]);
   const [editing, setEditing] = useState<CustomerRecord | StoredContract | null>(null);
   const [deleting, setDeleting] = useState<CustomerRecord | null>(null), [deleteError, setDeleteError] = useState("");
   const [customerDraft, setCustomer] = useState<CustomerEntryValues>({});
@@ -32,6 +34,7 @@ export default function CustomerManagementTab() {
   const reorderingRef = useRef(false);
   const [reordering, setReordering] = useState(false), [reorderError, setReorderError] = useState("");
   const submissionId = useRef<string | null>(null);
+  useEffect(()=>{if(openCustomerRequested){setEditing(null);setCustomer({});setSaveError("");setDialog("customer");onCustomerRequestHandled?.();}},[openCustomerRequested,onCustomerRequestHandled]);
   const close = useCallback(() => { if (!savingRef.current) { setDialog(null); setEditing(null); setSaveError(""); } }, []);
   const closeDelete = useCallback(() => { if (!savingRef.current) { setDeleting(null); setDeleteError(""); } }, []);
   const request = useCallback(async (body?: object) => {
@@ -114,19 +117,21 @@ export default function CustomerManagementTab() {
       const result=await request({action:"update",kind:"customer",recordId:record.id,revision:Number(record.revision),values:withCustomerClaimDefaults({...record,[field]:value})});
       if(run!==generation.current)throw new Error("로그인 상태가 변경되었습니다.");
       setCustomers(previous=>previous.map(customer=>customer.id===record.id?result.record:customer));
+      window.dispatchEvent(new Event("customer-schedules-updated"));
     } finally {savingRef.current=false;setSaving(false);}
   };
   return <section className="min-h-[70vh] space-y-3">
     <div className={`${styles.header} flex flex-wrap items-center justify-end gap-3`}>
-      <h2 className="mr-auto flex items-center gap-3 text-xl font-bold"><Users className="h-7 w-7 text-blue-500" />고객관리</h2>
+      <h2 data-personal-tab-title="true" className="mr-auto flex items-center gap-3 text-xl font-bold"><Users className="h-7 w-7 text-blue-500" />고객관리</h2>
       <div className={`${styles.actions} flex w-full items-center justify-end gap-2 sm:w-auto sm:gap-3`}>
+        <span ref={setMobileActionsHost} className="flex items-center md:hidden" />
         <button data-action-height="44" type="button" disabled={loading || !!error || reordering || saving} onClick={() => { submissionId.current = null; setEditing(null); setSaveError(""); setContract({}); setDialog("contract"); }} className="flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-gray-200 bg-white px-3 text-xs font-bold cursor-pointer sm:px-5 sm:text-sm">계약추가</button>
         <button data-action-height="44" type="button" disabled={loading || !!error || reordering || saving} onClick={() => { submissionId.current = null; setEditing(null); setCustomer({}); setSaveError(""); setDialog("customer"); }} className="flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-blue-600 px-3 text-xs font-bold text-white cursor-pointer sm:px-5 sm:text-sm">고객추가</button>
       </div>
     </div>
     {error && <div role="alert" className="flex items-center gap-3 text-sm text-red-600">{error}<button data-action-height="44" type="button" onClick={() => void load()} className="underline cursor-pointer">다시 시도</button></div>}
     {reorderError && <p role="alert" className="text-sm text-red-600">{reorderError}</p>}
-    <div aria-busy={loading}><CustomerLookup onEditContract={record=>{if(savingRef.current||reorderingRef.current)return;setEditing(record);setContract({...record});setSaveError("");setDialog("contract");}} onDeleteContract={record=>{if(savingRef.current||reorderingRef.current)return;setDeletingContract(record);setDeleteError("");}} customers={customers} contracts={contracts} onSaveChecklist={(record,value)=>saveCustomerSection(record,"checklist",value)} onSaveDisclosure={(record,value)=>saveCustomerSection(record,"disclosure",value)} onSaveConsultations={(record,value)=>saveCustomerSection(record,"consultations",value)} onDelete={record => { if (reorderingRef.current || savingRef.current) return; setDeleting(record); setDeleteError(""); }} onReorder={ids => void reorder(ids)} reorderDisabled={loading || saving || reordering} onEdit={record => { if (reorderingRef.current || savingRef.current) return; setEditing(record); setCustomer({ ...record }); setSaveError(""); setDialog("customer"); }} /></div>
+    <div aria-busy={loading}><CustomerLookup mobileActionsHost={mobileActionsHost} onEditContract={record=>{if(savingRef.current||reorderingRef.current)return;setEditing(record);setContract({...record});setSaveError("");setDialog("contract");}} onDeleteContract={record=>{if(savingRef.current||reorderingRef.current)return;setDeletingContract(record);setDeleteError("");}} customers={customers} contracts={contracts} onSaveChecklist={(record,value)=>saveCustomerSection(record,"checklist",value)} onSaveDisclosure={(record,value)=>saveCustomerSection(record,"disclosure",value)} onSaveConsultations={(record,value)=>saveCustomerSection(record,"consultations",value)} onDelete={record => { if (reorderingRef.current || savingRef.current) return; setDeleting(record); setDeleteError(""); }} onReorder={ids => void reorder(ids)} reorderDisabled={loading || saving || reordering} onEdit={record => { if (reorderingRef.current || savingRef.current) return; setEditing(record); setCustomer({ ...record }); setSaveError(""); setDialog("customer"); }} /></div>
     {dialog && <CustomerEntryDialog kind={dialog} editing={!!editing} customers={customers} values={dialog === "customer" ? customer : contract} saving={saving} error={saveError} onSubmit={save} onChange={(field, value) => { submissionId.current = null; setSaveError(""); if (dialog === "customer") setCustomer(previous => ({ ...previous, [field]: value })); else setContract(previous => updateContractDraft(previous, field, value)); }} onClose={close} />}
     {deletingContract&&<DashboardDialog confirmation title="계약을 삭제할까요?" onClose={()=>{if(!savingRef.current)setDeletingContract(null);}}><p>선택한 계약을 삭제하시겠습니까?</p>{deleteError&&<p role="alert" className="text-sm text-red-600">{deleteError}</p>}<div className="mt-5 flex justify-end gap-2"><button data-popup-action="true" data-action-height="44" type="button" disabled={saving} onClick={()=>setDeletingContract(null)} className="h-11 rounded-xl bg-gray-100 px-5 text-sm font-bold cursor-pointer">취소</button><button data-action-height="44" type="button" disabled={saving} onClick={()=>void deleteContract()} className="h-11 rounded-xl bg-red-500 px-5 text-sm font-bold text-white cursor-pointer">{saving?"삭제 중":"삭제"}</button></div></DashboardDialog>}
     {deleting && <DashboardDialog confirmation title="고객을 삭제할까요?" onClose={closeDelete}>

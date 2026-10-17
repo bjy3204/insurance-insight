@@ -1,4 +1,6 @@
 "use client";
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
+import { ChevronLeft as TaskChevronLeft, ChevronRight as TaskChevronRight } from "lucide-react";
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
@@ -704,7 +706,7 @@ const fileRec = fileRecords.find(
 
   const SortButton = ({ label, k }: { label: string; k: SortKey }) => (
     <button
-      onClick={() => toggleSort(k)}
+      data-resource-sort="true" onClick={() => toggleSort(k)}
       className={`flex items-center gap-0.5 text-xs font-semibold cursor-default hover:text-blue-600 transition ${sortKey === k ? "text-blue-600" : "text-gray-500"}`}
     >
       {label}
@@ -731,7 +733,7 @@ const fileRec = fileRecords.find(
         <div data-popup-header="true" className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white cursor-default select-none shrink-0">
           <div className="flex items-center gap-2">
             <FolderOpen className="w-5 h-5 text-blue-500" />
-            <span className="font-bold text-gray-800 text-base">구독자 전용 자료실</span>
+            <span data-resource-title="true" className="font-bold text-gray-800 text-base">구독자 전용 자료실</span>
           </div>
           <div className="flex items-center gap-2 no-drag">
             <button data-popup-action="true"
@@ -753,7 +755,7 @@ const fileRec = fileRecords.find(
                 <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleUpload} />
               </>
             )}
-            <button data-popup-close="true" onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition cursor-pointer">
+            <button data-icon-only="true" data-popup-close="true" onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition cursor-pointer">
               <X className="w-4 h-4 text-gray-500" />
             </button>
           </div>
@@ -763,7 +765,7 @@ const fileRec = fileRecords.find(
         <div data-popup-search-section="true" className="px-5 py-4 border-b border-gray-100 bg-white shrink-0 no-drag">
           <div className="relative flex items-center">
             <Search className="absolute left-3 w-4 h-4 text-gray-400 pointer-events-none" />
-            <input data-ui-field="true" data-page-search-input="true"
+            <ClearableSearchInput onClear={() => handleSearch("")} data-ui-field="true" data-page-search-input="true"
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
@@ -771,7 +773,7 @@ const fileRec = fileRecords.find(
               className="w-full pl-9 pr-9 py-2 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition"
             />
             {searchQuery && (
-              <button onClick={clearSearch} className="absolute right-3 text-gray-400 hover:text-gray-600 cursor-default">
+              <button data-icon-only="true" onClick={clearSearch} className="absolute right-3 text-gray-400 hover:text-gray-600 cursor-default">
                 <XCircle className="w-4 h-4" />
               </button>
             )}
@@ -805,7 +807,7 @@ const fileRec = fileRecords.find(
         {/* ── 폴더 이름 입력 ── */}
         {showNewFolder && (
           <div className="flex items-center gap-2 px-5 py-3 bg-blue-50 border-b border-blue-100 no-drag shrink-0">
-            <input data-ui-field="true" type="text" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createFolder()} placeholder="폴더 이름 입력 (한글 가능)" className="flex-1 px-3 py-2 rounded-xl border border-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" autoFocus />
+            <ClearableSearchInput onClear={() => setNewFolderName("")} data-ui-field="true" type="text" value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createFolder()} placeholder="폴더 이름 입력 (한글 가능)" className="flex-1 px-3 py-2 rounded-xl border border-blue-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" autoFocus />
             <button onClick={createFolder} className="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 transition cursor-default">만들기</button>
             <button data-popup-action="true" onClick={() => { setShowNewFolder(false); setNewFolderName(""); }} className="px-3 py-2 rounded-xl bg-gray-100 text-gray-600 text-sm font-semibold hover:bg-gray-200 transition cursor-default">취소</button>
           </div>
@@ -832,25 +834,25 @@ const fileRec = fileRecords.find(
               </>
             )}
           </div>
-          <div className="order-last md:order-none w-full md:w-auto md:flex-1 flex justify-center md:px-4">
+          <div className="hidden md:flex w-auto flex-1 justify-center px-4">
   <span className="text-red-500 font-semibold text-sm text-center">
-    ⭐ 구독자료는 무단배포, 공유, SNS게시 절대 불가능 합니다. 상담, 교육용으로 이용해 주세요 ! 
+    ⭐ 구독자료는 무단배포, 공유, SNS게시 절대 불가능 합니다. 
   </span>
 </div>
 
 <div className="flex items-center gap-2 shrink-0">
-  <button onClick={() => setViewMode("grid")} className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-default ${viewMode === "grid" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-500"}`} title="그리드 보기">
+  <button data-icon-only="true" onClick={() => setViewMode("grid")} className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-default ${viewMode === "grid" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-500"}`} title="그리드 보기">
     <LayoutGrid className="w-4 h-4" />
   </button>
-  <button onClick={() => setViewMode("list")} className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-default ${viewMode === "list" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-500"}`} title="리스트 보기">
+  <button data-icon-only="true" onClick={() => setViewMode("list")} className={`w-7 h-7 rounded-lg flex items-center justify-center transition cursor-default ${viewMode === "list" ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-500"}`} title="리스트 보기">
     <List className="w-4 h-4" />
   </button>
 </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 px-5 py-2 border-b border-gray-100 no-drag shrink-0">
-          <button type="button" onClick={() => { setSelectMode(true); const files = displayItems.filter(item => !item.isFolder); setSelectedItems(selectedFileCount === files.length ? new Set() : new Set(files.map(item => item.storageName))); }} className="px-3 py-2 rounded-xl bg-gray-100 text-xs font-semibold text-gray-700 cursor-pointer">{selectedFileCount > 0 && selectedFileCount === displayItems.filter(item => !item.isFolder).length ? "전체 해제" : "전체 선택"}</button>
-          <button type="button" onClick={handleBulkDownload} disabled={!selectedFileCount || bulkDownloading} className="flex items-center gap-1 px-3 py-2 rounded-xl bg-blue-50 text-blue-600 text-xs font-semibold cursor-pointer disabled:opacity-40">{bulkDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}선택 다운로드{selectedFileCount > 0 ? ` (${selectedFileCount})` : ""}</button>
+        <div data-resource-selection-actions="true" className="flex flex-wrap items-center gap-2 px-5 py-2 border-b border-gray-100 no-drag shrink-0">
+          <button type="button" onClick={() => { setSelectMode(true); const files = displayItems.filter(item => !item.isFolder); setSelectedItems(selectedFileCount === files.length ? new Set() : new Set(files.map(item => item.storageName))); }} className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-gray-100 text-xs font-semibold text-gray-700 cursor-pointer"><CheckSquare className="w-3.5 h-3.5 md:hidden" />{selectedFileCount > 0 && selectedFileCount === displayItems.filter(item => !item.isFolder).length ? "전체 해제" : "전체 선택"}</button>
+          <button type="button" onClick={handleBulkDownload} disabled={!selectedFileCount || bulkDownloading} className="flex items-center gap-1 px-3 py-2 rounded-xl bg-blue-50 text-blue-600 text-xs font-semibold cursor-pointer disabled:opacity-40">{bulkDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><CheckSquare className="w-3.5 h-3.5 md:hidden" /><Download className="hidden md:block w-3.5 h-3.5" /></>}선택 다운로드{selectedFileCount > 0 ? ` (${selectedFileCount})` : ""}</button>
           {searchResults === null && <button type="button" onClick={handleAllDownload} disabled={!currentFolderFileCount || allDownloading} className="flex items-center gap-1 px-3 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold cursor-pointer disabled:opacity-40">{allDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}전체 다운로드</button>}
         </div>
         {/* ── 본문 ── */}
@@ -912,28 +914,28 @@ const fileRec = fileRecords.find(
                             ? (isFolderDownloading ? <Loader2 className="w-12 h-12 text-blue-400 animate-spin" /> : <FolderOpen className="w-12 h-12 text-yellow-400" />)
                             : thumbnailFor(item) ? <img src={thumbnailFor(item)} alt={item.displayName} loading="eager" decoding="async" className="w-full h-24 object-contain rounded-lg" onError={event => { event.currentTarget.style.display = "none"; }} /> : getFileIcon(item, true)}
                         </div>
-                        <span className="text-xs text-center text-gray-700 font-medium leading-tight line-clamp-2 w-full break-all">{item.displayName}</span>
+                        <span data-resource-filename="true" className="text-xs text-center text-gray-700 font-medium leading-tight line-clamp-2 w-full break-all">{item.displayName}</span>
                         {!item.isFolder && item.size && <span className="text-[10px] text-gray-400">{formatSize(item.size)}</span>}
-                        {item.isFolder && <span className="text-[10px] text-gray-400">{getFolderFileCount(item)}개 파일</span>}
+                        {item.isFolder && <span data-resource-filecount="true" className="text-[10px] text-gray-400">{getFolderFileCount(item)}개 파일</span>}
                         {searchResults !== null && item.folderPath && (
                           <span className="text-[10px] text-blue-400 truncate w-full text-center">{item.folderPath}</span>
                         )}
-                        {/* 폴더 전체 다운로드 버튼 */}
+                        <div data-resource-card-actions="true" className="contents">{/* 폴더 전체 다운로드 버튼 */}
                         {item.isFolder && !selectMode && (
-                          <button onClick={(e) => { e.stopPropagation(); handleFolderDownload(item); }} disabled={isFolderDownloading} className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 items-center justify-center transition hidden group-hover:flex cursor-pointer disabled:opacity-50" title="폴더 전체 다운로드">
+                          <button data-icon-only="true" onClick={(e) => { e.stopPropagation(); handleFolderDownload(item); }} disabled={isFolderDownloading} className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 items-center justify-center transition hidden group-hover:flex cursor-pointer disabled:opacity-50" title="폴더 전체 다운로드">
                             <ArrowDownToLine className="w-3 h-3" />
                           </button>
                         )}
                         {isAdmin && !selectMode && (
-                          <button onClick={(e) => { e.stopPropagation(); setDeleteConfirm(item); }} className="w-6 h-6 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 flex items-center justify-center transition cursor-pointer disabled:opacity-50">
+                          <button data-icon-only="true" onClick={(e) => { e.stopPropagation(); setDeleteConfirm(item); }} className="w-6 h-6 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 flex items-center justify-center transition cursor-pointer disabled:opacity-50">
                             <Trash2 className="w-3 h-3" />
                           </button>
                         )}
                         {!item.isFolder && !selectMode && (
-                          <button onClick={(e) => { e.stopPropagation(); handleDownload(item); }} className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 items-center justify-center transition hidden group-hover:flex cursor-pointer">
+                          <button data-icon-only="true" onClick={(e) => { e.stopPropagation(); handleDownload(item); }} className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 items-center justify-center transition hidden group-hover:flex cursor-pointer">
                             <Download className="w-3 h-3" />
                           </button>
-                        )}
+                        )}</div>
                       </div>
                     );
                   })}
@@ -1002,8 +1004,8 @@ const fileRec = fileRecords.find(
                       </div>
                       {/* 파일명 */}
                       <div className="min-w-0 pl-2">
-                        <span className="text-sm text-gray-700 font-medium truncate block">{item.displayName}</span>
-                        {item.isFolder && <span className="text-[11px] text-gray-400">{getFolderFileCount(item)}개 파일</span>}
+                        <span data-resource-filename="true" className="text-sm text-gray-700 font-medium truncate block">{item.displayName}</span>
+                        {item.isFolder && <span data-resource-filecount="true" className="text-[11px] text-gray-400">{getFolderFileCount(item)}개 파일</span>}
                         {searchResults !== null && item.folderPath && (
                           <span className="text-[11px] text-blue-400">{item.folderPath}</span>
                         )}
@@ -1015,17 +1017,17 @@ const fileRec = fileRecords.find(
                       {/* 작업 버튼 */}
                       <div className="w-auto flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                         {item.isFolder && (
-                          <button onClick={() => handleFolderDownload(item)} disabled={isFolderDownloading} className="w-6 h-6 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 flex items-center justify-center transition cursor-pointer disabled:opacity-50" title="폴더 전체 다운로드">
+                          <button data-icon-only="true" onClick={() => handleFolderDownload(item)} disabled={isFolderDownloading} className="w-6 h-6 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 flex items-center justify-center transition cursor-pointer disabled:opacity-50" title="폴더 전체 다운로드">
                             {isFolderDownloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ArrowDownToLine className="w-3.5 h-3.5" />}
                           </button>
                         )}
                         {!item.isFolder && (
-                          <button onClick={() => handleDownload(item)} className="w-6 h-6 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 flex items-center justify-center transition cursor-pointer" title="다운로드">
+                          <button data-icon-only="true" onClick={() => handleDownload(item)} className="w-6 h-6 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-400 hover:text-blue-600 flex items-center justify-center transition cursor-pointer" title="다운로드">
                             <Download className="w-3.5 h-3.5" />
                           </button>
                         )}
                         {isAdmin && (
-                          <button onClick={() => setDeleteConfirm(item)} className="w-6 h-6 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 flex items-center justify-center transition cursor-pointer" title="삭제">
+                          <button data-icon-only="true" onClick={() => setDeleteConfirm(item)} className="w-6 h-6 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 flex items-center justify-center transition cursor-pointer" title="삭제">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         )}
@@ -1039,6 +1041,7 @@ const fileRec = fileRecords.find(
         </div>
 
 
+      <p className="md:hidden shrink-0 border-t border-gray-100 px-4 py-3 text-center text-sm font-semibold text-red-500">⭐ 구독자료는 무단배포, 공유, SNS게시 절대 불가능 합니다.</p>
       </div>
 
       {/* ── 미리보기 팝업 ── */}
@@ -1051,7 +1054,7 @@ const fileRec = fileRecords.find(
                 <button onClick={() => handleDownload(selectedFile)} className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold transition cursor-pointer">
                   <Download className="w-4 h-4" />다운로드
                 </button>
-                <button data-popup-close="true" onClick={() => setPreviewOpen(false)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition cursor-pointer">
+                <button data-icon-only="true" data-popup-close="true" onClick={() => setPreviewOpen(false)} className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition cursor-pointer">
                   <X className="w-4 h-4 text-gray-500" />
                 </button>
               </div>
@@ -1061,18 +1064,18 @@ const fileRec = fileRecords.find(
     <>
       {previewFiles.length > 1 && (
         <>
-          <button
+          <button data-icon-only="true" data-prev-next="true"
             onClick={movePrevImage}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow text-gray-600 text-2xl flex items-center justify-center cursor-pointer hover:bg-gray-100 hover:text-gray-900 transition"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 shadow text-gray-600 text-2xl flex items-center justify-center cursor-pointer hover:bg-gray-100 hover:text-gray-900 transition"
           >
-            ‹
+            <TaskChevronLeft size={24} role="img" aria-label="이전" style={{display:"inline-block",verticalAlign:"middle"}} />
           </button>
 
-          <button
+          <button data-icon-only="true" data-prev-next="true"
             onClick={moveNextImage}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 shadow text-gray-600 text-2xl flex items-center justify-center cursor-pointer hover:bg-gray-100 hover:text-gray-900 transition"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/90 shadow text-gray-600 text-2xl flex items-center justify-center cursor-pointer hover:bg-gray-100 hover:text-gray-900 transition"
           >
-            ›
+            <TaskChevronRight size={24} role="img" aria-label="다음" style={{display:"inline-block",verticalAlign:"middle"}} />
           </button>
         </>
       )}

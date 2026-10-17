@@ -1,12 +1,13 @@
 "use client";
 
 type Props = {
+  desktopPageCount?: number;
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
 };
 
-export default function Pagination({ page, totalPages, onPageChange }: Props) {
+export default function Pagination({ page, totalPages, onPageChange, desktopPageCount = 10 }: Props) {
   const total = Math.max(1, totalPages);
   const render = (count: number, className: string) => {
     const start = Math.floor((page - 1) / count) * count + 1;
@@ -18,5 +19,5 @@ export default function Pagination({ page, totalPages, onPageChange }: Props) {
       <button type="button" disabled={page >= total} onClick={() => onPageChange(Math.min(total, page + 1))}>다음</button>
     </nav>;
   };
-  return <>{render(5, "paginationMobile")}{render(10, "paginationDesktop")}</>;
+  return <>{render(5, "paginationMobile")}{render(desktopPageCount, "paginationDesktop")}</>;
 }

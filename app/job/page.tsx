@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import Pagination from "@/app/components/Pagination";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -422,7 +423,7 @@ const currentCompanies = filteredCompanies.slice(
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
   href="/"
   className="
     absolute
@@ -458,7 +459,7 @@ const currentCompanies = filteredCompanies.slice(
               }`}
             >
               <div className="relative">
-                <button data-header-control="true"
+                <button data-icon-only="true" data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
@@ -514,8 +515,7 @@ const currentCompanies = filteredCompanies.slice(
           <div className={styles.recruitSearch}>
             <div data-page-search-wrapper="true" className="flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 transition focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100">
               <Search className="h-5 w-5 shrink-0 text-gray-400" />
-              <input data-ui-field="true" data-page-search-input="true" aria-label="채용공고 검색" value={search} onChange={event => { setSearch(event.target.value); setPage(1); }} placeholder="지역, 회사명, 조직명을 검색하세요" className="w-full bg-transparent text-sm outline-none" />
-              {search && <button type="button" aria-label="검색어 지우기" onClick={() => { setSearch(""); setPage(1); }} className="cursor-pointer text-gray-400"><X className="h-4 w-4" /></button>}
+              <ClearableSearchInput onClear={() => { setSearch(""); setPage(1); }} data-ui-field="true" data-page-search-input="true" aria-label="채용공고 검색" value={search} onChange={event => { setSearch(event.target.value); setPage(1); }} placeholder="지역, 회사명, 조직명을 검색하세요" className="w-full bg-transparent text-sm outline-none" />
             </div>
             <div className={styles.regionFilters} aria-label="채용 지역">
               {["", ...regionOptions].map(region => <button key={region} type="button" aria-pressed={selectedRegion === region} onClick={() => { setSelectedRegion(region); setPage(1); }} className={selectedRegion === region ? styles.regionSelected : ""}>{region || "전체"}</button>)}
@@ -526,7 +526,7 @@ const currentCompanies = filteredCompanies.slice(
       <div data-page-content="true" className="w-full px-6 py-6 max-w-7xl mx-auto flex flex-col flex-1">
 
         <section className="min-h-[400px] flex flex-col flex-1">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div data-page-card-grid="true" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {filteredCompanies.length === 0 && (
               <div className="col-span-full flex-1 flex items-center justify-center text-gray-400 text-sm min-h-[470px]">
                 검색 결과가 없습니다.
@@ -534,7 +534,7 @@ const currentCompanies = filteredCompanies.slice(
             )}
 
             {currentCompanies.map((item, index) => (
-              <Link href={`/job/${item.id}`} key={item.id} onPointerEnter={() => warmCompanyImages(item)} onFocus={() => warmCompanyImages(item)} className={styles.card} aria-label={`${item.organization} 채용공고 보기`}>
+              <Link data-ui-card="true" href={`/job/${item.id}`} key={item.id} onPointerEnter={() => warmCompanyImages(item)} onFocus={() => warmCompanyImages(item)} className={styles.card} aria-label={`${item.organization} 채용공고 보기`}>
                 <div className={styles.cover}>
                   {item.image?.[0] ? <img src={`${item.image[0]}&w=384`} alt="" loading={index < 5 ? "eager" : "lazy"} fetchPriority={index < 5 ? "high" : "auto"} decoding="async" /> : <div className={styles.placeholder}><Briefcase size={36} strokeWidth={1.3} /></div>}
                   {item.region && <span className={styles.region}>{item.region}</span>}

@@ -1,6 +1,7 @@
 "use client";
 
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import Pagination from "@/app/components/Pagination";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -173,7 +174,7 @@ const currentReviews = selectedReviews.slice(
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
               href="/lecture"
               className="w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
             >
@@ -199,7 +200,7 @@ const currentReviews = selectedReviews.slice(
       <div data-page-content="true" className="max-w-7xl mx-auto px-5 pt-6 pb-6">
         <div className="relative mb-3">
           <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-          <input data-ui-field="true" data-page-search-input="true"
+          <ClearableSearchInput onClear={() => setSearch("")} data-ui-field="true" data-page-search-input="true"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="강의명 · 강사이름 검색"
@@ -322,14 +323,14 @@ const currentReviews = selectedReviews.slice(
         </div>
       </div>
 
-<div className="fixed bottom-[73px] left-0 right-0 z-40 bg-gray-100 py-4 after:absolute after:left-0 after:right-0 after:top-full after:h-[73px] after:bg-gray-100 after:content-['']">
+<div data-page-fixed-footer="true" className="fixed bottom-[73px] left-0 right-0 z-40 bg-gray-100 py-4 after:absolute after:left-0 after:right-0 after:top-full after:h-[73px] after:bg-gray-100 after:content-['']">
   <div className="flex items-center justify-center gap-2 flex-wrap px-4">
 <Pagination page={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
 </div>
 </div>
 
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg">
+      <div data-page-fixed-footer="true" className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <Link href="/lecture/schedule"
             className="py-3 flex flex-col items-center gap-1"
@@ -425,7 +426,7 @@ const currentReviews = selectedReviews.slice(
                 강사 정보 보기
               </button>
 
-              <button data-popup-close="true"
+              <button data-icon-only="true" data-popup-close="true"
                 onClick={() => setSelectedLecture(null)}
                 className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/10 transition shrink-0"
               >
@@ -449,7 +450,7 @@ const currentReviews = selectedReviews.slice(
               {popupMode === "lecture" ? "강의정보 자세히보기" : "강사정보보기"}
             </p>
 
-            <button data-popup-close="true"
+            <button data-icon-only="true" data-popup-close="true"
               onClick={() => setSelectedLecture(null)}
               className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer hover:bg-white/10 transition"
             >
@@ -497,7 +498,10 @@ const currentReviews = selectedReviews.slice(
 
             <div className="relative">
               <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-              <input data-ui-field="true" data-page-search-input="true"
+              <ClearableSearchInput onClear={() => {
+                  setReviewSearch("");
+                  setReviewPage(1);
+                }} data-ui-field="true" data-page-search-input="true"
                 value={reviewSearch}
                 onChange={(e) => {
                   setReviewSearch(e.target.value);

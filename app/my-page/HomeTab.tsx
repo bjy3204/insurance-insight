@@ -1,4 +1,8 @@
 "use client";
+import { PERSONAL_HOME_ENABLED } from "./personal-features";
+import HomeOverview from "./HomeOverview";
+import MiniCalendar from "@/app/components/MiniCalendar";
+import { ChevronLeft as TaskChevronLeft, ChevronRight as TaskChevronRight } from "lucide-react";
 
 import Pagination from "@/app/components/Pagination";
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -533,6 +537,7 @@ const diaryEndPage = Math.min(
 
   return (
     <div className="space-y-5">
+      {PERSONAL_HOME_ENABLED && view === "home" && <HomeOverview />}
       {plantPopupOpen && createPortal(
         <div ref={plantCardRef} role="dialog" aria-label="내 식물 물주기"
           style={{ left: plantPos.x, top: plantPos.y, touchAction: "none" }}
@@ -572,7 +577,7 @@ const diaryEndPage = Math.min(
     일기
   </h2>
   <div className="flex items-center gap-1">
-    <button
+    <button data-icon-only="true" data-prev-next="true"
       onClick={() => setDiaryMonth(({ year, month }) => {
         const d = new Date(year, month - 1, 1);
         return { year: d.getFullYear(), month: d.getMonth() };
@@ -584,7 +589,7 @@ const diaryEndPage = Math.min(
     <span className="min-w-[50px] text-center text-[17px] font-bold text-gray-800 tracking-[-0.02em]">
   {diaryMonth.month + 1}월
 </span>
-    <button
+    <button data-icon-only="true" data-prev-next="true"
       onClick={() => setDiaryMonth(({ year, month }) => {
         const d = new Date(year, month + 1, 1);
         return { year: d.getFullYear(), month: d.getMonth() };
@@ -593,7 +598,7 @@ const diaryEndPage = Math.min(
     >
       <ChevronRight className="w-3.5 h-3.5 text-gray-500" />
     </button>
-    <button
+    <button data-icon-only="true"
       onClick={() => openNewDiary()}
       className="w-8 h-8 rounded-xl bg-blue-500 flex items-center justify-center hover:bg-blue-400 shadow-sm hover:shadow-md transition ml-1 cursor-pointer"
     >
@@ -660,7 +665,7 @@ const diaryEndPage = Math.min(
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg min-h-[520px] flex flex-col overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <h3 className="text-xl font-black text-gray-900">{editingDiary ? "일기 수정" : "일기 쓰기"}</h3>
-              <button data-popup-close="true"
+              <button data-icon-only="true" data-popup-close="true"
                 onClick={() => { setDiaryOpen(false); setEditingDiary(null); }}
                 className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer"
               >
@@ -694,98 +699,7 @@ const diaryEndPage = Math.min(
         onClick={() => setShowDiaryDatePicker(false)}
       />
 
-      <div className="absolute top-14 left-0 bg-white border border-gray-200 rounded-3xl p-5 z-[100] shadow-xl w-[320px]">
-        <div className="flex items-center justify-between mb-4">
-          <button
-            type="button"
-            onClick={() => {
-              if (diaryPickerMonth === 0) {
-                setDiaryPickerMonth(11);
-                setDiaryPickerYear(diaryPickerYear - 1);
-              } else {
-                setDiaryPickerMonth(diaryPickerMonth - 1);
-              }
-            }}
-            className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
-          >
-            ‹
-          </button>
-
-          <span className="text-base font-black text-gray-900">
-            {diaryPickerYear}년 {diaryPickerMonth + 1}월
-          </span>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (diaryPickerMonth === 11) {
-                setDiaryPickerMonth(0);
-                setDiaryPickerYear(diaryPickerYear + 1);
-              } else {
-                setDiaryPickerMonth(diaryPickerMonth + 1);
-              }
-            }}
-            className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
-          >
-            ›
-          </button>
-        </div>
-
-        <div className="grid grid-cols-7 mb-2">
-          {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
-            <div
-              key={d}
-              className={`text-center text-xs font-bold py-1 ${
-                i === 0 ? "text-red-400" : i === 6 ? "text-blue-400" : "text-gray-400"
-              }`}
-            >
-              {d}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-7 gap-1">
-          {(() => {
-            const firstDow = new Date(diaryPickerYear, diaryPickerMonth, 1).getDay();
-            const daysInMonth = new Date(diaryPickerYear, diaryPickerMonth + 1, 0).getDate();
-            const cells = [];
-
-            for (let i = 0; i < firstDow; i++) {
-              cells.push(<div key={`empty-${i}`} />);
-            }
-
-            for (let d = 1; d <= daysInMonth; d++) {
-              const dateStr = `${diaryPickerYear}-${String(diaryPickerMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-              const isSelected = diaryForm.date === dateStr;
-              const dow = new Date(diaryPickerYear, diaryPickerMonth, d).getDay();
-
-              cells.push(
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => {
-                    setDiaryForm((f) => ({ ...f, date: dateStr }));
-                    setShowDiaryDatePicker(false);
-                  }}
-                  className={`h-9 rounded-xl text-sm font-bold transition ${
-                    isSelected
-                      ? "bg-blue-600 text-white"
-                      : dow === 0
-                      ? "text-red-400 hover:bg-gray-100"
-                      : dow === 6
-                      ? "text-blue-400 hover:bg-gray-100"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
-                >
-                  {d}
-                </button>
-              );
-            }
-
-            return cells;
-          })()}
-        </div>
-      </div>
+      <MiniCalendar value={diaryForm.date} onChange={date=>setDiaryForm(form=>({...form,date}))} onClose={()=>setShowDiaryDatePicker(false)} />
     </>
   )}
 </div>
@@ -841,19 +755,19 @@ const diaryEndPage = Math.min(
                 <span className="text-1g font-bold text-gray-700">{viewingDiary.date}</span>
               </div>
               <div className="flex items-center gap-1">
-                <button
+                <button data-icon-only="true"
                   onClick={() => { setViewingDiary(null); openEditDiary(viewingDiary); }}
                   className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer"
                 >
                   <Pencil className="w-4 h-4 text-gray-500" />
                 </button>
-                <button
+                <button data-icon-only="true"
                  onClick={() => setConfirmDelete({ type: "diary", id: viewingDiary.id })}
                   className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-red-50 transition cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4 text-red-400" />
                 </button>
-                <button data-popup-close="true"
+                <button data-icon-only="true" data-popup-close="true"
                   onClick={() => setViewingDiary(null)}
                   className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-100 transition cursor-pointer"
                 >

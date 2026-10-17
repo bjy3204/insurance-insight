@@ -23,7 +23,7 @@ export default function JobVideo() {
       if (x <= 16 || x + d.width >= window.innerWidth - 16) { setSide(x <= 16 ? "left" : "right"); collapse(); }
       drag.current = null;
     }} onPointerCancel={() => { drag.current = null; }}>
-      <h2 className="text-sm font-bold text-slate-800">여러분은 나의 가치를 알아봐 주는 곳에 있나요?</h2><button type="button" aria-label="영상 접기" onClick={collapse} className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"><X size={18}/></button>
+      <h2 className="text-sm font-bold text-slate-800">여러분은 나의 가치를 알아봐 주는 곳에 있나요?</h2><button data-icon-only="true" type="button" aria-label="영상 접기" onClick={collapse} className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer"><X size={18}/></button>
     </div>
     <iframe src="https://www.youtube.com/embed/2264CwLZRb4" title="여러분은 나의 가치를 알아봐 주는 곳에 있나요?" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="w-full aspect-video border-0"/>
   </section>;

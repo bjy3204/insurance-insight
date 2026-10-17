@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Lock, X, Search, Star } from "lucide-react";
 import { reorderWithinFavoriteGroup } from "@/lib/insurance-order";
@@ -119,7 +120,7 @@ code: string;
       {/* 별표는 여유 있는 전용 칸의 정중앙에 배치 */}
       <td className="w-24 px-0 py-3 text-center"><div className="flex items-center justify-center">
         {editMode || rowEditMode ? (
-          <button
+          <button data-icon-only="true"
             onClick={(e) => { e.stopPropagation(); onToggleFav(); }}
             onDoubleClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
@@ -141,7 +142,7 @@ code: string;
 
       {/* 코드 */}
       <td className="pl-0 pr-6 py-3 text-left overflow-hidden">{editMode || rowEditMode ? (
-        <input data-ui-field="true"
+        <ClearableSearchInput onClear={() => onChangeCode("")} data-ui-field="true"
           ref={codeInputRef}
           value={code}
           onChange={(e) => onChangeCode(e.target.value)}
@@ -157,7 +158,7 @@ code: string;
 
       {/* 비번 */}
       <td className="pl-0 pr-6 py-3 text-left overflow-hidden">{editMode || rowEditMode ? (
-        <input data-ui-field="true"
+        <ClearableSearchInput onClear={() => onChangePassword("")} data-ui-field="true"
           value={password}
           onChange={(e) => onChangePassword(e.target.value)}
           onClick={(e) => e.stopPropagation()}
@@ -382,7 +383,7 @@ const handleOpen = () => {
   return (
     <>
       {/* ── 왼쪽 하단 자물쇠 버튼 ── */}
-      <button
+      <button data-icon-only="true"
         data-page-floating-control="true"
   onClick={handleOpen}
         className="
@@ -423,7 +424,7 @@ const handleOpen = () => {
               <div className="flex items-center gap-2">
                 {editMode || rowEditMode ? (
                   <>
-                    <button 
+                    <button data-compact-action="true" 
                       onMouseDown={(e) => e.stopPropagation()}
                       onClick={() => {
   cancelEdit();
@@ -433,7 +434,7 @@ const handleOpen = () => {
                     >
                       취소
                     </button>
-                    <button 
+                    <button data-compact-action="true" 
                       onMouseDown={(e) => e.stopPropagation()}
                       onClick={() => {
   save();
@@ -445,7 +446,7 @@ const handleOpen = () => {
                     </button>
                   </>
                 ) : (
-                  <button
+                  <button data-compact-action="true"
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={() => setEditMode(true)}
                     className="h-8 px-3 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer text-sm font-bold transition"
@@ -453,7 +454,7 @@ const handleOpen = () => {
                     수정
                   </button>
                 )}
-<button data-popup-close="true"
+<button data-icon-only="true" data-popup-close="true"
   onMouseDown={(e) => e.stopPropagation()}
   onClick={() => {
     cancelEdit();
@@ -469,7 +470,7 @@ const handleOpen = () => {
 
             {/* 탭 + 검색 */}
             <div data-popup-search-section="true" className="px-5 py-4 shrink-0 flex flex-col gap-4">
-              <div data-tab-group="true" data-popup-tab-in-stack="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1">
+              <div data-mobile-tab-height="40" data-tab-group="true" data-popup-tab-in-stack="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1">
                 <button
                   onClick={() => { setTab("nonlife"); setSearch(""); }}
                   className={`rounded-xl py-2.5 text-sm font-bold transition ${
@@ -490,7 +491,7 @@ const handleOpen = () => {
 
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input data-ui-field="true" data-page-search-input="true"
+                <ClearableSearchInput onClear={() => setSearch("")} data-ui-field="true" data-page-search-input="true"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onPointerDown={(e) => e.stopPropagation()}

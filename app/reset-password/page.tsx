@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import AuthNotice from "@/components/AuthNotice";
 import { authErrorMessage } from "@/lib/auth/error-message";
 import { useState } from "react";
@@ -63,7 +64,7 @@ export default function ResetPasswordPage() {
         </p>
 
         <div className="mt-6 space-y-3">
-          <input data-ui-field="true"
+          <ClearableSearchInput onClear={() => setPassword("")} data-ui-field="true"
             type="password"
             placeholder="새 비밀번호"
             value={password}
@@ -73,7 +74,7 @@ export default function ResetPasswordPage() {
             className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm outline-none focus:border-gray-500"
           />
 
-          <input data-ui-field="true"
+          <ClearableSearchInput onClear={() => setConfirmPassword("")} data-ui-field="true"
             type="password"
             placeholder="새 비밀번호 확인"
             value={confirmPassword}

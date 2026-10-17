@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
@@ -471,7 +472,7 @@ useEffect(() => {
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
               href="/"
               className="
                 absolute
@@ -614,7 +615,7 @@ useEffect(() => {
          <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
   <Search className="w-5 h-5 text-gray-400" />
 
-  <input data-ui-field="true" data-page-search-input="true"
+  <ClearableSearchInput onClear={() => setSearchInput("")} data-ui-field="true" data-page-search-input="true"
     value={searchInput}
     onChange={(e) => setSearchInput(e.target.value)}
     onKeyDown={(e) => {
@@ -866,7 +867,7 @@ useEffect(() => {
       {/* 하단 고정 메뉴 */}
       <>
         <SiteFooter desktopOnly />
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
+        <div data-page-fixed-footer="true" className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a
             href="https://naver.me/xsZ8mk7H"

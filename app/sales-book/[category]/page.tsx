@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import Pagination from "@/app/components/Pagination";
 import Link from "next/link";
 import useSalesBookPageSize from "../useSalesBookPageSize";
@@ -104,7 +105,7 @@ const pagedSubcategories = filteredSubcategories.slice(
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
             <SalesBookTools />
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
               href="/sales-book"
               className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
             >
@@ -130,7 +131,10 @@ const pagedSubcategories = filteredSubcategories.slice(
         <div data-page-search-wrapper="true" className="h-12 rounded-2xl border border-gray-300 bg-white px-5 flex items-center gap-3 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition">
           <Search className="w-4 h-4 text-gray-400 shrink-0" />
 
-          <input data-ui-field="true" data-page-search-input="true"
+          <ClearableSearchInput onClear={() => {
+  setSearch("");
+  setPage(1);
+}} data-ui-field="true" data-page-search-input="true"
             type="text"
             value={search}
             onChange={(e) => {
@@ -176,20 +180,20 @@ const pagedSubcategories = filteredSubcategories.slice(
             </div>
           </aside>
 
-          <section className={`${styles.materials} bg-white rounded-2xl border border-blue-100/60 px-4 md:px-6 py-5 md:py-6 flex flex-col min-w-0`}>
+          <section data-ui-card="true" className={`${styles.materials} bg-white rounded-2xl border border-blue-100/60 px-4 md:px-6 py-5 md:py-6 flex flex-col min-w-0`}>
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-sm font-black text-gray-700">
+                <h2 className="text-[15px] font-black text-gray-700">
                   {category}
                 </h2>
 
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-sm text-gray-400 mt-1">
                   총 {filteredSubcategories.length}개 자료
                 </p>
               </div>
 
               <div className="flex items-center gap-2">
-                <button
+                <button data-icon-only="true"
                   aria-label="그리드 보기" onClick={() => setViewMode("grid")}
                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition ${
                     viewMode === "grid"
@@ -200,7 +204,7 @@ const pagedSubcategories = filteredSubcategories.slice(
                   <Grid3X3 className="w-5 h-5" />
                 </button>
 
-                <button
+                <button data-icon-only="true"
                   aria-label="목록 보기" onClick={() => setViewMode("list")}
                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition ${
                     viewMode === "list"
@@ -214,9 +218,9 @@ const pagedSubcategories = filteredSubcategories.slice(
             </div>
 
             {viewMode === "grid" ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-1 pb-5">
+              <div data-page-card-grid="true" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-1 pb-5">
                 {pagedSubcategories.map((subcategory) => (
-                  <Link data-card-lift="subtle" data-card-highlight="true" data-menu-card="true"
+                  <Link data-ui-card="true" data-card-lift="subtle" data-card-highlight="true" data-menu-card="true"
                     key={subcategory}
                     href={`/sales-book/${encodeURIComponent(
                       category

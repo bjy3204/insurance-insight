@@ -1,5 +1,7 @@
 "use client";
 
+import { createPortal } from "react-dom";
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Car, HeartPulse, Landmark, Pencil, Search, Trash2, UserRound } from "lucide-react";
 import { customerGender, customerVehicles, shortCustomerBirth, formatCustomerPhone, withCustomerClaimDefaults } from "./customer-form-fields";
@@ -15,11 +17,15 @@ import { useAuth } from "@/app/components/AuthProvider";
 
 const customerTabs = [{ id: "checklist", label: "체크리스트" }, { id: "contracts", label: "계약 현황" }, { id: "disclosure", label: "알릴의무" }, { id: "consultation", label: "상담일지" }];
 function recordDate(value: string) {
+  if (!value) return "";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
+  if (!Number.isFinite(date.getTime())) return value;
+  const parts = new Intl.DateTimeFormat("en-GB", {timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(date);
+  const part = (type: string) => parts.find(item => item.type === type)?.value || "";
+  return `${part("year")}-${part("month")}-${part("day")} ${part("hour")}:${part("minute")}`;
 }
 
-export default function CustomerLookup({ customers = [], contracts = [], onEdit, onDelete, onReorder, onSaveDisclosure, onSaveConsultations, onSaveChecklist, onEditContract, onDeleteContract, reorderDisabled = false }: { customers?: readonly CustomerRecord[]; contracts?: readonly StoredContract[]; onEditContract?:(contract:StoredContract)=>void; onDeleteContract?:(contract:StoredContract)=>void; onEdit?: (customer: CustomerRecord) => void; onDelete?: (customer: CustomerRecord) => void; onReorder?: (ids: string[]) => void; onSaveDisclosure?: (customer:CustomerRecord,value:string)=>Promise<void>; onSaveConsultations?: (customer:CustomerRecord,value:string)=>Promise<void>; onSaveChecklist?: (customer:CustomerRecord,value:string)=>Promise<void>; reorderDisabled?: boolean }) {
+export default function CustomerLookup({ customers = [], contracts = [], mobileActionsHost, onEdit, onDelete, onReorder, onSaveDisclosure, onSaveConsultations, onSaveChecklist, onEditContract, onDeleteContract, reorderDisabled = false }: { mobileActionsHost?: HTMLElement | null; customers?: readonly CustomerRecord[]; contracts?: readonly StoredContract[]; onEditContract?:(contract:StoredContract)=>void; onDeleteContract?:(contract:StoredContract)=>void; onEdit?: (customer: CustomerRecord) => void; onDelete?: (customer: CustomerRecord) => void; onReorder?: (ids: string[]) => void; onSaveDisclosure?: (customer:CustomerRecord,value:string)=>Promise<void>; onSaveConsultations?: (customer:CustomerRecord,value:string)=>Promise<void>; onSaveChecklist?: (customer:CustomerRecord,value:string)=>Promise<void>; reorderDisabled?: boolean }) {
   const prefix = useId();
   const { authUser, authLoading } = useAuth();
   const [activeDetailTab, setActiveDetailTab] = useState("contracts");
@@ -96,15 +102,15 @@ export default function CustomerLookup({ customers = [], contracts = [], onEdit,
   const customerContracts = selected ? contracts.filter(contract => contract.customerId === selected.id) : [];
   const value = (field: string) => values[field] || "";
   const cell = (label: string, content: ReactNode, wide = false, mobileWide = false) => <div className={`${styles.entry} ${wide ? styles.full : ""} ${mobileWide ? styles.mobileFull : ""}`}><dt>{label}</dt><dd>{content || ""}</dd></div>;
-  const card = (title: string, icon: ReactNode, tone: string, children: ReactNode, meta?: ReactNode) => <section className={styles.card}><div className={`${styles.cardHeader} ${tone}`}><h3 className={styles.cardTitle}>{icon}{title}</h3>{meta}</div><dl className={styles.details}>{children}</dl></section>;
+  const card = (title: string, icon: ReactNode, tone: string, children: ReactNode, meta?: ReactNode) => <section data-ui-card="true" className={styles.card}><div className={`${styles.cardHeader} ${tone}`}><h3 data-personal-card-title="true" className={styles.cardTitle}>{icon}{title}</h3>{meta}</div><dl className={styles.details}>{children}</dl></section>;
   return <div className={styles.lookup}><div className={styles.workspace}><div className={styles.customerArea}>
     <div className={styles.top}>
-      <div className={styles.searchFields}>
-        <div className={styles.searchField}><label htmlFor={`${prefix}-name`}>이름</label><div className={styles.searchInput}><Search size={16} aria-hidden="true" /><input id={`${prefix}-name`} autoComplete="off" value={name} onChange={event => { selectionTouched.current=true; setName(event.target.value); setSelectedId(null); }} /></div></div>
-        <div className={styles.searchField}><label htmlFor={`${prefix}-birth`}>생년월일</label><div className={styles.searchInput}><Search size={16} aria-hidden="true" /><input id={`${prefix}-birth`} inputMode="numeric" maxLength={6} autoComplete="off" value={birth} onChange={event => { selectionTouched.current=true; setBirth(shortCustomerBirth(event.target.value)); setSelectedId(null); }} /></div></div>
+      <div data-personal-grouped-search="true" className={styles.searchFields}>
+        <div className={styles.searchField}><label htmlFor={`${prefix}-name`}><Search size={16} aria-hidden="true"/><span className={styles.searchLabelText}>이름</span></label><div className={styles.searchInput}><ClearableSearchInput onClear={() => { selectionTouched.current=true; setName(""); setSelectedId(null); }} id={`${prefix}-name`} aria-label="이름 검색" placeholder="이름" autoComplete="off" value={name} onChange={event => { selectionTouched.current=true; setName(event.target.value); setSelectedId(null); }} /></div></div>
+        <div className={styles.searchField}><label htmlFor={`${prefix}-birth`}><Search size={16} aria-hidden="true"/><span className={styles.searchLabelText}>생년월일</span></label><div className={styles.searchInput}><ClearableSearchInput onClear={() => { selectionTouched.current=true; setBirth(shortCustomerBirth("")); setSelectedId(null); }} id={`${prefix}-birth`} aria-label="생년월일 검색" placeholder="생년월일" inputMode="numeric" maxLength={6} autoComplete="off" value={birth} onChange={event => { selectionTouched.current=true; setBirth(shortCustomerBirth(event.target.value)); setSelectedId(null); }} /></div></div>
       </div>
-      <div className={styles.summary}>
-        <div className={styles.ageChange}><span className={styles.upperInfo}><span>상령일</span><span className={styles.upperDate}>{timing?.upperDate || ""}</span></span><strong className={timing ? `${styles.dday} ${timing.days<=30?styles.due:""}` : undefined}>{timing ? timing.days === 0 ? "D-Day" : `D-${timing.days}` : ""}</strong>{selected && <span className={styles.recordActions}>{onEdit && <button type="button" aria-label="고객정보 수정" title="수정" className={styles.editCustomer} onClick={() => { setSelectedId(selected.id); onEdit(selected); }}><Pencil size={16} /></button>}{onDelete && <button type="button" aria-label="고객 삭제" title="삭제" className={`${styles.editCustomer} ${styles.deleteCustomer}`} onClick={() => onDelete(selected)}><Trash2 size={16} /></button>}</span>}</div>
+      <div data-mobile-actions-moved={mobileActionsHost ? "true" : undefined} className={styles.summary}>
+        <div className={styles.ageChange}><div className={styles.ageBadge}><span className={styles.upperInfo}><span>상령일</span><span className={styles.upperDate}>{timing?.upperDate || ""}</span></span><strong className={timing ? `${styles.dday} ${timing.days<=30?styles.due:""}` : undefined}>{timing ? timing.days === 0 ? "D-Day" : `D-${timing.days}` : ""}</strong></div>{selected && <><span className={mobileActionsHost ? "hidden md:contents" : "contents"}><span className={styles.recordActions}>{onEdit && <button data-icon-only="true" type="button" aria-label="고객정보 수정" title="수정" className={styles.editCustomer} onClick={() => { setSelectedId(selected.id); onEdit(selected); }}><Pencil size={16} /></button>}{onDelete && <button data-icon-only="true" type="button" aria-label="고객 삭제" title="삭제" className={`${styles.editCustomer} ${styles.deleteCustomer}`} onClick={() => onDelete(selected)}><Trash2 size={16} /></button>}</span></span>{mobileActionsHost && createPortal(<span className={styles.recordActions}>{onEdit && <button data-icon-only="true" type="button" aria-label="고객정보 수정" title="수정" className={styles.editCustomer} onClick={() => { setSelectedId(selected.id); onEdit(selected); }}><Pencil size={16} /></button>}{onDelete && <button data-icon-only="true" type="button" aria-label="고객 삭제" title="삭제" className={`${styles.editCustomer} ${styles.deleteCustomer}`} onClick={() => onDelete(selected)}><Trash2 size={16} /></button>}</span>, mobileActionsHost)}</>}</div>
       </div>
     </div>
     {matches.length > 1 && <div className={styles.matches} aria-label="검색된 고객">{matches.map(customer => <button type="button" key={customer.id} aria-pressed={customer.id === selected?.id} onClick={() => {selectionTouched.current=true;setSelectedId(customer.id);}}><strong>{customer.name}</strong><span>{shortCustomerBirth(customer.birth)}</span>{customer.phone && <span>{formatCustomerPhone(customer.phone)}</span>}</button>)}</div>}
@@ -133,8 +139,8 @@ export default function CustomerLookup({ customers = [], contracts = [], onEdit,
     </div>
     <aside className={styles.directory} aria-label="고객 목록">
       <div className={styles.directoryInner}>
-      <h3>고객 목록</h3>
-      <div className={styles.directorySearch}><Search size={17} aria-hidden="true" /><input aria-label="고객 목록 검색" autoComplete="off" value={directoryQuery} onChange={event => setDirectoryQuery(event.target.value)} placeholder="검색" /></div>
+      <h3 data-personal-card-title="true">고객 목록</h3>
+      <div className={styles.directorySearch}><Search size={17} aria-hidden="true" /><ClearableSearchInput onClear={() => setDirectoryQuery("")} aria-label="고객 목록 검색" autoComplete="off" value={directoryQuery} onChange={event => setDirectoryQuery(event.target.value)} placeholder="검색" /></div>
       <div className={styles.directoryList}>
         <CustomerDirectory customers={customers} query={directoryQuery} selectedId={selected?.id} disabled={reorderDisabled} onReorder={onReorder} onSelect={customer => { selectionTouched.current=true; setName(customer.name); setBirth(shortCustomerBirth(customer.birth)); setSelectedId(customer.id); }} />
       </div>
@@ -154,18 +160,18 @@ export default function CustomerLookup({ customers = [], contracts = [], onEdit,
         event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
       }}>{tab.label}</button>)}
     </div>
-    <section id={`${prefix}-panel-contracts`} role="tabpanel" aria-labelledby={`${prefix}-tab-contracts`} tabIndex={0} hidden={activeDetailTab !== "contracts"} className={`${styles.card} ${styles.contracts}`}>
+    <section data-ui-card="true" id={`${prefix}-panel-contracts`} role="tabpanel" aria-labelledby={`${prefix}-tab-contracts`} tabIndex={0} hidden={activeDetailTab !== "contracts"} className={`${styles.card} ${styles.contracts}`}>
       <div className={styles.contractScroll}>
         <table className={styles.contractTable}>
           <thead><tr>{["계약일", "피보험자", "보험사", "상품명", "보험료", "면책만료", "감액만료", "메모"].map(label => <th key={label} scope="col">{label}</th>)}<th scope="col" aria-label="계약 관리"/></tr></thead>
           <tbody>{customerContracts.map(contract => <tr key={contract.id}>
-            <td>{contract.date}</td><td>{contract.insured}</td><td>{contract.insurer}</td><td>{contract.product}</td><td>{contract.premium ? `${Number(contract.premium).toLocaleString("ko-KR")}원` : ""}</td><td>{contract.immunityEnd || ""}</td><td>{contract.reductionEnd || ""}</td><td>{contract.memo}</td><td><div className={styles.contractActions}>{onEditContract&&<button type="button" aria-label="계약 수정" title="수정" disabled={reorderDisabled} onClick={()=>onEditContract(contract)}><Pencil size={16}/></button>}{onDeleteContract&&<button type="button" aria-label="계약 삭제" title="삭제" disabled={reorderDisabled} onClick={()=>onDeleteContract(contract)}><Trash2 size={16}/></button>}</div></td>
+            <td>{contract.date}</td><td>{contract.insured}</td><td>{contract.insurer}</td><td>{contract.product}</td><td>{contract.premium ? `${Number(contract.premium).toLocaleString("ko-KR")}원` : ""}</td><td>{contract.immunityEnd || ""}</td><td>{contract.reductionEnd || ""}</td><td>{contract.memo}</td><td><div className={styles.contractActions}>{onEditContract&&<button data-icon-only="true" type="button" aria-label="계약 수정" title="수정" disabled={reorderDisabled} onClick={()=>onEditContract(contract)}><Pencil size={16}/></button>}{onDeleteContract&&<button data-icon-only="true" type="button" aria-label="계약 삭제" title="삭제" disabled={reorderDisabled} onClick={()=>onDeleteContract(contract)}><Trash2 size={16}/></button>}</div></td>
           </tr>)}{customerContracts.length === 0 && <tr><td colSpan={9} className={styles.contractEmpty} /></tr>}</tbody>
         </table>
       </div>
     </section>
-    <section id={`${prefix}-panel-disclosure`} role="tabpanel" aria-labelledby={`${prefix}-tab-disclosure`} hidden={activeDetailTab!=="disclosure"} className={styles.card}><CustomerDisclosure key={selected?.id||"empty"} customer={selected} onSave={onSaveDisclosure}/></section>
-    <section id={`${prefix}-panel-consultation`} role="tabpanel" aria-labelledby={`${prefix}-tab-consultation`} hidden={activeDetailTab!=="consultation"} className={styles.card}><CustomerConsultations key={selected?.id||"empty"} customer={selected} onSave={onSaveConsultations}/></section>
+    <section id={`${prefix}-panel-disclosure`} role="tabpanel" aria-labelledby={`${prefix}-tab-disclosure`} hidden={activeDetailTab!=="disclosure"}><CustomerDisclosure key={selected?.id||"empty"} customer={selected} onSave={onSaveDisclosure}/></section>
+    <section id={`${prefix}-panel-consultation`} role="tabpanel" aria-labelledby={`${prefix}-tab-consultation`} hidden={activeDetailTab!=="consultation"}><CustomerConsultations key={selected?.id||"empty"} customer={selected} onSave={onSaveConsultations}/></section>
     <section id={`${prefix}-panel-checklist`} role="tabpanel" aria-labelledby={`${prefix}-tab-checklist`} tabIndex={0} hidden={activeDetailTab!=="checklist"}><CustomerChecklist key={selected?.id||"empty"} customer={selected} onSave={onSaveChecklist}/></section>
     </div>
 

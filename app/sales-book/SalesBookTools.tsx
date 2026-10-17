@@ -23,7 +23,7 @@ export default function SalesBookTools() {
     };
   }, [open]);
   return <div ref={root} className="absolute right-0 z-50">
-    <button type="button" data-header-control="true" aria-label="도구" aria-expanded={open}
+    <button data-icon-only="true" type="button" data-header-control="true" aria-label="도구" aria-expanded={open}
       onClick={() => setOpen(value => !value)} className="w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center">
       <LayoutGrid className="w-5 h-5 text-slate-700" />
     </button>

@@ -89,7 +89,7 @@ return (<>{mainMenuManageMode === "normal" && (
 
   if (!selectedMenu) {
     return (
-      <button
+      <button data-icon-only="true"
         key={index}
         onClick={() => {
           setTempQuickMenuKeys(quickMenuKeys);
@@ -268,7 +268,7 @@ return (<>{mainMenuManageMode === "normal" && (
 
   if (!selectedMenu) {
     return (
-      <button
+      <button data-icon-only="true"
         key={index}
         onClick={() => {
           setTempQuickMenuKeys(quickMenuKeys);

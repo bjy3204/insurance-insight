@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/app/components/AuthProvider";
@@ -1017,11 +1018,11 @@ const pagedMemos = filteredMemos.slice(
     : calculateGen1();
 
   return (
-    <main className={`${presentation.page} min-h-screen pb-24`}>
+    <main data-calculator-page="true" className={`${presentation.page} min-h-screen pb-24`}>
       <header data-page-header="true" className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
   href="/"
   className="
     absolute
@@ -1058,7 +1059,7 @@ const pagedMemos = filteredMemos.slice(
               }`}
             >
               <div className="relative">
-                <button data-header-control="true"
+                <button data-icon-only="true" data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
@@ -1074,7 +1075,7 @@ const pagedMemos = filteredMemos.slice(
                 </button>
 
                 {settingOpen && (
-                  <div
+                  <div data-ui-card="true"
                     onClick={(e) => e.stopPropagation()}
                     className="
                       absolute right-0 top-12 z-[999] w-40 rounded-2xl
@@ -1135,7 +1136,7 @@ const pagedMemos = filteredMemos.slice(
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {generations.map((item) => (
-            <button
+            <button data-calculator-generation="true"
               key={item.id}
               onClick={() => setGeneration(item.id)}
               className={`
@@ -1161,12 +1162,12 @@ const pagedMemos = filteredMemos.slice(
         </div>
 
         {type === "outpatient" && (
-  <div className={`${presentation.panel} rounded-3xl p-6 mb-6`}>
+  <div data-ui-card="true" className={`${presentation.panel} rounded-3xl p-6 mb-6`}>
     <h2 className="text-xl font-black text-gray-900 mb-6">통원</h2>
 
     {generation === "gen5" ? (
       <>
-        <div className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5 mb-5">
+        <div data-ui-card="true" className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5 mb-5">
           <h3 className="text-base font-black text-gray-900 mb-4">
             통원 급여
           </h3>
@@ -1177,7 +1178,7 @@ const pagedMemos = filteredMemos.slice(
                 외래 한도
               </label>
 
-              <input
+              <ClearableSearchInput onClear={() => setOutpatientLimit(parseNumber(""))}
                 type="text"
                 value={formatNumber(outpatientLimit)}
                 onChange={(e) =>
@@ -1193,7 +1194,7 @@ const pagedMemos = filteredMemos.slice(
               </label>
 
               <div className="grid grid-cols-3 gap-2 mt-2">
-                <button
+                <button data-hospital-option="true"
                   onClick={() => setHospitalType("clinic")}
                   className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
                     hospitalType === "clinic"
@@ -1204,7 +1205,7 @@ const pagedMemos = filteredMemos.slice(
                   의원
                 </button>
 
-                <button
+                <button data-hospital-option="true"
                   onClick={() => setHospitalType("general")}
                   className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
                     hospitalType === "general"
@@ -1215,7 +1216,7 @@ const pagedMemos = filteredMemos.slice(
                   종합병원
                 </button>
 
-                <button
+                <button data-hospital-option="true"
                   onClick={() => setHospitalType("advanced")}
                   className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
                     hospitalType === "advanced"
@@ -1233,7 +1234,7 @@ const pagedMemos = filteredMemos.slice(
                 급여
               </label>
 
-              <input
+              <ClearableSearchInput onClear={() => setCovered(parseNumber(""))}
                 type="text"
                 value={formatNumber(covered)}
                 onChange={(e) => setCovered(parseNumber(e.target.value))}
@@ -1243,7 +1244,7 @@ const pagedMemos = filteredMemos.slice(
           </div>
         </div>
 
-        <div className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5 mb-5">
+        <div data-ui-card="true" className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5 mb-5">
           <h3 className="text-base font-black text-gray-900 mb-4">
             통원 비급여
           </h3>
@@ -1254,7 +1255,7 @@ const pagedMemos = filteredMemos.slice(
                 중증 비급여
               </label>
 
-              <input
+              <ClearableSearchInput onClear={() => setUncovered(parseNumber(""))}
                 type="text"
                 value={formatNumber(uncovered)}
                 onChange={(e) => setUncovered(parseNumber(e.target.value))}
@@ -1267,7 +1268,7 @@ const pagedMemos = filteredMemos.slice(
                 비중증 비급여
               </label>
 
-              <input
+              <ClearableSearchInput onClear={() => setMildUncovered(parseNumber(""))}
   type="text"
   value={formatNumber(mildUncovered)}
   onChange={(e) =>
@@ -1281,7 +1282,7 @@ const pagedMemos = filteredMemos.slice(
       </>
     ) : (
       <>
-        <div className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5 mb-5">
+        <div data-outpatient-card="true" data-ui-card="true" className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5 mb-5">
           <h3 className="text-base font-black text-gray-900 mb-4">
             {generation === "gen4" ? "통원 외래+약제" : "통원 외래"}
           </h3>
@@ -1292,7 +1293,7 @@ const pagedMemos = filteredMemos.slice(
                 {generation === "gen1" ? "통원 한도" : "외래 한도"}
               </label>
 
-              <input
+              <ClearableSearchInput onClear={() => setOutpatientLimit(parseNumber(""))}
                 type="text"
                 value={formatNumber(outpatientLimit)}
                 onChange={(e) =>
@@ -1309,7 +1310,7 @@ const pagedMemos = filteredMemos.slice(
     </label>
 
     <div className="grid grid-cols-3 gap-2 mt-2">
-      <button
+      <button data-hospital-option="true"
         onClick={() => setHospitalType("clinic")}
         className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
           hospitalType === "clinic"
@@ -1320,7 +1321,7 @@ const pagedMemos = filteredMemos.slice(
         의원
       </button>
 
-      <button
+      <button data-hospital-option="true"
         onClick={() => setHospitalType("general")}
         className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
           hospitalType === "general"
@@ -1331,7 +1332,7 @@ const pagedMemos = filteredMemos.slice(
         종합병원
       </button>
 
-      <button
+      <button data-hospital-option="true"
         onClick={() => setHospitalType("advanced")}
         className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
           hospitalType === "advanced"
@@ -1348,12 +1349,12 @@ const pagedMemos = filteredMemos.slice(
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div data-calculator-field="true">
                 <label className="text-sm font-bold text-gray-500">급여</label>
-                <input type="text" value={formatNumber(covered)} onChange={(e) => setCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
+                <ClearableSearchInput onClear={() => setCovered(parseNumber(""))} type="text" value={formatNumber(covered)} onChange={(e) => setCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
               </div>
 
               <div data-calculator-field="true">
                 <label className="text-sm font-bold text-gray-500">비급여</label>
-                <input type="text" value={formatNumber(uncovered)} onChange={(e) => setUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
+                <ClearableSearchInput onClear={() => setUncovered(parseNumber(""))} type="text" value={formatNumber(uncovered)} onChange={(e) => setUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
               </div>
             </div>
           </div>
@@ -1362,7 +1363,7 @@ const pagedMemos = filteredMemos.slice(
         {generation !== "gen1" &&
   generation !== "gen4" &&
   generation !== "simple" && (
-          <div className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5">
+          <div data-ui-card="true" className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5">
             <h3 className="text-base font-black text-gray-900 mb-4">
               통원 약제
             </h3>
@@ -1373,7 +1374,7 @@ const pagedMemos = filteredMemos.slice(
                   약제비 한도
                 </label>
 
-                <input
+                <ClearableSearchInput onClear={() => setMedicineLimit(parseNumber(""))}
                   type="text"
                   value={formatNumber(medicineLimit)}
                   onChange={(e) =>
@@ -1386,12 +1387,12 @@ const pagedMemos = filteredMemos.slice(
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div data-calculator-field="true">
                   <label className="text-sm font-bold text-gray-500">급여</label>
-                  <input type="text" value={formatNumber(medicineCovered)} onChange={(e) => setMedicineCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
+                  <ClearableSearchInput onClear={() => setMedicineCovered(parseNumber(""))} type="text" value={formatNumber(medicineCovered)} onChange={(e) => setMedicineCovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
 
                 <div data-calculator-field="true">
                   <label className="text-sm font-bold text-gray-500">비급여</label>
-                  <input type="text" value={formatNumber(medicineUncovered)} onChange={(e) => setMedicineUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
+                  <ClearableSearchInput onClear={() => setMedicineUncovered(parseNumber(""))} type="text" value={formatNumber(medicineUncovered)} onChange={(e) => setMedicineUncovered(parseNumber(e.target.value))} className="mt-2 w-full rounded-2xl border border-gray-200 px-4 h-[56px] outline-none text-lg font-bold bg-white focus:ring-2 focus:ring-blue-500 transition" />
                 </div>
               </div>
             </div>
@@ -1402,13 +1403,13 @@ const pagedMemos = filteredMemos.slice(
   </div>
 )}
         {type === "inpatient" && (
-  <div className={`${presentation.panel} rounded-3xl p-6 mb-6`}>
+  <div data-ui-card="true" className={`${presentation.panel} rounded-3xl p-6 mb-6`}>
     <h2 className="text-xl font-black text-gray-900 mb-5">입원</h2>
 
     {generation === "gen5" ? (
       <>
         {/* 입원 급여 */}
-        <div className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5 mb-5">
+        <div data-ui-card="true" className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5 mb-5">
           <h3 className="text-base font-black text-gray-900 mb-4">
             입원 급여
           </h3>
@@ -1421,7 +1422,7 @@ const pagedMemos = filteredMemos.slice(
               </label>
 
               <div className="grid grid-cols-3 gap-2 mt-2">
-                <button
+                <button data-hospital-option="true"
                   onClick={() => setHospitalType("clinic")}
                   className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
                     hospitalType === "clinic"
@@ -1432,7 +1433,7 @@ const pagedMemos = filteredMemos.slice(
                   의원
                 </button>
 
-                <button
+                <button data-hospital-option="true"
                   onClick={() => setHospitalType("general")}
                   className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
                     hospitalType === "general"
@@ -1443,7 +1444,7 @@ const pagedMemos = filteredMemos.slice(
                   종합병원
                 </button>
 
-                <button
+                <button data-hospital-option="true"
                   onClick={() => setHospitalType("advanced")}
                   className={`rounded-2xl h-[56px] flex items-center justify-center font-bold border ${
                     hospitalType === "advanced"
@@ -1461,7 +1462,7 @@ const pagedMemos = filteredMemos.slice(
                 급여 금액
               </label>
 
-              <input
+              <ClearableSearchInput onClear={() => setCovered(parseNumber(""))}
                 type="text"
                 value={formatNumber(covered)}
                 onChange={(e) =>
@@ -1479,7 +1480,7 @@ const pagedMemos = filteredMemos.slice(
         </div>
 
         {/* 입원 비급여 */}
-        <div className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5">
+        <div data-ui-card="true" className="bg-slate-50/50 border border-[#e1e9fb] rounded-3xl p-5">
           <h3 className="text-base font-black text-gray-900 mb-4">
             입원 비급여
           </h3>
@@ -1491,7 +1492,7 @@ const pagedMemos = filteredMemos.slice(
                 중증 비급여
               </label>
 
-              <input
+              <ClearableSearchInput onClear={() => setUncovered(parseNumber(""))}
                 type="text"
                 value={formatNumber(uncovered)}
                 onChange={(e) =>
@@ -1510,7 +1511,7 @@ const pagedMemos = filteredMemos.slice(
                 비중증 비급여
               </label>
 
-              <input
+              <ClearableSearchInput onClear={() => setMildUncovered(parseNumber(""))}
                 type="text"
                 value={formatNumber(mildUncovered)}
                 onChange={(e) =>
@@ -1535,7 +1536,7 @@ const pagedMemos = filteredMemos.slice(
               급여 금액
             </label>
 
-            <input
+            <ClearableSearchInput onClear={() => setCovered(parseNumber(""))}
               type="text"
               value={formatNumber(covered)}
               onChange={(e) => setCovered(parseNumber(e.target.value))}
@@ -1552,7 +1553,7 @@ const pagedMemos = filteredMemos.slice(
               비급여 금액
             </label>
 
-            <input
+            <ClearableSearchInput onClear={() => setUncovered(parseNumber(""))}
               type="text"
               value={formatNumber(uncovered)}
               onChange={(e) => setUncovered(parseNumber(e.target.value))}
@@ -1569,7 +1570,7 @@ const pagedMemos = filteredMemos.slice(
               입원일수
             </label>
 
-            <input
+            <ClearableSearchInput onClear={() => setDays("".replace(/[^0-9]/g, ""))}
               type="text"
               inputMode="numeric"
               value={days}
@@ -1620,7 +1621,7 @@ const pagedMemos = filteredMemos.slice(
                 상급병실료 차액
               </label>
 
-              <input
+              <ClearableSearchInput onClear={() => setRoomDiff(parseNumber(""))}
                 type="text"
                 value={formatNumber(roomDiff)}
                 onChange={(e) =>
@@ -1641,7 +1642,7 @@ const pagedMemos = filteredMemos.slice(
 )}
 
         {(generation === "gen3" || generation === "gen4" || generation === "gen5") && (
-          <div className={`${presentation.panel} rounded-3xl p-6 mb-6`}>
+          <div data-ui-card="true" className={`${presentation.panel} rounded-3xl p-6 mb-6`}>
             <h2 className="text-xl font-black text-gray-900 mb-5">
               비급여 3종
             </h2>
@@ -1705,7 +1706,7 @@ const pagedMemos = filteredMemos.slice(
           도수치료
         </label>
 
-        <input
+        <ClearableSearchInput onClear={() => setManualTherapy(parseNumber(""))}
           type="text"
           value={formatNumber(manualTherapy)}
           onChange={(e) =>
@@ -1724,7 +1725,7 @@ const pagedMemos = filteredMemos.slice(
           비급여주사
         </label>
 
-        <input
+        <ClearableSearchInput onClear={() => setInjection(parseNumber(""))}
           type="text"
           value={formatNumber(injection)}
           onChange={(e) =>
@@ -1745,7 +1746,7 @@ const pagedMemos = filteredMemos.slice(
       MRI/MRA
     </label>
 
-    <input
+    <ClearableSearchInput onClear={() => setMri(parseNumber(""))}
       type="text"
       value={formatNumber(mri)}
       onChange={(e) => setMri(parseNumber(e.target.value))}
@@ -1760,7 +1761,7 @@ const pagedMemos = filteredMemos.slice(
           </div>
         )}
 
-        <div className="rounded-3xl bg-blue-600 p-6 text-white">
+        <div data-ui-card="true" className="rounded-3xl bg-blue-600 p-6 text-white">
           <p className="text-sm opacity-80 mb-2">예상 지급 보험금</p>
 
           <p className="text-4xl font-black text-white mb-5">
@@ -1768,28 +1769,28 @@ const pagedMemos = filteredMemos.slice(
           </p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div className="bg-white/10 border border-white/15 rounded-2xl p-4">
+            <div data-ui-card="true" className="bg-white/10 border border-white/15 rounded-2xl p-4">
               <p className="opacity-80">총 진료비</p>
               <p className="text-lg font-black mt-1">
                 {result.total.toLocaleString()}원
               </p>
             </div>
 
-            <div className="bg-white/10 border border-white/15 rounded-2xl p-4">
+            <div data-ui-card="true" className="bg-white/10 border border-white/15 rounded-2xl p-4">
               <p className="opacity-80">공제금액</p>
               <p className="text-lg font-black mt-1">
                 {result.deductible.toLocaleString()}원
               </p>
             </div>
 
-            <div className="bg-white/10 border border-white/15 rounded-2xl p-4">
+            <div data-ui-card="true" className="bg-white/10 border border-white/15 rounded-2xl p-4">
               <p className="opacity-80">상급병실료 지급</p>
               <p className="text-lg font-black mt-1">
                 {result.roomPay.toLocaleString()}원
               </p>
             </div>
 
-            <div className="bg-white/10 border border-white/15 rounded-2xl p-4">
+            <div data-ui-card="true" className="bg-white/10 border border-white/15 rounded-2xl p-4">
               <p className="opacity-80">예상 자기부담금</p>
               <p className="text-lg font-black mt-1">
                 {result.selfPay.toLocaleString()}원
@@ -1797,7 +1798,7 @@ const pagedMemos = filteredMemos.slice(
             </div>
           </div>
 
-          <p className="text-xs opacity-80 mt-4 leading-relaxed">
+          <p data-calculator-note="true" className="text-xs opacity-80 mt-4 leading-relaxed">
             실제 보험금은 가입시기, 특약, 병원급, 한도, 약관에 따라 달라질 수 있습니다.
           </p>
         </div>
@@ -1812,7 +1813,7 @@ const pagedMemos = filteredMemos.slice(
 
 
 {contextMenu && (
-  <div
+  <div data-ui-card="true"
     style={{ top: contextMenu.y, left: contextMenu.x }}
     className="fixed z-[2000] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-32"
     onPointerDown={(e) => e.stopPropagation()}
@@ -1848,7 +1849,7 @@ const pagedMemos = filteredMemos.slice(
 
 
       <>
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
+        <div data-page-fixed-footer="true" className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a
             href="https://naver.me/xsZ8mk7H"

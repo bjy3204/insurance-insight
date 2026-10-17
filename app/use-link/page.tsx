@@ -102,7 +102,7 @@ const [memoOpen, setMemoOpen] = useState(false);
       <header data-page-header="true" className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <a data-header-control="true" href="/" className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center">
+            <a data-icon-only="true" data-header-control="true" href="/" className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center">
               <ArrowLeft className="w-5 h-5 text-black" />
             </a>
             <div className="text-center">
@@ -118,7 +118,7 @@ const [memoOpen, setMemoOpen] = useState(false);
   }`}
 >
   <div className="relative">
-    <button data-header-control="true"
+    <button data-icon-only="true" data-header-control="true"
       onClick={(e) => {
         e.stopPropagation();
         setSettingOpen(!settingOpen);
@@ -177,7 +177,7 @@ const [memoOpen, setMemoOpen] = useState(false);
 
       <>
         <SiteFooter desktopOnly />
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50 md:hidden">
+        <div data-page-fixed-footer="true" className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50 md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a href="https://naver.me/xsZ8mk7H" target="_blank" rel="noopener noreferrer" className="py-3 flex flex-col items-center gap-1">
             <Newspaper className="w-5 h-5" />

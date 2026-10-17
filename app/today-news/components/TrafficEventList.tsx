@@ -44,7 +44,7 @@ export default function TrafficEventList({ onSelect, nearby, cameras, onCamera }
       {items.map(event => <div key={event.id} className={styles.eventLine}><button type="button" className={styles.eventRow} onClick={() => onSelect(event)} disabled={event.latitude === null || event.longitude === null}>
         <div className={styles.eventContent}><p title={cleanMessage(event.message || event.detail)}>{cleanMessage(event.message || event.detail)}</p>{event.lanes && <small>{event.lanes}</small>}</div>
         <span className={`${styles.eventKind} ${event.kind === '교통사고' ? styles.accident : event.kind === '공사' ? styles.construction : styles.other}`}>{event.kind === '교통사고' ? '사고' : event.kind === '기타돌발' ? '돌발' : event.kind || '돌발'}</span>
-      </button><button className={styles.cameraButton} type="button" onClick={()=>onCamera(event)} disabled={event.latitude===null||event.longitude===null||!nearestCamera(cameras,event.latitude,event.longitude,event.road)} title={`${road} 가까운 CCTV 보기`} aria-label={`${road} ${event.kind} 위치 근처 CCTV 보기`}><Video size={16}/></button></div>)}
+      </button><button data-icon-only="true" className={styles.cameraButton} type="button" onClick={()=>onCamera(event)} disabled={event.latitude===null||event.longitude===null||!nearestCamera(cameras,event.latitude,event.longitude,event.road)} title={`${road} 가까운 CCTV 보기`} aria-label={`${road} ${event.kind} 위치 근처 CCTV 보기`}><Video size={16}/></button></div>)}
     </section>)}
     </div>
     <p className={styles.source}>국가교통정보센터 · 2분마다 갱신{nearby ? ' · 주변 50km' : ''}</p>

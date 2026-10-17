@@ -21,3 +21,5 @@
 .close{font-size:14px;font-weight:700}
 
 .actions{display:flex;gap:8px}.actions button{flex:1;height:48px;border:0;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer}.edit{background:#2563eb;color:white}.edit:hover{background:#1d4ed8}.delete{background:#fff1f2;color:#dc2626}.delete:hover{background:#ffe4e6}
+.date strong,.metadata strong,.memo p{font-size:15px}
+.title h2{font-size:15px}

@@ -1,4 +1,5 @@
 "use client";
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useEffect, useRef, useState } from "react";
 import { FileSearch, FileCheck2, ShieldCheck, Gift, Handshake, Phone, PhoneCall, MessageSquareCheck, Cake, Car, HeartPulse } from "lucide-react";
 import { CUSTOMER_CHECKLIST_ITEMS, emptyCustomerChecklist, parseCustomerChecklist, parseCustomerSchedules, customerBirthdaySchedules, emptyCustomerSchedules, serializeCustomerChecklist, type CustomerChecklist as Checklist, type CustomerSchedule } from "./customer-checklist";
@@ -28,15 +29,15 @@ export default function CustomerChecklist({customer,onSave}:{customer?:CustomerR
  };
  const update=(id:string,patch:Partial<CustomerSchedule>,persist=false)=>{const next=rows.map(row=>row.id===id?{...row,...patch,...(id==="schedule-0"&&patch.date!==undefined&&(patch.date.length===10||patch.date==="")?{annualMonthDay:patch.date.slice(5)}:{})}:row);setRows(next);if(persist)void save(checked,next);};
  const disabled=!customer||!onSave||saving;
- return <div className={styles.panel}>
-  <section className={styles.checklistCard}><h3 className={styles.toolbar}>고객관리 체크리스트</h3><div className={styles.items}>{CUSTOMER_CHECKLIST_ITEMS.map((item,index)=>{
-   const Icon=icons[index];return <div key={item.id} className={styles.item} data-checked={checked[item.id]}><span><Icon size={20} aria-hidden="true"/>{item.label}</span><input aria-label={item.label} type="checkbox" checked={checked[item.id]} disabled={disabled} onChange={()=>void save({...checked,[item.id]:!checked[item.id]})}/></div>;
+ return <div data-ui-card="true" className={styles.panel}>
+  <section data-ui-card="true" className={styles.checklistCard}><div className={styles.items}>{CUSTOMER_CHECKLIST_ITEMS.map((item,index)=>{
+   const Icon=icons[index];return <div data-ui-card="true" data-card-lift="subtle" key={item.id} className={styles.item} data-checked={checked[item.id]}><span><Icon size={19} aria-hidden="true"/>{item.label}</span><input aria-label={item.label} type="checkbox" checked={checked[item.id]} disabled={disabled} onChange={()=>void save({...checked,[item.id]:!checked[item.id]})}/></div>;
   })}</div></section>
   <fieldset className={styles.schedule} disabled={disabled}>
-   <h3 className={styles.toolbar}>고객 일정 체크리스트</h3>
-   <div className={styles.scheduleItems}>{rows.map((row,index)=>{const Icon=scheduleIcons[index]||Gift;return <div className={styles.scheduleItem} key={row.id} data-done={row.done}>
-    <div className={styles.scheduleLabel}><Icon size={20} aria-hidden="true"/><span>{row.label}</span></div>
-    <input className={styles.date} aria-label={`${row.label||"관리"} 예정일`} inputMode="numeric" maxLength={10} value={row.date} onChange={event=>{const digits=event.target.value.replace(/\D/g,"").slice(0,8);update(row.id,{date:[digits.slice(0,4),digits.slice(4,6),digits.slice(6,8)].filter(Boolean).join("-")},digits.length===8||digits.length===0);}} onBlur={()=>void save()} onKeyDown={event=>{if(event.key==="Enter"){event.preventDefault();event.currentTarget.blur();}}}/>
+   
+   <div className={styles.scheduleItems}>{rows.map((row,index)=>{const Icon=scheduleIcons[index]||Gift;return <div data-card-lift="subtle" className={styles.scheduleItem} key={row.id} data-done={row.done}>
+    <div className={styles.scheduleLabel}><Icon size={19} aria-hidden="true"/><span>{row.label}</span></div>
+    <ClearableSearchInput onClear={() => {const digits="".replace(/\D/g,"").slice(0,8);update(row.id,{date:[digits.slice(0,4),digits.slice(4,6),digits.slice(6,8)].filter(Boolean).join("-")},digits.length===8||digits.length===0);}} data-personal-schedule-date="true" className={styles.date} aria-label={`${row.label||"관리"} 예정일`} inputMode="numeric" maxLength={10} value={row.date} onChange={event=>{const digits=event.target.value.replace(/\D/g,"").slice(0,8);update(row.id,{date:[digits.slice(0,4),digits.slice(4,6),digits.slice(6,8)].filter(Boolean).join("-")},digits.length===8||digits.length===0);}} onBlur={()=>void save()} onKeyDown={event=>{if(event.key==="Enter"){event.preventDefault();event.currentTarget.blur();}}}/>
     <label className={styles.complete}><input aria-label={`${row.label||"관리"} 완료`} type="checkbox" checked={row.done} onChange={event=>update(row.id,{done:event.target.checked},true)}/></label>
    </div>;})}</div>
   </fieldset>

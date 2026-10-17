@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { FileText, X } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
 export default function LifeExpectancyDialog({ controller }: { controller: HomeController }) {
@@ -19,7 +20,7 @@ return (<>{lifeOpen && (
           기대수명 계산기
         </div>
 
-        <button data-popup-close="true"
+        <button data-icon-only="true" data-popup-close="true"
           onClick={() => setLifeOpen(false)}
           className="
   cursor-pointer
@@ -56,7 +57,9 @@ return (<>{lifeOpen && (
 
         <div className="mb-3">
           <div className="relative">
-            <input data-ui-field="true"
+            <ClearableSearchInput showClearButton={false} onClear={() => setLifeAge(
+                  "".replace(/[^0-9]/g, "")
+                )} data-ui-field="true"
               value={lifeAge}
               onChange={(e) =>
                 setLifeAge(
@@ -66,7 +69,7 @@ return (<>{lifeOpen && (
               placeholder="나이를 입력하세요"
               className="placeholder:text-sm placeholder:font-normal placeholder:text-gray-400 
                 w-full
-                h-14
+                h-11
                 rounded-2xl
                 border
                 border-gray-200
@@ -77,15 +80,11 @@ return (<>{lifeOpen && (
                 outline-none
               "
             />
-
-            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-lg">
-              세
-            </span>
           </div>
         </div>
 <div className="relative">
 {!selectedLife && (
-  <div className="absolute inset-0 bg-blue-50 rounded-3xl p-8 text-center flex flex-col items-center justify-center">
+  <div className="absolute top-0 inset-x-0 bg-blue-50 rounded-3xl p-6 text-center flex flex-col items-center justify-center">
     <img
       src={`/icons/pension/${lifeGender === "남성" ? "male" : "female"}.png`}
       alt={lifeGender}
@@ -182,7 +181,7 @@ return (<>{lifeOpen && (
     </div>
   </div>
 </div>
-<p className="text-xs text-gray-500 leading-relaxed mt-3 px-1">
+<p data-reference-note="true" className="text-xs text-gray-500 leading-relaxed mt-3 px-1">
   본 자료는 통계청 「2024년 생명표」 및
   유병기간 제외 기대수명(건강수명) 통계를 참고하여 계산한 추정값이며,
   개인의 건강상태 · 생활습관 · 질병 이력 등에 따라 실제 결과와 다를 수 있습니다.

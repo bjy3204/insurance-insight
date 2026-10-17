@@ -91,7 +91,7 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
   const [previewScale, setPreviewScale] = useState(1);
   const [fontOpen, setFontOpen] = useState(false);
   const [mobileDesignOpen, setMobileDesignOpen] = useState(false);
-  useEffect(() => { if (active) { setMobileDesignOpen(false); setFontOpen(false); } }, [active]);
+  useEffect(() => { if (active) { setFontOpen(false); } }, [active]);
   const [noticeLoaded, setNoticeLoaded] = useState(false);
   const lastDraft = useRef("");
   const saveQueue = useRef(Promise.resolve());
@@ -115,6 +115,15 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
   const [textColor, setTextColor] = useState("#4a4a4a");
   const [signatureColor, setSignatureColor] = useState("#4a4a4a");
   const [saveMsg, setSaveMsg] = useState("");
+  const resetNotice = () => {
+    if (noticeType === "claim") setClaimContents(previous => ({ ...previous, [claimKind]: readClaimContent(claimKind, null) }));
+    else setContent(defaultContents[noticeType].content);
+    setFontFamily("sans-serif");
+    setTextColor("#4a4a4a");
+    setSignatureColor("#4a4a4a");
+    setFontOpen(false);
+    setSaveMsg("");
+  };
   const [isCapturing, setIsCapturing] = useState(false);
   const [preparingShare, setPreparingShare] = useState(false);
   const [sharing, setSharing] = useState(false);
@@ -241,24 +250,24 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
     } catch { setSaveMsg("이미지를 저장하지 못했습니다. 다시 시도해 주세요."); } finally { setIsCapturing(false); captureBusy.current = false; }
   };
     return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-end gap-3">
-        <h2 className="mr-auto flex items-center gap-3 text-xl font-bold"><FileText className="w-7 h-7 text-violet-500" />안내장</h2>
+    <div className={`${styles.root} space-y-3`}>
+      <div className={`${styles.topActions} flex flex-wrap items-center justify-end gap-3`}>
+        <h2 data-personal-tab-title="true" className="mr-auto flex items-center gap-3 text-xl font-bold"><FileText className="w-7 h-7 text-blue-500" />안내장</h2>
         {saveMsg && <p role="status" className="text-sm text-gray-600">{saveMsg}</p>}
-        <button data-action-height="44" type="button" aria-label="내용 초기화" title="내용 초기화" disabled={!noticeLoaded} onClick={() => { if (noticeType === "claim") setClaimContents(previous => ({ ...previous, [claimKind]: readClaimContent(claimKind, null) })); else setContent(defaultContents[noticeType].content); setSaveMsg(""); }} className="flex items-center justify-center gap-2 h-11 w-11 sm:w-auto sm:px-5 shrink-0 rounded-xl border border-gray-200 bg-white text-sm font-bold cursor-pointer hover:bg-gray-50 disabled:opacity-50"><RotateCcw className="w-5 h-5"/><span className="hidden sm:inline whitespace-nowrap">내용 초기화</span></button>
-        <button data-action-height="44" type="button" aria-label="이미지 저장" title="이미지 저장" onClick={handleDownload} disabled={isCapturing || preparingShare} className="flex items-center justify-center gap-2 h-11 w-11 shrink-0 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer disabled:opacity-50"><Download className="w-5 h-5" /></button>
-        <button data-action-height="44" type="button" aria-label="카톡 공유하기" title="카톡 공유하기" onClick={handleKakaoShare} disabled={preparingShare || sharing} className="flex items-center justify-center gap-2 h-11 w-11 shrink-0 rounded-xl bg-[#fee500] text-gray-900 text-sm font-bold cursor-pointer disabled:opacity-50"><MessageCircle className="w-5 h-5" /></button>
+        <button data-icon-only="true" data-action-height="44" type="button" aria-label="내용 및 디자인 초기화" title="내용 및 디자인 초기화" disabled={!noticeLoaded} onClick={resetNotice} className="flex items-center justify-center gap-2 h-11 w-11 shrink-0 rounded-xl border border-gray-200 bg-white text-sm font-bold cursor-pointer hover:bg-gray-50 disabled:opacity-50"><RotateCcw className="w-5 h-5"/><span className="md:hidden">초기화</span></button>
+        <button data-icon-only="true" data-action-height="44" type="button" aria-label="이미지 저장" title="이미지 저장" onClick={handleDownload} disabled={isCapturing || preparingShare} className="flex items-center justify-center gap-2 h-11 w-11 shrink-0 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer disabled:opacity-50"><Download className="w-5 h-5" /><span className="md:hidden">저장</span></button>
+        <button data-icon-only="true" data-action-height="44" type="button" aria-label="카톡 공유하기" title="카톡 공유하기" onClick={handleKakaoShare} disabled={preparingShare || sharing} className="flex items-center justify-center gap-2 h-11 w-11 shrink-0 rounded-xl bg-[#fee500] text-gray-900 text-sm font-bold cursor-pointer disabled:opacity-50"><MessageCircle className="w-5 h-5" /><span className="md:hidden">공유</span></button>
       </div>
       <div className={styles.workspace}>
-      <nav aria-label="안내장 종류" className={styles.menu}>
+      <nav data-unified-side-menu="true" aria-label="안내장 종류" className={styles.menu}>
         {noticeTypes.map(type => (
           <button data-action-height="44" type="button" key={type.id} aria-pressed={noticeType === type.id} disabled={!type.ready} title={type.ready ? undefined : "디자인 준비 중"} onClick={() => selectNoticeType(type.id)} className={`h-11 rounded-xl text-sm font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-default ${noticeType === type.id ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:bg-blue-50 hover:text-blue-600"}`}>
             {type.label}
           </button>
         ))}
       </nav>
-        <div className={`${styles.preview} personal-grid min-w-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-5`}>
-          <h3 className="text-base font-bold mb-4">미리보기</h3>
+        <div data-ui-card="true" className={`${styles.preview} personal-grid min-w-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-5`}>
+          <h3 data-personal-card-title="true" className="text-base font-bold mb-4">미리보기</h3>
           <div ref={previewContainerRef} className="relative w-full max-w-[720px] mx-auto aspect-square overflow-hidden">
     <div
       ref={previewRef}
@@ -320,17 +329,20 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
              </div>
           </div>
         </div>
-        <div className={`${styles.controls} personal-grid flex flex-col min-w-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 gap-5`}>
-        {noticeType === "claim" ? <div className="space-y-2"><p className="text-base font-bold">청구 종류</p><div className="grid grid-cols-3 gap-2">{claimNotices.map(item => <button data-action-height="44" type="button" key={item.id} onClick={() => { setClaimKind(item.id); setSaveMsg(""); }} className={`h-11 rounded-xl text-sm font-semibold cursor-pointer ${claimKind === item.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600"}`}>{item.label}</button>)}</div></div> : (<div className="space-y-2"><p className="text-base font-bold">월 선택</p><div className="grid grid-cols-3 lg:grid-cols-3 gap-2 max-w-[800px]">{monthTabs.map(item => <button data-action-height="44" type="button" key={item.id} onClick={() => setMonth(item.id)} className={`h-11 rounded-xl text-sm font-semibold cursor-pointer ${month === item.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600"}`}>{item.label}</button>)}</div></div>)}
+        <div data-ui-card="true" className={`${styles.controls} personal-grid flex flex-col min-w-0 bg-white rounded-2xl border border-gray-200 shadow-sm p-5 gap-5`}>
+<button data-notice-mobile-action="true" data-action-height="44" type="button" aria-label="내용 및 디자인 초기화" title="내용 및 디자인 초기화" disabled={!noticeLoaded} onClick={resetNotice} className="flex items-center justify-center gap-2 h-11 w-11 shrink-0 rounded-xl border border-gray-200 bg-white text-sm font-bold cursor-pointer hover:bg-gray-50 disabled:opacity-50"><RotateCcw className="w-5 h-5"/><span className="md:hidden">초기화</span></button>
+<button data-notice-mobile-action="true" data-action-height="44" type="button" aria-label="이미지 저장" title="이미지 저장" onClick={handleDownload} disabled={isCapturing || preparingShare} className="flex items-center justify-center gap-2 h-11 w-11 shrink-0 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer disabled:opacity-50"><Download className="w-5 h-5" /><span className="md:hidden">저장</span></button>
+<button data-notice-mobile-action="true" data-action-height="44" type="button" aria-label="카톡 공유하기" title="카톡 공유하기" onClick={handleKakaoShare} disabled={preparingShare || sharing} className="flex items-center justify-center gap-2 h-11 w-11 shrink-0 rounded-xl bg-[#fee500] text-gray-900 text-sm font-bold cursor-pointer disabled:opacity-50"><MessageCircle className="w-5 h-5" /><span className="md:hidden">공유</span></button>
+
+        {noticeType === "claim" ? <div className="space-y-2"><p className="text-base font-bold">청구 종류</p><div id="notice-claim-options" className="grid grid-cols-3 gap-2">{claimNotices.map(item => <button aria-pressed={claimKind === item.id} data-personal-choice="true" data-action-height="44" type="button" key={item.id} onClick={() => { setClaimKind(item.id); setSaveMsg(""); }} className={`h-11 rounded-xl text-sm font-semibold cursor-pointer ${claimKind === item.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600"}`}>{item.label}</button>)}</div></div> : (<div className="space-y-2"><p className="text-base font-bold">월 선택</p><div className="grid grid-cols-3 lg:grid-cols-3 gap-2 max-w-[800px]">{monthTabs.map(item => <button data-personal-choice="true" data-action-height="44" type="button" key={item.id} onClick={() => setMonth(item.id)} className={`h-11 rounded-xl text-sm font-semibold cursor-pointer ${month === item.id ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-600"}`}>{item.label}</button>)}</div></div>)}
         <div className="grid sm:grid-cols-2 gap-4">
-          <div><label htmlFor="notice-customer" className="block text-base font-bold mb-2">고객명</label><div className="relative"><input data-ui-field="true" id="notice-customer" value={customerName} onChange={event => setCustomerName(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" aria-label="고객명 지우기" onClick={() => setCustomerName("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
-          <div><label htmlFor="notice-signature" className="block text-base font-bold mb-2">설계사</label><div className="relative"><input data-ui-field="true" id="notice-signature" value={signature} onChange={event => setSignature(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" aria-label="설계사 지우기" onClick={() => setSignature("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
+          <div><label htmlFor="notice-customer" className="block text-base font-bold mb-2">고객명</label><div className="relative"><input data-ui-field="true" id="notice-customer" value={customerName} onChange={event => setCustomerName(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" data-item-remove="true" aria-label="고객명 지우기" onClick={() => setCustomerName("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
+          <div><label htmlFor="notice-signature" className="block text-base font-bold mb-2">설계사</label><div className="relative"><input data-ui-field="true" id="notice-signature" value={signature} onChange={event => setSignature(event.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400" /><button type="button" data-item-remove="true" aria-label="설계사 지우기" onClick={() => setSignature("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 cursor-pointer"><X className="w-4 h-4" /></button></div></div>
         </div>
           <div className="flex flex-col flex-1"><label htmlFor="notice-content" className="block text-base font-bold mb-3">안내 내용</label><textarea data-ui-field="true" id="notice-content" value={noticeType === "claim" ? claimContents[claimKind] : content} onChange={event => { const value = event.target.value; if (noticeType === "claim") setClaimContents(previous => ({ ...previous, [claimKind]: value })); else setContent(value); setSaveMsg(""); }} rows={6} className="block w-full flex-1 min-h-[180px] p-4 rounded-xl border border-gray-200 text-sm leading-7 outline-none resize-none focus:border-blue-400" /></div>
-          <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
-            <h3 className="hidden md:block text-base font-bold">디자인 설정</h3>
-            <button data-action-height="44" type="button" aria-expanded={mobileDesignOpen} aria-controls="notice-design-settings" onClick={() => { setMobileDesignOpen(previous => !previous); setFontOpen(false); }} className="flex md:hidden w-full items-center justify-between text-base font-bold cursor-pointer">디자인 설정<ChevronDown className={`w-4 h-4 transition-transform ${mobileDesignOpen ? "rotate-180" : ""}`} /></button>
-            <div id="notice-design-settings" className={`${mobileDesignOpen ? "grid" : "hidden"} md:grid sm:grid-cols-3 gap-3 mt-4`}>
+          <div data-notice-design-card="true" data-ui-card="true" className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
+            <h3 data-personal-card-title="true" className="text-base font-bold">디자인 설정</h3>
+            <div id="notice-design-settings" className="grid grid-cols-3 gap-3 mt-4">
               <div className="relative"><p className="text-xs font-semibold text-gray-600 mb-2">글자 폰트</p><button data-action-height="44" type="button" aria-expanded={fontOpen} onClick={() => setFontOpen(previous => !previous)} className="w-full h-12 flex items-center justify-between gap-2 px-3 rounded-xl bg-white border border-gray-200 text-sm cursor-pointer">{fontOptions.find(font => font.value === fontFamily)?.label}<ChevronDown className="w-4 h-4 text-gray-400" /></button>{fontOpen && <><button type="button" aria-label="폰트 선택 닫기" onClick={() => setFontOpen(false)} className="fixed inset-0 z-10 cursor-default" /><div className="absolute top-full mt-1 w-full z-20 bg-white border border-gray-200 rounded-xl shadow-lg p-1">{fontOptions.map(font => <button data-action-height="44" type="button" key={font.value} onClick={() => { setFontFamily(font.value); setFontOpen(false); }} className={`block w-full text-left text-sm px-3 py-2 rounded-lg cursor-pointer ${fontFamily === font.value ? "bg-gray-100 font-semibold" : "hover:bg-gray-50"}`}>{font.label}</button>)}</div></>}</div>
               <div><p className="text-xs font-semibold text-gray-600 mb-2">본문 색상</p><ColorSelectButton label="본문 색상 선택" value={textColor} onChange={setTextColor} /></div>
               <div><p className="text-xs font-semibold text-gray-600 mb-2">서명 색상</p><ColorSelectButton label="서명 색상 선택" value={signatureColor} onChange={setSignatureColor} /></div>
@@ -338,7 +350,7 @@ export default function NoticeTab({ active = true }: { active?: boolean }) {
           </div>
         </div>
       </div>
-      {mobileSaveImage && createPortal(<div role="dialog" aria-modal="true" aria-label="안내장 이미지 저장" className="fixed inset-0 z-[6000] bg-black/60 flex items-center justify-center p-4" onClick={() => setMobileSaveImage(null)}><div className="bg-white rounded-2xl w-full max-w-md max-h-[90dvh] overflow-y-auto p-4" onClick={event => event.stopPropagation()}><div className="flex items-center justify-between mb-3"><h3 className="font-bold">이미지 저장</h3><button type="button" aria-label="닫기" onClick={() => setMobileSaveImage(null)} className="p-2 cursor-pointer"><X className="w-5 h-5" /></button></div><p className="text-sm text-gray-600 mb-3">아래 이미지를 길게 눌러 사진에 저장할 수 있어요.</p><img src={mobileSaveImage} alt="저장할 안내장" className="w-full h-auto rounded-lg" style={{ WebkitTouchCallout: "default", userSelect: "auto" }} /><a href={mobileSaveImage} download={imageName} className="mt-3 flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer"><Download className="w-4 h-4" />파일 다운로드</a></div></div>, document.body)}
+      {mobileSaveImage && createPortal(<div role="dialog" aria-modal="true" aria-label="안내장 이미지 저장" className="fixed inset-0 z-[6000] bg-black/60 flex items-center justify-center p-4" onClick={() => setMobileSaveImage(null)}><div className="bg-white rounded-2xl w-full max-w-md max-h-[90dvh] overflow-y-auto p-4" onClick={event => event.stopPropagation()}><div className="flex items-center justify-between mb-3"><h3 className="font-bold">이미지 저장</h3><button data-icon-only="true" type="button" aria-label="닫기" onClick={() => setMobileSaveImage(null)} className="p-2 cursor-pointer"><X className="w-5 h-5" /></button></div><p className="text-sm text-gray-600 mb-3">아래 이미지를 길게 눌러 사진에 저장할 수 있어요.</p><img src={mobileSaveImage} alt="저장할 안내장" className="w-full h-auto rounded-lg" style={{ WebkitTouchCallout: "default", userSelect: "auto" }} /><a href={mobileSaveImage} download={imageName} className="mt-3 flex items-center justify-center gap-2 h-11 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer"><Download className="w-4 h-4" />파일 다운로드</a></div></div>, document.body)}
     </div>
   );
 }

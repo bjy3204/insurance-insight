@@ -26,7 +26,7 @@ export function getDefaultClaimText(id: string): ClaimNoticeText {
   return {
     title: `${notice.title} 청구 서류 안내`,
     introduction: "보험금 청구에 필요한 서류를 안내드립니다",
-    documents: notice.content.split("\n").map((line, index) => `${String(index + 1).padStart(2, "0")} ${line}`).join("\n"),
+    documents: notice.content.split("\n").map((line, index) => `${index + 1} ${line}`).join("\n"),
     additional: "보험사 및 가입한 보장에 따라 추가 서류가 필요할 수 있습니다",
     closing: "서류 준비에 궁금한 점이 있으시면 연락해 주세요 !",
   };
@@ -45,7 +45,8 @@ export function readClaimText(id: string, stored: string | null): ClaimNoticeTex
 }
 
 export function formatClaimContent(text: ClaimNoticeText): string {
-  return `${text.title}\n${text.introduction}\n\n${text.documents}\n\n${text.additional}\n${text.closing}`;
+  const documents = text.documents.replace(/^0+(\d+)(?=[.)]?\s)/gm, "$1");
+  return `${text.title}\n${text.introduction}\n\n${documents}\n\n${text.additional}\n${text.closing}`;
 }
 
 export function readClaimContent(id: string, stored: string | null): string {

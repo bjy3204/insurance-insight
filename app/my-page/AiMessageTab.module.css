@@ -11,3 +11,26 @@
 @media (min-width:768px) { .previewTime { font-size:12px; } }
 
 @media (min-width:1280px) { .messagePanels { height:var(--message-panel-height, 534px); } }
+
+
+
+@media(max-width:767px){.previewTime{font-size:12px}}
+
+@media(max-width:767px){
+ .categoryMenu.categoryMenu{padding:0 !important;border:0;background:transparent;box-shadow:none}
+ .categoryMenu button[aria-haspopup="listbox"]{width:100%;height:44px;min-height:44px;border-radius:12px}
+}
+
+@media(max-width:767px){
+ .categoryMenu.categoryMenu.categoryMenu.categoryMenu{padding:0 !important;border:0 !important;background:transparent !important;box-shadow:none !important;width:100%;min-width:0}
+ .categoryMenu>div{width:100%;min-width:0}
+ .categoryMenu button[aria-haspopup="listbox"]{width:100%;box-sizing:border-box;background:#fff}
+}
+
+@media(max-width:767px){
+ .mobileCategories{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;width:100%}
+ .categoryMenu .mobileCategories button[aria-haspopup="listbox"]{min-width:0;width:100%;padding:0 5px;gap:2px;font-size:14px;height:44px;justify-content:center}
+ .mobileCategories button svg{width:12px;height:12px}
+}
+
+@media(max-width:767px){.mobileCategories button[aria-haspopup="listbox"]>svg{display:none}.categoryMenu .mobileCategories button[aria-haspopup="listbox"]{gap:0}}

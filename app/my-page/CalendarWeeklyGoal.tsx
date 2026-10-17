@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -435,7 +436,7 @@ export default function CalendarPage() {
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
               href="/"
               className="w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
             >
@@ -483,7 +484,7 @@ export default function CalendarPage() {
         <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5 mb-6">
           {/* 월 네비게이션 */}
           <div className="flex items-start justify-between mb-4">
-            <button
+            <button data-icon-only="true"
               onClick={() => setCalendarDate(new Date(currentYear, currentMonth - 1, 1))}
               className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition"
             >
@@ -498,7 +499,7 @@ export default function CalendarPage() {
                 오늘
               </button>
             </div>
-            <button
+            <button data-icon-only="true"
               onClick={() => setCalendarDate(new Date(currentYear, currentMonth + 1, 1))}
               className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-50 transition"
             >
@@ -578,7 +579,7 @@ export default function CalendarPage() {
                           <span className="text-[10px] text-gray-400 truncate max-w-16 ml-1">{holiday.name}</span>
                         )}
                       </div>
-                      <button
+                      <button data-icon-only="true"
                         onClick={(e) => { e.stopPropagation(); openEventModal(fullDate); }}
                         className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition cursor-pointer opacity-0 group-hover:opacity-100"
                       >
@@ -640,7 +641,7 @@ export default function CalendarPage() {
         <div className="flex flex-col sm:grid sm:gap-6" style={{ gridTemplateColumns: "1fr 2fr" }}>
           {/* 체크리스트 */}
           <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5 mb-6 sm:mb-0">
-            <h2 className="text-lg font-black text-gray-900 mb-4">체크리스트</h2>
+            <h2 data-personal-card-title="true" className="text-lg font-black text-gray-900 mb-4">체크리스트</h2>
             <div className="space-y-2 mb-4">
               {checklists.map((item) => (
                 <div key={item.id} className="flex items-start gap-2 p-2 hover:bg-gray-50 rounded transition">
@@ -651,7 +652,7 @@ export default function CalendarPage() {
                     className="w-4 h-4 cursor-pointer mt-0.5"
                   />
                   {editingChecklistId === item.id ? (
-                    <input data-ui-field="true"
+                    <ClearableSearchInput onClear={() => setEditingChecklistText("")} data-ui-field="true"
                       type="text"
                       value={editingChecklistText}
                       onChange={(e) => setEditingChecklistText(e.target.value)}
@@ -668,7 +669,7 @@ export default function CalendarPage() {
                       {item.text}
                     </span>
                   )}
-                  <button onClick={() => handleDeleteChecklist(item.id)} className="text-gray-400 hover:text-red-500 transition cursor-pointer">
+                  <button data-icon-only="true" onClick={() => handleDeleteChecklist(item.id)} className="text-gray-400 hover:text-red-500 transition cursor-pointer">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -676,7 +677,7 @@ export default function CalendarPage() {
             </div>
             {checklists.length < 10 && (
               <div className="flex gap-2">
-                <input data-ui-field="true"
+                <ClearableSearchInput onClear={() => setChecklistText("")} data-ui-field="true"
                   type="text"
                   value={checklistText}
                   onChange={(e) => setChecklistText(e.target.value)}
@@ -684,7 +685,7 @@ export default function CalendarPage() {
                   className="flex-1 pl-4 pr-4 py-2 border border-gray-200 rounded-2xl text-sm outline-none focus:border-gray-400 transition"
                   onKeyPress={(e) => { if (e.key === "Enter") handleAddChecklist(); }}
                 />
-                <button onClick={handleAddChecklist} className="px-3 py-2 bg-gray-100 text-gray-500 rounded-2xl hover:bg-gray-200 transition flex items-center">
+                <button data-icon-only="true" onClick={handleAddChecklist} className="px-3 py-2 bg-gray-100 text-gray-500 rounded-2xl hover:bg-gray-200 transition flex items-center">
                   <Plus className="w-4 h-4" strokeWidth={1.5} />
                 </button>
               </div>
@@ -696,10 +697,10 @@ export default function CalendarPage() {
 
           {/* 일정 목록 */}
           <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-4 sm:p-5">
-            <h2 className="text-lg font-black text-gray-900 mb-4">일정</h2>
+            <h2 data-personal-card-title="true" className="text-lg font-black text-gray-900 mb-4">일정</h2>
             <div className="mb-4 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input data-ui-field="true" data-page-search-input="true"
+              <ClearableSearchInput onClear={() => setSearchText("")} data-ui-field="true" data-page-search-input="true"
                 type="text"
                 placeholder="일정 검색"
                 value={searchText}
@@ -729,7 +730,7 @@ export default function CalendarPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-sm text-gray-500">{new Date(event.date).toLocaleDateString("ko-KR")}</div>
-                    <button onClick={(e) => { e.stopPropagation(); handleDeleteEvent(event.id); }} className="text-gray-400 hover:text-red-500 transition cursor-pointer">
+                    <button data-icon-only="true" onClick={(e) => { e.stopPropagation(); handleDeleteEvent(event.id); }} className="text-gray-400 hover:text-red-500 transition cursor-pointer">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -795,7 +796,7 @@ export default function CalendarPage() {
                   <Plus className="w-3.5 h-3.5" strokeWidth={2} />
                   일정 추가
                 </button>
-                <button data-popup-close="true"
+                <button data-icon-only="true" data-popup-close="true"
                   onClick={() => setShowMobileDayPopup(false)}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition"
                 >
@@ -866,13 +867,13 @@ export default function CalendarPage() {
           >
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-black text-gray-900">{editingEvent ? "일정 수정" : "일정 추가"}</h3>
-              <button data-popup-close="true" onClick={() => { setShowEventModal(false); resetForm(); }} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition">
+              <button data-icon-only="true" data-popup-close="true" onClick={() => { setShowEventModal(false); resetForm(); }} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100 transition">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-3">
-              <input data-ui-field="true"
+              <ClearableSearchInput onClear={() => setFormData({ ...formData, title: "" })} data-ui-field="true"
                 type="text"
                 placeholder="제목 *"
                 value={formData.title}
@@ -891,14 +892,14 @@ export default function CalendarPage() {
                 onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                 className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-400 transition"
               />
-              <input data-ui-field="true"
+              <ClearableSearchInput onClear={() => setFormData({ ...formData, content: "" })} data-ui-field="true"
                 type="text"
                 placeholder="내용"
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 className="w-full h-11 px-4 border border-gray-200 rounded-2xl text-sm outline-none focus:border-blue-400 transition"
               />
-              <input data-ui-field="true"
+              <ClearableSearchInput onClear={() => setFormData({ ...formData, place: "" })} data-ui-field="true"
                 type="text"
                 placeholder="장소"
                 value={formData.place}

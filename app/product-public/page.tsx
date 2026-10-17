@@ -1,5 +1,7 @@
 "use client";
+import { formatDisplayDate } from "@/lib/display-date";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import Pagination from "@/app/components/Pagination";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
@@ -786,7 +788,7 @@ const pagedMemos = filteredMemos.slice(
       <header data-page-header="true" className="sticky top-0 z-50 bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
               href="/"
              className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center"
             >
@@ -810,7 +812,7 @@ const pagedMemos = filteredMemos.slice(
               }`}
             >
               <div className="relative">
-                <button data-header-control="true"
+                <button data-icon-only="true" data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
@@ -856,10 +858,10 @@ const pagedMemos = filteredMemos.slice(
       </header>
 
       <section data-page-content="true" className="max-w-7xl mx-auto px-6 py-6">
-        <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3 mb-5">
+        <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3 mb-[15px]">
           <Search className="w-5 h-5 text-gray-400" />
 
-          <input data-ui-field="true" data-page-search-input="true"
+          <ClearableSearchInput onClear={() => setSearch("")} data-ui-field="true" data-page-search-input="true"
             placeholder="보험사명을 검색하세요"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -867,7 +869,7 @@ const pagedMemos = filteredMemos.slice(
           />
         </div>
 
-        <div data-tab-group="true" className="grid grid-cols-2 md:grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
+        <div data-tab-group="true" className="grid grid-cols-2 md:grid-cols-4 bg-gray-200 rounded-2xl p-1 mb-5 gap-1">
           <button
             onClick={() => setTab("nonlife")}
             className={`rounded-xl py-3 text-sm md:text-base font-bold ${
@@ -913,7 +915,7 @@ const pagedMemos = filteredMemos.slice(
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-8 place-items-stretch">
+        <div data-page-card-grid="true" className="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-8 place-items-stretch">
           {filteredCompanies.map(([name, image, link, phone]) => {
             let logoPath = "";
 
@@ -961,7 +963,7 @@ const pagedMemos = filteredMemos.slice(
   "
 />
 
- <a
+ <a data-product-disclosure-button="true"
   href={link}
   target="_blank"
   rel="noopener noreferrer"
@@ -1044,7 +1046,7 @@ const pagedMemos = filteredMemos.slice(
 
       <>
         <SiteFooter desktopOnly />
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
+        <div data-page-fixed-footer="true" className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a
             href="https://naver.me/xsZ8mk7H"
@@ -1080,7 +1082,7 @@ const pagedMemos = filteredMemos.slice(
       </>
       
      {/* 보도자료 바로 열기 */}
-<button
+<button data-icon-only="true"
   data-page-floating-control="true"
   aria-label="보도자료 열기"
   onClick={() => {
@@ -1151,7 +1153,7 @@ const pagedMemos = filteredMemos.slice(
           보도자료
         </div>
 
-        <button data-popup-close="true"
+        <button data-icon-only="true" data-popup-close="true"
   onClick={() => {
     setPressOpen(false);
     setSelectedPress(null);
@@ -1179,7 +1181,10 @@ const pagedMemos = filteredMemos.slice(
             <div className="relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
-              <input data-ui-field="true" data-page-search-input="true"
+              <ClearableSearchInput onClear={() => {
+  setPressSearch("");
+  setPressPage(1);
+}} data-ui-field="true" data-page-search-input="true"
                 value={pressSearch}
                 onChange={(e) => {
   setPressSearch(e.target.value);
@@ -1257,12 +1262,12 @@ const pagedMemos = filteredMemos.slice(
               <div className="flex items-center gap-2 overflow-hidden">
                 <span className="truncate">{item.title}</span>
                 {!readPressIds.includes(item.id) && (
-                  <span className="shrink-0 px-2 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">NEW</span>
+                  <span className="shrink-0 px-2 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">업데이트</span>
                 )}
               </div>
             </td>
-            <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">{item.source}</td>
-            <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">{item.date}</td>
+            <td data-table-source-date="true" className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">{item.source}</td>
+            <td data-table-source-date="true" className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">{formatDisplayDate(item.date)}</td>
           </tr>
         ))}
       </tbody>
@@ -1288,7 +1293,7 @@ const pagedMemos = filteredMemos.slice(
 
   <div className="flex items-center justify-between gap-3 mt-2">
 <p className="text-sm text-gray-400 whitespace-nowrap">
-    {selectedPress.date} · {selectedPress.source}
+    <span className="hidden md:inline">{formatDisplayDate(selectedPress.date)}</span><span className="md:hidden">{selectedPress.date}</span><span className="ml-1 md:ml-3">{selectedPress.source}</span>
   </p>
     {selectedPress.pdfs && (
       <div className="flex items-center justify-end gap-3 shrink-0">
@@ -1401,7 +1406,7 @@ originY: termPopupPos.y,
           {selectedTerm.title}
         </div>
 
-        <button data-popup-close="true"
+        <button data-icon-only="true" data-popup-close="true"
   onClick={() => {
     setSelectedTerm(null);
     setTermPopupPos({ x: 0, y: 0 });

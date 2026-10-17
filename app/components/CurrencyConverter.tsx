@@ -1,4 +1,6 @@
 "use client";
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
+import { Delete as KeypadBackspace, ChevronLeft, ArrowLeftRight, Percent, Equal as Equals, Diff as PlusMinus, Divide as TaskDivide, X as TaskX, Minus as TaskMinus, Plus as TaskPlus } from "lucide-react";
 import { useWidgetSessionState } from './useWidgetSessionState';
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -134,7 +136,7 @@ export default function CurrencyConverter() {
   const [loading, setLoading] = useState(false);
   const [fromCurrency, setFromCurrency] = useWidgetSessionState("currency:fromCurrency", "USD");
   const [toCurrency, setToCurrency] = useWidgetSessionState("currency:toCurrency", "KRW");
-  const [inputValue, setInputValue] = useWidgetSessionState("currency:inputValue", "1");
+  const [inputValue, setInputValue] = useWidgetSessionState("currency:inputValue", "0");
   const [activeInput, setActiveInput] = useWidgetSessionState<"from" | "to">("currency:activeInput", "from");
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [pickerTarget, setPickerTarget] = useState<"from" | "to">("from");
@@ -145,10 +147,10 @@ export default function CurrencyConverter() {
     displayBg:   isDark ? "#252527"  : "#ffffff",
     displayBg2:  isDark ? "#2c2c2e"  : "#f0f0f5",
     divider:     isDark ? "#3a3a3c"  : "#e5e5ea",
-    btnNum:      isDark ? "#2563eb"  : "#d1d1d6",
-    btnNumHov:   isDark ? "#1d4ed8"  : "#c7c7cc",
-    btnFunc:     isDark ? "#2563eb"  : "#aeaeb2",
-    btnFuncHov:  isDark ? "#1d4ed8"  : "#9e9ea3",
+    btnNum:      isDark ? "#333333"  : "#d1d1d6",
+    btnNumHov:   isDark ? "#444444"  : "#c7c7cc",
+    btnFunc:     isDark ? "#505050"  : "#aeaeb2",
+    btnFuncHov:  isDark ? "#606060"  : "#9e9ea3",
     btnOrange:   "#ff9f0a",
     btnOrangeHov:"#e8900a",
     btnOrangeActive: "#cc7a00",
@@ -418,6 +420,10 @@ naverData.items?.forEach((item: any) => {
     setWaitingForOperand(false);
   }, [setInputValue]);
 
+  useEffect(() => {
+    if (isOpen) handleClear();
+  }, [isOpen, handleClear]);
+
   const handleSwap = useCallback(() => {
     setFromCurrency(toCurrency);
     setToCurrency(fromCurrency);
@@ -540,7 +546,7 @@ naverData.items?.forEach((item: any) => {
   const fromInfo = CURRENCIES.find((c) => c.code === fromCurrency) ?? CURRENCIES[0];
   const toInfo   = CURRENCIES.find((c) => c.code === toCurrency)   ?? CURRENCIES[0];
 
-  const btnBase = "flex items-center justify-center rounded-2xl font-medium select-none cursor-pointer transition-all active:scale-95 text-xl cc-btn";
+  const btnBase = "flex items-center justify-center rounded-2xl font-medium select-none cursor-pointer transition-all active:scale-95 text-[18px] cc-btn";
 
   return (
     <>
@@ -570,11 +576,11 @@ naverData.items?.forEach((item: any) => {
                   style={{ color: T.textAccent }}
                   onClick={() => setShowCurrencyPicker(false)}
                 >
-                  ‹ 뒤로
+                  <ChevronLeft size={18} aria-hidden="true" style={{display:"inline-block",verticalAlign:"middle"}} /> 뒤로
                 </button>
                 <span className="font-bold text-base w-full text-center" style={{ color: T.textMain }}>통화</span>
                 {/* X 버튼 - 통화 선택 팝업에서도 표시 */}
-                <button
+                <button data-icon-only="true"
                   className="cc-btn w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer absolute right-5"
                   style={{ color: T.textSub }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = T.closeBtnHov; e.currentTarget.style.color = T.textMain; }}
@@ -587,7 +593,7 @@ naverData.items?.forEach((item: any) => {
                 </button>
               </div>
               <div className="px-4 mb-3">
-                <input data-ui-field="true" data-page-search-input="true"
+                <ClearableSearchInput onClear={() => setSearchQuery("")} data-ui-field="true" data-page-search-input="true"
                   type="text"
                   placeholder="검색"
                   value={searchQuery}
@@ -621,7 +627,7 @@ naverData.items?.forEach((item: any) => {
           <div className="relative z-10 flex flex-col h-full">
 
             {/* 상단 아이콘 바 */}
-            <div className="flex items-center justify-between px-4 pt-3 pb-2">
+            <div className="flex items-center justify-between px-4 pt-3 pb-3">
               {/* 왼쪽: 테마 토글 */}
               <button
                 className="cc-btn w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer hover:opacity-70"
@@ -645,17 +651,17 @@ naverData.items?.forEach((item: any) => {
               </button>
 
               {/* 가운데: 타이틀 */}
-              <span className="font-semibold text-sm" style={{ color: T.textSub }}>환율 변환기</span>
+              <span className="flex items-center gap-2 font-semibold text-base" style={{ color: T.textMain }}><ArrowLeftRight size={18} aria-hidden="true" style={{ color: T.textMain }} />환율 변환기</span>
 
               {/* 닫기 버튼 */}
-              <button
+              <button data-icon-only="true"
                 className="cc-btn w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
                 style={{ color: T.textSub }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = T.closeBtnHov; e.currentTarget.style.color = T.textMain; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textSub; }}
                 onClick={() => setIsOpen(false)}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
@@ -708,7 +714,7 @@ naverData.items?.forEach((item: any) => {
 
               {/* 구분선 + 스왑 버튼 (디스플레이 중간) */}
               <div className="relative h-px" style={{ background: T.divider }}>
-                <button
+                <button data-icon-only="true"
                   className="cc-btn absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer z-10 transition-all"
                   style={{ background: T.btnOrange }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = T.btnOrangeHov)}
@@ -775,7 +781,7 @@ naverData.items?.forEach((item: any) => {
 
             {/* 키패드 - 4열 × 5행 계산기 스타일 */}
             <div
-              className="flex-1 grid grid-cols-4 gap-[8px] px-3"
+              data-numeric-keypad="true" className="flex-1 grid grid-cols-4 gap-[8px] px-3"
               style={{ gridTemplateRows: "repeat(5, 1fr)" }}
             >
               {/* Row 1: C | ← | ↑↓(스왑) | ÷ */}
@@ -794,10 +800,7 @@ naverData.items?.forEach((item: any) => {
                 onMouseLeave={(e) => (e.currentTarget.style.background = T.btnFunc)}
                 onClick={handleBackspace}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" />
-                  <line x1="18" y1="9" x2="12" y2="15" /><line x1="12" y1="9" x2="18" y2="15" />
-                </svg>
+                <KeypadBackspace size={18} role="img" aria-label="한 자리 지우기" />
               </button>
 
               {/* ↑↓ 스왑 */}
@@ -809,7 +812,7 @@ naverData.items?.forEach((item: any) => {
                 onClick={handleSwap}
                 title="통화 스왑"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="12" y1="3" x2="12" y2="21" />
                   <polyline points="8 7 12 3 16 7" />
                   <polyline points="8 17 12 21 16 17" />
@@ -823,7 +826,7 @@ naverData.items?.forEach((item: any) => {
                 onMouseEnter={(e) => (e.currentTarget.style.background = calcOp === "÷" ? T.btnOrangeActive : T.btnOrangeHov)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = calcOp === "÷" ? T.btnOrangeActive : T.btnOrange)}
                 onClick={() => handleOperator("÷")}
-              >÷</button>
+              ><TaskDivide size={18} role="img" aria-label="나누기" style={{display:"inline-block",verticalAlign:"middle"}} /></button>
 
               {/* Row 2: 7 | 8 | 9 | × */}
               {["7","8","9"].map((d) => (
@@ -842,7 +845,7 @@ naverData.items?.forEach((item: any) => {
                 onMouseEnter={(e) => (e.currentTarget.style.background = calcOp === "×" ? T.btnOrangeActive : T.btnOrangeHov)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = calcOp === "×" ? T.btnOrangeActive : T.btnOrange)}
                 onClick={() => handleOperator("×")}
-              >×</button>
+              ><TaskX size={18} role="img" aria-label="곱하기" style={{display:"inline-block",verticalAlign:"middle"}} /></button>
 
               {/* Row 3: 4 | 5 | 6 | − */}
               {["4","5","6"].map((d) => (
@@ -861,7 +864,7 @@ naverData.items?.forEach((item: any) => {
                 onMouseEnter={(e) => (e.currentTarget.style.background = calcOp === "−" ? T.btnOrangeActive : T.btnOrangeHov)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = calcOp === "−" ? T.btnOrangeActive : T.btnOrange)}
                 onClick={() => handleOperator("−")}
-              >−</button>
+              ><TaskMinus size={18} role="img" aria-label="빼기" style={{display:"inline-block",verticalAlign:"middle"}} /></button>
 
               {/* Row 4: 1 | 2 | 3 | + */}
               {["1","2","3"].map((d) => (
@@ -880,7 +883,7 @@ naverData.items?.forEach((item: any) => {
                 onMouseEnter={(e) => (e.currentTarget.style.background = calcOp === "+" ? T.btnOrangeActive : T.btnOrangeHov)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = calcOp === "+" ? T.btnOrangeActive : T.btnOrange)}
                 onClick={() => handleOperator("+")}
-              >+</button>
+              ><TaskPlus size={18} role="img" aria-label="더하기" style={{display:"inline-block",verticalAlign:"middle"}} /></button>
 
               {/* Row 5: 0 | . | % | = */}
               <button
@@ -905,7 +908,7 @@ naverData.items?.forEach((item: any) => {
                 onMouseEnter={(e) => (e.currentTarget.style.background = T.btnFuncHov)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = T.btnFunc)}
                 onClick={handlePercent}
-              >%</button>
+              ><Percent size={18} role="img" aria-label="퍼센트" /></button>
 
               <button
                 className={btnBase}
@@ -913,7 +916,7 @@ naverData.items?.forEach((item: any) => {
                 onMouseEnter={(e) => (e.currentTarget.style.background = T.btnOrangeHov)}
                 onMouseLeave={(e) => (e.currentTarget.style.background = T.btnOrange)}
                 onClick={handleEquals}
-              >=</button>
+              ><Equals size={18} role="img" aria-label="계산 결과" /></button>
             </div>
 
             {/* 하단 정보바: 새로고침 | 환율 조회 시각 | 설정(⋮) */}
@@ -922,7 +925,7 @@ naverData.items?.forEach((item: any) => {
               style={{ background: T.infoBg }}
             >
               {/* 새로고침 버튼 */}
-              <button
+              <button data-icon-only="true"
                 className="cc-btn w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer hover:opacity-70"
                 style={{ color: T.textAccent }}
                 onClick={fetchRates}
@@ -938,12 +941,12 @@ naverData.items?.forEach((item: any) => {
               {/* 환율 조회 시각 + 1단위 환율 */}
               <div className="flex flex-col items-center">
                 {rateTime && (
-                  <span className="text-xs font-semibold" style={{ color: "#30d158" }}>
+                  <span className="text-xs font-semibold" style={{ color: T.textSub }}>
                     {rateTime}
                   </span>
                 )}
                 {!loading && oneUnitRate > 0 ? (
-                  <span className="text-xs" style={{ color: T.textSub }}>
+                  <span className="text-xs" style={{ color: T.textMain }}>
                     1 {fromCurrency} = {formatRate(oneUnitRate)} {toCurrency}
                   </span>
                 ) : loading ? (
@@ -952,7 +955,7 @@ naverData.items?.forEach((item: any) => {
               </div>
 
               {/* ⋮ 버튼 - From 통화 선택 */}
-              <button
+              <button data-icon-only="true"
                 className="cc-btn w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer hover:opacity-70"
                 style={{ color: T.textSub }}
                 onClick={() => openPicker("to")}

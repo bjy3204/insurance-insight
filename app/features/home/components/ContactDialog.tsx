@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { X } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
 export default function ContactDialog({ controller }: { controller: HomeController }) {
@@ -11,7 +12,7 @@ return (<>{open && (
   style={getPopupStyle("message")}
   className="bg-white rounded-3xl p-6 w-full max-w-md relative"
 >
-            <button data-popup-close="true"
+            <button data-icon-only="true" data-popup-close="true"
               onClick={() => setOpen(false)}
               className="
   absolute
@@ -94,7 +95,7 @@ return (<>{open && (
   요청사항 변경 확인 메세지를 보내드립니다 !
 </p>
 
-            <input data-ui-field="true"
+            <ClearableSearchInput onClear={() => setContact("")} data-ui-field="true"
               value={contact}
               onChange={(e) => setContact(e.target.value)}
               

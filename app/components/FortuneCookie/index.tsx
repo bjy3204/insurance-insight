@@ -1,4 +1,5 @@
 "use client";
+import { X as TaskX } from "lucide-react";
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./FortuneCookie.module.css";
@@ -288,13 +289,13 @@ style={{
       onPointerDown={handlePointerDown}
       onClick={handleOpen}
     >
-      <button data-popup-close="true"
+      <button data-icon-only="true" data-popup-close="true"
         type="button"
         className={styles.closeButton}
         onClick={handleClose}
         aria-label="포춘쿠키 닫기"
       >
-        ×
+        <TaskX size={20} role="img" aria-label="닫기" style={{display:"inline-block",verticalAlign:"middle"}} />
       </button>
 
       <img

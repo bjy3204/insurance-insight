@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import styles from "../HomePage.module.css";
 import { X, ChevronUp, ChevronDown, Settings, Plus } from "lucide-react";
 import { SALES_BOOK_VERSION } from "@/app/sales-book/data";
@@ -172,7 +173,7 @@ target={
 
             if (!selectedMenu) {
               return (
-                <button
+                <button data-icon-only="true"
                   key={index}
                   onClick={() => setQuickMenuSelectOpen(true)}
                   className="
@@ -224,7 +225,7 @@ target={
                   {selectedMenu.title}
                 </span>
 
-                <button
+                <button data-icon-only="true"
                   onClick={() => {
                     setTempQuickMenuKeys((prev) =>
   prev.filter((key) => key !== selectedMenu.key)
@@ -363,21 +364,21 @@ target={
                 </div>
               )}
 
-              <input data-ui-field="true"
+              <ClearableSearchInput onClear={() => setNewMenuTitle("")} data-ui-field="true"
                 value={newMenuTitle}
                 onChange={(e) => setNewMenuTitle(e.target.value)}
                 placeholder="메뉴명"
                 className="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none mb-2"
               />
 
-              <input data-ui-field="true"
+              <ClearableSearchInput onClear={() => setNewMenuDesc("")} data-ui-field="true"
                 value={newMenuDesc}
                 onChange={(e) => setNewMenuDesc(e.target.value)}
                 placeholder="설명글"
                 className="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm outline-none mb-2"
               />
 
-              <input data-ui-field="true"
+              <ClearableSearchInput onClear={() => setNewMenuLink("")} data-ui-field="true"
                 value={newMenuLink}
                 onChange={(e) => setNewMenuLink(e.target.value)}
                 placeholder="링크"
@@ -388,7 +389,7 @@ target={
         </div>
       );
     })}
-    <button
+    <button data-icon-only="true"
   onClick={() => {
     resetPopupPosition("menuAdd");
     setMenuAddOpen(true);

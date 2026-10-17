@@ -11,7 +11,7 @@ export default function NoticePage() {
           <div className="relative flex items-center justify-center">
             
             {/* 뒤로가기 */}
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
               href="/"
               className="
                 absolute

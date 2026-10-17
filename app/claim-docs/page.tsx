@@ -722,7 +722,7 @@ const visibleMemos = memos.filter((memo) => memo.visible);
           <div className="relative flex items-center justify-center">
 
             {/* 뒤로가기 */}
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
               href="/"
               className="
               absolute
@@ -762,7 +762,7 @@ left-0
               }`}
             >
               <div className="relative">
-                <button data-header-control="true"
+                <button data-icon-only="true" data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
@@ -813,7 +813,7 @@ left-0
 
       <section data-page-content="true" className={`${styles.content} max-w-7xl mx-auto px-4 md:px-6 py-6`}>
         <div className={`${styles.layout} grid grid-cols-1 md:grid-cols-[265px_minmax(0,1fr)] gap-3 items-start`}>
-          <nav aria-label="청구서류 종류" className={`${styles.menu} bg-white border border-blue-100/60 rounded-2xl p-3 md:p-4`}>
+          <nav data-unified-side-menu="true" aria-label="청구서류 종류" className={`${styles.menu} bg-white border border-blue-100/60 rounded-2xl p-3 md:p-4`}>
             <div className={`${styles.tabScroll} flex gap-1 overflow-x-auto md:block`}>
               {claimGroups.map((group) => (
                 <div key={group.title} className="shrink-0 md:mb-5 md:last:mb-0">
@@ -832,8 +832,8 @@ left-0
             </div>
           </nav>
           <div className={`${styles.documents} min-w-0 bg-white border border-blue-100/60 rounded-2xl p-5 md:p-7`}>
-            <div className={styles.documentHeading}><span className="inline-block rounded-xl bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-600 mb-3">{claimGroups.find(group => group.items.includes(tab))?.title}</span>
-            <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-6">{tab === "공통" ? "공통 청구서류" : `${tab} 청구서류`}</h2></div>
+            <div className={styles.documentHeading}>
+            <h2 data-claim-doc-heading="true" className="text-2xl md:text-3xl font-black text-slate-900 mb-6">{tab === "공통" ? "공통 청구서류" : `${tab} 청구서류`}</h2></div>
             <div key={tab} className={styles.documentScroll}><div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {claimDocs[tab]?.map((doc, docIndex) => {
                 const Icon = documentIcons[doc.title] ?? claimIcons[tab];
@@ -905,7 +905,7 @@ left-0
 
       
 {/* 정보 메뉴 버튼 */}
-<button
+<button data-icon-only="true"
   data-page-floating-control="true"
   onClick={() => setInfoMenuOpen(!infoMenuOpen)}
   className="
@@ -1006,7 +1006,7 @@ left-0
       {/* 하단 고정 메뉴 */}
       <>
         <SiteFooter desktopOnly />
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
+        <div data-page-fixed-footer="true" className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
 
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
 

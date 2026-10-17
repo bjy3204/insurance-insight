@@ -14,7 +14,7 @@ return (<>{quickMenuSelectOpen && (
           빠른메뉴 선택
         </h2>
 
-        <button data-popup-close="true"
+        <button data-icon-only="true" data-popup-close="true"
   onClick={() => {
     setTempQuickMenuKeys(quickMenuKeys);
     setQuickMenuSelectOpen(false);

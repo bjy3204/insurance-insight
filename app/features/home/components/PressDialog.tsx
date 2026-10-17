@@ -1,5 +1,7 @@
 "use client";
+import { formatDisplayDate } from "@/lib/display-date";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import Pagination from "@/app/components/Pagination";
 import { supabase } from "@/lib/supabase";
 import { FileText, Megaphone, X, Search } from "lucide-react";
@@ -24,7 +26,7 @@ return (<>{pressOpen && (
           보도자료
         </div>
 
-        <button data-popup-close="true"
+        <button data-icon-only="true" data-popup-close="true"
           onClick={() => {
             setPressOpen(false);
             setSelectedPress(null);
@@ -51,7 +53,10 @@ return (<>{pressOpen && (
   <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
     <Search className="w-5 h-5 text-gray-400" />
 
-    <input data-ui-field="true" data-page-search-input="true"
+    <ClearableSearchInput onClear={() => {
+        setPressSearch("");
+        setPressPage(1);
+      }} data-ui-field="true" data-page-search-input="true"
       value={pressSearch}
       onChange={(e) => {
         setPressSearch(e.target.value);
@@ -80,23 +85,23 @@ return (<>{pressOpen && (
                     }
 
                   }}
-                  className="bg-white border border-gray-200 rounded-2xl px-4 py-4 cursor-pointer hover:bg-gray-50 transition"
+                  data-popup-news-card="true" className="bg-white border border-gray-200 rounded-2xl px-4 py-4 cursor-pointer hover:bg-gray-50 transition"
                 >
                   <div className="flex items-start gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-bold text-gray-400">
+                        <span data-news-number="true" className="text-xs font-bold text-gray-400">
                           NO. {filteredPress.length - ((pressPage - 1) * PRESS_PER_PAGE + index)}
                         </span>
                         {!readPressIds.includes(item.id) && (
-                          <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">NEW</span>
+                          <span data-news-badge="true" className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">NEW</span>
                         )}
                       </div>
-                      <p className="font-bold text-gray-900 text-sm leading-snug break-keep line-clamp-2">
+                      <p data-news-title="true" className="font-bold text-gray-900 text-sm leading-snug break-keep line-clamp-2">
                         {item.title}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1.5">
-                        {item.source} · {item.date}
+                      <p data-news-date="true" className="text-xs text-gray-400 mt-1.5">
+                        {item.source} · {formatDisplayDate(item.date)}
                       </p>
                     </div>
                   </div>
@@ -139,12 +144,12 @@ return (<>{pressOpen && (
               <div className="flex items-center gap-2 overflow-hidden">
                 <span className="truncate">{item.title}</span>
                 {!readPressIds.includes(item.id) && (
-                  <span className="shrink-0 px-2 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">NEW</span>
+                  <span className="shrink-0 px-2 py-1 rounded-md text-[11px] font-bold bg-blue-100 text-blue-600">업데이트</span>
                 )}
               </div>
             </td>
-            <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">{item.source}</td>
-            <td className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">{item.date}</td>
+            <td data-table-source-date="true" className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">{item.source}</td>
+            <td data-table-source-date="true" className="py-4 text-center text-gray-500 text-xs border-b border-gray-100">{formatDisplayDate(item.date)}</td>
           </tr>
         ))}
       </tbody>
@@ -162,13 +167,13 @@ return (<>{pressOpen && (
       ) : (
         <>
           <div className="flex-1 overflow-y-auto px-6 py-5">
-            <h2 data-popup-heading="true" className="text-2xl font-black text-gray-900 break-keep leading-snug">
+            <h2 data-news-detail-title="true" data-popup-heading="true" className="text-2xl font-black text-gray-900 break-keep leading-snug">
               {selectedPress.title}
             </h2>
 
             <div className="flex items-center justify-between gap-3 mt-2">
-<p className="text-sm text-gray-400 whitespace-nowrap">
-              {selectedPress.date} · {selectedPress.source}
+<p data-news-detail-meta="true" className="text-sm text-gray-400 whitespace-nowrap">
+              <span className="hidden md:inline">{formatDisplayDate(selectedPress.date)}</span><span className="md:hidden">{formatDisplayDate(selectedPress.date)}</span><span data-news-detail-source="true" className="ml-3">{selectedPress.source}</span>
             </p>
   {selectedPress.pdfs && (
     <div className="flex items-center justify-end gap-3 shrink-0">
@@ -198,13 +203,13 @@ return (<>{pressOpen && (
   )}
 </div>
 
-<div className="border-t border-gray-200 mt-4 pt-3 break-keep text-[15px] leading-[1.8] text-gray-700">
+<div data-press-detail-body="true" className="border-t border-gray-200 mt-4 pt-3 break-keep text-[15px] leading-[1.8] text-gray-700">
   <div className="whitespace-pre-line">
     {selectedPress.body}
   </div>
 
   {selectedPress.pdfs?.[0] && (
-    <div className="mt-6">
+    <div data-press-pdf-preview="true" className="mt-6">
       <iframe
         src={selectedPress.pdfs[0]}
         className="

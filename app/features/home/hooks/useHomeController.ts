@@ -820,6 +820,10 @@ const openCmPinPopup = async () => {
     setCmPinOpen(true);
     return;
   }
+  if (authRole === "admin") {
+    enterPersonalSpace();
+    return;
+  }
   const { data, error } = await supabase
     .from("customer_settings")
     .select("pin_hash")

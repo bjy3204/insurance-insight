@@ -4,7 +4,7 @@
 .searchField { display:flex; align-items:stretch; min-width:0; min-height:44px; }
 .searchField + .searchField { border-left:1px solid #dce4ef; }
 .searchField label { display:flex; align-items:center; justify-content:center; width:82px; flex-shrink:0; background:#f5f8fe; border-right:1px solid #dce4ef; color:#52627a; font-size:14px; font-weight:600; }
-.searchField input { width:100%; min-width:0; padding:8px 10px; border:0; outline:none; background:transparent; color:#24324a; font-size:14px; text-align:center; }
+.searchField input { width:100%; min-width:0; padding:8px 10px; border:0; outline:none; background:transparent; color:#24324a; font-size:14px; text-align:left; }
 .searchInput { display:flex; align-items:center; flex:1; min-width:0; padding-left:10px; }
 .searchInput svg { flex-shrink:0; color:#94a3b8; }
 .searchInput input { border-radius:0 !important; }
@@ -153,3 +153,103 @@
 
 .card,.directory,.contractPanel,.emptyDetailPanel{border-radius:16px}
 .searchFields{border-radius:16px}.searchField label{font-size:14px}
+.directorySearch{border-radius:8px}.directoryList button{border-radius:10px}
+.directorySearch,.directoryList button{border-radius:12px}
+.directorySearch>[data-clearable-search="true"]{height:100%}
+.directorySearch input{height:100%;font-size:16px;line-height:24px;caret-color:#1d4ed8}
+.directorySearch input::placeholder{font-size:14px}
+.searchField label svg{width:15px;height:15px;min-width:15px;color:#9ca3af}
+
+@media(min-width:768px){.searchFields{display:flex;align-items:center;gap:12px;height:44px;border:0;border-radius:0;background:transparent;overflow:visible}.searchFields:focus-within{border:0;box-shadow:none}.searchFields>svg{flex-shrink:0;color:#94a3b8}.searchField{flex:1;min-width:0;align-items:center}.searchField+.searchField{border-left:0}.searchField label{width:auto;flex-shrink:0;padding:0;margin-right:8px;border:0;background:transparent}.searchInput{padding-left:0}.searchField input{padding:8px 4px;background:transparent}}
+@media(min-width:768px){.searchFields{height:44px;box-sizing:border-box;padding:0 12px;border:1px solid #dce4ef;border-radius:12px;background:#fff;gap:12px;overflow:hidden}.searchFields:focus-within{border:1px solid #86adff;box-shadow:0 0 0 3px #2563eb0d}.searchField{min-height:0;height:100%}.searchField label{font-weight:500;color:#64748b}.searchField input{text-align:left;padding:0 4px;height:100%;min-width:0}.searchField+.searchField{padding-left:12px;border-left:1px solid #e6ebf3}}
+
+@media(min-width:768px){.searchInput{gap:8px}}
+
+.searchField label{gap:8px}.searchField label>svg{flex-shrink:0;color:#94a3b8}
+
+.cardTitle,.directory h3{font-size:15px;color:#284261}
+@media(min-width:768px){
+ .directoryList .directoryRow{display:grid;grid-template-columns:minmax(0,1fr) 76px 112px}
+ .directoryRow .directoryPhone{text-align:right}
+}
+
+@media(min-width:768px){.ageChange{padding-left:0}.ageBadge{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #dce4ef;border-radius:12px;background:#fff}.ageBadge,.ageBadge .upperInfo,.ageBadge .upperInfo>span,.ageBadge strong{font-size:14px}.ageBadge .dday{background:transparent;padding:0}}
+
+@media(max-width:767px){.workspace{gap:15px}.detailTabs{margin-top:15px;margin-bottom:15px}.customerArea>section+section{margin-top:15px}}
+
+@media(max-width:767px){
+ .searchFields{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border:0;background:transparent;overflow:visible;border-radius:0}
+ .searchFields:focus-within{border:0;box-shadow:none}
+ .searchField{height:44px;min-height:44px;border:1px solid #dce4ef;border-radius:12px;overflow:hidden;background:#fff}
+ .searchField+.searchField{border-left:1px solid #dce4ef}
+ .searchField:focus-within{border-color:#86adff;box-shadow:0 0 0 3px #2563eb0d}
+ .searchField label{width:90px;gap:6px;white-space:nowrap}
+}
+
+@media(max-width:767px){.entry dt,.entry dd,.ageChange,.ageChange strong,.searchField label,.carrier,.ageBadge,.ageBadge .upperInfo,.ageBadge .upperInfo>span,.ageBadge strong{font-size:14px}}
+
+@media(max-width:767px){.meta,.ageChange,.ageChange strong,.directorySearch input,.ageChange .upperInfo,.ageChange .upperInfo>span{font-size:16px}}
+
+@media(max-width:767px){
+ .searchField label{justify-content:flex-start;gap:6px;padding-left:12px;padding-right:8px;box-sizing:border-box;text-align:left}
+ .searchField label svg{flex-shrink:0}
+}
+
+@media(max-width:767px){
+ .searchFields{grid-template-columns:repeat(2,minmax(0,1fr));gap:0;height:44px;box-sizing:border-box;border:1px solid #dce4ef;border-radius:12px;background:#fff;overflow:hidden}
+ .searchFields:focus-within{border:1px solid #86adff;box-shadow:0 0 0 3px #2563eb0d}
+ .searchField{height:100%;min-height:0;border:0;border-radius:0;background:transparent}
+ .searchField+.searchField{border-left:1px solid #dce4ef}
+ .searchField:focus-within{border-color:#dce4ef;box-shadow:none}
+ .searchField label{width:auto;flex-shrink:0;padding-left:10px;padding-right:6px;border-right:0;background:transparent;gap:4px;white-space:nowrap}
+ .searchInput{padding-left:0}
+ .searchField input{padding-left:4px;padding-right:4px}
+}
+
+@media(max-width:767px){
+ .ageBadge,.directory{display:none}
+ .summary:not(:has(.recordActions)){display:none}
+ .ageChange{justify-content:flex-end;padding:0;min-height:40px}
+}
+
+@media(max-width:767px){
+ .contractTable{min-width:960px}
+ .contractTable th{white-space:nowrap;overflow-wrap:normal;word-break:keep-all}
+ .contractScroll{scrollbar-width:none;-ms-overflow-style:none}
+ .contractScroll::-webkit-scrollbar{display:none}
+}
+
+/* Match desktop typography on mobile. */
+@media(max-width:767px){.searchField input{font-size:14px}}
+
+@media(max-width:767px){
+ .detailTabs{margin-bottom:15px}
+ .detailArea>section[role="tabpanel"]{margin-top:0;padding-top:0}
+}
+
+@media(max-width:767px){.summary[data-mobile-actions-moved="true"]{display:none}}
+
+@media(max-width:767px){
+ .searchFields{height:44px !important;min-height:44px !important;max-height:44px !important}
+ .searchField,.searchInput{height:42px;min-height:0;box-sizing:border-box}
+ .searchField .searchInput input{height:42px !important;min-height:0 !important;max-height:42px !important}
+}
+
+.searchField input::placeholder{color:transparent}
+@media(max-width:767px){
+ .searchLabelText{display:none}
+ .searchField label{padding-left:12px;padding-right:4px}
+ .searchField input::placeholder{color:#9ca3af !important;opacity:1}
+}
+
+/* Both desktop and mobile use placeholders instead of fixed search labels. */
+.searchLabelText{display:none}
+.searchField input::placeholder{color:#9ca3af !important;opacity:1}
+.searchField label{width:auto;gap:0;margin-right:0}
+
+@media(max-width:767px){
+ .cards>.card:nth-child(1){order:0}
+ .cards>.card:nth-child(2){order:1}
+ .cards>.medicalBlock{order:2}
+ .cards>.card:nth-child(3){order:3}
+}

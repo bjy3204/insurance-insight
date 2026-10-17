@@ -42,7 +42,7 @@ export default function CustomerIdentityFields({ customers, name, birth, onNameC
   const input = (field: "name" | "birth", label: string) => <div className={styles.field}>
     <label htmlFor={`${id}-${field}`} className={styles.label}>{label}</label>
     <input ref={field === "name" ? nameInput : birthInput} id={`${id}-${field}`} className={styles.identityInput} role="combobox" aria-autocomplete="list" aria-expanded={visible && target === field} aria-controls={visible && target === field ? `${id}-options` : undefined} aria-activedescendant={visible && target === field && matches[index] ? `${id}-option-${index}` : undefined}
-      value={field === "name" ? name : birth} autoComplete="off" inputMode={field === "birth" ? "numeric" : undefined} maxLength={field === "birth" ? 6 : 80} placeholder={field === "birth" ? "960901" : undefined}
+      value={field === "name" ? name : birth} autoComplete="off" inputMode={field === "birth" ? "numeric" : undefined} maxLength={field === "birth" ? 6 : 80}
       onFocus={() => open(field)} onBlur={() => close()} onChange={event => { if (field === "name") onNameChange(event.target.value); else onBirthChange(shortCustomerBirth(event.target.value)); open(field); }}
       onKeyDown={event => {
         if (event.nativeEvent.isComposing) return;

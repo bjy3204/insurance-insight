@@ -1,5 +1,6 @@
 "use client";
 
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { calculatePension } from "@/lib/pension-calculation";
 import Link from "next/link";
@@ -577,11 +578,11 @@ const healthyYears = Math.max(
 const expectAge = Number(lifeAge || 0) + expectYears;
 const sickStartAge = Number(lifeAge || 0) + healthyYears;
   return (
-    <main className={`${styles.page} min-h-screen pb-24`}>
+    <main data-calculator-page="true" className={`${styles.page} min-h-screen pb-24`}>
       <header data-page-header="true" className="bg-white border-b border-black shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="relative flex items-center justify-center">
-            <Link data-header-control="true"
+            <Link data-icon-only="true" data-header-control="true"
   href="/"
   className="
     absolute
@@ -617,7 +618,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
               }`}
             >
               <div className="relative">
-                <button data-header-control="true"
+                <button data-icon-only="true" data-header-control="true"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSettingOpen(!settingOpen);
@@ -633,7 +634,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
                 </button>
 
                 {settingOpen && (
-                  <div
+                  <div data-ui-card="true"
                     onClick={(e) => e.stopPropagation()}
                     className="
                       absolute right-0 top-12 z-[999] w-40 rounded-2xl
@@ -680,7 +681,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
           ))}
         </div>
 
-<div className={`${styles.panel} rounded-3xl p-5 md:p-7`}>
+<div data-ui-card="true" className={`${styles.panel} rounded-3xl p-5 md:p-7`}>
           <div className="min-w-0">
           {tab === "retire" && (
             <>
@@ -764,7 +765,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
                 )}
               </div>
 
-              <div className="bg-gray-50 border border-[#e1e9fb] rounded-3xl p-8 mt-6">
+              <div data-ui-card="true" className="bg-gray-50 border border-[#e1e9fb] rounded-3xl p-8 mt-6">
                 <div className="flex justify-center">
                   <div className="relative">
                     <div className="absolute left-[40px] top-[40px] bottom-[40px] w-[2px] bg-gray-300" />
@@ -905,7 +906,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
 
           {showResult && !missingInput && !result.error && tab === "nps" && (
             <div className="space-y-5 mt-6">
-              <div className="bg-blue-50 rounded-3xl p-7 text-center">
+              <div data-ui-card="true" className="bg-blue-50 rounded-3xl p-7 text-center">
                 <p className="text-gray-700 text-lg font-medium leading-relaxed">
                   월 납입보험료{" "}
                   <span className="font-semibold">
@@ -922,7 +923,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 xl:gap-8 items-stretch">
-              <section className="md:rounded-2xl md:border md:border-blue-100 md:bg-blue-50/40 md:p-5 flex flex-col gap-6">
+              <section data-ui-card="true" className="md:rounded-2xl md:border md:border-blue-100 md:bg-blue-50/40 md:p-5 flex flex-col gap-6">
               <div className="flex items-center gap-3"><span className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600"><UserRound className="w-5 h-5" /></span><SectionTitle title="노령연금" desc="가입기간별 월 지급예상액" /></div>
 
               <div className="divide-y divide-gray-200/60 lg:min-h-[280px] flex flex-col justify-between [&>div]:flex-1">
@@ -937,7 +938,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
               </div>
 
               </section>
-              <section className="md:rounded-2xl md:border md:border-amber-100 md:bg-amber-50/40 md:p-5 flex flex-col gap-6">
+              <section data-ui-card="true" className="md:rounded-2xl md:border md:border-amber-100 md:bg-amber-50/40 md:p-5 flex flex-col gap-6">
               <div className="flex items-center gap-3"><span className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 text-amber-600"><Accessibility className="w-5 h-5" /></span><SectionTitle title="장애연금" desc="등급별 예상액 · 4급은 일시금" /></div>
 
               <div className="divide-y divide-gray-200/60 lg:min-h-[280px] flex flex-col justify-between [&>div]:flex-1">
@@ -952,7 +953,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
               </div>
 
               </section>
-              <section className="md:rounded-2xl md:border md:border-pink-100 md:bg-pink-50/40 md:p-5 flex flex-col gap-6">
+              <section data-ui-card="true" className="md:rounded-2xl md:border md:border-pink-100 md:bg-pink-50/40 md:p-5 flex flex-col gap-6">
               <div className="flex items-center gap-3"><span className="flex items-center justify-center w-10 h-10 rounded-full bg-pink-100 text-pink-600"><UsersRound className="w-5 h-5" /></span><SectionTitle title="유족연금" desc="가입기간별 월 지급예상액" /></div>
 
               <div className="divide-y divide-gray-200/60 lg:min-h-[280px] flex flex-col justify-between [&>div]:flex-1">
@@ -971,7 +972,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
           )}
 
           </div>
-          <div className="mt-6 text-xs text-gray-500 leading-relaxed lg:col-span-2">
+          <div data-calculator-footer="true" data-calculator-note="true" className="mt-6 text-xs text-gray-500 leading-relaxed lg:col-span-2">
   {tab === "nps" ? (
     <>
       국민연금은 2026년 7월 예상연금월액표 기준이며 표 사이의 소득은 보간한 추정값입니다
@@ -1021,7 +1022,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
           기대수명 계산기
         </div>
 
-        <button data-popup-close="true"
+        <button data-icon-only="true" data-popup-close="true"
   onClick={closeLifePopup}
           className="
   cursor-pointer
@@ -1062,7 +1063,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
   </label>
 
   <div className="relative">
-    <input
+    <ClearableSearchInput showClearButton={false} onClear={() => setLifeAge("".replace(/[^0-9]/g, ""))}
       value={lifeAge}
       onChange={(e) =>
         setLifeAge(e.target.value.replace(/[^0-9]/g, ""))
@@ -1071,7 +1072,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
       inputMode="numeric"
       className="placeholder:text-sm placeholder:font-normal placeholder:text-gray-400 
         w-full
-        h-14
+        h-11
         rounded-2xl
         border
         border-gray-200
@@ -1084,14 +1085,10 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
         focus:ring-blue-500
       "
     />
-
-    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-lg">
-      세
-    </span>
   </div>
 </div>
 
-        <div className="bg-blue-50 rounded-3xl p-6 text-center mb-3">
+        <div data-ui-card="true" className="bg-blue-50 rounded-3xl p-6 text-center mb-3">
           <img
             src={`/icons/pension/${lifeGender === "남성" ? "male" : "female"}.png`}
             alt={lifeGender}
@@ -1118,21 +1115,21 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
 
         {selectedLife && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
+            <div data-ui-card="true" className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
               <p className="text-sm font-bold text-gray-500 mb-2">기대여명</p>
               <p className="text-2xl font-black text-blue-600">
                 {expectYears.toFixed(1)}년
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
+            <div data-ui-card="true" className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
               <p className="text-sm font-bold text-gray-500 mb-2">건강기간</p>
               <p className="text-2xl font-black text-blue-600">
                 {healthyYears.toFixed(1)}년
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
+            <div data-ui-card="true" className="bg-white rounded-2xl border border-gray-200 p-5 text-center">
               <p className="text-sm font-bold text-gray-500 mb-2">유병기간</p>
               <p className="text-2xl font-black text-blue-600">
                 {sickYears.toFixed(1)}년
@@ -1142,7 +1139,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
         )}
 
         {selectedLife && (
-  <div className="mt-3 rounded-2xl bg-gray-50 border border-gray-200 p-4">
+  <div data-ui-card="true" className="mt-3 rounded-2xl bg-gray-50 border border-gray-200 p-4">
     <p className="text-sm text-gray-700 leading-relaxed">
   현재 <span className="font-bold">{lifeAge}세</span>{" "}
   <span className="font-bold">{lifeGender}</span> 기준,
@@ -1174,7 +1171,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
 )}
 
 
-        <p className="text-xs text-gray-500 leading-relaxed mt-3 px-1">
+        <p data-reference-note="true" className="text-xs text-gray-500 leading-relaxed mt-3 px-1">
   본 자료는 통계청 「2024년 생명표」 및
   유병기간 제외 기대수명(건강수명) 통계를 참고하여 계산한 추정값이며,
   개인의 건강상태 · 생활습관 · 질병 이력 등에 따라 실제 결과와 다를 수 있습니다.
@@ -1193,7 +1190,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
 
 
 {contextMenu && (
-  <div
+  <div data-ui-card="true"
     style={{ top: contextMenu.y, left: contextMenu.x }}
     className="fixed z-[2000] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden w-32"
     onPointerDown={(e) => e.stopPropagation()}
@@ -1225,7 +1222,7 @@ const sickStartAge = Number(lifeAge || 0) + healthyYears;
 
 
       <>
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
+        <div data-page-fixed-footer="true" className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden">
         <div className="max-w-6xl mx-auto grid grid-cols-3 text-center">
           <a href="https://naver.me/xsZ8mk7H" className="py-3 flex flex-col items-center gap-1">
             <Newspaper className="w-5 h-5" />
@@ -1329,7 +1326,14 @@ function InputBox({
       </label>
 
       <div data-calculator-field="true" className="relative">
-        <input
+        <ClearableSearchInput onClear={() => {
+            const raw = "".replaceAll(",", "");
+            setValue(
+              decimal
+                ? raw.replace(/[^0-9.]/g, "")
+                : raw.replace(/[^0-9]/g, "")
+            );
+          }}
           type="text"
           inputMode={decimal ? "decimal" : "numeric"}
           value={
@@ -1385,7 +1389,7 @@ function TimelineItem({
         {age}
       </div>
 
-      <div className="bg-white rounded-2xl p-4 shadow-sm min-w-[220px]">
+      <div data-ui-card="true" className="bg-white rounded-2xl p-4 shadow-sm min-w-[220px]">
         <p className="text-gray-500 font-bold text-sm">{title}</p>
         <p className="text-lg font-medium text-gray-900 mt-1 leading-relaxed">
           {desc}

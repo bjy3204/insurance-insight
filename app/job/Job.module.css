@@ -85,3 +85,6 @@
 
 .regionFilters button{border-radius:10px}
 
+.regionFilters button{border-radius:12px}
+.regionFilters button{height:36px;min-height:36px;box-sizing:border-box;padding-top:0;padding-bottom:0}
+.regionFilters button{font-size:12px;font-weight:700;line-height:16px}

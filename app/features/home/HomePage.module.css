@@ -29,7 +29,7 @@
   .counters span { display: block; color: #56668c; font-size: 11px; }
   .counters strong { display: block; font-size: 17px; color: #101735; }
   .counters > div:first-child strong { color: #0560ff; }
-  .headerActions { display: flex; align-items: center; gap: 18px; margin-left: auto; }
+  .headerActions { display: flex; align-items: center; gap: 15px; margin-left: auto; }
   .headerMember { position: relative; }
   button.nickname { display: flex; align-items: center; gap: 8px; background: #f0f6ff; border: 1px solid #e3edfc; border-radius: 999px; padding: 7px 13px; color: #0560ff; font-weight: 700; font-size: 14px; max-width: 210px; margin-right: 16px; cursor: default; transition: transform .2s ease, box-shadow .2s ease; }
   button.nickname:hover { transform: translateY(-2px); box-shadow: 0 4px 10px #24517a15; }
@@ -37,7 +37,7 @@
   .nickname > div > span:first-child { padding: 0; height: auto; background: transparent; border: 0; font-size: 14px; color: inherit; transform: none; box-shadow: none; }
   .headerIcon { width: 40px; height: 40px; display: grid; place-items: center; position: relative; color: #52618b; border-radius: 10px; }
   .headerIcon:hover { background: #f0f6ff; }
-  .headerIcon svg { width: 28px; height: 28px; }
+  .headerIcon svg { width: 24px; height: 24px; }
   .headerIcon i { position: absolute; background: #ff254b; width: 8px; height: 8px; border-radius: 50%; top: 4px; right: 5px; }
   .headerDropdown { position: absolute; top: calc(100% + 12px); right: 0; width: 170px; background: white; border: 1px solid #e5ebf4; border-radius: 14px; box-shadow: 0 8px 24px #182b4820; overflow: hidden; z-index: 1000; }
   .headerDropdown button { display: block; width: 100%; padding: 13px 16px; font-size: 14px; font-weight: 600; text-align: center; color: #33405d; }

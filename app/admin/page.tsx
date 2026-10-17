@@ -1,4 +1,9 @@
 "use client";
+import { formatDisplayDate } from "@/lib/display-date";
+import ResponsiveSelect from "@/app/components/ResponsiveSelect";
+import MiniCalendar from "@/app/components/MiniCalendar";
+import ClearableSearchInput from "@/app/components/ClearableSearchInput";
+import { X as TaskX, ChevronLeft as TaskChevronLeft, ChevronRight as TaskChevronRight } from "lucide-react";
 import { confirmAction } from "@/components/ConfirmationHost";
 
 import { hasCompletedMembership } from "@/lib/auth/membership";
@@ -196,6 +201,9 @@ type NoticeDB = {
 // 공지 상태
 const [noticeCategories, setNoticeCategories] = useState<NoticeCategory[]>([]);
 const [noticesDB, setNoticesDB] = useState<NoticeDB[]>([]);
+const [adminNoticePage,setAdminNoticePage]=useState(1);
+const adminNoticeTotalPages=Math.max(1,Math.ceil(noticesDB.length/5));
+const visibleAdminNoticePage=Math.min(adminNoticePage,adminNoticeTotalPages);
 const [noticeForm, setNoticeForm] = useState({
   title: "",
   content: "",
@@ -1120,9 +1128,9 @@ const matchSearch =
   );
 
   const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "-";
+    if (!dateStr) return "";
     const d = new Date(dateStr);
-    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+    return <><span className="hidden md:inline">{d.toLocaleDateString("sv-SE", {timeZone:"Asia/Seoul"})}</span><span className="md:hidden">{`${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`}</span></>;
   };
 
   const isNewThisMonth = (dateStr: string) => {
@@ -1138,12 +1146,12 @@ const matchSearch =
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 pb-24 relative">
+    <main data-admin-page="true" className="min-h-screen bg-gray-50 pb-24 relative">
       {/* 헤더 */}
       <header data-page-header="true" className="sticky top-0 z-40 bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-6">
          <div className="relative flex items-center justify-center">
-  <Link data-header-control="true" href="/" className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center">
+  <Link data-icon-only="true" data-header-control="true" href="/" className="absolute left-0 w-11 h-11 rounded-xl border border-gray-300 bg-white flex items-center justify-center">
     <ArrowLeft className="w-5 h-5 text-black" />
   </Link>
   <div className="text-center">
@@ -1157,7 +1165,7 @@ const matchSearch =
   {/* 연필 아이콘 + 드롭다운 */}
   <div className={`absolute right-0 top-1/2 -translate-y-1/2 ${isPencilOpen ? "z-[1000]" : "z-40"}`}>
     <div className="relative">
-      <button data-header-control="true"
+      <button data-icon-only="true" data-header-control="true"
         onClick={(e) => { e.stopPropagation(); setIsPencilOpen(!isPencilOpen); }}
         className={`w-10 h-10 rounded-full border border-gray-200 shadow-sm flex items-center justify-center transition cursor-default ${isPencilOpen ? "bg-gray-100" : "bg-white hover:bg-gray-50"}`}
       >
@@ -1170,7 +1178,7 @@ const matchSearch =
           className="absolute right-0 top-12 z-[999] w-40 rounded-2xl bg-white border border-gray-200 shadow-xl overflow-hidden"
         >
            <button
-            onClick={() => { setIsMemoOpen(true); setIsPencilOpen(false); }}
+            onClick={() => { if (window.innerWidth >= 768) window.dispatchEvent(new Event("open-memo-manager")); else setIsMemoOpen(true); setIsPencilOpen(false); }}
             className="block w-full text-center px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50 transition cursor-default"
           >
             메모장
@@ -1260,7 +1268,7 @@ const matchSearch =
 
   <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
     <Search className="w-5 h-5 text-gray-400 shrink-0" />
-    <input data-ui-field="true" data-page-search-input="true"
+    <ClearableSearchInput onClear={() => { setSearch(""); setCurrentPage(1); }} data-ui-field="true" data-page-search-input="true"
       placeholder="닉네임 또는 인스타그램 아이디로 검색"
       value={search}
       onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
@@ -1285,7 +1293,7 @@ const matchSearch =
                       </div>
                       <div className="flex flex-col items-end gap-1">
                         <span className={`text-xs font-bold px-3 py-1 rounded-full ${STATUS_COLOR[profile.status || ""] || "bg-gray-100 text-gray-500"}`}>
-                          {STATUS_LABEL[profile.status || ""] || profile.status || "-"}
+                          {STATUS_LABEL[profile.status || ""] || profile.status || ""}
                         </span>
                         {linkedSub?.status === "canceled" && (
   <span className="text-xs font-bold px-3 py-1 rounded-full bg-red-100 text-red-600">
@@ -1342,7 +1350,7 @@ const matchSearch =
 >
   거절
 </button>
-<button onClick={event => { event.stopPropagation(); void updateStatus(profile.id, "payment_error"); }} disabled={profile.status === "payment_error" || updating === profile.id} className="flex-1 h-9 whitespace-nowrap rounded-xl bg-orange-50 text-xs font-bold text-orange-700 transition hover:bg-orange-100 cursor-pointer disabled:cursor-default disabled:opacity-60">결제오류</button>
+
                       </div>
                     )}
                      </div>
@@ -1360,10 +1368,7 @@ const matchSearch =
 
                {/* ==================== 공지사항 탭 ==================== */}
         {adminTab === "notices" && (
-          <div className="space-y-6">
-
-            {/* 카테고리 관리 */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-5">
+          <div data-admin-notice-layout="true"><div data-admin-notice-editor="true"><div data-admin-category-row="true" className="bg-white rounded-2xl border border-gray-200 p-5">
               <h3 className="font-black text-gray-900 mb-4">카테고리 관리</h3>
               <div className="flex flex-wrap gap-2 mb-4">
                 {noticeCategories.map((cat) => (
@@ -1377,7 +1382,7 @@ cat.color === "gray" ? "bg-gray-300" :
 "bg-orange-400"
                     }`} />
                     <span className="text-sm font-bold text-gray-700">{cat.name}</span>
-                    <button onClick={() => deleteCategory(cat.id)} className="text-gray-400 hover:text-red-500 transition cursor-pointer ml-1">
+                    <button data-category-remove="true" onClick={() => deleteCategory(cat.id)} className="text-gray-400 hover:text-red-500 transition cursor-pointer ml-1">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -1385,7 +1390,7 @@ cat.color === "gray" ? "bg-gray-300" :
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="flex gap-2 items-center">
-                  <input data-ui-field="true"
+                  <ClearableSearchInput onClear={() => setCatForm({ ...catForm, name: "" })} data-ui-field="true"
                     value={catForm.name}
                     onChange={(e) => setCatForm({ ...catForm, name: e.target.value })}
                     placeholder="카테고리 이름"
@@ -1393,7 +1398,7 @@ cat.color === "gray" ? "bg-gray-300" :
                   />
                   <div className="hidden sm:flex gap-1.5">
                     {["blue","yellow","red","green","orange","gray"].map((c) => (
-                      <button key={c} onClick={() => setCatForm({ ...catForm, color: c })}
+                      <button data-category-swatch={c} aria-label={`${c} 색상`} aria-pressed={catForm.color === c} type="button" key={c} onClick={() => setCatForm({ ...catForm, color: c })}
                         className={`w-7 h-7 rounded-full border-2 transition cursor-pointer ${
                           c === "blue" ? "bg-blue-400" : c === "yellow" ? "bg-yellow-400" :
                          c === "red" ? "bg-red-400" :
@@ -1404,11 +1409,11 @@ c === "gray" ? "bg-gray-300" :
                       />
                     ))}
                   </div>
-                  <button onClick={saveCategory} className="sm:hidden h-10 px-4 bg-gray-800 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition cursor-pointer shrink-0">추가</button>
+                  <button data-admin-form-action="true" onClick={saveCategory} className="sm:hidden h-10 px-4 bg-gray-800 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition cursor-pointer shrink-0">추가</button>
                 </div>
                 <div className="flex sm:hidden gap-1.5 items-center">
                   {["blue","yellow","red","green","orange","gray"].map((c) => (
-                    <button key={c} onClick={() => setCatForm({ ...catForm, color: c })}
+                    <button data-category-swatch={c} aria-label={`${c} 색상`} aria-pressed={catForm.color === c} type="button" key={c} onClick={() => setCatForm({ ...catForm, color: c })}
                       className={`w-8 h-8 rounded-full border-2 transition cursor-pointer ${
                         c === "blue" ? "bg-blue-400" : c === "yellow" ? "bg-yellow-400" :
                        c === "red" ? "bg-red-400" :
@@ -1419,22 +1424,18 @@ c === "gray" ? "bg-gray-300" :
                     />
                   ))}
                 </div>
-                <button onClick={saveCategory} className="hidden sm:block h-10 px-4 bg-gray-800 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition cursor-pointer shrink-0">추가</button>
+                <button data-admin-form-action="true" onClick={saveCategory} className="hidden sm:block h-10 px-4 bg-gray-800 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition cursor-pointer shrink-0">추가</button>
               </div>
-            </div>
-
-            {/* 공지 작성/수정 */}
-            {noticeFormOpen ? (
-              <div className="bg-white rounded-2xl border border-gray-200 p-5">
+            </div>{<><div className={noticeFormOpen ? "" : "hidden md:block"}><div className="bg-white rounded-2xl border border-gray-200 p-5">
                 <h3 className="font-black text-gray-900 mb-4">{editingNotice ? "공지 수정" : "공지 작성"}</h3>
                 <div className="space-y-3">
-                  <input data-ui-field="true"
+                  <ClearableSearchInput onClear={() => setNoticeForm({ ...noticeForm, title: "" })} data-ui-field="true"
                     value={noticeForm.title}
                     onChange={(e) => setNoticeForm({ ...noticeForm, title: e.target.value })}
                     placeholder="제목"
                     className="w-full h-11 px-4 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400"
                   />
-                  <select data-ui-field="true"
+                  <ResponsiveSelect data-ui-field="true"
                     value={noticeForm.category_id}
                     onChange={(e) => setNoticeForm({ ...noticeForm, category_id: e.target.value })}
                     className="w-full h-11 pl-4 pr-8 rounded-xl border border-gray-200 text-sm outline-none focus:border-blue-400 bg-white "
@@ -1443,9 +1444,9 @@ c === "gray" ? "bg-gray-300" :
                     {noticeCategories.map((cat) => (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
-                  </select>
+                  </ResponsiveSelect>
                   
-<div className="rounded-xl border border-gray-200 overflow-hidden bg-white">
+<div data-admin-notice-rich="true" className="rounded-xl border border-gray-200 overflow-hidden bg-white">
   <ReactQuill
     theme="snow"
     value={noticeForm.content}
@@ -1506,7 +1507,7 @@ c === "gray" ? "bg-gray-300" :
           className="w-full h-50 object-cover"
         />
 
-        <button
+        <button data-icon-only="true"
           type="button"
           onClick={() =>
             setNoticeForm((prev) => {
@@ -1521,7 +1522,7 @@ c === "gray" ? "bg-gray-300" :
           }
           className="absolute right-2 top-2 w-7 h-7 rounded-full bg-black/50 text-white text-xs font-bold cursor-pointer hover:bg-black/70 transition"
         >
-          ×
+          <TaskX size={20} role="img" aria-label="닫기" style={{display:"inline-block",verticalAlign:"middle"}} />
         </button>
       </div>
     ))}
@@ -1583,128 +1584,7 @@ c === "gray" ? "bg-gray-300" :
                 onClick={() => setNoticeDatePickerOpen(null)}
               />
 
-              <div className="absolute top-11 left-0 z-[100] w-[320px] rounded-2xl border border-gray-200 bg-white p-4 shadow-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (noticePickerMonth === 0) {
-                        setNoticePickerMonth(11);
-                        setNoticePickerYear(noticePickerYear - 1);
-                      } else {
-                        setNoticePickerMonth(noticePickerMonth - 1);
-                      }
-                    }}
-                    className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
-                  >
-                    ‹
-                  </button>
-
-                  <span className="text-sm font-bold text-gray-800">
-                    {noticePickerYear}년 {noticePickerMonth + 1}월
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (noticePickerMonth === 11) {
-                        setNoticePickerMonth(0);
-                        setNoticePickerYear(noticePickerYear + 1);
-                      } else {
-                        setNoticePickerMonth(noticePickerMonth + 1);
-                      }
-                    }}
-                    className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold"
-                  >
-                    ›
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-7 mb-1">
-                  {["일", "월", "화", "수", "목", "금", "토"].map((d, i) => (
-                    <div
-                      key={d}
-                      className={`text-center text-xs font-bold py-1 ${
-                        i === 0
-                          ? "text-red-400"
-                          : i === 6
-                          ? "text-blue-400"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      {d}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-7">
-                  {(() => {
-                    const firstDow = new Date(
-                      noticePickerYear,
-                      noticePickerMonth,
-                      1
-                    ).getDay();
-
-                    const daysInMonth = new Date(
-                      noticePickerYear,
-                      noticePickerMonth + 1,
-                      0
-                    ).getDate();
-
-                    const cells = [];
-
-                    for (let i = 0; i < firstDow; i++) {
-                      cells.push(<div key={`empty-${i}`} />);
-                    }
-
-                    for (let d = 1; d <= daysInMonth; d++) {
-                      const dateStr = `${noticePickerYear}-${String(
-                        noticePickerMonth + 1
-                      ).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-
-                      const isSelected = value === dateStr;
-                      const dow = new Date(
-                        noticePickerYear,
-                        noticePickerMonth,
-                        d
-                      ).getDay();
-
-                      cells.push(
-                        <button
-                          key={d}
-                          type="button"
-                          onClick={() => {
-                            setNoticeForm({
-                              ...noticeForm,
-                              [type === "start"
-                                ? "popup_start_date"
-                                : "popup_end_date"]: dateStr,
-                            });
-                            setNoticeDatePickerOpen(null);
-                          }}
-                          className={`h-9 w-full rounded-xl text-sm font-medium transition ${
-                            isSelected
-                              ? "bg-gray-800 text-white"
-                              : "hover:bg-gray-100"
-                          } ${
-                            !isSelected && dow === 0 ? "text-red-400" : ""
-                          } ${
-                            !isSelected && dow === 6 ? "text-blue-400" : ""
-                          } ${
-                            !isSelected && dow !== 0 && dow !== 6
-                              ? "text-gray-700"
-                              : ""
-                          }`}
-                        >
-                          {d}
-                        </button>
-                      );
-                    }
-
-                    return cells;
-                  })()}
-                </div>
-              </div>
+              <MiniCalendar value={value || ""} onChange={date=>setNoticeForm({...noticeForm,[type === "start" ? "popup_start_date" : "popup_end_date"]:date})} onClose={()=>setNoticeDatePickerOpen(null)} />
             </>
           )}
         </div>
@@ -1713,7 +1593,7 @@ c === "gray" ? "bg-gray-300" :
   </div>
 )}
                   <div className="flex gap-3 pt-2">
-                    <button onClick={() => { setNoticeFormOpen(false); setEditingNotice(null); setNoticeForm({
+                    <button data-admin-form-action="true" onClick={() => { setNoticeFormOpen(false); setEditingNotice(null); setNoticeForm({
   title: "",
   content: "",
   category_id: "",
@@ -1726,22 +1606,16 @@ c === "gray" ? "bg-gray-300" :
 });
  }}
                       className="flex-1 h-11 rounded-xl bg-gray-100 text-gray-700 text-sm font-bold hover:bg-gray-200 transition cursor-pointer">취소</button>
-                    <button onClick={saveNotice} disabled={noticeSaving}
+                    <button data-admin-form-action="true" onClick={saveNotice} disabled={noticeSaving}
                       className="flex-1 h-11 rounded-xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-pointer disabled:opacity-50">
                       {noticeSaving ? "저장 중..." : (editingNotice ? "수정 완료" : "등록")}
                     </button>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <button onClick={() => setNoticeFormOpen(true)}
+              </div></div>{!noticeFormOpen && <div className="md:hidden"><button onClick={() => setNoticeFormOpen(true)}
                 className="w-full h-12 rounded-2xl bg-gray-800 text-white text-sm font-bold hover:bg-gray-700 transition cursor-pointer flex items-center justify-center gap-2">
                 <Plus className="w-4 h-4" /> 새 공지 작성
-              </button>
-            )}
-
-            {/* 공지 목록 */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              </button></div>}</>}</div><div data-admin-notice-list="true"><div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100">
                 <h3 className="font-black text-gray-900">등록된 공지 ({noticesDB.length})</h3>
               </div>
@@ -1749,10 +1623,10 @@ c === "gray" ? "bg-gray-300" :
                 <div className="py-10 text-center text-sm text-gray-400">등록된 공지가 없습니다.</div>
               ) : (
                 <div className="divide-y divide-gray-100">
-                  {noticesDB.map((notice) => {
+                  {noticesDB.map((notice, noticeIndex) => {
                     const cat = noticeCategories.find((c) => c.id === notice.category_id);
                     return (
-                      <div key={notice.id} className="px-5 py-4 flex items-start gap-3">
+                      <div data-notice-page-visible={Math.floor(noticeIndex/5)+1===visibleAdminNoticePage} data-admin-notice-entry="true" key={notice.id} className="px-5 py-4 flex items-start gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             {cat && (
@@ -1773,10 +1647,11 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                             )}
                           </div>
                           <p className="font-bold text-gray-900 text-sm truncate">{notice.title}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">{new Date(notice.created_at).toLocaleString("ko-KR")}</p>
+                          <p className="md:hidden text-xs text-gray-400 mt-0.5">{new Date(notice.created_at).toLocaleString("ko-KR")}</p>
+                          
                         </div>
                         <div className="flex gap-2 shrink-0">
-                          <button onClick={() => {
+                          <button data-compact-corner="10" data-compact-action="true" onClick={() => {
                             setEditingNotice(notice);
                           setNoticeForm({
   title: notice.title,
@@ -1792,32 +1667,31 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
                             setNoticeFormOpen(true);
                           }} className="h-8 px-3 rounded-xl bg-gray-100 text-gray-600 text-xs font-bold hover:bg-gray-200 transition cursor-pointer">수정</button>
-                          <button onClick={() => deleteNotice(notice.id)} className="h-8 px-3 rounded-xl bg-red-50 text-red-500 text-xs font-bold hover:bg-red-100 transition cursor-pointer">삭제</button>
+                          <button data-compact-corner="10" data-compact-action="true" onClick={() => deleteNotice(notice.id)} className="h-8 px-3 rounded-xl bg-red-50 text-red-500 text-xs font-bold hover:bg-red-100 transition cursor-pointer">삭제</button>
                         </div>
                       </div>
                     );
                   })}
                 </div>
               )}
-            </div>
-          </div>
+            <div className="hidden md:flex justify-center px-4 py-4 border-t border-gray-100"><Pagination page={visibleAdminNoticePage} totalPages={adminNoticeTotalPages} onPageChange={setAdminNoticePage} desktopPageCount={5}/></div></div></div></div>
         )}
 
         {/* ==================== 구독자 관리 탭 ==================== */}
         {adminTab === "subscribers" && (
 
-          <div className="flex flex-col lg:flex-row gap-6">
+          <div data-admin-subscribers="true" className="flex flex-col lg:flex-row gap-6">
             {/* 왼쪽: 메인 구독자 리스트 */}
             <div className="flex-1">
               {/* 꽉 차는 월 이동 및 검색 헤더 */}
-              <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
+              <div data-page-search-wrapper="true" className="md:hidden bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
                 <div data-ui-field-wrapper="true" className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50/50">
-                  <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="p-2 hover:bg-gray-200 rounded-full transition">
+                  <button data-icon-only="true" data-prev-next="true" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="p-2 hover:bg-gray-200 rounded-full transition">
                     <ChevronLeft className="w-6 h-6 text-gray-600" />
                   </button>
                   <div className="flex items-center gap-2">
   <Calendar className="w-5 h-5 text-blue-600" />
-  <select data-ui-field="true"
+  <ResponsiveSelect data-ui-field="true"
     value={currentMonth.getFullYear()}
     onChange={(e) => setCurrentMonth(new Date(Number(e.target.value), currentMonth.getMonth(), 1))}
     className="text-xl font-black text-gray-900 bg-transparent outline-none cursor-pointer hover:text-blue-600 transition"
@@ -1825,8 +1699,8 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
     {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
       <option key={year} value={year}>{year}년</option>
     ))}
-  </select>
-  <select data-ui-field="true"
+  </ResponsiveSelect>
+  <ResponsiveSelect data-ui-field="true"
     value={currentMonth.getMonth() + 1}
     onChange={(e) => setCurrentMonth(new Date(currentMonth.getFullYear(), Number(e.target.value) - 1, 1))}
     className="text-xl font-black text-gray-900 bg-transparent outline-none cursor-pointer hover:text-blue-600 transition"
@@ -1834,14 +1708,14 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
     {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
       <option key={month} value={month}>{month}월</option>
     ))}
-  </select>
+  </ResponsiveSelect>
 </div>
 
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setIsSelectPopupOpen(true)} className="p-2 border border-gray-200 bg-white text-gray-300 hover:bg-gray-100 hover:text-gray-500 rounded-full transition cursor-pointer" title="이번 달 명단에 추가">
+                    <button data-icon-only="true" onClick={() => setIsSelectPopupOpen(true)} className="p-2 border border-gray-200 bg-white text-gray-300 hover:bg-gray-100 hover:text-gray-500 rounded-full transition cursor-pointer" title="이번 달 명단에 추가">
                       <Plus className="w-6 h-6" />
                     </button>
-                    <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="p-2 hover:bg-gray-200 rounded-full transition">
+                    <button data-icon-only="true" data-prev-next="true" onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="p-2 hover:bg-gray-200 rounded-full transition">
                       <ChevronRight className="w-6 h-6 text-gray-600" />
                     </button>
                   </div>
@@ -1863,7 +1737,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
                   <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-3 flex items-center gap-3">
                     <Search className="w-5 h-5 text-gray-400 shrink-0" />
-                    <input data-ui-field="true" data-page-search-input="true"
+                    <ClearableSearchInput onClear={() => setSubSearch("")} data-ui-field="true" data-page-search-input="true"
                       placeholder="이번 달 구독자 이름 또는 아이디 검색"
                       value={subSearch}
                       onChange={(e) => setSubSearch(e.target.value)}
@@ -1874,8 +1748,8 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
               </div>
 
               {/* 한 줄 리스트 형식 (테이블 스타일) */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-               <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between flex-wrap gap-2">
+              <div data-monthly-subscribers-card="true" className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+               <div data-subscriber-heading="true" className="hidden md:flex"><h3>현재 구독자 ({activeMonthly.length}명)</h3><div data-subscriber-month="true"><button data-icon-only="true" type="button" aria-label="이전 달" onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(),currentMonth.getMonth()-1,1))}><ChevronLeft size={20}/></button><ResponsiveSelect aria-label="구독자 조회 연도" value={currentMonth.getFullYear()} onChange={e=>setCurrentMonth(new Date(Number(e.target.value),currentMonth.getMonth(),1))}>{Array.from({length:10},(_,i)=>new Date().getFullYear()-2+i).map(year=><option key={year} value={year}>{year}년</option>)}</ResponsiveSelect><ResponsiveSelect aria-label="구독자 조회 월" value={currentMonth.getMonth()+1} onChange={e=>setCurrentMonth(new Date(currentMonth.getFullYear(),Number(e.target.value)-1,1))}>{Array.from({length:12},(_,i)=>i+1).map(month=><option key={month} value={month}>{month}월</option>)}</ResponsiveSelect><button data-icon-only="true" type="button" aria-label="다음 달" onClick={()=>setCurrentMonth(new Date(currentMonth.getFullYear(),currentMonth.getMonth()+1,1))}><ChevronRight size={20}/></button></div><div className="flex items-center gap-2 ml-auto"><button data-compact-action="true" type="button" onClick={()=>setMonthlyPayFilter(v=>!v)} className={monthlyPayFilter?"bg-blue-600 text-white px-3 rounded-[10px]":"bg-gray-100 text-gray-600 px-3 rounded-[10px]"}>P 페이앱만</button><button data-compact-action="true" type="button" onClick={()=>setMonthlySort(v=>v==="name"?"date":"name")} className="bg-gray-100 text-gray-600 px-3 rounded-[10px]">{monthlySort==="name"?"이름순":"등록순"}</button></div></div><div className="hidden md:block px-4 pb-4"><div data-page-search-wrapper="true" data-subscriber-search="true" className="flex items-center gap-2 rounded-xl border border-gray-200 px-3"><Search size={15}/><ClearableSearchInput onClear={()=>setSubSearch("")} data-page-search-input="true" aria-label="현재 구독자 검색" placeholder="이번 달 구독자 이름 또는 아이디 검색" value={subSearch} onChange={e=>setSubSearch(e.target.value)} className="w-full bg-transparent outline-none"/></div></div><div className="md:hidden p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between flex-wrap gap-2">
   <h3 className="font-bold text-gray-800">현재 구독자 ({activeMonthly.length}명)</h3>
   <div className="flex items-center gap-2">
     <button
@@ -1895,7 +1769,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
                 
                {/* 리스트 헤더 */}
-<div className="hidden md:flex items-center py-3 px-5 border-b border-gray-200 bg-gray-50/80 text-xs font-bold text-gray-500">
+<div data-subscriber-columns="true" className="hidden md:flex items-center py-3 px-5 border-b border-gray-200 bg-gray-50/80 text-xs font-bold text-gray-500">
  <div style={{minWidth: "180px", maxWidth: "180px"}} className="flex items-center gap-1.5">
   <span className="opacity-0 text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">P</span>
   <span className="opacity-0 text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0">N</span>
@@ -1923,7 +1797,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                     <div className="p-10 text-center text-gray-400 text-sm">등록된 구독자가 없습니다.</div>
                   ) : (
                     pagedActiveMonthly.map((item: SubscriberMonthly) => (
-                     <div key={item.id} className="flex flex-col md:flex-row md:items-center py-3 px-5 hover:bg-blue-50/30 transition gap-2 md:gap-0">
+                     <div data-subscriber-row="true" key={item.id} className="flex flex-col md:flex-row md:items-center py-3 px-5 hover:bg-blue-50/30 transition gap-2 md:gap-0">
                       <div
   style={{ minWidth: "180px", maxWidth: "180px" }}
   className="text-sm text-gray-500 flex items-center gap-1.5"
@@ -1943,16 +1817,16 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
 
 <div style={{minWidth: "150px"}} className="text-sm text-gray-600 truncate" title={item.subscribers.pay_app_code}>
-  {item.subscribers.pay_app_code || "-"}
+  {item.subscribers.pay_app_code || ""}
 </div>
-<div style={{minWidth: "150px"}} className="text-sm text-gray-600 truncate" title={item.subscribers.video_room}>{item.subscribers.video_room || "-"}</div>
-<div style={{minWidth: "110px"}} className="text-xs text-gray-400">{formatDate(item.subscribers.created_at)}</div>
+<div style={{minWidth: "150px"}} className="text-sm text-gray-600 truncate" title={item.subscribers.video_room}>{item.subscribers.video_room || ""}</div>
+<div style={{minWidth: "110px"}} className="text-xs text-gray-400"><span className="hidden md:inline">{item.subscribers.created_at ? formatDisplayDate(new Date(item.subscribers.created_at).toLocaleDateString("sv-SE",{timeZone:"Asia/Seoul"})) : ""}</span><span className="md:hidden">{formatDate(item.subscribers.created_at)}</span></div>
 
                         
                         <div className="shrink-0 flex items-center justify-end gap-1.5 mt-2 md:mt-0 ml-auto">
-  <button onClick={() => openSubPopup(item.subscribers)} className="whitespace-nowrap text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">수정</button>
-  <button onClick={() => deleteFromMonthly(item.id)} className="whitespace-nowrap text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">취소</button>
-  <button onClick={() => cancelSubscriber(item.subscribers.id)} className="whitespace-nowrap text-xs font-bold px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition cursor-pointer">해지</button>
+  <button data-admin-subscriber-action="true" data-compact-action="true" onClick={() => openSubPopup(item.subscribers)} className="whitespace-nowrap text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">수정</button>
+  <button data-admin-subscriber-action="true" data-compact-action="true" onClick={() => deleteFromMonthly(item.id)} className="whitespace-nowrap text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">취소</button>
+  <button data-compact-action="true" data-admin-subscriber-action="true" onClick={() => cancelSubscriber(item.subscribers.id)} className="whitespace-nowrap text-xs font-bold px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition cursor-pointer">해지</button>
 </div>
 
                       </div>
@@ -2059,7 +1933,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
         </div>
 
-        <button data-popup-close="true"
+        <button data-icon-only="true" data-popup-close="true"
           onClick={() => {
             setSelectedProfile(null);
             setProfileSubSearch("");
@@ -2074,7 +1948,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
       <div className="p-5 flex-1 min-h-0 flex flex-col">
         <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 px-4 py-3 flex items-center gap-3 mb-4">
           <Search className="w-4 h-4 text-gray-400 shrink-0" />
-          <input data-ui-field="true" data-page-search-input="true"
+          <ClearableSearchInput onClear={() => setProfileSubSearch("")} data-ui-field="true" data-page-search-input="true"
             value={profileSubSearch}
             onChange={(e) => setProfileSubSearch(e.target.value)}
             placeholder="아이디 또는 이름으로 구독자 검색"
@@ -2154,11 +2028,11 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
       </div>
 
       <p className="text-xs text-gray-500 truncate">
-        이름: {sub.name || "-"}
+        이름: {sub.name || ""}
       </p>
 
       <p className="text-xs text-gray-400 truncate mt-0.5">
-        페이앱 코드: {sub.pay_app_code || "-"}
+        페이앱 코드: {sub.pay_app_code || ""}
       </p>
     </div>
 
@@ -2208,14 +2082,14 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
           <div data-popup-frame="true" onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl flex flex-col max-h-[80vh]">
             <div className="mb-3 flex items-center justify-between">
               <h2 data-popup-heading="true" className="text-lg font-bold text-gray-900">이번 달 명단에 추가</h2>
-              <button data-popup-close="true" onClick={() => setIsSelectPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
+              <button data-icon-only="true" data-popup-close="true" onClick={() => setIsSelectPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-2.5 flex items-center gap-2 mb-4">
               <Search className="w-4 h-4 text-gray-400" />
-              <input data-ui-field="true" data-page-search-input="true" placeholder="이름 또는 아이디 검색" value={selectSearch} onChange={(e) => setSelectSearch(e.target.value)} className="w-full outline-none text-sm bg-transparent" />
+              <ClearableSearchInput onClear={() => setSelectSearch("")} data-ui-field="true" data-page-search-input="true" placeholder="이름 또는 아이디 검색" value={selectSearch} onChange={(e) => setSelectSearch(e.target.value)} className="w-full outline-none text-sm bg-transparent" />
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-2 pr-1">
@@ -2251,7 +2125,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
           <div ref={subscriberKeyboard.editorRef} onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
             <div className="mb-3 flex items-center justify-between">
               <h2 data-popup-heading="true" className="text-lg font-bold text-gray-900">{subForm.id ? "구독자 정보 수정" : "새 구독자 마스터 등록"}</h2>
-              <button data-popup-close="true" onClick={() => setIsSubPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
+              <button data-icon-only="true" data-popup-close="true" onClick={() => setIsSubPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -2260,22 +2134,22 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">아이디</label>
-                  <input data-ui-field="true" value={subForm.subscriber_id} onChange={(e) => setSubForm({...subForm, subscriber_id: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="아이디 입력" />
+                  <ClearableSearchInput onClear={() => setSubForm({...subForm, subscriber_id: ""})} data-ui-field="true" value={subForm.subscriber_id} onChange={(e) => setSubForm({...subForm, subscriber_id: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="아이디 입력" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">이름</label>
-                  <input data-ui-field="true" value={subForm.name} onChange={(e) => setSubForm({...subForm, name: e.target.value})} onKeyDown={event => { if (!subForm.id && event.key === "Tab" && !event.shiftKey) { event.preventDefault(); subscriberSaveButton.current?.focus(); } }} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="이름 입력" />
+                  <ClearableSearchInput onClear={() => setSubForm({...subForm, name: ""})} data-ui-field="true" value={subForm.name} onChange={(e) => setSubForm({...subForm, name: e.target.value})} onKeyDown={event => { if (!subForm.id && event.key === "Tab" && !event.shiftKey) { event.preventDefault(); subscriberSaveButton.current?.focus(); } }} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="이름 입력" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">자료방</label>
-                  <input data-ui-field="true" value={subForm.data_room} onChange={(e) => setSubForm({...subForm, data_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="자료방 이름" />
+                  <ClearableSearchInput onClear={() => setSubForm({...subForm, data_room: ""})} data-ui-field="true" value={subForm.data_room} onChange={(e) => setSubForm({...subForm, data_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="자료방 이름" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">영상방</label>
-                  <input data-ui-field="true" value={subForm.video_room} onChange={(e) => setSubForm({...subForm, video_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="영상방 이름" />
+                  <ClearableSearchInput onClear={() => setSubForm({...subForm, video_room: ""})} data-ui-field="true" value={subForm.video_room} onChange={(e) => setSubForm({...subForm, video_room: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400" placeholder="영상방 이름" />
                 </div>
               </div>
 
@@ -2290,7 +2164,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
               {subForm.pay_app && (
   <div>
     <label className="block text-xs font-bold text-gray-500 mb-1 ml-1">페이앱 코드</label>
-    <input data-ui-field="true"
+    <ClearableSearchInput onClear={() => setSubForm({...subForm, pay_app_code: ""})} data-ui-field="true"
       value={subForm.pay_app_code}
       onChange={(e) => setSubForm({...subForm, pay_app_code: e.target.value})}
       className="w-full bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400"
@@ -2320,12 +2194,12 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
   onMouseUp={handleDragEnd}
   onClick={(e) => { if (e.target === e.currentTarget) setIsAllSubPopupOpen(false); }}
 >
-          <div data-popup-frame="true"
+          <div data-all-subscribers-popup="true" data-popup-frame="true"
   onClick={(e) => e.stopPropagation()}
   style={{ transform: typeof window !== "undefined" && window.innerWidth >= 768 ? `translate(${popupPos.x}px, ${popupPos.y}px)` : "none" }}
   className="w-full max-w-5xl h-[88vh] rounded-3xl bg-white shadow-xl flex flex-col overflow-hidden"
 >
-            <div
+            <div data-popup-header="true"
   className="px-4 md:px-6 py-4 md:py-5 border-b border-gray-100 flex items-center justify-between gap-2 bg-gray-50 select-none"
   onMouseDown={handleDragStart}
 >
@@ -2338,7 +2212,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
              
              {/* CSV 업로드 버튼 */}
 <div className="hidden md:flex items-center gap-2">
-  <select data-ui-field="true"
+  <ResponsiveSelect data-ui-field="true"
     value={saveTargetYear}
     onChange={(e) => setSaveTargetYear(Number(e.target.value))}
     className="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none bg-white"
@@ -2348,9 +2222,9 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
         {year}년
       </option>
     ))}
-  </select>
+  </ResponsiveSelect>
 
-  <select data-ui-field="true"
+  <ResponsiveSelect data-ui-field="true"
     value={saveTargetMonth}
     onChange={(e) => setSaveTargetMonth(Number(e.target.value))}
     className="text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none bg-white"
@@ -2360,7 +2234,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
         {month}월
       </option>
     ))}
-  </select>
+  </ResponsiveSelect>
 
   <button data-popup-action="true"
     onClick={saveActiveSubscribersToMonth}
@@ -2373,11 +2247,11 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
              
               <div className="flex items-center gap-2 md:gap-3 shrink-0">
-                <button onClick={() => openSubPopup()} className="hidden md:flex items-center gap-1.5 md:gap-2 bg-blue-600 text-white px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold hover:bg-blue-700 transition">
+                <button data-all-subscriber-register="true" onClick={() => openSubPopup()} className="hidden md:flex items-center gap-1.5 md:gap-2 bg-blue-600 text-white px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold hover:bg-blue-700 transition">
                   <UserPlus className="w-4 h-4" />
                   새 구독자 등록
                 </button>
-                <button data-popup-close="true" onClick={() => setIsAllSubPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-white border border-gray-200 hover:bg-gray-100 text-gray-500 transition  cursor-pointer">
+                <button data-icon-only="true" data-popup-close="true" onClick={() => setIsAllSubPopupOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center bg-white border border-gray-200 hover:bg-gray-100 text-gray-500 transition  cursor-pointer">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -2401,24 +2275,24 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
                 <div data-page-search-wrapper="true" className="bg-white rounded-2xl border border-gray-200 focus-within:border-gray-400 focus-within:ring-2 focus-within:ring-gray-100 transition px-4 py-2.5 flex items-center gap-2">
                   <Search className="w-4 h-4 text-gray-400" />
-                  <input ref={subscriberKeyboard.searchRef} data-ui-field="true" data-page-search-input="true" placeholder="이름 또는 아이디 검색" value={allSubSearch} onChange={(e) => setAllSubSearch(e.target.value)} className="w-full outline-none text-sm" />
+                  <ClearableSearchInput onClear={() => setAllSubSearch("")} ref={subscriberKeyboard.searchRef} data-ui-field="true" data-page-search-input="true" placeholder="이름 또는 아이디 검색" value={allSubSearch} onChange={(e) => setAllSubSearch(e.target.value)} className="w-full outline-none text-sm" />
                                 </div>
                 {/* 필터/정렬 버튼 */}
                 <div className="flex items-center gap-2 mt-3">
-                  <button
+                  <button data-all-subscriber-button="true"
                     onClick={() => setAllSubPayFilter(v => !v)}
                     className={`text-xs font-bold px-3 py-1.5 rounded-lg transition ${allSubPayFilter ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                   >
                     P 페이앱만
                   </button>
-                  <button
+                  <button data-all-subscriber-button="true"
                     onClick={() => setAllSubSort(v => v === "name" ? "date" : "name")}
                     className="text-xs font-bold px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition"
                   >
                     {allSubSort === "name" ? "이름순" : "등록순"}
                   </button>
                 
-<button
+<button data-all-subscriber-button="true"
   onClick={() =>
     setAllSubSort((v) =>
       v === "checked-desc" ? "checked-asc" : "checked-desc"
@@ -2438,8 +2312,8 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 </button>
 
 <span className="ml-auto whitespace-nowrap text-xs font-semibold text-blue-600" aria-live="polite">체크 {allSubscribers.filter(sub => sub.is_checked).length}명</span>
-<button type="button" onClick={() => void cancelUncheckedSubscribers()} disabled={bulkCanceling} className="whitespace-nowrap rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-100 cursor-pointer disabled:opacity-50 disabled:cursor-wait">{bulkCanceling ? "처리 중…" : "미체크 일괄 해지"}</button>
-<button
+<button data-all-subscriber-button="true" type="button" onClick={() => void cancelUncheckedSubscribers()} disabled={bulkCanceling} className="whitespace-nowrap rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-100 cursor-pointer disabled:opacity-50 disabled:cursor-wait">{bulkCanceling ? "처리 중…" : "미체크 일괄 해지"}</button>
+<button data-all-subscriber-button="true"
   onClick={() => openSubPopup()}
   className="md:hidden flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold"
 >
@@ -2452,11 +2326,11 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
 
               {/* 한 줄 리스트 형식 (테이블 스타일) */}
 
-              <div className="flex-1 overflow-hidden flex flex-col border border-gray-200 rounded-2xl">
+              <div data-all-subscriber-table="true" className="flex-1 overflow-hidden flex flex-col border border-gray-200 rounded-2xl">
                 {/* 리스트 헤더 */}
-                <div className="hidden md:flex items-center py-3 px-5 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-500">
+                <div data-all-subscriber-columns="true" className="hidden md:flex items-center py-3 px-5 border-b border-gray-200 bg-gray-50 text-xs font-bold text-gray-500">
                   <div className="w-36 flex items-center gap-2">
-                    <button type="button" tabIndex={-1} onKeyDown={event => { if (event.key === " " || event.key === "Enter") { event.preventDefault(); event.stopPropagation(); } }} onClick={event => { if (event.detail > 0) void toggleAllSubscriberChecks(); }} aria-label="표시된 구독자 전체 체크" aria-pressed={filteredAllSubs.length > 0 && filteredAllSubs.every(sub => sub.is_checked)} className="shrink-0 cursor-pointer rounded transition-colors hover:bg-gray-200">
+                    <button data-icon-only="true" type="button" tabIndex={-1} onKeyDown={event => { if (event.key === " " || event.key === "Enter") { event.preventDefault(); event.stopPropagation(); } }} onClick={event => { if (event.detail > 0) void toggleAllSubscriberChecks(); }} aria-label="표시된 구독자 전체 체크" aria-pressed={filteredAllSubs.length > 0 && filteredAllSubs.every(sub => sub.is_checked)} className="shrink-0 cursor-pointer rounded transition-colors hover:bg-gray-200">
                       {filteredAllSubs.length > 0 && filteredAllSubs.every(sub => sub.is_checked) ? <CheckSquare className="h-4 w-4 text-blue-600" /> : <Square className="h-4 w-4 text-gray-400" />}
                     </button>
                     <span>아이디</span>
@@ -2479,7 +2353,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
   className="md:w-36 text-xs md:text-sm text-gray-500 flex items-center gap-2 truncate"
   title={sub.subscriber_id}
 >
-  <button type="button" data-subscriber-action="check" onClick={(event) => { event.stopPropagation(); subscriberKeyboard.markChecked(event.currentTarget.closest<HTMLElement>("[data-subscriber-row]")); toggleSubscriberCheck(sub); }} aria-label={`${sub.subscriber_id} 체크`} aria-pressed={sub.is_checked} className="shrink-0 cursor-pointer rounded transition-colors hover:bg-blue-50">
+  <button data-icon-only="true" type="button" data-subscriber-action="check" onClick={(event) => { event.stopPropagation(); subscriberKeyboard.markChecked(event.currentTarget.closest<HTMLElement>("[data-subscriber-row]")); toggleSubscriberCheck(sub); }} aria-label={`${sub.subscriber_id} 체크`} aria-pressed={sub.is_checked} className="shrink-0 cursor-pointer rounded transition-colors hover:bg-blue-50">
     {sub.is_checked ? <CheckSquare className="h-4 w-4 text-blue-600" /> : <Square className="h-4 w-4 text-gray-400" />}
   </button>
   <span className="truncate">
@@ -2490,18 +2364,18 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                           <span className={`truncate ${sub.status === "canceled" ? "line-through" : ""}`} title={sub.name}>{sub.name}</span>
                           {sub.pay_app && <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-bold">P</span>}
                         </div>
-                        <div className="md:w-40 text-xs md:text-sm text-gray-600 truncate" title={sub.pay_app_code}>{sub.pay_app_code || "-"}</div>
-                        <div className="md:w-40 text-xs md:text-sm text-gray-600 truncate" title={sub.video_room}>{sub.video_room || "-"}</div>
+                        <div className="md:w-40 text-xs md:text-sm text-gray-600 truncate" title={sub.pay_app_code}>{sub.pay_app_code || ""}</div>
+                        <div className="md:w-40 text-xs md:text-sm text-gray-600 truncate" title={sub.video_room}>{sub.video_room || ""}</div>
                         <div className="md:w-25 text-xs text-gray-400">{formatDate(sub.created_at)}</div>
                         
                         <div className="flex items-center justify-end gap-1.5 -translate-y-8 -mb-7 ml-auto md:translate-y-0 md:mb-0 md:shrink-0">
-                          <button data-subscriber-action="edit" onClick={() => openSubPopup(sub)} className="text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">수정</button>
+                          <button data-admin-subscriber-action="true" data-compact-action="true" data-subscriber-action="edit" onClick={() => openSubPopup(sub)} className="text-xs font-bold px-3 py-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition cursor-pointer">수정</button>
                           {sub.status === "active" ? (
                             <button data-subscriber-action="status" onClick={() => cancelSubscriber(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition cursor-pointer">해지</button>
                           ) : (
                             <button data-subscriber-action="status" onClick={() => restoreSubscriber(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition cursor-pointer">복구</button>
                           )}
-                          <button data-subscriber-action="delete" onClick={() => confirmDelete(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition cursor-pointer">삭제</button>
+                          <button data-admin-subscriber-action="true" data-compact-action="true" data-subscriber-action="delete" onClick={() => confirmDelete(sub.id)} className="text-xs font-bold px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition cursor-pointer">삭제</button>
                         </div>
                       </div>
                     ))
@@ -2555,12 +2429,12 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
     <div data-popup-frame="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[78vh] flex flex-col">
       <div data-popup-header="true" className="bg-white text-slate-800 px-5 py-3 flex items-center justify-between">
         <div className="font-bold flex items-center gap-2"><NotebookPen className="w-5 h-5" />메모장</div>
-        <button data-popup-close="true" onClick={() => setIsMemoOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"><X className="w-5 h-5" /></button>
+        <button data-icon-only="true" data-popup-close="true" onClick={() => setIsMemoOpen(false)} className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition cursor-pointer"><X className="w-5 h-5" /></button>
       </div>
       <div data-popup-search-section="true" className="px-4 py-3 flex items-center gap-3 shrink-0">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input data-ui-field="true" data-page-search-input="true" value={memoSearch} onChange={(e) => setMemoSearch(e.target.value)} placeholder="메모 검색" className="w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm outline-none focus:border-gray-400" />
+          <ClearableSearchInput onClear={() => setMemoSearch("")} data-ui-field="true" data-page-search-input="true" value={memoSearch} onChange={(e) => setMemoSearch(e.target.value)} placeholder="메모 검색" className="w-full h-12 rounded-2xl border border-gray-200 pl-11 pr-4 text-sm outline-none focus:border-gray-400" />
         </div>
         <button onClick={() => { setMemoTitle(""); setMemoContent(""); setMemoAddPopupPos({ x: 0, y: 0 }); setMemoAddOpen(true); }} className="h-12 px-5 rounded-2xl bg-blue-600 text-white text-sm font-bold flex items-center gap-2 cursor-default">
           <Plus className="w-4 h-4" />추가
@@ -2583,13 +2457,13 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                     <p className="text-sm text-gray-600 mt-2 leading-relaxed whitespace-pre-line break-keep">{memo.content}</p>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <button onClick={(e) => { e.stopPropagation(); toggleMemoVisible(memo.id); }} className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.visible ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}>
+                    <button data-icon-only="true" onClick={(e) => { e.stopPropagation(); toggleMemoVisible(memo.id); }} className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.visible ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}>
                       {memo.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); toggleMemoPinned(memo.id); }} className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.pinned ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-600" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}>
+                    <button data-icon-only="true" onClick={(e) => { e.stopPropagation(); toggleMemoPinned(memo.id); }} className={`w-10 h-10 rounded-full flex items-center justify-center border transition cursor-default ${memo.pinned ? "bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-600" : "bg-white border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-600"}`}>
                       <Pin className="w-4 h-4" />
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); openMemoEdit(memo); }} className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 bg-white text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition cursor-default">
+                    <button data-icon-only="true" onClick={(e) => { e.stopPropagation(); openMemoEdit(memo); }} className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 bg-white text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition cursor-default">
                       <Pencil className="w-4 h-4" />
                     </button>
                   </div>

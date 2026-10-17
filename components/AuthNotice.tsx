@@ -21,7 +21,7 @@ export default function AuthNotice({ message, onClose }: { message: string; onCl
     }
   }}>
     <section role="alertdialog" aria-modal="true" aria-labelledby="auth-notice-title" aria-describedby="auth-notice-message" data-popup-small="true" className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
-      <div className="flex items-center justify-between gap-4"><h2 data-popup-heading="true" id="auth-notice-title" className="text-xl font-black text-gray-900">안내</h2><button type="button" data-mini-close="true" aria-label="안내 닫기" onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-50 text-slate-500 transition-colors hover:bg-slate-100 cursor-pointer"><X size={19}/></button></div>
+      <div className="flex items-center justify-between gap-4"><h2 data-popup-heading="true" id="auth-notice-title" className="text-xl font-black text-gray-900">안내</h2><button data-icon-only="true" type="button" data-mini-close="true" aria-label="안내 닫기" onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-50 text-slate-500 transition-colors hover:bg-slate-100 cursor-pointer"><X size={19}/></button></div>
       <p id="auth-notice-message" className="mt-2 whitespace-pre-line break-keep text-sm leading-relaxed text-gray-500">{message}</p>
       <div className="mt-6 flex justify-center"><button data-popup-action="true" ref={close} type="button" onClick={onClose} className="h-12 w-32 cursor-pointer rounded-2xl bg-blue-600 text-sm font-bold text-white transition-colors hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">확인</button></div>
     </section>

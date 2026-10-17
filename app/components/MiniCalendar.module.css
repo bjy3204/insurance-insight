@@ -1,0 +1,16 @@
+.panel{height:284px;padding:12px;border:1px solid #e5ebf4;border-radius:12px;background:#fff;box-shadow:0 10px 24px #1e293b20;color:#334968;font-size:13px;box-sizing:border-box;cursor:default}
+.content{height:100%;display:flex;flex-direction:column;min-height:0}
+.header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;margin-bottom:10px}
+.header strong{font-size:15px;font-weight:700;line-height:22.5px}
+.header button,.days button{display:flex;align-items:center;justify-content:center;width:30px;height:30px;min-height:0;padding:0;border:0;border-radius:8px;background:#fff;color:inherit;cursor:pointer;justify-self:center;align-self:center}
+.header button:hover:not(:disabled){background:#eef2f7}
+.header svg{width:18px;height:18px}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;flex:1;min-height:0;text-align:center;font-size:13px;font-weight:400;line-height:19.5px}
+.days span{display:flex;align-items:center;justify-content:center;color:#94a3b8}
+.days span[data-weekday="0"]{color:#ef4444}
+.days button{font-size:13px;font-weight:400}
+.days button:hover:not(:disabled){background:#eff6ff}
+.days button[aria-pressed="true"]{background:#2563eb;color:#fff}
+.days button[aria-pressed="true"]:hover:not(:disabled){background:#1d4ed8}
+.header button:focus-visible,.days button:focus-visible{outline:2px solid #93b5fa;outline-offset:1px}
+.header button:disabled,.days button:disabled{opacity:.5;cursor:default}

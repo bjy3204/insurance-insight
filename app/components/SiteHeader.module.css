@@ -62,3 +62,4 @@
 @media (min-width: 768px) {
   .main [data-header-total] { margin-left: 12px; }
 }
+@media(min-width:768px){.header.main h1{font-size:23px !important}}
