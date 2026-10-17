@@ -15,7 +15,7 @@ function Cover({ report }: { report: CoverageReport }) {
     <p className="cr-cover-description">고객님이 가입하고 계신 보험을 종합적으로 분석하여<br />라이프스타일과 재무 상황을 반영한 최적의 맞춤 보장 설계를 제안해 드립니다</p>
 
     <div className="cr-cover-panels">
-      <section className="cr-cover-contracts"><h2>{report.name || "고객"}<small>님 보험 현황</small></h2><dl>
+      <section className="cr-cover-contracts"><h2><strong>{report.name || "고객"}</strong><small>님 보험 현황</small></h2><dl>
         <div><dt>정상계약</dt><dd>{filledPolicyCount(report)} 건</dd></div>
         <div><dt>월 보험료</dt><dd>{won(totals.monthly)}</dd></div>
         <div className="cr-paid-row"><dt>납입완료</dt><dd>{won(totals.paid)}</dd></div><div><dt>납입예정</dt><dd>{won(totals.remaining)}</dd></div><div className="cr-cover-total-row"><dt>총 보험료</dt><dd>{won(total)}</dd></div>

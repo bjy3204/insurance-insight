@@ -207,7 +207,7 @@ export const REPORT_CSS = `
 
 .cr-reference .cr-cover-panels{grid-template-columns:minmax(0,1fr);max-width:440px;margin-inline:auto}
 
-.cr-reference .cr-cover p.cr-cover-description{font-size:18px!important;line-height:1.8}
+.cr-reference .cr-cover p.cr-cover-description{font-size:16px!important;line-height:1.8}
 
 /* Larger cover overview with a dedicated heading and centered body below. */
 .cr-reference .cr-cover-panels{max-width:570px;width:100%;margin-inline:auto}
@@ -218,6 +218,12 @@ export const REPORT_CSS = `
 .cr-reference .cr-cover-contracts dl>div{margin-bottom:5px}
 .cr-reference .cr-cover-contracts .cr-paid-row{margin-top:18px}
 .cr-reference .cr-cover-contracts .cr-donut{width:176px;height:176px;right:20px;top:164px;transform:translateY(-50%)}
+
+.cr-reference .cr-cover-contracts dl{left:34px;width:45%}
+.cr-reference .cr-cover-contracts .cr-donut{width:148px;height:148px;right:32px}
+.cr-reference .cr-cover-contracts h2{font-weight:400}
+.cr-reference .cr-cover-contracts h2>strong{font-weight:700}
+.cr-reference .cr-cover-contracts h2>small{font-weight:400;margin-left:2px}
 
 `;
 
