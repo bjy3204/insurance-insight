@@ -186,7 +186,7 @@ const TABS = [
   { id: "memo" as ActiveTab, label: "메모", icon: NotebookPen },
   { id: "diary" as ActiveTab, label: "일기", icon: BookOpen },
   { id: "calendar" as ActiveTab, label: "캘린더", icon: CalendarDays },
-].filter(tab => (COVERAGE_ANALYSIS_ENABLED || tab.id !== "coverage-analysis") && (PERSONAL_HOME_ENABLED || tab.id !== "home"));
+].filter(tab => (process.env.NODE_ENV !== "production" || tab.id !== "customer-management") && (COVERAGE_ANALYSIS_ENABLED || tab.id !== "coverage-analysis") && (PERSONAL_HOME_ENABLED || tab.id !== "home"));
 const DEFAULT_MENU_ORDER = [...TABS.map(tab => tab.id), ...SHORTCUT_ORDER.map(id => `shortcut:${id}`)];
 
 const HOME_MENU_ITEMS = [

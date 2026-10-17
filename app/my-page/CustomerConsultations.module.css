@@ -106,3 +106,5 @@
 }
 
 @media(max-width:767px){.field{gap:8px}.form fieldset{gap:20px}.grid{row-gap:20px}.field>label{margin:0}}
+
+@media(min-width:1101px){.split[data-match-height=true]{align-items:stretch}.split[data-match-height=true]>.records{min-height:0}.split[data-match-height=true]>.notes{box-sizing:border-box;display:flex;flex-direction:column;height:0;min-height:100%;overflow:hidden}.split[data-match-height=true]>.notes>.header{flex-shrink:0}.split[data-match-height=true]>.notes>.list{flex:1;min-height:0;overflow-y:auto;align-content:start}}

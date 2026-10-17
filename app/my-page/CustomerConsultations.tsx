@@ -11,13 +11,13 @@ import useCustomerAutosave from "./useCustomerAutosave";
 import styles from "./CustomerConsultations.module.css";
 
 function read(value?:string){if(value){try{return parseConsultations(value);}catch{/* Existing customers may have no consultation entries. */}}return [];}
-function readRecords(value?:string){try{const rows=parseConsultationRecords(value);return value&&JSON.parse(value).records!==undefined?rows:Array.from({length:3},emptyConsultationRecord);}catch{return Array.from({length:3},emptyConsultationRecord);}}
-export default function CustomerConsultations({customer,onSave}:{customer?:CustomerRecord;onSave?:(customer:CustomerRecord,value:string)=>Promise<void>}){
+function readRecords(value?:string,initialRows=3){try{const rows=parseConsultationRecords(value);return value&&JSON.parse(value).records!==undefined?rows:Array.from({length:initialRows},emptyConsultationRecord);}catch{return Array.from({length:initialRows},emptyConsultationRecord);}}
+export default function CustomerConsultations({customer,onSave,initialRows=3,matchPanelHeight=false}:{initialRows?:number;matchPanelHeight?:boolean;customer?:CustomerRecord;onSave?:(customer:CustomerRecord,value:string)=>Promise<void>}){
   const prefix=useId();
   const entries=read(customer?.consultations);
-  const [records,setRecords]=useState(()=>readRecords(customer?.consultations));
+  const [records,setRecords]=useState(()=>readRecords(customer?.consultations,initialRows));
   const [recordsBaseline,setRecordsBaseline]=useState(()=>JSON.stringify(records));
-  useEffect(()=>{const rows=readRecords(customer?.consultations);setRecords(rows);setRecordsBaseline(JSON.stringify(rows));},[customer?.id,customer?.consultations]);
+  useEffect(()=>{const rows=readRecords(customer?.consultations,initialRows);setRecords(rows);setRecordsBaseline(JSON.stringify(rows));},[customer?.id,customer?.consultations,initialRows]);
   const persistBusy=useRef(false);
   const [query,setQuery]=useState("");
   const search=query.trim().toLocaleLowerCase();
@@ -48,7 +48,7 @@ export default function CustomerConsultations({customer,onSave}:{customer?:Custo
   };
   useCustomerAutosave(JSON.stringify(records),recordsBaseline,!!customer&&!!onSave&&!saving,()=>persist(entries,false));
   return <div data-ui-card="true" className={styles.panel}>
-    <div className={styles.split}><CustomerConsultationRecords rows={records} onChange={setRecords} disabled={!customer||!onSave||saving}/><section data-ui-card="true" className={styles.notes} aria-label="상세 메모">
+    <div className={styles.split} data-match-height={matchPanelHeight||undefined}><CustomerConsultationRecords rows={records} onChange={setRecords} disabled={!customer||!onSave||saving}/><section data-ui-card="true" className={styles.notes} aria-label="상세 메모">
     <div className={styles.header}><div className={styles.search}><Search size={17} aria-hidden="true"/><ClearableSearchInput onClear={() => setQuery("")} aria-label="상담일지 검색" placeholder="검색" autoComplete="off" value={query} onChange={event=>setQuery(event.target.value)}/></div><button data-action-height="44" type="button" disabled={!customer||!onSave||saving} className={styles.primary} onClick={()=>open()}>등록</button></div>
     <div className={styles.list}>{filteredEntries.map(entry=><article className={styles.entry} key={entry.id}>
       <div className={styles.entryHeader}><div className={styles.meta}><span><CalendarDays size={14} aria-hidden="true"/><time dateTime={entry.date}>{entry.date}</time></span>{entry.time&&<span><Clock size={14}/>{entry.time}</span>}{entry.place&&<span><MapPin size={14}/>{entry.place}</span>}</div><div className={styles.tools}><button data-icon-only="true" type="button" aria-label={`${entry.date} 상담일지 수정`} title="수정" onClick={()=>open(entry)}><Pencil size={17}/></button><button data-icon-only="true" type="button" aria-label={`${entry.date} 상담일지 삭제`} title="삭제" onClick={()=>{setDeleting(entry);setError("");}}><Trash2 size={17}/></button></div></div>
