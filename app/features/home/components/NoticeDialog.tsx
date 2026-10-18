@@ -1,4 +1,6 @@
 "use client";
+import {useState} from "react";
+import DashboardDialog from "./dashboard/DashboardDialog";
 import { formatDisplayDate } from "@/lib/display-date";
 import { ChevronLeft as TaskChevronLeft, ChevronRight as TaskChevronRight } from "lucide-react";
 
@@ -7,13 +9,14 @@ import { supabase } from "@/lib/supabase";
 import { X, User } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
 export default function NoticeDialog({ controller }: { controller: HomeController }) {
+const [expandedImage,setExpandedImage]=useState<string|null>(null);
 const { authUser, authStatus, noticeOpen, setNoticeOpen, startPopupDrag, getPopupStyle, noticePage, setNoticePage, selectedNotice, setSelectedNotice, noticeImageIndex, setNoticeImageIndex, readNoticeIds, setReadNoticeIds, allNotices, totalNoticePages, pagedNotices } = controller;
 return (<>{noticeOpen && (
-        <div
+        <div data-notice-overlay={selectedNotice?"true":undefined}
   onClick={() => setNoticeOpen(false)}
   className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
 >
-         <div data-popup-frame="true" data-hide-popup-scrollbar="true"
+         <div data-update-notice={selectedNotice?"true":undefined} data-popup-frame="true" data-hide-popup-scrollbar="true"
   onClick={(e) => e.stopPropagation()}
   style={getPopupStyle("notice")}
   className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[80vh] flex flex-col"
@@ -24,7 +27,7 @@ return (<>{noticeOpen && (
 >
               <div data-popup-title="true" className="font-bold flex items-center gap-2">
                 <User className="w-5 h-5" />
-                공지사항
+                <span>{selectedNotice?selectedNotice.title:"공지사항"}</span>
               </div>
 
               <button data-icon-only="true" data-popup-close="true"
@@ -213,18 +216,9 @@ setNoticeImageIndex(0);
 
   </div>
 ) : (
-              <div className="px-6 md:px-10 pt-4 pb-6 flex-1 min-h-0 flex flex-col">
-
-  <div className="overflow-y-auto overflow-x-hidden flex-1">
-    <h2 data-news-detail-title="true" data-popup-heading="true" className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep">
-      {selectedNotice.title}
-    </h2>
-
-    <p data-news-detail-meta="true" className="text-xs md:text-sm text-gray-500 mt-2">
-      작성일: <span className="hidden md:inline">{formatDisplayDate(selectedNotice.date)}</span><span className="md:hidden">{formatDisplayDate(selectedNotice.date)}</span>
-    </p>
-
-   <div className="border-t border-gray-200 mt-3 pt-4 pb-6 text-[15px] leading-6 text-gray-800 break-keep">
+              <>
+  <div data-notice-body="true" className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden" onClick={event=>{const image=(event.target as HTMLElement).closest('img');if(image)setExpandedImage(image.src);}}>
+   <div data-notice-content="true" className="text-[15px] leading-6 text-gray-800 break-keep">
 
 <div
   className="
@@ -297,7 +291,7 @@ setNoticeImageIndex(0);
 </div>
   </div>
 
-  <div className="border-t border-gray-200 pt-4 text-center shrink-0">
+  <div data-notice-footer="true" className="border-t border-gray-200 text-center shrink-0">
     <button
       onClick={() => setSelectedNotice(null)}
       className="
@@ -320,9 +314,9 @@ setNoticeImageIndex(0);
     </button>
   </div>
 
-</div>
+</>
             )}
           </div>
         </div>
-      )}</>);
+      )}{expandedImage&&<DashboardDialog title="공지 이미지 크게 보기" onClose={()=>setExpandedImage(null)}><div data-notice-image-viewer="true"><img src={expandedImage} alt="공지 안내 이미지 확대"/></div></DashboardDialog>}</>);
 }

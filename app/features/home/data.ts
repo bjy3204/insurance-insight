@@ -17,8 +17,8 @@ export type MemoItem = {
 export const defaultMenus = [
   {
   id: "customer-manage",
-  title: "개인공간",
-  desc: "일정  · 고객관리 · AI 메시지",
+  title: "고객관리",
+  desc: "고객관리 · 보장분석표 · 상담 서식",
   icon: User,
   link: "/my-page",
   isDefault: true,

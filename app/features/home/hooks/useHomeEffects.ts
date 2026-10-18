@@ -106,7 +106,8 @@ useEffect(() => {
     const seenIds: string[] = JSON.parse(localStorage.getItem("seen_popup_notice_ids") || "[]");
     const popupTarget = nts.find((n: any) => {
       if (!n.is_popup) return false;
-      if (seenIds.includes(n.id)) return false;
+      if(localStorage.getItem(`popup_notice_hidden_day:${n.id}`)===today)return false;
+      if(!n.popup_repeat_daily&&seenIds.includes(n.id))return false;
       if (n.popup_start_date && n.popup_start_date > today) return false;
       if (n.popup_end_date && n.popup_end_date < today) return false;
       return true;

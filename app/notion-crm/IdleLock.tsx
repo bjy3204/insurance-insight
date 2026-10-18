@@ -18,7 +18,7 @@ export default function IdleLock({children}:{children:ReactNode}){
  const [state,setState]=useState<'checking'|'open'|'locked'>('checking');const [password,setPassword]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  const [resetMessage,setResetMessage]=useState(''),[resetBusy,setResetBusy]=useState(false),[resetSent,setResetSent]=useState(false);
  const last=useRef(0),sent=useRef(0),heartbeat=useRef(false),generation=useRef(0);
- const key='crm-activity:'+auth.authUser?.id;
+ const key='crm-activity:v2:'+auth.authUser?.id;
  useEffect(()=>{const run=++generation.current;if(!auth.authUser?.id)return;setState('checking');setPassword('');setError('');let locked=false;let stopped=false;
  const shared=()=>{try{return Math.max(last.current,Number(localStorage.getItem(key))||0);}catch{return last.current;}};
  const record=(time:number)=>{last.current=time;try{localStorage.setItem(key,String(time));}catch{}};

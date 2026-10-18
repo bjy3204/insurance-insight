@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
   }
   const state = readSheetState(request.cookies.get(cookieName)?.value);
   const finish = (status: string) => {
-    const returnPath=state?.returnPath==="/personal-space"?"/personal-space":"/my-page";
+    const returnPath="/my-page";
     const tab = state?.purpose === "calendar" ? "calendar" : "customer";
     const response = NextResponse.redirect(new URL(status === "ready" ? `${returnPath}?tab=${tab}` : `${returnPath}?tab=${tab}&google_sheet=${status}`, request.url));
     response.headers.set("Cache-Control", "no-store");

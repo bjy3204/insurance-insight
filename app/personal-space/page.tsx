@@ -1,2 +1,3 @@
-import LegacyPersonalSpace from "../my-page/LegacyPersonalSpace";
-export default function Page(){return <LegacyPersonalSpace/>;}
+import {redirect} from "next/navigation";
+
+export default function Page(){redirect("/my-page");}

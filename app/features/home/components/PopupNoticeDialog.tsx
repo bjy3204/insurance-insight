@@ -1,24 +1,28 @@
 "use client";
+import {useState} from "react";
+import DashboardDialog from "./dashboard/DashboardDialog";
 import { ChevronLeft as TaskChevronLeft, ChevronRight as TaskChevronRight } from "lucide-react";
 
 import { X, Megaphone } from "lucide-react";
 import { noticeVersion } from "@/app/notice/notices";
 import type { HomeController } from "../hooks/useHomeController";
 export default function PopupNoticeDialog({ controller }: { controller: HomeController }) {
+const [hideToday,setHideToday]=useState(false);
+const [expandedImage,setExpandedImage]=useState<string|null>(null);
 const { setNoticeOpen, resetPopupPosition, setSelectedNotice, popupNoticeImageIndex, setPopupNoticeImageIndex, setHasUpdate, dbNotices, dbCategories, popupNotice, popupNoticeClosed, setPopupNoticeClosed } = controller;
 return (<>{popupNotice && !popupNoticeClosed && (
-        <div className="fixed inset-0 z-[9000] bg-black/40 flex items-center justify-center p-3 md:p-4">
-          <div data-popup-frame="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[80vh] flex flex-col">
+        <div data-notice-overlay="true" className="fixed inset-0 z-[9000] bg-black/40 flex items-center justify-center p-3 md:p-4">
+          <div data-update-notice="true" data-popup-frame="true" data-hide-popup-scrollbar="true" className="bg-white w-full max-w-4xl rounded-2xl shadow-xl overflow-hidden h-[86vh] lg:h-[80vh] flex flex-col">
             <div data-popup-header="true" className="bg-blue-600 text-white px-4 md:px-5 py-3 flex items-center justify-between">
               <div data-popup-title="true" className="font-bold flex items-center gap-2">
                 <Megaphone className="w-5 h-5" />
-                공지사항
+                <span>{popupNotice.title}</span>
               </div>
               <button data-icon-only="true" data-popup-close="true"
                 onClick={() => {
                   const seenIds: string[] = JSON.parse(localStorage.getItem("seen_popup_notice_ids") || "[]");
                   if (!seenIds.includes(popupNotice.id)) seenIds.push(popupNotice.id);
-                  localStorage.setItem("seen_popup_notice_ids", JSON.stringify(seenIds));
+                  if(!popupNotice.popup_repeat_daily)localStorage.setItem("seen_popup_notice_ids", JSON.stringify(seenIds));
                   setPopupNoticeClosed(true);
                 }}
                 className="cursor-pointer w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/10 transition"
@@ -26,28 +30,12 @@ return (<>{popupNotice && !popupNoticeClosed && (
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="px-6 md:px-10 pt-6 pb-6 flex-1 min-h-0 flex flex-col overflow-y-auto">
+            <div onClick={event=>{const image=(event.target as HTMLElement).closest("img");if(image)setExpandedImage(image.src);}} data-notice-body="true" className="px-6 md:px-10 pt-6 pb-6 flex-1 min-h-0 flex flex-col overflow-y-auto">
               {(() => {
                 const cat = dbCategories.find((c: any) => c.id === popupNotice.category_id);
                 return (
                   <>
-                    {cat && (
-                      <span className={`inline-block w-fit mb-3 px-3 py-1 rounded-lg text-xs font-bold ${
-cat.color === "yellow" ? "bg-yellow-100 text-yellow-700" :
-cat.color === "red" ? "bg-red-100 text-red-600" :
-cat.color === "green" ? "bg-emerald-100 text-emerald-700" :
-cat.color === "orange" ? "bg-orange-100 text-orange-600" :
-cat.color === "gray" ? "bg-gray-100 text-gray-500" :
-"bg-blue-100 text-blue-600"
-                      }`}>{cat.name}</span>
-                    )}
-                    <h2 data-popup-heading="true" className="text-xl md:text-2xl font-black text-gray-900 leading-snug break-keep mb-2">
-                      {popupNotice.title}
-                    </h2>
-                    <p className="text-xs md:text-sm text-gray-500 mb-4">
-                      {new Date(popupNotice.created_at).toLocaleString("ko-KR", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                    </p>
-                   <div className="border-t border-gray-200 pt-4 text-[15px] leading-6 text-gray-800 break-keep flex-1 overflow-x-hidden">
+                   <div data-notice-content="true" className="border-t border-gray-200 pt-4 text-[15px] leading-6 text-gray-800 break-keep flex-1 overflow-x-hidden">
 <div
   className="
     max-w-full
@@ -122,38 +110,10 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
                 );
               })()}
             </div>
-            <div className="border-t border-gray-200 px-6 py-4 flex justify-between items-center shrink-0">
-              <button
-                onClick={() => {
-                  const seenIds: string[] = JSON.parse(localStorage.getItem("seen_popup_notice_ids") || "[]");
-                  if (!seenIds.includes(popupNotice.id)) seenIds.push(popupNotice.id);
-                  localStorage.setItem("seen_popup_notice_ids", JSON.stringify(seenIds));
-                  setPopupNoticeClosed(true);
-                  localStorage.setItem("noticeRead", noticeVersion.toString());
-                  const allDbIds = dbNotices.map((n: any) => n.id);
-                  localStorage.setItem("seen_db_notice_ids", JSON.stringify(allDbIds));
-                  setHasUpdate(false);
-                  setSelectedNotice(null);
-                  resetPopupPosition("notice");
-                  setNoticeOpen(true);
-                }}
-                className="px-5 py-3 rounded-xl bg-gray-100 text-gray-700 text-sm font-bold cursor-pointer hover:bg-gray-200 transition"
-              >
-                공지사항 전체보기
-              </button>
-              <button
-                onClick={() => {
-                  const seenIds: string[] = JSON.parse(localStorage.getItem("seen_popup_notice_ids") || "[]");
-                  if (!seenIds.includes(popupNotice.id)) seenIds.push(popupNotice.id);
-                  localStorage.setItem("seen_popup_notice_ids", JSON.stringify(seenIds));
-                  setPopupNoticeClosed(true);
-                }}
-                className="px-5 py-3 rounded-xl bg-blue-600 text-white text-sm font-bold cursor-pointer hover:bg-blue-600 transition"
-              >
-                닫기
-              </button>
+            <div data-notice-footer="true" className="border-t border-gray-200 px-6 py-4 flex items-center shrink-0">
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-600"><input type="checkbox" checked={hideToday} onChange={event=>{const checked=event.target.checked;setHideToday(checked);try{const key=`popup_notice_hidden_day:${popupNotice.id}`;if(checked)localStorage.setItem(key,new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}));else localStorage.removeItem(key);}catch{}}}/>오늘 하루 보지 않기</label>
             </div>
           </div>
         </div>
-      )}</>);
+      )}{expandedImage&&<DashboardDialog title="공지 이미지 크게 보기" onClose={()=>setExpandedImage(null)}><div data-notice-image-viewer="true"><img src={expandedImage} alt="공지 안내 이미지 확대"/></div></DashboardDialog>}</>);
 }

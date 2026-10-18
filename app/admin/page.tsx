@@ -194,6 +194,7 @@ type NoticeDB = {
   content: string;
   category_id: string | null;
   is_popup: boolean;
+  popup_repeat_daily?: boolean;
   is_pinned: boolean;
   popup_start_date: string | null;
   popup_end_date: string | null;
@@ -214,6 +215,7 @@ const [noticeForm, setNoticeForm] = useState({
   content: "",
   category_id: "",
   is_popup: false,
+  popup_repeat_daily: false,
   is_pinned: false,
   popup_start_date: "",
   popup_end_date: "",
@@ -506,35 +508,43 @@ useEffect(() => {
   const saveNotice = async () => {
     if (!noticeForm.title.trim() || !noticeForm.content.trim()) return;
     setNoticeSaving(true);
-        if (editingNotice) {
-      await supabase.from("notices_db").update({
+    let saveError: {message:string}|null=null;
+    if (editingNotice) {
+      const result=await supabase.from("notices_db").update({
         title: noticeForm.title, content: noticeForm.content,
         category_id: noticeForm.category_id || null,
         is_popup: noticeForm.is_popup,
         is_pinned: noticeForm.is_pinned,
+        popup_repeat_daily: noticeForm.popup_repeat_daily,
         popup_start_date: noticeForm.popup_start_date || null,
         popup_end_date: noticeForm.popup_end_date || null,
         image_url: noticeForm.image_url || null,
         image_urls: noticeForm.image_urls || [],
       }).eq("id", editingNotice.id);
+      saveError=result.error;
     } else {
-      await supabase.from("notices_db").insert({
+      const result=await supabase.from("notices_db").insert({
         title: noticeForm.title, content: noticeForm.content,
         category_id: noticeForm.category_id || null,
         is_popup: noticeForm.is_popup,
         is_pinned: noticeForm.is_pinned,
+        popup_repeat_daily: noticeForm.popup_repeat_daily,
         popup_start_date: noticeForm.popup_start_date || null,
         popup_end_date: noticeForm.popup_end_date || null,
         image_url: noticeForm.image_url || null,
         image_urls: noticeForm.image_urls || [],
       });
+      saveError=result.error;
     }
+
+    if(saveError){setNoticeSaving(false);alert(saveError.message.includes("popup_repeat_daily")?"팝업 표시 방식 SQL을 먼저 적용해 주세요 공지는 저장되지 않았습니다":"공지를 저장하지 못했습니다 다시 시도해 주세요");return;}
 
     setNoticeForm({
   title: "",
   content: "",
   category_id: "",
   is_popup: false,
+  popup_repeat_daily: false,
   is_pinned: false,
   popup_start_date: "",
   popup_end_date: "",
@@ -1203,7 +1213,7 @@ const matchSearch =
         {/* 꽉 차는 탭 메뉴 */}
         <div data-tab-group="true" className="w-full flex bg-gray-200 p-1 rounded-2xl mb-7">
           <button
-            onClick={() => setAdminTab("members")}
+            aria-pressed={adminTab==="members"} onClick={() => setAdminTab("members")}
             className={`flex-1 py-3.5 text-sm md:text-base font-bold rounded-xl transition ${
               adminTab === "members" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-800"
             }`}
@@ -1211,7 +1221,7 @@ const matchSearch =
             승인 회원 관리
           </button>
                     <button
-            onClick={() => setAdminTab("subscribers")}
+            aria-pressed={adminTab==="subscribers"} onClick={() => setAdminTab("subscribers")}
             className={`flex-1 py-3.5 text-sm md:text-base font-bold rounded-xl transition ${
               adminTab === "subscribers" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-800"
             }`}
@@ -1219,7 +1229,7 @@ const matchSearch =
             구독자 관리
           </button>
           <button
-            onClick={() => { setAdminTab("notices"); loadNoticeData(); }}
+            aria-pressed={adminTab==="notices"} onClick={() => { setAdminTab("notices"); loadNoticeData(); }}
             className={`flex-1 py-3.5 text-sm md:text-base font-bold rounded-xl transition ${
               adminTab === "notices" ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-800"
             }`}
@@ -1232,7 +1242,7 @@ const matchSearch =
         {/* ==================== 회원 관리 탭 ==================== */}
         {adminTab === "members" && (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
+            <div data-admin-stats="true" className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
               {[
                 { key: "all", label: "전체", icon: Users, color: "text-gray-700" },
                 { key: "pending", label: "대기", icon: Clock, color: "text-yellow-600" },
@@ -1243,6 +1253,7 @@ const matchSearch =
               ].map(({ key, label, icon: Icon, color }) => (
                 <button
                   key={key}
+                  aria-pressed={filterStatus===key}
                   onClick={() => { setFilterStatus(key); setCurrentPage(1); }}
                   className={`bg-white rounded-2xl border p-4 flex items-center gap-3 transition cursor-default hover:shadow-md ${
                     filterStatus === key ? "border-blue-600 shadow-md" : "border-gray-200"
@@ -1452,6 +1463,7 @@ c === "gray" ? "bg-gray-300" :
                   </ResponsiveSelect>
                   
 <div data-admin-notice-rich="true" className="rounded-xl border border-gray-200 overflow-hidden bg-white">
+  <div id="admin-notice-toolbar"><span className="ql-formats"><select className="ql-size" defaultValue="" aria-label="글자 크기">{[10,12,13,14,15,16,18,20,24,28,32].map(size=><option key={size} value={size===14?'':`${size}px`}>{size}</option>)}</select></span><span className="ql-formats"><button className="ql-bold" aria-label="굵게"/><button className="ql-italic" aria-label="기울임"/><button className="ql-underline" aria-label="밑줄"/></span><span className="ql-formats"><select className="ql-color" aria-label="글자 색상"/><select className="ql-align" aria-label="정렬"/><button className="ql-link" aria-label="링크"/></span></div>
   <ReactQuill
     theme="snow"
     value={noticeForm.content}
@@ -1461,15 +1473,7 @@ c === "gray" ? "bg-gray-300" :
         content: value,
       })
     }
-    modules={{
-      toolbar: [
-        [{ size: ["10px","12px","13px",false,"15px","16px","18px","20px","24px","28px","32px"] }],
-        ["bold", "italic", "underline"],
-        [{ color: [] }],
-        [{ align: [] }],
-        ["link"],
-      ],
-    }}
+    modules={{toolbar:"#admin-notice-toolbar"}}
   />
 </div>
 
@@ -1544,6 +1548,7 @@ c === "gray" ? "bg-gray-300" :
                     />
                     <span className="text-sm font-bold text-gray-700">팝업 표시</span>
                   </label>
+                  {noticeForm.is_popup&&<label className="flex items-center gap-2 text-sm text-gray-700">표시 방식<ResponsiveSelect value={noticeForm.popup_repeat_daily?'daily':'once'} onChange={event=>setNoticeForm({...noticeForm,popup_repeat_daily:event.target.value==='daily'})}><option value="once">한 번만 표시</option><option value="daily">계속 표시 · 오늘 하루 안 보기</option></ResponsiveSelect></label>}
                                     <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
                       type="checkbox"
@@ -1603,6 +1608,7 @@ c === "gray" ? "bg-gray-300" :
   content: "",
   category_id: "",
   is_popup: false,
+  popup_repeat_daily: false,
   is_pinned: false,
   popup_start_date: "",
   popup_end_date: "",
@@ -1663,6 +1669,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
   content: notice.content,
   category_id: notice.category_id || "",
   is_popup: notice.is_popup,
+  popup_repeat_daily: notice.popup_repeat_daily || false,
   is_pinned: notice.is_pinned || false,
   popup_start_date: notice.popup_start_date || "",
   popup_end_date: notice.popup_end_date || "",
