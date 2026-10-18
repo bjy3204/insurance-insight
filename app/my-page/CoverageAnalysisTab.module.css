@@ -256,3 +256,5 @@
 @media(max-width:767px){.root .chartSettingsCard>.chartSettingsHeading{top:16px}}
 
 @media(min-width:768px){.root .coverPrint,.root .previewPane>.coverPrint,.root .statusPreview>.coverPrint{right:21px}}
+
+.root .rightPanel{--cr-accent:#195dff;--cr-secondary:#284261;--cr-line:#dce5f0;--cr-soft:#edf4ff;--cr-tint:#f5f8fd}

@@ -16,9 +16,14 @@ import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import "react-quill-new/dist/quill.snow.css";
 
-const ReactQuill = dynamic(() => import("react-quill-new"), {
-  ssr: false,
-});
+const NOTICE_FONT_SIZES=["10px","12px","13px","14px","15px","16px","18px","20px","24px","28px","32px"];
+const ReactQuill = dynamic(async () => {
+  const module=await import("react-quill-new");
+  const size=module.Quill.import("attributors/style/size") as {whitelist:string[]};
+  size.whitelist=NOTICE_FONT_SIZES;
+  module.Quill.register("formats/size",size,true);
+  return module.default;
+}, {ssr:false});
 import {
   DndContext,
   closestCenter,
@@ -1458,7 +1463,7 @@ c === "gray" ? "bg-gray-300" :
     }
     modules={{
       toolbar: [
-        [{ size: [] }],
+        [{ size: ["10px","12px","13px",false,"15px","16px","18px","20px","24px","28px","32px"] }],
         ["bold", "italic", "underline"],
         [{ color: [] }],
         [{ align: [] }],
@@ -2516,6 +2521,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
     </main>
   );
 }
+
 
 
 
