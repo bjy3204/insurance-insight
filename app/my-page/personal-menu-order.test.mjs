@@ -38,6 +38,7 @@ test("legacy orders retain their order, while missing menus are restored and dup
 
 test("customer tools and communication menus belong to separate categories", () => {
   assert.deepEqual(Array.from(PERSONAL_MENU_GROUPS[0].ids), ["customer-management", "coverage-analysis", "policy-inserts", "customer"]);
-  assert.deepEqual(Array.from(PERSONAL_MENU_GROUPS[1].ids), ["ai", "notice"]);
+  assert.deepEqual(Array.from(PERSONAL_MENU_GROUPS[1].ids), ["ai", "notice", "subscriber-videos"]);
   assert.deepEqual(Array.from(reorderPersonalMenu(defaults, "notice", "ai")).slice(5, 7), ["notice", "ai"]);
 });
+

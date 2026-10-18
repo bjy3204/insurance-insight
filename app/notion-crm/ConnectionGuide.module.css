@@ -6,4 +6,5 @@
 .pages>div{display:block}.pages img{display:block;width:100%;height:auto}
 @media(max-width:650px){:global([role="dialog"]):has(>.pages){width:100%}.pages{max-height:calc(85dvh - 120px);gap:12px}}
 
-.previewPages{display:grid;gap:12px}.previewPages .previewImage{display:block;width:100%;height:auto;padding:0;border:0;border-radius:0;background:transparent;cursor:zoom-in}.previewImage img{display:block;width:100%;height:auto}
+
+.pages{scrollbar-width:none}.pages::-webkit-scrollbar{display:none}

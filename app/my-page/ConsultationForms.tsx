@@ -4,6 +4,7 @@ import {Download,Printer,Palette,Save,RotateCcw} from 'lucide-react';
 import {supabase} from '@/lib/supabase';
 import {useAuth} from '@/app/components/AuthProvider';
 import {printCoverageReport} from './coverage-report-print';
+import {renderReportImage} from './report-image';
 import styles from './ConsultationForms.module.css';
 import {CONSULTATION_FORM_CSS} from './consultation-form-style';
 
@@ -63,8 +64,8 @@ export default function ConsultationForms(){
       if(pages.some(page=>page.scrollHeight>1125))throw new Error('문구가 한 장의 공간을 초과했습니다 문구를 조금 줄여 주세요');
       if(kind==='print'){await printCoverageReport(`<style>${CONSULTATION_FORM_CSS}</style><div style="--cf-color:${color};--cf-soft:${color}18;--cf-line:${color}45">${pages.map(page=>page.outerHTML).join('')}</div>`,'상담 서식');}
       else{
-        const [{default:html2canvas},{default:JSZip}]=await Promise.all([import('html2canvas'),import('jszip')]);const zip=new JSZip();
-        for(let i=0;i<pages.length;i++){const canvas=await html2canvas(pages[i],{scale:2,backgroundColor:'#fff',windowWidth:1700,onclone:doc=>{const node=doc.querySelector<HTMLElement>('[data-consultation-capture]');if(node)node.style.cssText='position:absolute;left:0;top:0;width:794px;visibility:visible';}});const blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('이미지를 만들지 못했습니다')),'image/png'));zip.file(i===0?'고객 상담 일지.png':'상담 만족도 조사.png',blob);}
+        const {default:JSZip}=await import('jszip');const zip=new JSZip();
+        for(let i=0;i<pages.length;i++){const canvas=await renderReportImage(pages[i],CONSULTATION_FORM_CSS);const blob=await new Promise<Blob>((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('이미지를 만들지 못했습니다')),'image/png'));zip.file(i===0?'고객 상담 일지.png':'상담 만족도 조사.png',blob);}
         const url=URL.createObjectURL(await zip.generateAsync({type:'blob'}));const a=document.createElement('a');a.href=url;a.download='상담 서식.zip';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
       }
     }catch(e){setError(e instanceof Error?e.message:'출력하지 못했습니다 다시 시도해 주세요');}finally{setBusy(false);}
@@ -74,3 +75,4 @@ export default function ConsultationForms(){
     <div className={styles.capture} ref={capture} data-consultation-capture aria-hidden="true"><Pages labels={labels}/></div>
   </section>;
 }
+

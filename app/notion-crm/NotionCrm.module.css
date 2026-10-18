@@ -374,3 +374,4 @@
 .sideItem[aria-disabled=true]{opacity:.45;cursor:not-allowed}
 
 .connectionPair{display:inline-flex;align-items:center;gap:0;flex-shrink:0}
+.lockedMenuHint{position:fixed;z-index:11000;max-width:220px;padding:6px 10px;border:1px solid #cbd5e1;border-radius:4px;background:#fff;color:#334155;box-shadow:0 2px 6px #0f172a14;font-size:12px;line-height:20px;white-space:nowrap;pointer-events:none}

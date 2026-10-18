@@ -4,6 +4,7 @@ import ResponsiveSelect from "@/app/components/ResponsiveSelect";
 import MiniCalendar from "@/app/components/MiniCalendar";
 import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { X as TaskX, ChevronLeft as TaskChevronLeft, ChevronRight as TaskChevronRight } from "lucide-react";
+import SubscriberVideos from "@/app/my-page/SubscriberVideos";
 import { confirmAction } from "@/components/ConfirmationHost";
 
 import { hasCompletedMembership } from "@/lib/auth/membership";
@@ -184,7 +185,7 @@ export default function AdminPage() {
   const router = useRouter();
 
   // --- 탭 상태 ---
-   const [adminTab, setAdminTab] = useState<"members" | "subscribers" | "notices">("members");
+   const [adminTab, setAdminTab] = useState<"members" | "subscribers" | "notices" | "videos">("members");
 
 // 공지 카테고리 타입
 type NoticeCategory = { id: string; name: string; color: string; };
@@ -1211,7 +1212,7 @@ const matchSearch =
 
       <section data-page-content="true" className="max-w-7xl mx-auto px-5 py-6">
         {/* 꽉 차는 탭 메뉴 */}
-        <div data-tab-group="true" className="w-full flex bg-gray-200 p-1 rounded-2xl mb-7">
+        <div data-tab-group="true" className={`w-full grid ${process.env.NODE_ENV==='production'?'grid-cols-3':'grid-cols-2 md:grid-cols-4'} bg-gray-200 p-1 rounded-2xl mb-7`}>
           <button
             aria-pressed={adminTab==="members"} onClick={() => setAdminTab("members")}
             className={`flex-1 py-3.5 text-sm md:text-base font-bold rounded-xl transition ${
@@ -1236,9 +1237,11 @@ const matchSearch =
           >
             공지사항
           </button>
+          {process.env.NODE_ENV!=='production'&&<button aria-pressed={adminTab==='videos'} onClick={()=>setAdminTab('videos')} className={`flex-1 py-3.5 text-sm md:text-base font-bold rounded-xl transition ${adminTab==='videos'?'bg-white text-blue-600 shadow-sm':'text-gray-600 hover:text-gray-800'}`}>구독 영상</button>}
         </div>
 
 
+        {process.env.NODE_ENV!=='production'&&adminTab === "videos" && <SubscriberVideos/>}
         {/* ==================== 회원 관리 탭 ==================== */}
         {adminTab === "members" && (
           <>
@@ -2528,6 +2531,7 @@ cat.color === "gray" ? "bg-gray-100 text-gray-500" :
     </main>
   );
 }
+
 
 
 
