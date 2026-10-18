@@ -1,5 +1,6 @@
 "use client";
 
+import {useAuth} from '@/app/components/AuthProvider';
 import Image from "next/image";
 import {validateCoverageSet} from "@/lib/coverage-storage";
 import {supabase} from '@/lib/supabase';
@@ -18,21 +19,25 @@ import styles from "./CoverageAnalysisTab.module.css";
 export default function CoverageAnalysisTab({topNavigation=false}:{topNavigation?:boolean}={}) {
   const [report, setReport] = useState<CoverageReport>(() => ({ name: "", birth: "", date: new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }), advisor: "", memo: "", policies: [newReportPolicy("initial")], chartTargets:{...DEFAULT_CHART_TARGETS}, overrides: {} }));
   const crm=useCrmCalendar();
+  const {authUser}=useAuth();
   const [chartSettingsOpen,setChartSettingsOpen]=useState(false);
   const [saveRevision,setSaveRevision]=useState(0),[saveMessage,setSaveMessage]=useState('');
   const coverageLoadRun=useRef(0);
   const coverageBusy=useRef(false);
   const [toolbarSearch,setToolbarSearch]=useState('');
   const [toolbarSearchOpen,setToolbarSearchOpen]=useState(false);
-  const toolbarMatches=(crm?.data.customers||[]).filter(row=>{
+  const [personalRows,setPersonalRows]=useState<CrmRow[]>([]);
+  const searchRows=[...personalRows,...(crm?.data.customers||[])];
+  const toolbarMatches=searchRows.filter(row=>{
     const query=toolbarSearch.trim();
     const name=String(row.values['이름']||'');
     const birth=String(row.values['주민번호']||row.values['생년월일']||'').replace(/\D/g,'');
-    return query&&(name.includes(query)||birth.includes(query.replace(/[-.\s]/g,'')));
+    const digits=query.replace(/[-.\s]/g,'');
+    return query&&(name.includes(query)||(/^\d+$/.test(digits)&&birth.includes(digits)));
   });
   const [customerSearchTarget,setCustomerSearchTarget]=useState<"name"|"birth">("name");
   const [customerSearchOpen,setCustomerSearchOpen]=useState(false),[linkedCustomerId,setLinkedCustomerId]=useState('');
-  const customerMatches=(crm?.data.customers||[]).filter(row=>{
+  const customerMatches=searchRows.filter(row=>{
     const name=String(row.values['이름']||''),birth=String(row.values['주민번호']||'').replace(/\D/g,'').slice(0,6)||String(row.values['생년월일']||'').slice(2,10).replace(/\D/g,'');
     return (report.name.trim()||report.birth)&&name.includes(report.name.trim())&&birth.startsWith(report.birth);
   });
@@ -79,12 +84,13 @@ export default function CoverageAnalysisTab({topNavigation=false}:{topNavigation
       setDraftKey(key);
     });
     return()=>{cancelled=true;};
-  },[crm?.provider]);
+  },[crm?.provider,authUser?.id]);
   useEffect(()=>{
     if(!draftKey)return;
     try{localStorage.setItem(draftKey,JSON.stringify({before:report,after,theme,design,customerId:linkedCustomerId,revision:saveRevision,previewOpen,reportKind}));}
     catch{setError('기기 저장 공간을 확인해 주세요 작성 내용 자동 저장에 실패했습니다');}
   },[draftKey,report,after,theme,design,linkedCustomerId,saveRevision,previewOpen,reportKind]);
+  useEffect(()=>{setDraftKey('');setLinkedCustomerId('');setSaveRevision(0);setSaveMessage('');setToolbarSearch('');setReport({name:'',birth:'',date:new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'}),advisor:'',memo:'',policies:[newReportPolicy('initial')],chartTargets:{...DEFAULT_CHART_TARGETS},overrides:{}});setAfter({name:'',birth:'',date:'',advisor:'',memo:'',policies:[newReportPolicy('after-initial')],overrides:{}});},[authUser?.id]);
   const palette = REPORT_THEMES.find(item => item.id === theme)||REPORT_THEMES[0];
   const backgroundsForTheme=(selected:ReportTheme)=>REPORT_BACKGROUNDS.filter(item=>({sky:["protection","umbrella","review-flat"],orange:["home-photo","orange-paper","family-palm"],yellow:["family-palm","yellow-care","home-photo"],green:["forest"],gray:["insurance-photo","protection"]} as Record<ReportTheme,string[]>)[selected].includes(item.id));
   const availableBackgrounds=backgroundsForTheme(theme);
@@ -107,10 +113,14 @@ export default function CoverageAnalysisTab({topNavigation=false}:{topNavigation
   const [busy, setBusy] = useState(false), [error, setError] = useState("");
   async function coverageRequest(customerId:string,body?:unknown){
     const {data:{session}}=await supabase.auth.getSession();if(!session)throw Error('로그인 후 저장해 주세요');
+    if(customerId.startsWith('personal:'))return personalRequest('?id='+encodeURIComponent(customerId.slice(9)),body);
     const provider=crm?.provider;if(!provider)throw Error('고객 저장소에 연결해 주세요');
     const response=await fetch('/api/coverage-reports/linked'+(body?'':'?provider='+provider+'&customerId='+encodeURIComponent(customerId)),{method:body?'PUT':'GET',cache:'no-store',headers:{Authorization:'Bearer '+session.access_token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});
     const result=await response.json();if(!response.ok)throw Error(result.error||'보장분석표를 처리하지 못했습니다');return result;
   }
+  async function personalRequest(query='',body?:unknown){const {data:{session}}=await supabase.auth.getSession();if(!session)throw Error('로그인 후 저장해 주세요');const response=await fetch('/api/coverage-reports/personal'+(body?'':query),{method:body?'PUT':'GET',cache:'no-store',headers:{Authorization:'Bearer '+session.access_token,...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})});const result=await response.json();if(!response.ok)throw Error(result.error||'보장분석표를 처리하지 못했습니다');return result;}
+  async function refreshPersonal(){const result=await personalRequest();setPersonalRows(result.reports.map((item:{id:string;name:string;birth:string})=>({id:'personal:'+item.id,edited:'',values:{'이름':item.name,'주민번호':item.birth}} as CrmRow)));}
+  useEffect(()=>{let cancelled=false;setPersonalRows([]);if(!authUser)return;void personalRequest().then(result=>{if(!cancelled)setPersonalRows(result.reports.map((item:{id:string;name:string;birth:string})=>({id:'personal:'+item.id,edited:'',values:{'이름':item.name,'주민번호':item.birth}} as CrmRow)));}).catch(()=>{});return()=>{cancelled=true;};},[draftKey,authUser?.id]);
   async function selectReportCustomer(row:CrmRow){
     if(coverageBusy.current)return;
     if((linkedCustomerId||report.policies.some(policy=>policy.insurer||policy.product||policy.premium||Object.keys(policy.amounts).length))&&!await confirmAction('작성 중인 내용 대신 선택한 고객의 보장분석표를 불러올까요?'))return;
@@ -137,23 +147,12 @@ export default function CoverageAnalysisTab({topNavigation=false}:{topNavigation
     coverageBusy.current=true;setBusy(true);setError('');setSaveMessage('');
     try{
       let customerId=linkedCustomerId,revision=saveRevision;
-      if(!customerId){
-        const {data:{session}}=await supabase.auth.getSession();if(!session)throw Error('로그인 후 저장해 주세요');
-        const provider=crm?.provider;if(!provider)throw Error('고객 저장소에 연결해 주세요');
-        const endpoint='/api/notion-crm'+(provider==='notion'?'':'/'+provider);
-        const headers={Authorization:'Bearer '+session.access_token};
-        const response=await fetch(endpoint+'?source=customers',{headers,cache:'no-store'});const data=await response.json();if(!response.ok)throw Error(data.error||'고객 목록을 확인하지 못했습니다');
-        const matches=(data.data?.customers as CrmRow[]||[]).filter(row=>String(row.values['이름']||'').replace(/\s/g,'')===report.name.replace(/\s/g,'')&&(String(row.values['주민번호']||'').replace(/\D/g,'').slice(0,6)||String(row.values['생년월일']||'').slice(2,10).replace(/\D/g,''))===report.birth);
-        if(matches.length>1)throw Error('동명이인의 생년월일이 같습니다 검색 결과에서 고객을 선택해 주세요');
-        if(matches.length)customerId=matches[0].id;
-        else{
-          const created=await fetch(endpoint,{method:'POST',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({action:'save',source:'customers',values:{'이름':report.name.trim(),'주민번호':report.birth}})});const result=await created.json();if(!created.ok||!result.record?.id)throw Error(result.error||'고객을 등록하지 못했습니다');customerId=result.record.id;crm?.reload();
-        }
-        const existing=await coverageRequest(customerId);revision=existing.revision;
-        if(existing.report&&!await confirmAction('이 고객의 저장된 보장분석표를 현재 작성 내용으로 변경할까요?'))return;
-        setLinkedCustomerId(customerId);setSaveRevision(revision);setCustomerSearchOpen(false);
-      }
-      const result=await coverageRequest(customerId,{provider:crm?.provider,customerId,revision,report:{before:report,after:afterReport,theme,design}});setSaveRevision(result.revision);setSaveMessage(`${report.name.trim()} 고객님의 보장분석표를 저장했습니다`);
+      if(!customerId||customerId.startsWith('personal:')){
+        if(!customerId){const existing=await personalRequest('?name='+encodeURIComponent(report.name.trim())+'&birth='+encodeURIComponent(report.birth));revision=existing.revision;if(existing.report&&!await confirmAction('같은 이름·생년월일로 저장된 보장분석표를 현재 내용으로 변경할까요?'))return;}
+        const result=await personalRequest('',{revision,report:{before:report,after:afterReport,theme,design}});
+        setLinkedCustomerId('personal:'+result.id);setSaveRevision(result.revision);setCustomerSearchOpen(false);setSaveMessage(`${report.name.trim()} 고객님의 보장분석표를 내 계정에 저장했습니다`);await refreshPersonal();
+      }else{const result=await coverageRequest(customerId,{provider:crm?.provider,customerId,revision,report:{before:report,after:afterReport,theme,design}});setSaveRevision(result.revision);setSaveMessage(`${report.name.trim()} 고객님의 보장분석표를 저장했습니다`);}
+
     }catch(error){setError(error instanceof Error?error.message:'저장하지 못했습니다');}finally{coverageBusy.current=false;setBusy(false);}
   }
   const documentRef = useRef<HTMLDivElement>(null);
@@ -202,7 +201,7 @@ export default function CoverageAnalysisTab({topNavigation=false}:{topNavigation
   ] as [ReportSection,string][]).map(([id,label])=><Fragment key={id}><button data-action-height="44" data-report-stage={id.startsWith('after-')?'after':id==='analysis'||id==='status'?'before':undefined} type="button" aria-pressed={reportKind===id} onClick={()=>{setPreviewOpen(false);setReportKind(id);}}>{label}</button></Fragment>)}</nav>:<nav data-unified-side-menu={topNavigation?undefined:"true"} className={topNavigation?styles.topNavigation:styles.sideMenu} aria-label="보고서 종류">{[{title:"표지",ids:["cover"]},{title:"리모델링 전",ids:["analysis"]},{title:"리모델링 후",ids:["after-analysis"]},{title:"리모델링 보고서",ids:["comparison"]}].map(group=>{const selected=group.ids.includes(reportKind),expanded=openGroups.includes(group.title);return <div key={group.title}><button data-action-height="44" type="button" aria-pressed={selected} aria-expanded={group.ids.length>1?expanded:undefined} onClick={()=>{setReportKind(group.ids[0] as ReportSection);if(group.ids.length>1)setOpenGroups(previous=>expanded?previous.filter(title=>title!==group.title):topNavigation?[group.title]:[...previous,group.title]);}}>{group.title}{group.ids.length>1&&<ChevronDown size={16} style={{transform:expanded?"rotate(180deg)":undefined}}/>}</button>{group.ids.length>1&&expanded&&<div className={styles.subMenu}>{group.ids.map(id=><button data-action-height="44" key={id} type="button" aria-current={reportKind===id?"page":undefined} onClick={()=>{setReportKind(id as ReportSection);if(topNavigation)setOpenGroups([]);}}>{id.endsWith("analysis")?"보장분석표":id.endsWith("status")?"보장현황표":id==="comparison"?"전후 비교제안서":"요약보고서"}</button>)}</div>}</div>;})}</nav>;
   return <section data-coverage-editor="true" data-top-navigation={topNavigation||undefined} data-report-cover={reportKind==="cover"} className={styles.root} style={themeStyle}>
     <style>{REPORT_CSS}</style>
-    <header className={styles.toolbar}>{topNavigation?reportMenu:<h2 data-personal-tab-title="true"><ClipboardList />보장분석표</h2>}<div className={styles.actions}><div className={styles.toolbarSearch} onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget as Node|null))setToolbarSearchOpen(false);}} onKeyDown={event=>{if(event.key==='Escape')setToolbarSearchOpen(false);}}><div className={styles.toolbarSearchField}><Search size={16} aria-hidden="true"/><ClearableSearchInput data-borderless-field="true" aria-label="저장된 보장분석표 고객 검색" placeholder="고객명 · 생년월일 검색" value={toolbarSearch} disabled={busy} onClear={()=>{setToolbarSearch('');setToolbarSearchOpen(false);}} onFocus={()=>setToolbarSearchOpen(true)} onChange={event=>{setToolbarSearch(event.target.value);setToolbarSearchOpen(true);}}/></div>{toolbarSearchOpen&&toolbarSearch.trim()&&<div className={styles.toolbarSearchResults} aria-label="보장분석표 고객 검색 결과">{toolbarMatches.length?toolbarMatches.map(row=><button type="button" key={row.id} disabled={busy} onClick={()=>void selectReportCustomer(row)}><span>{String(row.values['이름']||'')}</span><span>{String(row.values['주민번호']||'').replace(/\D/g,'').slice(0,6)||String(row.values['생년월일']||'')}</span></button>):<p>일치하는 등록 고객이 없습니다</p>}</div>}</div><button data-action-height="44" type="button" aria-label="보장분석표 초기화" title="초기화" disabled={busy} onClick={()=>void resetReport()}><RotateCcw size={20}/><span>초기화</span></button><button data-action-height="44" aria-label="고객 보장분석표 저장" title="고객 보장분석표 저장" type="button" className={`${styles.primary} ${styles.iconAction}`} disabled={busy} onClick={()=>void saveLinkedReport()}><UserRound size={20}/><span>고객저장</span></button><button data-action-height="44" aria-label="이미지 저장" title="이미지 저장" className={styles.iconAction} type="button" disabled={busy} onClick={()=>void output("image",true)}><Download size={20}/><span>이미지</span></button><button data-action-height="44" aria-label="전체 인쇄" title="전체 인쇄" className={styles.iconAction} type="button" disabled={busy} onClick={() => void output("print",true)}><Printer size={20} /><span>전체인쇄</span></button></div></header>
+    <header className={styles.toolbar}>{topNavigation?reportMenu:<h2 data-personal-tab-title="true"><ClipboardList />보장분석표</h2>}<div className={styles.actions}><div className={styles.toolbarSearch} onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget as Node|null))setToolbarSearchOpen(false);}} onKeyDown={event=>{if(event.key==='Escape')setToolbarSearchOpen(false);}}><div className={styles.toolbarSearchField}><Search size={16} aria-hidden="true"/><ClearableSearchInput data-borderless-field="true" aria-label="저장된 보장분석표 고객 검색" placeholder="고객명 · 생년월일 검색" value={toolbarSearch} disabled={busy} onClear={()=>{setToolbarSearch('');setToolbarSearchOpen(false);}} onFocus={()=>setToolbarSearchOpen(true)} onChange={event=>{setToolbarSearch(event.target.value);setToolbarSearchOpen(true);}}/></div>{toolbarSearchOpen&&toolbarSearch.trim()&&<div className={styles.toolbarSearchResults} aria-label="보장분석표 고객 검색 결과">{toolbarMatches.length?toolbarMatches.map(row=><button type="button" key={row.id} disabled={busy} onClick={()=>void selectReportCustomer(row)}><span>{String(row.values['이름']||'')}</span><span>{String(row.values['주민번호']||'').replace(/\D/g,'').slice(0,6)||String(row.values['생년월일']||'')}</span></button>):<p>일치하는 고객 또는 저장된 보장분석표가 없습니다</p>}</div>}</div><button data-action-height="44" type="button" aria-label="보장분석표 초기화" title="초기화" disabled={busy} onClick={()=>void resetReport()}><RotateCcw size={20}/><span>초기화</span></button><button data-action-height="44" aria-label="고객 보장분석표 저장" title="고객 보장분석표 저장" type="button" className={`${styles.primary} ${styles.iconAction}`} disabled={busy} onClick={()=>void saveLinkedReport()}><UserRound size={20}/><span>고객저장</span></button><button data-action-height="44" aria-label="이미지 저장" title="이미지 저장" className={styles.iconAction} type="button" disabled={busy} onClick={()=>void output("image",true)}><Download size={20}/><span>이미지</span></button><button data-action-height="44" aria-label="전체 인쇄" title="전체 인쇄" className={styles.iconAction} type="button" disabled={busy} onClick={() => void output("print",true)}><Printer size={20} /><span>전체인쇄</span></button></div></header>
     {saveMessage&&<p role="status" className={styles.saveStatus}>{saveMessage}</p>}
     <div className={styles.workspace}>
       {!topNavigation&&reportMenu}
@@ -219,7 +218,7 @@ export default function CoverageAnalysisTab({topNavigation=false}:{topNavigation
       </div>
       {reportKind==="cover"&&<aside className={styles.rightPanel} aria-label="고객 및 설계사 정보">
        <section data-ui-card="true" className={styles.identityCard}><div className={`${styles.identity} ${styles.customerIdentityPicker}`}><label><span data-field-caption="true">고객명</span><ClearableSearchInput onClear={()=>changeCustomer('name','')} aria-label="연결할 고객 이름 검색" onFocus={()=>{setCustomerSearchTarget("name");setCustomerSearchOpen(true);}} value={report.name} maxLength={30} onChange={event=>changeCustomer('name',event.target.value)}/></label><label><span data-field-caption="true">생년월일</span><ClearableSearchInput onClear={()=>changeCustomer('birth','')} aria-label="연결할 고객 생년월일 검색" onFocus={()=>{setCustomerSearchTarget("birth");setCustomerSearchOpen(true);}} inputMode="numeric" maxLength={6} value={report.birth} onChange={event=>changeCustomer('birth',event.target.value.replace(/\D/g,'').slice(0,6))}/></label>
-       {customerSearchOpen&&(customerSearchTarget==="name"?!!(report.name.trim()||report.birth):!!report.name.trim())&&<div data-mini-dropdown="true" data-search-target={customerSearchTarget} className={styles.coverageCustomerResults} aria-label="고객 검색 결과">{customerMatches.length?customerMatches.map(row=>{const name=String(row.values['이름']||''),birth=String(row.values['주민번호']||'').replace(/\D/g,'').slice(0,6)||String(row.values['생년월일']||'').slice(2,10).replace(/\D/g,'');return <button type="button" key={row.id} disabled={busy} onClick={()=>void selectReportCustomer(row)}><span>{customerSearchTarget==="name"?name:birth}</span></button>;}):<p>일치하는 등록 고객이 없습니다</p>}</div>}
+       {customerSearchOpen&&(customerSearchTarget==="name"?!!(report.name.trim()||report.birth):!!report.name.trim())&&<div data-mini-dropdown="true" data-search-target={customerSearchTarget} className={styles.coverageCustomerResults} aria-label="고객 검색 결과">{customerMatches.length?customerMatches.map(row=>{const name=String(row.values['이름']||''),birth=String(row.values['주민번호']||'').replace(/\D/g,'').slice(0,6)||String(row.values['생년월일']||'').slice(2,10).replace(/\D/g,'');return <button type="button" key={row.id} disabled={busy} onClick={()=>void selectReportCustomer(row)}><span>{customerSearchTarget==="name"?name:birth}</span></button>;}):<p>일치하는 고객 또는 저장된 보장분석표가 없습니다</p>}</div>}
        </div>{linkedCustomerId&&<p className={styles.coverageCustomerLinked}>등록된 고객을 연결했습니다</p>}</section>
        <section data-ui-card="true" className={styles.identityCard}><div className={styles.advisorFields}>{([{key:'advisor',label:'설계사'},{key:'organization',label:'소속'},{key:'phone',label:'연락처'},{key:'fax',label:'팩스'},{key:'email',label:'이메일'},{key:'date',label:'분석 기준일'}] as const).map(({key,label})=><label key={key}><span data-field-caption="true">{label}</span><ClearableSearchInput aria-label={'설계사 '+label} onClear={()=>change(key,'')} value={report[key]||''} maxLength={key==='date'?10:60} placeholder={key==='date'?'YYYY-MM-DD':undefined} onChange={event=>change(key,key==='date'?reportDateInput(event.target.value):event.target.value)}/></label>)}</div></section>
         <section data-ui-card="true" className={styles.identityCard}><h3 data-personal-card-title="true">보고서 스타일</h3><div className={styles.themePicker} aria-label="보고서 스타일">{REPORT_THEMES.map(item=><button data-color-swatch="true" key={item.id} type="button" title={item.label} aria-label={item.label} aria-pressed={theme===item.id} onClick={()=>changeReportTheme(item.id)} style={{background:item.tint}}/>)}</div></section>

@@ -11,6 +11,7 @@ import { LayoutGrid,
 } from "lucide-react";
 import { FaInstagram } from "react-icons/fa";
 
+import PdfUnlock from "./PdfUnlock";
 import InsuranceLinks from "./InsuranceLinks";
 import CardNewsLinks from "./CardNewsLinks";
 
@@ -47,7 +48,8 @@ export default function UseLinkPage() {
   const [deleteMemoConfirmOpen, setDeleteMemoConfirmOpen] = useState(false);
   const [deleteMemoId, setDeleteMemoId] = useState<string | null>(null);
 
-  const [tab, setTab] = useState<"보험" | "카드뉴스">("보험");
+  const pdfUnlockEnabled=process.env.NODE_ENV === "development";
+  const [tab, setTab] = useState<"보험" | "카드뉴스" | "PDF 암호 해제">("보험");
   const [search, setSearch] = useState("");
 
   const [settingOpen, setSettingOpen] = useState(false);
@@ -164,8 +166,8 @@ const [memoOpen, setMemoOpen] = useState(false);
 
       <section data-page-content="true" className="max-w-7xl mx-auto px-5 py-6">
 
-        <div data-tab-group="true" className="grid grid-cols-2 bg-gray-200 rounded-2xl p-1 mb-7 gap-1">
-          {["보험", "카드뉴스"].map((item) => (
+        <div data-tab-group="true" className={`grid ${pdfUnlockEnabled?"grid-cols-3":"grid-cols-2"} bg-gray-200 rounded-2xl p-1 mb-7 gap-1`}>
+          {(pdfUnlockEnabled?["보험", "카드뉴스", "PDF 암호 해제"]:["보험", "카드뉴스"]).map((item) => (
             <button key={item} onClick={() => setTab(item as any)} className={`rounded-xl py-3 text-sm md:text-base font-bold ${tab === item ? "bg-white text-blue-600 shadow-sm" : "text-gray-600"}`}>
               {item}
             </button>
@@ -173,6 +175,7 @@ const [memoOpen, setMemoOpen] = useState(false);
         </div>
         {tab === "보험" && <InsuranceLinks search={search} />}
         {tab === "카드뉴스" && <CardNewsLinks search={search} />}
+        {pdfUnlockEnabled && tab === "PDF 암호 해제" && <PdfUnlock/>}
       </section>
 
       <>

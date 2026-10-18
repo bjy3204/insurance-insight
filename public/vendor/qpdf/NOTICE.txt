@@ -1,0 +1,5 @@
+QPDF WebAssembly runtime: @neslinesli93/qpdf-wasm 0.3.0
+Source: https://github.com/neslinesli93/qpdf-wasm
+Package license: ISC
+QPDF: https://qpdf.sourceforge.io/ (Apache-2.0)
+These same-origin assets run locally in a dedicated browser worker.
