@@ -16,9 +16,10 @@ import {
 interface Props {
   open: boolean;
   onClose: () => void;
+  embedded?:boolean;
 }
 
-export default function HospitalInfoPopup({ open, onClose }: Props) {
+export default function HospitalInfoPopup({ open, onClose,embedded=false }: Props) {
   const [selectedType, setSelectedType] = useState("전체");
   const [sido, setSido] = useState("");
   const [dong, setDong] = useState("");
@@ -151,18 +152,18 @@ const toggleType = (type: string) => {
   onMouseMove={movePopup}
   onMouseUp={stopPopupMove}
   onMouseLeave={stopPopupMove}
-  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"
+  data-tool-embedded={embedded||undefined} className={embedded?"w-full":"fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-3 md:p-4"}
 >
-     <div data-popup-frame="true" data-hospital-popup="true"
+     <div data-popup-frame={embedded?undefined:"true"} data-hospital-popup="true"
   onClick={(e) => e.stopPropagation()}
   style={{
-    transform: `translate(${popupPos.x}px, ${popupPos.y}px)`,
+    transform: embedded?undefined:`translate(${popupPos.x}px, ${popupPos.y}px)`,
   }}
   className="bg-white w-full max-w-6xl rounded-2xl shadow-xl overflow-hidden h-[85vh] flex flex-col"
 >
-        <div data-popup-header="true"
+        <div data-tool-inline-header={embedded||undefined} data-popup-header={embedded?undefined:"true"}
   onMouseDown={(e) => {
-  if (window.innerWidth < 768) return;
+  if (embedded||window.innerWidth < 768) return;
 
   dragRef.current = {
     isDragging: true,

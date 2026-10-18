@@ -3,16 +3,16 @@
 import ClearableSearchInput from "@/app/components/ClearableSearchInput";
 import { FileText, X } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
-export default function LifeExpectancyDialog({ controller }: { controller: HomeController }) {
+export default function LifeExpectancyDialog({ controller,embedded=false }: { controller: HomeController;embedded?:boolean }) {
 const { startPopupDrag, getPopupStyle, lifeOpen, setLifeOpen, lifeGender, setLifeGender, lifeAge, setLifeAge, selectedLife, expectYears, sickYears, healthyYears, expectAge, sickStartAge } = controller;
 return (<>{lifeOpen && (
-  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-    <div data-popup-frame="true" data-account-inputs="true"
-  style={getPopupStyle("life")}
+  <div data-tool-embedded={embedded||undefined} className={embedded?"w-full":"fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"}>
+    <div data-popup-frame={embedded?undefined:"true"} data-account-inputs="true"
+  style={embedded?undefined:getPopupStyle("life")}
   className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
 >
-      <div data-popup-header="true"
-  onPointerDown={(e) => startPopupDrag("life", e)}
+      <div data-tool-inline-header={embedded||undefined} data-popup-header={embedded?undefined:"true"}
+  onPointerDown={(e) => {if(!embedded)startPopupDrag("life", e);}}
   className="bg-white text-slate-800 px-5 py-4 flex items-center justify-between"
 >
         <div data-popup-title="true" className="font-bold flex items-center gap-2">

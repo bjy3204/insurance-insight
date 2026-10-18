@@ -5,7 +5,7 @@ type Props = {
   search: string;
 };
 
-const links = [
+export const cardNewsLinks = [
   {
     title: "금융위원회",
     icon: "/CardNews/fsc.png",
@@ -75,7 +75,7 @@ const links = [
 ];
 
 export default function CardNewsLinks({ search }: Props) {
-  const filtered = links.filter(
+  const filtered = cardNewsLinks.filter(
     (item) =>
       item.title.includes(search) ||
       item.desc.includes(search)

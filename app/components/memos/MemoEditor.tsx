@@ -46,7 +46,7 @@ export default function MemoEditor({ memo, onClose, kind = "memo", extraFields, 
       if (inline && !panel.current?.contains(event.target as Node)) return;
       if (event.key === "Escape" && !busy) { if ((event.target as HTMLElement).closest('[role="listbox"]')) return; event.stopImmediatePropagation(); if (picker) setPicker(null); else onClose(); }
       if (event.key === "Tab" && !inline) {
-        const fields = Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),[contenteditable="true"]') || []);
+        const fields = Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),[contenteditable="true"]') || []).filter(element => element.tabIndex >= 0);
         if (event.shiftKey && document.activeElement === fields[0]) { event.preventDefault(); fields.at(-1)?.focus(); }
         if (!event.shiftKey && document.activeElement === fields.at(-1)) { event.preventDefault(); fields[0]?.focus(); }
       }

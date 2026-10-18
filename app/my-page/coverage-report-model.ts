@@ -127,7 +127,7 @@ export function coverageTotal(report: CoverageReport, field: CoverageField): str
   }
   if (field.manual) return "";
   const fallback=report.fieldUnits?.[field.id]||field.unit||"만원";
-  const total=report.policies.reduce((sum,policy)=>{const unit=policy.units?.[field.id]||fallback;return sum+(reportNumber(policy.amounts[field.id]||"")||0)*(unit==="억"?10000:unit==="천원"?.1:1);},0);
+  const total=report.policies.reduce((sum,policy)=>{const unit=policy.units?.[field.id]||fallback;return sum+(reportNumber(policy.amounts[field.id]||"")||0)*(unit==="억"?10000:unit==="천원"?.1:unit==="원"?.0001:1);},0);
   return amountText(total);
 }
 export function policyAmount(policy: ReportPolicy, field: CoverageField, unitOverride?: string): string {

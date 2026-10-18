@@ -38,7 +38,7 @@ export default function CustomerEntryDialog({ kind, values, onChange, onClose, c
       if (target.closest('[role="listbox"]') || target.closest('[role="dialog"]') !== panel.current) return;
       if (event.key === "Escape") { event.stopPropagation(); closeRef.current(); }
       if (event.key !== "Tab") return;
-      const elements = Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), textarea:not(:disabled), [tabindex="0"]') || []);
+      const elements = Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), textarea:not(:disabled), [tabindex="0"]') || []).filter(element => element.tabIndex >= 0);
       if (event.shiftKey && document.activeElement === elements[0]) { event.preventDefault(); elements.at(-1)?.focus(); }
       if (!event.shiftKey && document.activeElement === elements.at(-1)) { event.preventDefault(); elements[0]?.focus(); }
     };

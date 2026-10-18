@@ -13,6 +13,7 @@ import { useAuth } from "@/app/components/AuthProvider";
 import { supabase } from "@/lib/supabase";
 import { MAX_CUSTOMERS, TEMPLATES, templatePages, type TemplateId, type PetKind, petDecorationHtml, overlayHtml, printDocument, printJobs, type Advisor } from "./model";
 import styles from "./page.module.css";
+import {policyInsertImage} from "./image-cache";
 import { captureNoticeImage } from "@/lib/capture-claim-notice";
 
 const categories = [{ id: "family", label: "가정의달" }, { id: "summer", label: "여름휴가철" }, { id: "driver", label: "운전자보험" }, { id: "care", label: "재가보험" }, { id: "pet", label: "펫보험" }];
@@ -137,21 +138,18 @@ export default function PolicyInsertsEditor({ embedded = false, compactNavigatio
         setLoading(true); setError(""); setImages({});
         if (!session) throw new Error("다시 로그인해 주세요");
         const entries = await Promise.all(TEMPLATES[category].titles.map(async (_, index) => { const number = index + 1;
-          const response = await fetch(`/api/policy-inserts/${number}?category=${category}`, { headers: { Authorization: `Bearer ${session.access_token}` }, signal: abort.signal });
-          if (!response.ok) throw new Error(response.status === 403 ? "승인된 회원만 사용할 수 있습니다" : "이미지를 불러오지 못했습니다 다시 시도해 주세요");
-          const url = URL.createObjectURL(await response.blob());
-          urls.push(url);
-          if (abort.signal.aborted) URL.revokeObjectURL(url);
+          const blob=await policyInsertImage(session.user.id,category,String(number),session.access_token);
+          if(abort.signal.aborted)return [number,''] as const;
+          const url=URL.createObjectURL(blob);urls.push(url);
+          setImages(previous=>({...previous,[number]:url}));
           return [number, url] as const;
         }));
         let icons: Record<PetKind, string> = { dog: "", cat: "" };
         if (category === "pet") {
           const iconEntries = await Promise.all((["dog", "cat"] as const).map(async kind => {
-            const response = await fetch(`/api/policy-inserts/${kind}?category=pet`, { headers: { Authorization: `Bearer ${session.access_token}` }, signal: abort.signal });
-            if (!response.ok) throw new Error("반려동물 이미지를 불러오지 못했습니다");
-            const url = URL.createObjectURL(await response.blob());
-            urls.push(url);
-            if (abort.signal.aborted) URL.revokeObjectURL(url);
+            const blob=await policyInsertImage(session.user.id,'pet',kind,session.access_token);
+            if(abort.signal.aborted)return [kind,''];
+            const url=URL.createObjectURL(blob);urls.push(url);
             return [kind, url];
           }));
           icons = Object.fromEntries(iconEntries) as Record<PetKind, string>;
@@ -228,7 +226,7 @@ export default function PolicyInsertsEditor({ embedded = false, compactNavigatio
       <div className={styles.topActions}><nav data-unified-side-menu={compactNavigation?undefined:"true"} className={styles.categories} aria-label="속지 주제">{categories.map(item => <button data-action-height="44" key={item.id} type="button" aria-pressed={category === item.id} className={category === item.id ? styles.activeCategory : ""} onClick={() => { if (category === item.id) return; setCategory(item.id as TemplateId); setPage(1); setSelected(templatePages(item.id as TemplateId, petKind).map(item => item.page)); setImages({}); setLoading(true); setError(""); }}>{item.label}</button>)}</nav><button data-icon-only="true" data-action-height="44" type="button" aria-label="이미지 저장" title="현재 페이지 이미지 저장" disabled={!ready || savingImage} onClick={() => void saveImage()}><Download size={20}/></button><button data-icon-only="true" data-action-height="44" type="button" aria-label="개별 인쇄" title="개별 인쇄" disabled={!ready || printing} onClick={() => void print("single")}><Printer size={20}/></button><div className={styles.mobileOutputActions}><button data-action-height="44" type="button" disabled={!ready || savingImage} onClick={() => void saveImage()}><Download size={18}/><span>저장</span></button><button data-action-height="44" type="button" disabled={!ready || printing} onClick={() => void print("single")}><Printer size={18}/><span>인쇄</span></button></div></div>
         <div className={styles.previewLayout}><div className={styles.previewToolbar}><nav className={styles.pagination} aria-label="미리볼 페이지">{pages.map((item,index)=><button type="button" data-action-height="44" key={item.page} aria-pressed={page===item.page} onClick={()=>setPage(item.page)}>{index+1}. {item.title}</button>)}</nav><div className={styles.mobilePreviewNavigation}><button data-icon-only="true" type="button" aria-label="이전 페이지" disabled={pages.findIndex(item=>item.page===page)<=0} onClick={()=>{const index=pages.findIndex(item=>item.page===page);if(index>0)setPage(pages[index-1].page);}}><ChevronLeft size={20}/></button><CustomSelect placement="up" matchTriggerWidth label="미리볼 페이지" value={String(page)} options={pages.map((item,index)=>({value:String(item.page),label:(index+1)+'. '+item.title}))} onChange={value=>setPage(Number(value))}/><button data-icon-only="true" type="button" aria-label="다음 페이지" disabled={pages.findIndex(item=>item.page===page)>=pages.length-1} onClick={()=>{const index=pages.findIndex(item=>item.page===page);if(index<pages.length-1)setPage(pages[index+1].page);}}><ChevronRight size={20}/></button></div></div>
           <section data-ui-card="true" className={styles.preview} aria-label="인쇄 미리보기">{error && <div role="alert" className={styles.error}>{error}{!ready && <button data-action-height="44" type="button" onClick={() => setRetry(value => value + 1)}>다시 시도</button>}</div>}
-          <div className={styles.paperStage}>{loading ? null : images[page] ? <div ref={paperRef} className={styles.paper}><Image unoptimized width={1414} height={2000} src={images[page]} alt={`${TEMPLATES[category].label} ${titles[page - 1]}`}/><div className={styles.overlays} dangerouslySetInnerHTML={{ __html: overlayHtml(page, currentName, advisor, category) + petDecorationHtml(page, category, { kind: petKind, src: petIcons[petKind] }) }}/></div> : null}</div>
+          <div className={styles.paperStage}>{images[page] ? <div ref={paperRef} className={styles.paper}><Image unoptimized width={1414} height={2000} src={images[page]} alt={`${TEMPLATES[category].label} ${titles[page - 1]}`}/><div className={styles.overlays} dangerouslySetInnerHTML={{ __html: overlayHtml(page, currentName, advisor, category) + petDecorationHtml(page, category, { kind: petKind, src: petIcons[petKind] }) }}/></div> : null}</div>
         </section></div>
         <aside className={styles.controls}>
           <div className={styles.identityCards}>

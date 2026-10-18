@@ -10,11 +10,11 @@ type HistoryItem = {
   result: string;
 };
 
-export default function Calculator() {
+export default function Calculator({embedded=false}:{embedded?:boolean}={}) {
  
 
 
-  const [isOpen, setIsOpen] = useWidgetSessionState("calculator:isOpen", false);
+  const [isOpen, setIsOpen] = useWidgetSessionState(embedded?"tool-calculator:isOpen":"calculator:isOpen", false);
   const [showHistory, setShowHistory] = useWidgetSessionState("calculator:showHistory", false);
   const [display, setDisplay] = useWidgetSessionState("calculator:display", "0");
   const [expression, setExpression] = useWidgetSessionState("calculator:expression", "");
@@ -274,11 +274,11 @@ export default function Calculator() {
      
 
             {/* 계산기 본체 */}
-      {isOpen && initialized && (
+      {(embedded||isOpen && initialized) && (
 
                 <div data-ui-card="true"
-          data-mobile-movable="true" data-popup-resize="custom" data-widget-kind="calculator" ref={calcRef}
-          role="dialog"
+          data-tool-calculator={embedded||undefined} data-mobile-movable={embedded?undefined:"true"} data-popup-resize={embedded?undefined:"custom"} data-widget-kind="calculator" ref={calcRef}
+          role={embedded?undefined:"dialog"}
           aria-label="계산기"
           tabIndex={0}
           onKeyDown={(e) => {
@@ -297,16 +297,16 @@ export default function Calculator() {
             if (e.key === "Delete") { clear(); return; }
           }}
           style={{
-            position: "fixed",
-            left: pos.x,
-            top: pos.y,
-            width: size.width,
-            height: size.height,
-            zIndex: 9999,
+            position: embedded?"relative":"fixed",
+            left: embedded?undefined:pos.x,
+            top: embedded?undefined:pos.y,
+            width: embedded?"100%":size.width,
+            height: embedded?560:size.height,
+            zIndex: embedded?undefined:9999,
             userSelect: "none",
           }}
           className={`${styles.panel} bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-gray-100`}
-          onMouseDown={onMouseDownDrag}
+          onMouseDown={embedded?undefined:onMouseDownDrag}
         >
 
         
@@ -377,7 +377,7 @@ export default function Calculator() {
               </button>
               <div className="w-px h-5 bg-gray-200" />
               <button data-icon-only="true"
-                onClick={() => setIsOpen(false)}
+                data-tool-close={embedded||undefined} onClick={() => setIsOpen(false)}
                 aria-label="계산기 닫기"
                 className="calc-btn w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-all cursor-pointer"
               >

@@ -5,12 +5,13 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 type Props = {
   arrows?: boolean;
   desktopPageCount?: number;
+  mobilePageCount?: number;
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
 };
 
-export default function Pagination({ page, totalPages, onPageChange, desktopPageCount = 10, arrows = false }: Props) {
+export default function Pagination({ page, totalPages, onPageChange, desktopPageCount = 10, mobilePageCount = 5, arrows = false }: Props) {
   const total = Math.max(1, totalPages);
   const render = (count: number, className: string) => {
     const start = Math.floor((page - 1) / count) * count + 1;
@@ -22,5 +23,5 @@ export default function Pagination({ page, totalPages, onPageChange, desktopPage
       <button type="button" aria-label="다음 페이지" disabled={page >= total} onClick={() => onPageChange(Math.min(total, page + 1))}>{arrows ? <ChevronRight size={18}/> : "다음"}</button>
     </nav>;
   };
-  return <>{render(5, "paginationMobile")}{render(desktopPageCount, "paginationDesktop")}</>;
+  return <>{render(mobilePageCount, "paginationMobile")}{render(desktopPageCount, "paginationDesktop")}</>;
 }

@@ -1,0 +1,1 @@
+const fs=require('fs');const a=JSON.parse(fs.readFileSync('C:/Users/bjy32/AppData/Roaming/xdg.data/com.vercel.cli/auth.json','utf8'));fetch('https://api.vercel.com/v2/user',{headers:{Authorization:'Bearer '+a.token}}).then(async r=>{console.log('status',r.status);let j=await r.json();console.log({username:j.user?.username,error:j.error?.code})}).catch(e=>console.log(e.stack));

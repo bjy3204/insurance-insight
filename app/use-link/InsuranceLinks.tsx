@@ -5,7 +5,7 @@ type Props = {
   search: string;
 };
 
-const links = [
+export const insuranceLinks = [
       {
     title: "진료정보 열람",
     icon: "/Insurancelink/medical-records.png",
@@ -95,7 +95,7 @@ const links = [
 ];
 
 export default function InsuranceLinks({ search }: Props) {
-  const filtered = links.filter(
+  const filtered = insuranceLinks.filter(
     (item) =>
       item.title.includes(search) ||
       item.desc.includes(search)

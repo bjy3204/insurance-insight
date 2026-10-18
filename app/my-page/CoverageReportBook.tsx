@@ -22,8 +22,8 @@ function Cover({ report }: { report: CoverageReport }) {
     <div className="cr-cover-panels">
       <section className="cr-cover-contracts"><h2><strong>{report.name || "고객"}</strong><small>님 보험 현황</small></h2><dl>
         <div><dt>정상계약</dt><dd>{filledPolicyCount(report)} 건</dd></div>
-        <div><dt>월 보험료</dt><dd>{won(totals.monthly)}</dd></div>
-        <div className="cr-paid-row"><dt>납입완료</dt><dd>{won(totals.paid)}</dd></div><div><dt>납입예정</dt><dd>{won(totals.remaining)}</dd></div><div className="cr-cover-total-row"><dt>총 보험료</dt><dd>{won(total)}</dd></div>
+        <div><dt>월 보험료</dt><dd>{won(totals.monthly)||"0원"}</dd></div>
+        <div className="cr-paid-row"><dt>납입완료</dt><dd>{won(totals.paid)||"0원"}</dd></div><div><dt>납입예정</dt><dd>{won(totals.remaining)||"0원"}</dd></div><div className="cr-cover-total-row"><dt>총 보험료</dt><dd>{won(total)||"0원"}</dd></div>
       </dl><svg className="cr-donut" viewBox="0 0 120 120" role="img" aria-label={`보험료 납입 완료 ${ratio}%`}><circle cx="60" cy="60" r="44" fill="none" stroke="#fff0db" strokeWidth="13" /><circle cx="60" cy="60" r="44" fill="none" stroke="#ff9828" strokeWidth="13" pathLength="100" strokeDasharray={`${ratio} 100`} transform="rotate(-90 60 60)" /><text x="60" y="65" textAnchor="middle" fontSize="21" fontWeight="700">{ratio}%</text></svg></section>
 
     </div>

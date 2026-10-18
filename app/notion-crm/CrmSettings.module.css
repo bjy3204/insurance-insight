@@ -9,3 +9,5 @@
 .providerChoices{grid-template-columns:repeat(2,minmax(0,1fr))}
 
 .connectionPair{display:flex;align-items:center;justify-content:center;gap:0;min-width:0}.connectionPair>button:not([data-connection-guide]){height:44px;padding:0 15px;gap:8px;font-size:14px;white-space:nowrap}
+
+.importHeading{display:flex;align-items:center;justify-content:space-between;gap:8px}.importHeading h2{margin:0}

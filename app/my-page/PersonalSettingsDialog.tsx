@@ -11,7 +11,7 @@ export default function PersonalSettingsDialog({ title, onClose, children }: { t
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const unlock = lockPageScroll();
-    const controls = () => Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]') || []).filter(element => element.getClientRects().length > 0);
+    const controls = () => Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]') || []).filter(element => element.tabIndex >= 0).filter(element => element.getClientRects().length > 0);
     controls()[0]?.focus();
     const key = (event: KeyboardEvent) => {
       if (document.querySelector('[role="alertdialog"]')) return;

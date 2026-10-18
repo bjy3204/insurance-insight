@@ -2,16 +2,16 @@
 
 import { X, Percent } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
-export default function BankRatesDialog({ controller }: { controller: HomeController }) {
+export default function BankRatesDialog({ controller,embedded=false }: { controller: HomeController;embedded?:boolean }) {
 const { open, startPopupDrag, getPopupStyle, bankRateOpen, setBankRateOpen, bankRateMonth, setBankRateMonth, bankRates, bankBaseDate } = controller;
 return (<>{bankRateOpen && (
-  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-    <div data-popup-frame="true"
-      style={getPopupStyle("bankRate")}
+  <div data-tool-embedded={embedded||undefined} className={embedded?"w-full":"fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"}>
+    <div data-popup-frame={embedded?undefined:"true"}
+      style={embedded?undefined:getPopupStyle("bankRate")}
       className="bg-white w-full max-w-4xl rounded-[24px] shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
     >
-      <div data-popup-header="true"
-        onMouseDown={(e) => startPopupDrag("bankRate", e)}
+      <div data-tool-inline-header={embedded||undefined} data-popup-header={embedded?undefined:"true"}
+        onMouseDown={(e) => {if(!embedded)startPopupDrag("bankRate", e);}}
         className="bg-white text-slate-800 px-4 py-3 md:px-7 md:py-4 border-b border-[#e1e9fb] flex items-center justify-between gap-3 shrink-0"
       >
         <h2 data-popup-title="true" className="font-bold text-lg flex items-center gap-2.5">

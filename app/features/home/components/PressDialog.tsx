@@ -6,19 +6,19 @@ import Pagination from "@/app/components/Pagination";
 import { supabase } from "@/lib/supabase";
 import { FileText, Megaphone, X, Search } from "lucide-react";
 import type { HomeController } from "../hooks/useHomeController";
-export default function PressDialog({ controller }: { controller: HomeController }) {
+export default function PressDialog({ controller,embedded=false }: { controller: HomeController;embedded?:boolean }) {
 const { authUser, authStatus, startPopupDrag, getPopupStyle, pressOpen, setPressOpen, selectedPress, setSelectedPress, pressSearch, setPressSearch, pressPage, setPressPage, readPressIds, setReadPressIds, filteredPress, PRESS_PER_PAGE, totalPressPages, paginatedPress } = controller;
 return (<>{pressOpen && (
   <div
-  className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+  data-tool-embedded={embedded||undefined} className={embedded?"w-full":"fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"}
 >
-    <div data-popup-frame="true" data-account-inputs="true" data-press-resizable="true"
+    <div data-popup-frame={embedded?undefined:"true"} data-account-inputs="true" data-press-resizable="true"
   onClick={(e) => e.stopPropagation()}
-  style={getPopupStyle("press")}
+  style={embedded?undefined:getPopupStyle("press")}
   className="bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden h-[92vh] flex flex-col"
 >
-      <div data-popup-header="true"
-  onPointerDown={(e) => startPopupDrag("press", e)}
+      <div data-tool-inline-header={embedded||undefined} data-popup-header={embedded?undefined:"true"}
+  onPointerDown={(e) => {if(!embedded)startPopupDrag("press", e);}}
   className="bg-blue-600 text-white px-5 py-4 flex items-center justify-between"
 >
         <div data-popup-title="true" className="font-bold flex items-center gap-2">

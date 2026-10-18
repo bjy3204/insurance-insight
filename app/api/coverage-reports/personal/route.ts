@@ -4,6 +4,8 @@ import {createClient} from '@supabase/supabase-js';
 import {requireMember} from '@/lib/notion-crm/member';
 import {openCustomerData,sealCustomerData} from '@/lib/customer-records';
 import {validateCoverageSet} from '@/lib/coverage-storage';
+import {coverageDraftId,coverageIdentityScope} from '@/lib/coverage-draft-id';
+import {GET as linkedReport} from '@/app/api/coverage-reports/linked/route';
 export const runtime='nodejs';
 const VERSION=5;
 const json=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'no-store, private'}});
@@ -16,7 +18,7 @@ export async function GET(request:NextRequest){try{
  if(params.has('name')){const name=params.get('name')||'',birth=params.get('birth')||'';if(!name.trim()||name.length>60||!/^\d{6}$/.test(birth))throw Error('이름과 생년월일 6자리를 확인해 주세요');id=reportId(owner,name,birth);}
  if(id){if(!/^[a-f0-9-]{36}$/.test(id))throw Error('저장 정보를 확인해 주세요');const {data,error}=await db.from('customer_records').select('encrypted_payload,encryption_key_id,revision').eq('user_id',owner).eq('payload_version',VERSION).eq('id',id).maybeSingle();if(error)throw Error('보장분석표를 불러오지 못했습니다');return json({id,revision:data?.revision||0,report:data?decode(data.encrypted_payload,owner,id):null});}
  const reports=[];
- for(let start=0;;start+=500){const {data,error}=await db.from('customer_records').select('id,encrypted_payload,revision').eq('user_id',owner).eq('payload_version',VERSION).order('id').range(start,start+499);if(error)throw Error('저장 목록을 불러오지 못했습니다');for(const row of data||[]){const report=decode(row.encrypted_payload,owner,row.id);reports.push({id:row.id,name:report.before.name,birth:report.before.birth});}if(!data||data.length<500)break;}
+ for(let start=0;;start+=500){const {data,error}=await db.from('customer_records').select('id,encrypted_payload,revision').eq('user_id',owner).eq('payload_version',VERSION).order('id').range(start,start+499);if(error)throw Error('저장 목록을 불러오지 못했습니다');for(const row of data||[]){const report=decode(row.encrypted_payload,owner,row.id);const link=openCustomerData(row.encrypted_payload,owner,'personal-coverage',row.id);reports.push({id:row.id,name:report.before.name,birth:report.before.birth,linkedCustomerId:link.linkedCustomerId||'',linkedProvider:link.linkedProvider||''});}if(!data||data.length<500)break;}
  return json({reports});
  }catch(error){return json({error:error instanceof Error?error.message:'불러오지 못했습니다'},400);}}
 export async function PUT(request:NextRequest){try{
@@ -31,3 +33,26 @@ export async function PUT(request:NextRequest){try{
  if(result.error||!result.data)throw Error('보장분석표를 저장하지 못했습니다');
  return json({id,revision:result.data.revision});
  }catch(error){return json({error:error instanceof Error?error.message:'저장하지 못했습니다'},400);}}
+
+export async function PATCH(request:NextRequest){try{
+ const {owner,db}=await access(request),body=await request.json();
+ if(typeof body.id!=='string'||!/^[a-f0-9-]{36}$/.test(body.id)||!['notion','sheets'].includes(body.provider)||typeof body.customerId!=='string'||!body.customerId||body.customerId.length>128)throw Error('고객 연결 정보를 확인해 주세요');
+ const url=new URL('/api/coverage-reports/linked',request.url);url.searchParams.set('provider',body.provider);url.searchParams.set('customerId',body.customerId);
+ const checked=await linkedReport(new NextRequest(url,{headers:request.headers}));if(!checked.ok||!(await checked.json()).report)throw Error('등록된 고객의 리포트를 먼저 저장해 주세요');
+ const {data,error}=await db.from('customer_records').select('encrypted_payload,revision').eq('user_id',owner).eq('payload_version',VERSION).eq('id',body.id).maybeSingle();
+ if(error||!data)throw Error('기존 리포트를 찾지 못했습니다');
+ const payload=openCustomerData(data.encrypted_payload,owner,'personal-coverage',body.id);
+ const result=await db.from('customer_records').update({encrypted_payload:sealCustomerData({...payload,linkedCustomerId:body.customerId,linkedProvider:body.provider},owner,'personal-coverage',body.id),revision:data.revision+1,updated_at:new Date().toISOString()}).eq('user_id',owner).eq('payload_version',VERSION).eq('id',body.id).eq('revision',data.revision).select('revision').maybeSingle();
+ if(result.error||!result.data)throw Error('고객 연결을 완료하지 못했습니다 다시 저장해 주세요');
+ return json({linkedCustomerId:body.customerId});
+ }catch(error){return json({error:error instanceof Error?error.message:'고객 연결을 저장하지 못했습니다'},400);}}
+
+export async function DELETE(request:NextRequest){try{
+ const {owner,db}=await access(request),id=request.nextUrl.searchParams.get('id');
+ if(!id||!/^[a-f0-9-]{36}$/.test(id))throw Error('삭제할 리포트를 확인해 주세요');
+ const existing=await db.from('customer_records').select('encrypted_payload').eq('user_id',owner).eq('payload_version',VERSION).eq('id',id).maybeSingle();
+ if(existing.error)throw Error('삭제할 리포트를 확인하지 못했습니다');
+ if(existing.data){const report=decode(existing.data.encrypted_payload,owner,id);const cleared=await db.from('customer_records').delete().eq('user_id',owner).eq('payload_version',6).eq('id',coverageDraftId(owner,coverageIdentityScope(report.before.name,report.before.birth)));if(cleared.error)throw Error('자동 저장 내용을 삭제하지 못했습니다');}
+ const result=await db.from('customer_records').delete().eq('user_id',owner).eq('payload_version',VERSION).eq('id',id);
+ if(result.error)throw Error('리포트를 삭제하지 못했습니다');return json({deleted:true});
+ }catch(error){return json({error:error instanceof Error?error.message:'삭제하지 못했습니다'},400);}}

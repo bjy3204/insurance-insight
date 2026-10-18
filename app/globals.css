@@ -5,6 +5,7 @@
 @source not "./claim-docs/hospital-data.ts";
 @source not "../outputs";
 @source not "../output";
+@source not "../tmp";
 @source not "../public/data";
 
 @font-face {
@@ -2022,8 +2023,8 @@ html:has([data-crm-workspace=true]){scrollbar-gutter:stable}
 [data-coverage-editor=true][data-coverage-editor=true][data-coverage-editor=true] input[data-borderless-field=true]:focus{outline:none!important;border-color:transparent!important;box-shadow:none!important}
 
 /* Highlight the full analysis-table cell rather than an inset input. */
-[data-coverage-input-table=true] :is(th,td):has(input:focus){background:#f8fbff!important;box-shadow:inset 0 0 0 1px #dce4ef!important}
-[data-coverage-editor=true][data-coverage-editor=true][data-coverage-editor=true] [data-coverage-input-table=true] input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=hidden]):focus{border-color:transparent!important;outline:none!important;box-shadow:none!important;background:transparent!important}
+[data-coverage-input-table=true] :is(th,td):has(:is(input,textarea):focus){background:#f8fbff!important;box-shadow:inset 0 0 0 1px #dce4ef!important}
+[data-coverage-editor=true][data-coverage-editor=true][data-coverage-editor=true] [data-coverage-input-table=true] :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]):not([type=hidden]),textarea):focus{border-color:transparent!important;outline:none!important;box-shadow:none!important;background:transparent!important}
 
 /* Keyboard focus on icon actions uses icon color, without browser rings. */
 :is(button,a):is([data-icon-only=true],[data-search-clear=true],[data-popup-close=true],[data-coverage-delete=true]):focus-visible,

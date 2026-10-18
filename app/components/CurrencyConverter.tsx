@@ -116,10 +116,10 @@ function formatSubText(value: number, code: string): string {
 // 계산기 연산자 타입
 type CalcOp = "÷" | "×" | "−" | "+" | null;
 
-export default function CurrencyConverter() {
+export default function CurrencyConverter({embedded=false}:{embedded?:boolean}={}) {
   const { authUser, authStatus } = useAuth();
 
-  const [isOpen, setIsOpen] = useWidgetSessionState("currency:isOpen", false);
+  const [isOpen, setIsOpen] = useWidgetSessionState(embedded?"tool-currency:isOpen":"currency:isOpen", false);
   const [initialized, setInitialized] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const positionReady = true, positionRestored = false;
@@ -164,11 +164,11 @@ export default function CurrencyConverter() {
     closeBtnHov: isDark ? "#3a3a3c"  : "#e5e5ea",
   };
 
-  return <CurrencyConverterInner
+  return <CurrencyConverterInner embedded={embedded}
     authUser={authUser}
     authStatus={authStatus}
-    isOpen={isOpen} setIsOpen={setIsOpen}
-    initialized={initialized} setInitialized={setInitialized} positionReady={positionReady} positionRestored={positionRestored}
+    isOpen={embedded||isOpen} setIsOpen={setIsOpen}
+    initialized={embedded||initialized} setInitialized={setInitialized} positionReady={positionReady} positionRestored={positionRestored}
     pos={pos} setPos={setPos}
     dragging={dragging} dragOffset={dragOffset} calcRef={calcRef}
     size={size} setSize={setSize}
@@ -191,6 +191,7 @@ export default function CurrencyConverter() {
 function CurrencyConverterInner(props: any) {
   const {
     authUser,
+    embedded=false,
     authStatus,
     isOpen, setIsOpen,
     initialized, setInitialized, positionReady, positionRestored,
@@ -552,20 +553,20 @@ naverData.items?.forEach((item: any) => {
     <>
       {isOpen && initialized && (
         <div
-          data-mobile-movable="true" data-popup-resize="custom" ref={calcRef}
+          data-tool-calculator={embedded||undefined} data-mobile-movable={embedded?undefined:"true"} data-popup-resize={embedded?undefined:"custom"} ref={calcRef}
           style={{
-            position: "fixed",
-            left: pos.x,
-            top: pos.y,
-            width: size.width,
-            height: size.height,
-            zIndex: 9998,
+            position: embedded?"relative":"fixed",
+            left: embedded?undefined:pos.x,
+            top: embedded?undefined:pos.y,
+            width: embedded?"100%":size.width,
+            height: embedded?620:size.height,
+            zIndex: embedded?undefined:9998,
             userSelect: "none",
             background: T.bg,
             borderRadius: 24,
           }}
           className="shadow-2xl flex flex-col overflow-hidden"
-          onMouseDown={onMouseDownDrag}
+          onMouseDown={embedded?undefined:onMouseDownDrag}
         >
           {/* 통화 선택 팝업 */}
           {showCurrencyPicker && (
@@ -585,7 +586,7 @@ naverData.items?.forEach((item: any) => {
                   style={{ color: T.textSub }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = T.closeBtnHov; e.currentTarget.style.color = T.textMain; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textSub; }}
-                  onClick={() => setIsOpen(false)}
+                  data-tool-close={embedded||undefined} onClick={() => setIsOpen(false)}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -659,7 +660,7 @@ naverData.items?.forEach((item: any) => {
                 style={{ color: T.textSub }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = T.closeBtnHov; e.currentTarget.style.color = T.textMain; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = T.textSub; }}
-                onClick={() => setIsOpen(false)}
+                data-tool-close={embedded||undefined} onClick={() => setIsOpen(false)}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -973,7 +974,7 @@ naverData.items?.forEach((item: any) => {
           {/* 리사이즈 핸들 */}
           <div
             className="cc-resize absolute bottom-0 right-0 w-6 h-6 cursor-se-resize z-20"
-            onMouseDown={onMouseDownResize}
+            data-tool-resize={embedded||undefined} onMouseDown={onMouseDownResize}
           >
             <svg width="14" height="14" viewBox="0 0 16 16" className="absolute bottom-1 right-1" style={{ color: T.textSub }}>
               <path d="M14 2L2 14M14 8L8 14M14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

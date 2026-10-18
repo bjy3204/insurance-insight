@@ -1,0 +1,1 @@
+const os=require('node:os');const {syncBuiltinESMExports}=require('node:module');const original=os.hostname;os.hostname=()=>original().replace(/[^\x20-\x7e]/g,'_');syncBuiltinESMExports();process.env.NO_UPDATE_NOTIFIER='1';

@@ -7,7 +7,7 @@ import test from 'node:test';
 const require=createRequire(import.meta.url),ts=require('typescript');
 function load(name,deps={}){const module={exports:{}};vm.runInNewContext(ts.transpileModule(readFileSync(new URL(name,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module,exports:module.exports,crypto:webcrypto,require:key=>deps[key]});return module.exports;}
 const model=load('./coverage-report-model.ts');
-const {copyReportCells,pasteReportCells,clipboardRows}=load('./coverage-cell-clipboard.ts',{'./coverage-report-model':model});
+const {copyReportCells,pasteReportCells,clipboardRows,clearReportCells}=load('./coverage-cell-clipboard.ts',{'./coverage-report-model':model});
 const base=()=>({name:'',policies:[model.newReportPolicy('one')],overrides:{}});
 test('range copies raw amounts and individual units without modifying the source',()=>{
   const source=base();source.policies.push(model.newReportPolicy('two'));
@@ -41,4 +41,12 @@ test('reverse selections include blanks and manual surgery descriptions',()=>{
   const result=pasteReportCells(base(),row,0,copied);
   assert.equal(result.policies[0].amounts['surgery-1'],'1종 20 / 2종 50');
   assert.equal(result.policies[0].amounts['surgery-2'],'');
+});
+
+test('clear reversed range preserves units, neighboring cells and source data',()=>{
+ const source=base();source.policies.push(model.newReportPolicy('two'));
+ source.policies[0].amounts['cancer-0']='3';source.policies[0].units={'cancer-0':'억'};source.policies[1].amounts['cancer-0']='500';
+ const row=clipboardRows(source).indexOf('cancer-0');
+ const result=clearReportCells(source,{row,endRow:0,column:0,endColumn:0});
+ assert.equal(result.policies[0].amounts['cancer-0'],'');assert.equal(result.policies[0].units['cancer-0'],'억');assert.equal(result.policies[1].amounts['cancer-0'],'500');assert.equal(source.policies[0].amounts['cancer-0'],'3');assert.equal('remaining' in result.policies[0],false);assert.equal(result.policies.length,2);
 });

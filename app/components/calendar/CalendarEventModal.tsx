@@ -29,7 +29,7 @@ export default function CalendarEventModal({formData,setFormData,editingEvent,on
   const keyboard=(event:KeyboardEvent)=>{
    if(event.key==="Escape"){if(event.defaultPrevented||event.target instanceof Element&&event.target.closest('[role="listbox"]'))return;event.stopImmediatePropagation();if(emojiOpen||dateOpen){setEmojiOpen(false);setDateOpen(false);}else close.current();}
    if(event.key!=="Tab")return;
-   const items=Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),textarea:not(:disabled)')||[]);
+   const items=Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),textarea:not(:disabled)')||[]).filter(element => element.tabIndex >= 0);
    if(event.shiftKey&&document.activeElement===items[0]){event.preventDefault();items.at(-1)?.focus();}
    if(!event.shiftKey&&document.activeElement===items.at(-1)){event.preventDefault();items[0]?.focus();}
   };

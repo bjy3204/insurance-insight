@@ -17,8 +17,8 @@ export type MemoItem = {
 export const defaultMenus = [
   {
   id: "customer-manage",
-  title: "고객관리",
-  desc: "고객관리 · 보장분석표 · 상담 서식",
+  title: "고객 관리",
+  desc: "고객관리 · 보장분석 리포트 · 고객 상담 일지",
   icon: User,
   link: "/my-page",
   isDefault: true,
@@ -141,8 +141,8 @@ export const defaultMenus = [
   
     {
   id: "use-link",
-  title: "바로가기",
-  desc: "보험 업무에 필요한 바로가기",
+  title: process.env.NODE_ENV === "development" ? "업무도구" : "바로가기",
+  desc: process.env.NODE_ENV === "development" ? "계산기 · 조회 · PDF · QR 도구" : "보험 업무에 필요한 바로가기",
   icon: Link2,
   link: "/use-link",
 },

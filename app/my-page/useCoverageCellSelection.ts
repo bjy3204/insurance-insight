@@ -1,6 +1,6 @@
 "use client";
 import {useEffect,useRef,useState,type ClipboardEvent,type PointerEvent,type KeyboardEvent,type Dispatch,type SetStateAction} from 'react';
-import {clipboardRows,copyReportCells,pasteReportCells,type CellRange,type ReportCell} from './coverage-cell-clipboard';
+import {clipboardRows,copyReportCells,pasteReportCells,clearReportCells,type CellRange,type ReportCell} from './coverage-cell-clipboard';
 import type {CoverageReport} from './coverage-report-model';
 const MIME='application/x-insurance-coverage-cells';
 export default function useCoverageCellSelection(report:CoverageReport,setReport:Dispatch<SetStateAction<CoverageReport>>,page:number){
@@ -62,6 +62,11 @@ export default function useCoverageCellSelection(report:CoverageReport,setReport
   }
   function selected(row:number,column:number){return !!range&&row>=Math.min(range.row,range.endRow)&&row<=Math.max(range.row,range.endRow)&&column>=Math.min(range.column,range.endColumn)&&column<=Math.max(range.column,range.endColumn);}
   function keyDown(event:KeyboardEvent<HTMLElement>){
+    if((event.key==='Delete'||event.key==='Backspace')&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.nativeEvent.isComposing&&range){
+      const multiple=range.row!==range.endRow||range.column!==range.endColumn;
+      const editing=(event.target as Element).closest('input,textarea,[contenteditable=true]');
+      if(multiple||!editing){event.preventDefault();event.stopPropagation();setReport(current=>clearReportCells(current,range));return;}
+    }
     if(!(event.ctrlKey||event.metaKey)||event.altKey||event.nativeEvent.isComposing)return;
     const key=event.key.toLowerCase();
     if(key==='z'||key==='y'){

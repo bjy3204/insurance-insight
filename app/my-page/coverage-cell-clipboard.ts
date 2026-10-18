@@ -3,6 +3,17 @@ export type ReportCell={value:string;unit?:string};
 export type CellRange={row:number;column:number;endRow:number;endColumn:number};
 export const REPORT_META_KEYS=["insurer","product","years","start","end","remaining","premium"] as const;
 export const clipboardRows=(report:CoverageReport)=>[...REPORT_META_KEYS,...reportCoverageGroups(report).flatMap(group=>group.fields.map(field=>field.id))];
+export function clearReportCells(report:CoverageReport,range:CellRange):CoverageReport{
+  const rows=clipboardRows(report),firstRow=Math.max(0,Math.min(range.row,range.endRow)),lastRow=Math.max(range.row,range.endRow);
+  const firstColumn=Math.min(range.column,range.endColumn),lastColumn=Math.max(range.column,range.endColumn);
+  const keys=rows.slice(firstRow,lastRow+1).filter(key=>key!=='remaining');
+  return {...report,policies:report.policies.map((policy,column)=>{
+    if(column<firstColumn||column>lastColumn)return policy;
+    const next={...policy,amounts:{...policy.amounts}};
+    for(const key of keys){if(REPORT_META_KEYS.includes(key as typeof REPORT_META_KEYS[number]))Object.assign(next,{[key]:''});else next.amounts[key]='';}
+    return next;
+  })};
+}
 export function copyReportCells(report:CoverageReport,range:CellRange):ReportCell[][]{
   const rows=clipboardRows(report),fields=reportCoverageGroups(report).flatMap(group=>group.fields);
   return rows.slice(Math.min(range.row,range.endRow),Math.max(range.row,range.endRow)+1).map(key=>report.policies.slice(Math.min(range.column,range.endColumn),Math.max(range.column,range.endColumn)+1).map(policy=>{

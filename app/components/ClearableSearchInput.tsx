@@ -2,10 +2,13 @@
 
 import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState, type InputHTMLAttributes } from "react";
 import { X } from "lucide-react";
+import {usePathname} from "next/navigation";
 
 type Props = InputHTMLAttributes<HTMLInputElement> & { onClear: () => void; showClearButton?: boolean; "data-page-search-input"?: string };
 
 const ClearableSearchInput = forwardRef<HTMLInputElement, Props>(function ClearableSearchInput({ onClear, showClearButton = true, ...props }, ref) {
+  const pathname=usePathname();
+  const adminPage=pathname==='/admin'||pathname?.startsWith('/admin/');
   const input = useRef<HTMLInputElement>(null);
   const wrapper = useRef<HTMLSpanElement>(null);
   const [position, setPosition] = useState<{ top: number; right: number }>();
@@ -66,7 +69,7 @@ const ClearableSearchInput = forwardRef<HTMLInputElement, Props>(function Cleara
   }, [props.value, props.className, isSearch]);
   return <span ref={wrapper} data-clearable-search="true" data-search-control={isSearch ? "true" : undefined}>
     <input {...props} ref={input} />
-    {showClearButton && !hasUnit && filled && <button data-search-clear="true" style={position} type="button" disabled={props.disabled || props.readOnly} aria-label="입력값 지우기" onPointerDown={event => event.preventDefault()} onClick={() => { onClear(); input.current?.focus(); }}><X size={15} aria-hidden="true" /></button>}
+    {showClearButton && !hasUnit && filled && <button data-search-clear="true" tabIndex={adminPage?0:-1} style={position} type="button" disabled={props.disabled || props.readOnly} aria-label="입력값 지우기" onPointerDown={event => event.preventDefault()} onClick={() => { onClear(); input.current?.focus(); }}><X size={15} aria-hidden="true" /></button>}
   </span>;
 });
 

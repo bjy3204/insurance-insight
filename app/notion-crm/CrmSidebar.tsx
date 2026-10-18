@@ -11,7 +11,7 @@ import {useAuth} from '@/app/components/AuthProvider';
 import {useSharedHomeController} from '@/app/features/home/HomeControllerProvider';
 import AuthButton from '@/components/AuthButton';
 import styles from './NotionCrm.module.css';
-const groups=[{title:'고객관리',items:[{id:'crm',label:'고객관리',icon:Users,href:'/my-page'},{id:'coverage-analysis',label:'보장분석표',icon:ClipboardList},{id:'consultation-forms',label:'상담 서식',icon:NotebookPen},{id:'policy-inserts',label:'보험 증권 속지',icon:PolicyInsertsIcon}]},{title:'고객 안내',items:[{id:'ai',label:'AI메시지',icon:MessageSquare},{id:'notice',label:'안내장',icon:FileText}]},{title:'일정·기록',items:[{id:'calendar',label:'캘린더',icon:CalendarDays},{id:'memo',label:'메모',icon:NotebookPen},{id:'diary',label:'일기',icon:BookOpen}]}];
+const groups=[{title:'고객관리',items:[{id:'crm',label:'고객 관리',icon:Users,href:'/my-page'},{id:'coverage-analysis',label:'보장분석 리포트',icon:ClipboardList},{id:'consultation-forms',label:'고객 상담 일지',icon:NotebookPen},{id:'policy-inserts',label:'보험 증권 속지',icon:PolicyInsertsIcon}]},{title:'고객 안내',items:[{id:'ai',label:'AI메시지',icon:MessageSquare},{id:'notice',label:'안내장',icon:FileText}]},{title:'일정·기록',items:[{id:'calendar',label:'캘린더',icon:CalendarDays},{id:'memo',label:'메모',icon:NotebookPen},{id:'diary',label:'일기',icon:BookOpen}]}];
 export default function CrmSidebar({collapsed,onCollapse,nickname,activeTool,onSelect,onSettings}:{collapsed:boolean;onCollapse:()=>void;nickname:string;activeTool:CrmTool;onSelect:(tool:CrmTool)=>void;onSettings:()=>void}){
  const auth=useAuth(),controller=useSharedHomeController();
  const approved=!!auth.authUser&&(auth.authStatus==='approved'||auth.authRole==='admin');
